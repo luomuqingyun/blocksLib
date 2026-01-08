@@ -1,0 +1,5 @@
+{
+    "EXT_NAME": "Arduino Yun 支持包",
+    "EXT_DESC": "通过插件为 Arduino Yun 开发板提供支持。",
+    "BOARD_NAME": "Arduino Yun"
+}

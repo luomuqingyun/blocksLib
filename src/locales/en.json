@@ -14,7 +14,9 @@
         "openExternal": "Open External",
         "docVersion": "Document Version 1.0",
         "description": "EmbedBlocks Studio Documentation",
-        "copyright": "© 2026 EmbedBlocks Studio"
+        "copyright": "© 2026 EmbedBlocks Studio",
+        "guide": "Guide",
+        "viewGuide": "View Publishing Guide"
     },
     "extensions": {
         "title": "Extensions",
@@ -37,7 +39,11 @@
         "noExtensionsFound": "No extensions found in the registered marketplaces.",
         "installed": "Installed",
         "install": "Install",
-        "installedBy": "by {{author}}"
+        "installedBy": "by {{author}}",
+        "hardware": "Chip Extensions",
+        "software": "Module Extensions",
+        "noInstalled": "No extensions installed",
+        "installTip": "Place extensions in your user data folder"
     },
     "search": {
         "workspace": "Search Workspace...",

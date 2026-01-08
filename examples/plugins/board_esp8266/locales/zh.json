@@ -1,0 +1,5 @@
+{
+    "EXT_NAME": "ESP8266 NodeMCU 支持包",
+    "EXT_DESC": "通过插件为 ESP8266 NodeMCU V2 开发板提供支持。",
+    "BOARD_NAME": "NodeMCU V2 (ESP8266)"
+}

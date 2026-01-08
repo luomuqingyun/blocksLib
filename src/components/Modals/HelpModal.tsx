@@ -72,12 +72,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, title, co
                 {/* Footer */}
                 <div className="p-4 bg-[#252526] border-t border-slate-700/50 flex justify-end items-center gap-4">
                     <span className="text-xs text-slate-500">{t('help.copyright')}</span>
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm transition-all font-medium border border-slate-600/50"
-                    >
-                        {t('common.close') || 'Close'}
-                    </button>
+
                 </div>
             </div>
         </BaseModal>

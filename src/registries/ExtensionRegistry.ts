@@ -30,6 +30,7 @@ export interface LoadedExtension {
     hasGenerators: boolean;
     hasLibraries: boolean;
     languages: string[];
+    originalManifest?: ExtensionManifest;
 }
 
 class ExtensionRegistryService {
@@ -84,6 +85,12 @@ class ExtensionRegistryService {
                 this.extensions = await window.electronAPI.extensionsList();
                 console.log('Extensions loaded:', this.extensions);
                 await this.loadResources();
+
+                // Re-load resources when language changes to update localized strings
+                i18n.on('languageChanged', async () => {
+                    console.log('[ExtensionRegistry] Language changed, refreshing resources...');
+                    await this.loadResources();
+                });
             } catch (e) {
                 console.error("Failed to load extensions list", e);
             }
@@ -120,6 +127,10 @@ class ExtensionRegistryService {
         }
     }
 
+    public getExtensions(): LoadedExtension[] {
+        return this.extensions;
+    }
+
     public async reload() {
         if (window.electronAPI) {
             try {
@@ -134,6 +145,14 @@ class ExtensionRegistryService {
 
     private async loadResources() {
         for (const ext of this.extensions) {
+            // Restore original manifest if exists (to avoid double translation on language switch)
+            if (ext.originalManifest) {
+                ext.manifest = JSON.parse(JSON.stringify(ext.originalManifest));
+            } else {
+                // First load: Backup original manifest
+                ext.originalManifest = JSON.parse(JSON.stringify(ext.manifest));
+            }
+
             // 0. Clear previous resources for this extension to prevent duplicates/leftovers
             BoardRegistry.unregisterExtension(ext.manifest.id);
 

@@ -1,6 +1,6 @@
 {
     "id": "micro",
-    "name": "Arduino Micro",
+    "name": "%{BOARD_NAME}",
     "family": "arduino",
     "mcu": "ATmega32u4",
     "freq": "16MHz",

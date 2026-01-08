@@ -1,0 +1,5 @@
+{
+    "EXT_NAME": "Arduino Yun Support",
+    "EXT_DESC": "Add support for Arduino Yun board via plugin.",
+    "BOARD_NAME": "Arduino Yun"
+}

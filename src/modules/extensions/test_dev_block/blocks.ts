@@ -5,7 +5,7 @@ export const initBlocks = () => {
         init: function () {
             this.appendValueInput("MESSAGE")
                 .setCheck("String")
-                .appendField("Dev Log");
+                .appendField(Blockly.Msg.BLOCK_DEV_LOG);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(160);

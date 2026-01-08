@@ -1,6 +1,6 @@
 {
     "id": "nodemcuv2",
-    "name": "NodeMCU V2 (ESP8266)",
+    "name": "%{BOARD_NAME}",
     "family": "arduino",
     "mcu": "ESP8266",
     "freq": "80MHz",

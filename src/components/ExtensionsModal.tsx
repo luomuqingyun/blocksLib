@@ -42,10 +42,10 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
     }, [isOpen, activeTab]);
 
     const loadExtensions = async () => {
-        if (window.electronAPI) {
-            const exts = await window.electronAPI.extensionsList();
-            setExtensions(exts);
-        }
+        // Ensure registry is initialized so it has processed translations
+        await ExtensionRegistry.ensureInitialized();
+        // Get the processed extensions (with translated names/descriptions)
+        setExtensions([...ExtensionRegistry.getExtensions()]);
     };
 
     const loadMarketplaces = async () => {
@@ -184,17 +184,41 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 bg-[#1e1e1e]">
                     {activeTab === 'installed' ? (
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             {extensions.length === 0 ? (
                                 <div className="text-center py-20 text-slate-500">
                                     <Package size={48} className="mx-auto mb-4 opacity-50" />
-                                    <p>No extensions installed.</p>
-                                    <p className="text-xs mt-2">Place extensions in your user data folder.</p>
+                                    <p>{t('extensions.noInstalled', "No extensions installed.")}</p>
+                                    <p className="text-xs mt-2">{t('extensions.installTip', "Place extensions in your user data folder.")}</p>
                                 </div>
                             ) : (
-                                extensions.map((ext) => (
-                                    <ExtensionItem key={ext.manifest.id} ext={ext} onReload={loadExtensions} />
-                                ))
+                                <>
+                                    {/* Hardware Support Group */}
+                                    {extensions.some(e => e.hasBoards) && (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider px-1">
+                                                <Cpu size={12} />
+                                                <span>{t('extensions.hardware', 'Hardware Support')}</span>
+                                            </div>
+                                            {extensions.filter(e => e.hasBoards).map((ext) => (
+                                                <ExtensionItem key={ext.manifest.id} ext={ext} onReload={loadExtensions} />
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Software Extensions Group */}
+                                    {extensions.some(e => !e.hasBoards) && (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider px-1 mt-6">
+                                                <Box size={12} />
+                                                <span>{t('extensions.software', 'Software Extensions')}</span>
+                                            </div>
+                                            {extensions.filter(e => !e.hasBoards).map((ext) => (
+                                                <ExtensionItem key={ext.manifest.id} ext={ext} onReload={loadExtensions} />
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     ) : (
@@ -215,10 +239,11 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                         </button>
                                         <button
                                             onClick={handleOpenGuide}
-                                            className="text-xs text-slate-400 hover:text-white flex items-center gap-1"
+                                            className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white px-2 py-1 rounded flex items-center gap-1.5 transition-colors border border-slate-600"
                                             title={t('help.viewGuide', 'View Publishing Guide')}
                                         >
-                                            <BookOpen size={14} />
+                                            <BookOpen size={13} />
+                                            <span>{t('help.guide', 'Guide')}</span>
                                         </button>
                                     </div>
                                 </div>

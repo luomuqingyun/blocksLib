@@ -1,6 +1,6 @@
 {
     "id": "yun",
-    "name": "Arduino Yun",
+    "name": "%{BOARD_NAME}",
     "family": "arduino",
     "mcu": "ATmega32u4",
     "freq": "16MHz",

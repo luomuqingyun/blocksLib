@@ -1263,8 +1263,9 @@ const CustomMsgs = {
         ARD_EXAMPLE_DHT_READ_TEMP: "Read Temperature (C)",
         ARD_EXAMPLE_COMPLEX_READ: "Read Complex Data",
 
-
-
+        // Modules/Extensions
+        MODULE_TEST_DEV_NAME: "Developer Test Block",
+        BLOCK_DEV_LOG: "Dev Log"
     },
     zh: {
         // Categories
@@ -2497,6 +2498,10 @@ const CustomMsgs = {
         ARD_EXAMPLE_DHT_TOOLTIP: "设置 DHT 传感器",
         ARD_EXAMPLE_DHT_READ_TEMP: "读取温度 (C)",
         ARD_EXAMPLE_COMPLEX_READ: "读取复杂数据",
+
+        // Modules/Extensions
+        MODULE_TEST_DEV_NAME: "开发者测试积木",
+        BLOCK_DEV_LOG: "开发日志"
     }
 };
 

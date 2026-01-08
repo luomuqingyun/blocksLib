@@ -1,0 +1,5 @@
+{
+    "EXT_NAME": "ESP8266 NodeMCU Support",
+    "EXT_DESC": "Add support for ESP8266 NodeMCU V2 board via plugin.",
+    "BOARD_NAME": "NodeMCU V2 (ESP8266)"
+}

@@ -1,8 +1,8 @@
 {
     "id": "embedblocks.board.micro",
     "version": "1.0.0",
-    "name": "Arduino Micro Support",
-    "description": "Add support for Arduino Micro board via plugin.",
+    "name": "%{EXT_NAME}",
+    "description": "%{EXT_DESC}",
     "author": "EmbedBlocks Team",
     "contributes": {
         "boards": [

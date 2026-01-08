@@ -1,0 +1,5 @@
+{
+    "EXT_NAME": "Arduino Micro Support",
+    "EXT_DESC": "Add support for Arduino Micro board via plugin.",
+    "BOARD_NAME": "Arduino Micro"
+}
