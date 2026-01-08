@@ -76,6 +76,7 @@ interface ElectronAPI {
   marketplaceRemoveUrl: (url: string) => Promise<boolean>;
   marketplaceFetchRemote: (url: string) => Promise<any[]>;
   marketplaceInstall: (ext: any, force?: boolean) => Promise<{ success: boolean; message: string; status?: string; currentVersion?: string; newVersion?: string }>;
+  marketplaceGetCachedIcon: (url: string) => Promise<string | null>;
 
   // --- Menu ---
   onMenuAction: (callback: (action: string, arg?: any) => void) => () => void;

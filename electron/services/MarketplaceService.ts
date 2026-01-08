@@ -182,6 +182,51 @@ export class MarketplaceService {
         }
         return null;
     }
+
+    public async getCachedIcon(url: string): Promise<string | null> {
+        if (!url) return null;
+
+        // Create cache directory in userData to be persistent
+        const cacheDir = path.join(app.getPath('userData'), 'icon-cache');
+        if (!fs.existsSync(cacheDir)) {
+            fs.mkdirSync(cacheDir, { recursive: true });
+        }
+
+        // Generate safe filename (simple hash or encoded url)
+        // Using base64 encode of url is safe enough for filenames usually, but length might be issue.
+        // Let's use simple alphanumeric replacement.
+        const safeName = Buffer.from(url).toString('base64').replace(/[\/\+=]/g, '_') + path.extname(url);
+        const cachePath = path.join(cacheDir, safeName);
+
+        try {
+            // Check cache
+            if (fs.existsSync(cachePath)) {
+                // Return cached content (check expiration? for now permanent cache is fine for perf)
+                return this.readFileAsBase64(cachePath);
+            }
+
+            // Download
+            await this.downloadFile(url, cachePath);
+
+            // Return new content
+            return this.readFileAsBase64(cachePath);
+        } catch (e) {
+            console.error(`Failed to cache icon from ${url}:`, e);
+            // Fallback: return original url or null? 
+            // If download fails, maybe custom icon or null.
+            return null;
+        }
+    }
+
+    private readFileAsBase64(filePath: string): string {
+        const bitmap = fs.readFileSync(filePath);
+        const ext = path.extname(filePath).toLowerCase();
+        let mime = 'image/png';
+        if (ext === '.jpg' || ext === '.jpeg') mime = 'image/jpeg';
+        if (ext === '.svg') mime = 'image/svg+xml';
+        if (ext === '.gif') mime = 'image/gif';
+        return `data:${mime};base64,${bitmap.toString('base64')}`;
+    }
 }
 
 export const marketplaceService = new MarketplaceService();

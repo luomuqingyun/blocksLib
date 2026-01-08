@@ -29,4 +29,8 @@ export function registerMarketplaceHandlers(ipcMain: IpcMain) {
     ipcMain.handle('marketplace:install', async (_, ext: MarketplaceExtension, force: boolean = false) => {
         return await marketplaceService.installExtension(ext, force);
     });
+
+    ipcMain.handle('marketplace:get-cached-icon', async (_, url: string) => {
+        return await marketplaceService.getCachedIcon(url);
+    });
 }

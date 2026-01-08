@@ -109,6 +109,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   marketplaceRemoveUrl: (url: string) => ipcRenderer.invoke('marketplace:remove-url', url),
   marketplaceFetchRemote: (url: string) => ipcRenderer.invoke('marketplace:fetch-remote', url),
   marketplaceInstall: (ext: any, force?: boolean) => ipcRenderer.invoke('marketplace:install', ext, force),
+  marketplaceGetCachedIcon: (url: string) => ipcRenderer.invoke('marketplace:get-cached-icon', url),
 
   // Menu
   onMenuAction: (callback: (action: string, arg?: any) => void) => {

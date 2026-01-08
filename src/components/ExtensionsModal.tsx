@@ -378,60 +378,14 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                         </p>
                                     </div>
                                 ) : (
-                                    remoteExtensions.map((ext) => {
-                                        const installedExt = extensions.find(le => le.manifest.id === ext.id);
-                                        const isInstalled = !!installedExt;
-
-                                        let btnLabel = t('extensions.install');
-                                        let btnClass = "bg-blue-600 hover:bg-blue-500 text-white border-blue-500";
-                                        let isDisabled = false;
-
-                                        if (isInstalled) {
-                                            const comparison = compareVersions(ext.version, installedExt.manifest.version);
-                                            if (comparison > 0) {
-                                                // Remote is newer -> Update
-                                                btnLabel = t('extensions.update', { version: ext.version, defaultValue: `Update to v${ext.version}` });
-                                                btnClass = "bg-green-600 hover:bg-green-500 text-white border-green-500";
-                                            } else if (comparison < 0) {
-                                                // Remote is older -> Downgrade (Warning)
-                                                btnLabel = t('extensions.downgrade', { version: ext.version, defaultValue: `Downgrade to v${ext.version}` });
-                                                btnClass = "bg-red-900/50 hover:bg-red-900/80 text-red-200 border-red-800";
-                                            } else {
-                                                // Same version
-                                                btnLabel = t('extensions.installed');
-                                                btnClass = "bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed";
-                                                isDisabled = true;
-                                            }
-                                        }
-
-                                        return (
-                                            <div key={ext.id} className="bg-[#252526] border border-slate-700 rounded-lg p-4 flex gap-4 hover:border-slate-600 transition-colors">
-                                                <div className="w-16 h-16 bg-[#333] rounded-md flex items-center justify-center text-slate-500 shrink-0 overflow-hidden">
-                                                    {ext.icon ? (
-                                                        <img src={ext.icon} alt={ext.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <Puzzle size={28} />
-                                                    )}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <h3 className="text-lg font-bold text-slate-200">{ext.name}</h3>
-                                                            <p className="text-xs text-slate-500 font-mono mb-1">{ext.id} v{ext.version} {ext.author && t('extensions.installedBy', { author: ext.author })}</p>
-                                                        </div>
-                                                        <button
-                                                            disabled={isDisabled}
-                                                            onClick={() => handleInstall(ext)}
-                                                            className={`text-xs px-4 py-1.5 rounded transition-colors flex items-center gap-1 border ${btnClass}`}
-                                                        >
-                                                            {btnLabel}
-                                                        </button>
-                                                    </div>
-                                                    <p className="text-sm text-slate-300 mt-2 line-clamp-2">{ext.description}</p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })
+                                    remoteExtensions.map((ext) => (
+                                        <RemoteExtensionItem
+                                            key={ext.id}
+                                            ext={ext}
+                                            installedExt={extensions.find(le => le.manifest.id === ext.id)}
+                                            onInstall={(e, f) => handleInstall(e, f)}
+                                        />
+                                    ))
                                 )}
                             </div>
                         </div>
@@ -524,6 +478,85 @@ const ExtensionItem: React.FC<{ ext: LoadedExtension, onUninstall: (ext: LoadedE
                         <Trash2 size={12} /> {t('extensions.uninstall')}
                     </button>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+const RemoteExtensionItem: React.FC<{ ext: any, installedExt?: LoadedExtension, onInstall: (ext: any, force?: boolean) => void }> = ({ ext, installedExt, onInstall }) => {
+    const { t } = useTranslation();
+    const [iconUrl, setIconUrl] = useState<string | null>(null);
+
+    // Cache Logic
+    useEffect(() => {
+        let isMounted = true;
+        if (ext.icon && window.electronAPI) {
+            window.electronAPI.marketplaceGetCachedIcon(ext.icon)
+                .then(cachedBase64 => {
+                    if (isMounted) {
+                        if (cachedBase64) {
+                            setIconUrl(cachedBase64);
+                        } else {
+                            // Fallback to original url
+                            setIconUrl(ext.icon);
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("Failed to get cached icon", err);
+                    if (isMounted) setIconUrl(ext.icon);
+                });
+        }
+        return () => { isMounted = false; };
+    }, [ext.icon]);
+
+    const isInstalled = !!installedExt;
+    let btnLabel = t('extensions.install');
+    let btnClass = "bg-blue-600 hover:bg-blue-500 text-white border-blue-500";
+    let isDisabled = false;
+
+    if (isInstalled) {
+        const comparison = compareVersions(ext.version, installedExt!.manifest.version);
+        if (comparison > 0) {
+            // Remote is newer -> Update
+            btnLabel = t('extensions.update', { version: ext.version, defaultValue: `Update to v${ext.version}` });
+            btnClass = "bg-green-600 hover:bg-green-500 text-white border-green-500";
+        } else if (comparison < 0) {
+            // Remote is older -> Downgrade (Warning)
+            btnLabel = t('extensions.downgrade', { version: ext.version, defaultValue: `Downgrade to v${ext.version}` });
+            btnClass = "bg-red-900/50 hover:bg-red-900/80 text-red-200 border-red-800";
+        } else {
+            // Same version
+            btnLabel = t('extensions.installed');
+            btnClass = "bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed";
+            isDisabled = true;
+        }
+    }
+
+    return (
+        <div className="bg-[#252526] border border-slate-700 rounded-lg p-4 flex gap-4 hover:border-slate-600 transition-colors">
+            <div className="w-16 h-16 bg-[#333] rounded-md flex items-center justify-center text-slate-500 shrink-0 overflow-hidden">
+                {iconUrl ? (
+                    <img src={iconUrl} alt={ext.name} className="w-full h-full object-cover" />
+                ) : (
+                    <Puzzle size={28} />
+                )}
+            </div>
+            <div className="flex-1">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-200">{ext.name}</h3>
+                        <p className="text-xs text-slate-500 font-mono mb-1">{ext.id} v{ext.version} {ext.author && t('extensions.installedBy', { author: ext.author })}</p>
+                    </div>
+                    <button
+                        disabled={isDisabled}
+                        onClick={() => onInstall(ext)}
+                        className={`text-xs px-4 py-1.5 rounded transition-colors flex items-center gap-1 border ${btnClass}`}
+                    >
+                        {btnLabel}
+                    </button>
+                </div>
+                <p className="text-sm text-slate-300 mt-2 line-clamp-2">{ext.description}</p>
             </div>
         </div>
     );
