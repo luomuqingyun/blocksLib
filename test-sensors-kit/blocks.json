@@ -1,0 +1,32 @@
+[
+    {
+        "type": "sensor_read_temp",
+        "message0": "Read Temperature (Pin %1)",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "PIN",
+                "text": "A0"
+            }
+        ],
+        "output": "Number",
+        "colour": 160,
+        "tooltip": "Reads temperature from sensor",
+        "helpUrl": ""
+    },
+    {
+        "type": "sensor_read_humidity",
+        "message0": "Read Humidity (Pin %1)",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "PIN",
+                "text": "A1"
+            }
+        ],
+        "output": "Number",
+        "colour": 160,
+        "tooltip": "Reads humidity",
+        "helpUrl": ""
+    }
+]

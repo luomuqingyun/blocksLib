@@ -1,0 +1,19 @@
+{
+    "fqbn": "esp32:esp32:esp32c3",
+    "name": "ESP32-C3 Mock",
+    "pins": [
+        {
+            "name": "D0",
+            "value": "0"
+        },
+        {
+            "name": "D1",
+            "value": "1"
+        },
+        {
+            "name": "A0",
+            "value": "2"
+        }
+    ],
+    "upload_speed": 460800
+}

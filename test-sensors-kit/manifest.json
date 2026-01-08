@@ -1,0 +1,15 @@
+{
+    "id": "test.sensors.kit",
+    "version": "2.0.0",
+    "name": "Super Sensor Kit",
+    "description": "A comprehensive library for various sensors (Temp, Hum, Light). v2.0 includes I2C support.",
+    "author": "EmbedBlocks Labs",
+    "icon": "icon.png",
+    "homepage": "https://github.com/luomuqingyun/blocksLib",
+    "compatibility": {
+        "families": [
+            "arduino",
+            "esp32"
+        ]
+    }
+}

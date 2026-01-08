@@ -1,0 +1,15 @@
+{
+    "id": "test.board.esp32c3",
+    "version": "1.0.0",
+    "name": "ESP32-C3 Mock Board",
+    "type": "board",
+    "description": "Support for ESP32-C3 Mock Board",
+    "author": "Chip Vendor X",
+    "icon": "icon.png",
+    "homepage": "https://github.com/luomuqingyun/blocksLib",
+    "compatibility": {
+        "families": [
+            "esp32"
+        ]
+    }
+}
