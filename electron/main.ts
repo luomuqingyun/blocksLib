@@ -244,9 +244,10 @@ function registerAllIpcs() {
     };
 
     // Help file reader
-    ipcMain.handle('help:read-file', async (_event, type: 'user' | 'plugin' | 'about') => {
+    ipcMain.handle('help:read-file', async (_event, type: 'user' | 'plugin' | 'about' | 'marketplace') => {
         let fileName = '用户操作指南.md';
-        if (type === 'plugin') fileName = '插件系统开发手册.md';
+        if (type === 'plugin') fileName = '普通用户插件系统开发手册.md';
+        else if (type === 'marketplace') fileName = '插件市场发布指南.md';
         else if (type === 'about') fileName = '关于项目.md';
 
         const validPath = findDocPath(fileName);
@@ -262,7 +263,7 @@ function registerAllIpcs() {
     // Helper to open guide externally
     ipcMain.handle('help:open-guide', async (_event, type: 'user' | 'plugin' | 'marketplace') => {
         let fileName = '用户操作指南.md';
-        if (type === 'plugin') fileName = '插件系统开发手册.md';
+        if (type === 'plugin') fileName = '普通用户插件系统开发手册.md';
         else if (type === 'marketplace') fileName = '插件市场发布指南.md';
         else if (type === 'user') fileName = '用户操作指南.md';
 

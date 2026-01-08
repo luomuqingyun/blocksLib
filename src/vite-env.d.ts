@@ -64,9 +64,9 @@ interface ElectronAPI {
   // --- Extensions ---
   extensionsList: () => Promise<any[]>;
   extensionReadFile: (extId: string, path: string, encoding?: string) => Promise<string | null>;
-  importExtension: () => Promise<{ success: boolean; message: string }>;
-  uninstallExtension: (extId: string) => Promise<{ success: boolean; message: string }>;
-  readHelpFile: (type: 'user' | 'plugin' | 'about') => Promise<{ content: string; path: string }>;
+  importExtension: (options?: { force?: boolean, sourcePath?: string }) => Promise<{ success: boolean; message: string; extensionId?: string; status?: 'ok' | 'downgrade' | 'error'; currentVersion?: string; newVersion?: string; actualSourcePath?: string }>;
+  uninstallExtension: (extId: string) => Promise<{ success: boolean; message: string; extensionId?: string }>;
+  readHelpFile: (type: 'user' | 'plugin' | 'about' | 'marketplace') => Promise<{ content: string; path: string }>;
   openHelpGuide: (type: 'user' | 'plugin' | 'marketplace') => Promise<{ success: boolean; message?: string }>;
   openExternal: (path: string) => Promise<boolean>;
 
@@ -75,7 +75,7 @@ interface ElectronAPI {
   marketplaceAddUrl: (url: string) => Promise<boolean>;
   marketplaceRemoveUrl: (url: string) => Promise<boolean>;
   marketplaceFetchRemote: (url: string) => Promise<any[]>;
-  marketplaceInstall: (ext: any) => Promise<{ success: boolean; message: string }>;
+  marketplaceInstall: (ext: any, force?: boolean) => Promise<{ success: boolean; message: string; status?: string; currentVersion?: string; newVersion?: string }>;
 
   // --- Menu ---
   onMenuAction: (callback: (action: string, arg?: any) => void) => () => void;

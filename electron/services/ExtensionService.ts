@@ -2,6 +2,19 @@ import { app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 
+// Helper: Semver-lite comparison
+function compareVersions(v1: string, v2: string): number {
+    const parts1 = v1.split('.').map(Number);
+    const parts2 = v2.split('.').map(Number);
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+        const p1 = parts1[i] || 0;
+        const p2 = parts2[i] || 0;
+        if (p1 > p2) return 1;
+        if (p1 < p2) return -1;
+    }
+    return 0;
+}
+
 export interface ExtensionManifest {
     id: string;
     version: string;
@@ -138,7 +151,7 @@ export class ExtensionService {
         return null;
     }
 
-    public async importExtension(sourcePath: string): Promise<{ success: boolean, message: string }> {
+    public async importExtension(sourcePath: string, force: boolean = false): Promise<{ success: boolean, message: string, extensionId?: string, status?: 'ok' | 'downgrade' | 'error', currentVersion?: string, newVersion?: string, actualSourcePath?: string }> {
         try {
             if (!fs.existsSync(sourcePath)) {
                 return { success: false, message: 'Source path does not exist' };
@@ -190,6 +203,23 @@ export class ExtensionService {
 
             const targetDir = path.join(this.extensionsDir, manifest.id);
             if (fs.existsSync(targetDir)) {
+                // Check version before overwriting
+                const currentExt = this.extensions.get(manifest.id);
+                if (currentExt && !force) {
+                    const comparison = compareVersions(manifest.version, currentExt.manifest.version);
+                    if (comparison < 0) {
+                        return {
+                            success: false,
+                            status: 'downgrade',
+                            message: `Downgrade detected: v${currentExt.manifest.version} -> v${manifest.version}`,
+                            extensionId: manifest.id,
+                            currentVersion: currentExt.manifest.version,
+                            newVersion: manifest.version,
+                            actualSourcePath: sourcePath // Return path so frontend can retry with force
+                        };
+                    }
+                }
+
                 // Determine update policy. For now, overwrite.
                 await fs.promises.rm(targetDir, { recursive: true, force: true });
             }
@@ -209,14 +239,15 @@ export class ExtensionService {
             }
 
             this.scanExtensions();
-            return { success: true, message: `Extension ${manifest.name} imported successfully!` };
+            this.scanExtensions();
+            return { success: true, status: 'ok', message: `Extension ${manifest.name} imported successfully!`, extensionId: manifest.id };
 
         } catch (e: any) {
             return { success: false, message: `Import failed: ${e.message}` };
         }
     }
 
-    public async uninstallExtension(extId: string): Promise<{ success: boolean, message: string }> {
+    public async uninstallExtension(extId: string): Promise<{ success: boolean, message: string, extensionId?: string }> {
         const ext = this.extensions.get(extId);
         if (!ext) {
             return { success: false, message: 'Extension not found' };

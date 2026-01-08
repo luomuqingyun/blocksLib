@@ -26,7 +26,7 @@ export function registerMarketplaceHandlers(ipcMain: IpcMain) {
         return await marketplaceService.fetchMarketplace(url);
     });
 
-    ipcMain.handle('marketplace:install', async (_, ext: MarketplaceExtension) => {
-        return await marketplaceService.installExtension(ext);
+    ipcMain.handle('marketplace:install', async (_, ext: MarketplaceExtension, force: boolean = false) => {
+        return await marketplaceService.installExtension(ext, force);
     });
 }

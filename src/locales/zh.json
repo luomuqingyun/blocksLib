@@ -166,7 +166,9 @@
         "save": "保存",
         "dontSave": "不保存",
         "unsavedChangesTitle": "未保存的更改",
-        "unsavedChangesDesc": "项目中有未保存的更改，是否在关闭前保存？"
+        "unsavedChangesDesc": "项目中有未保存的更改，是否在关闭前保存？",
+        "confirmUninstall": "确定要卸载扩展 \"{{name}}\" 吗？",
+        "importSuccess": "扩展 \"{{name}}\" 导入成功！"
     },
     "newProject": {
         "cantFindBoard": "找不到您的板子？",
@@ -283,11 +285,11 @@
     "welcome": {
         "subtitle": "让嵌入式开发触手可及",
         "newProject": "新建项目",
-        "newProjectDesc": "从头开始创建一个新工程",
+        "newProjectDesc": "创建一个新工程",
         "openProject": "打开项目",
-        "openProjectDesc": "打开已有的 .ebproj 文件",
-        "openSaveDir": "打开项目保存目录",
-        "openSaveDirDesc": "浏览你保存的项目文件 (工作目录)",
+        "openProjectDesc": "打开已有的项目",
+        "openSaveDir": "工作目录",
+        "openSaveDirDesc": "管理您的本地项目文件",
         "extensionsDesc": "管理硬件芯片包与功能积木库",
         "recent": "最近项目",
         "openError": "打开项目失败",

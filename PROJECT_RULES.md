@@ -15,7 +15,7 @@
 -   **国际化 (I18n)**: 
     -   严禁在 UI 组件中硬编码文本。
     -   **核心 UI (Core)**: 修改 `src/` 下的界面代码时，必须同步 update `src/locales/` 下的 `zh.json` 和 `en.json`。
-    -   **用户插件 (User Extensions)**: 遵循《插件系统开发手册》，使用 `locales/` 目录和 `%{KEY}` 占位符实现运行时翻译。**绝不允许**要求用户修改核心源码。
+    -   **用户插件 (User Extensions)**: 遵循《普通用户插件系统开发手册.md》，使用 `locales/` 目录和 `%{KEY}` 占位符实现运行时翻译。**绝不允许**要求用户修改核心源码。
     > [!IMPORTANT]
     > **核心开发铁律**: 对于 Core 源码修改，严禁“先实现功能后补翻译”。对于插件显示问题，必须优先检查 `ExtensionRegistry.ts` 的运行时加载逻辑，而非硬编码修复。
     > [!IMPORTANT]

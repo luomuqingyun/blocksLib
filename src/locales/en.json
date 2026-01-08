@@ -153,7 +153,9 @@
         "errorRange": "Hex Range Warning: Value > 0xFF (e.g. '100')",
         "jsonError": "Invalid JSON format",
         "cancel": "Cancel",
-        "create": "Create"
+        "create": "Create",
+        "confirmUninstall": "Are you sure you want to uninstall \"{{name}}\"?",
+        "importSuccess": "Extension \"{{name}}\" imported successfully!"
     },
     "newProject": {
         "cantFindBoard": "Can't find your board?",
@@ -273,8 +275,8 @@
         "newProjectDesc": "Create a new sketch from scratch",
         "openProject": "Open Project",
         "openProjectDesc": "Open an existing .ebproj file",
-        "openSaveDir": "Open Save Directory",
-        "openSaveDirDesc": "Browse your saved project files",
+        "openSaveDir": "Work Directory",
+        "openSaveDirDesc": "Manage your local project files",
         "extensionsDesc": "Manage boards and block sets",
         "recent": "Recent Projects",
         "openError": "Failed to open project",

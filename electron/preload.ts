@@ -97,7 +97,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // --- Extensions ---
   extensionsList: () => ipcRenderer.invoke('extensions:list'),
   extensionReadFile: (extId: string, path: string, encoding?: string) => ipcRenderer.invoke('extensions:read-file', extId, path, encoding),
-  importExtension: () => ipcRenderer.invoke('extensions:import'),
+  importExtension: (options?: { force?: boolean, sourcePath?: string }) => ipcRenderer.invoke('extensions:import', options),
   uninstallExtension: (extId: string) => ipcRenderer.invoke('extensions:uninstall', extId),
   readHelpFile: (type: 'user' | 'plugin') => ipcRenderer.invoke('help:read-file', type),
   openHelpGuide: (type: 'user' | 'plugin' | 'marketplace') => ipcRenderer.invoke('help:open-guide', type),
@@ -108,7 +108,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   marketplaceAddUrl: (url: string) => ipcRenderer.invoke('marketplace:add-url', url),
   marketplaceRemoveUrl: (url: string) => ipcRenderer.invoke('marketplace:remove-url', url),
   marketplaceFetchRemote: (url: string) => ipcRenderer.invoke('marketplace:fetch-remote', url),
-  marketplaceInstall: (ext: any) => ipcRenderer.invoke('marketplace:install', ext),
+  marketplaceInstall: (ext: any, force?: boolean) => ipcRenderer.invoke('marketplace:install', ext, force),
 
   // Menu
   onMenuAction: (callback: (action: string, arg?: any) => void) => {

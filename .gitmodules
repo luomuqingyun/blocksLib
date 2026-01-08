@@ -1,0 +1,3 @@
+[submodule "blocksLib"]
+	path = blocksLib
+	url = git@github.com:luomuqingyun/blocksLib.git

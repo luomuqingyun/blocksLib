@@ -9,8 +9,17 @@ export function registerExtensionHandlers(ipcMain: IpcMain) {
         return await extensionService.loadFileFromExtension(extId, relativePath, encoding);
     });
 
-    ipcMain.handle('extensions:import', async (event, sourcePath?: string) => {
-        let finalPath = sourcePath;
+    ipcMain.handle('extensions:import', async (event, arg?: string | { sourcePath?: string, force?: boolean }) => {
+        let finalPath: string | undefined;
+        let force = false;
+
+        if (typeof arg === 'string') {
+            finalPath = arg;
+        } else if (typeof arg === 'object') {
+            finalPath = arg.sourcePath;
+            force = !!arg.force;
+        }
+
         if (!finalPath) {
             const result = await dialog.showOpenDialog({
                 properties: ['openDirectory'],
@@ -20,7 +29,7 @@ export function registerExtensionHandlers(ipcMain: IpcMain) {
             if (result.canceled || result.filePaths.length === 0) return { success: false, message: 'Canceled' };
             finalPath = result.filePaths[0];
         }
-        return await extensionService.importExtension(finalPath);
+        return await extensionService.importExtension(finalPath, force);
     });
 
     ipcMain.handle('extensions:uninstall', async (event, extId) => {

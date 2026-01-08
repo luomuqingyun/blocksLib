@@ -13,8 +13,22 @@ import { useTranslation } from 'react-i18next';
 import { LoadedExtension, ExtensionRegistry } from '../registries/ExtensionRegistry';
 import { BoardRegistry } from '../registries/BoardRegistry';
 import { BaseModal } from './BaseModal';
+import { useUI } from '../contexts/UIContext';
 
 // --- 组件属性类型 ---
+// Helper: Semver-lite comparison
+function compareVersions(v1: string, v2: string): number {
+    const parts1 = v1.split('.').map(Number);
+    const parts2 = v2.split('.').map(Number);
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+        const p1 = parts1[i] || 0;
+        const p2 = parts2[i] || 0;
+        if (p1 > p2) return 1;
+        if (p1 < p2) return -1;
+    }
+    return 0;
+}
+
 interface ExtensionsModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -22,6 +36,7 @@ interface ExtensionsModalProps {
 
 export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClose }) => {
     const { t } = useTranslation();
+    const { openHelp } = useUI();
     const [extensions, setExtensions] = useState<LoadedExtension[]>([]);
     const [activeTab, setActiveTab] = useState<'installed' | 'marketplace'>('installed');
 
@@ -89,15 +104,26 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
         }
     };
 
-    const handleInstall = async (ext: any) => {
+    const handleInstall = async (ext: any, force: boolean = false) => {
         if (window.electronAPI) {
             setIsLoadingMarketplace(true);
             try {
-                const result = await window.electronAPI.marketplaceInstall(ext);
+                const result = await window.electronAPI.marketplaceInstall(ext, force);
                 if (result.success) {
                     alert(result.message);
                     await ExtensionRegistry.reload();
                     loadExtensions();
+                } else if (result.status === 'downgrade') {
+                    // Handle Downgrade Confirmation
+                    if (confirm(t('dialog.confirmDowngrade', {
+                        current: result.currentVersion,
+                        new: result.newVersion,
+                        defaultValue: `Downgrade detected!\nCurrent: v${result.currentVersion}\nNew: v${result.newVersion}\n\nDo you want to overwrite it?`
+                    }))) {
+                        // User confirmed, retry with force
+                        await handleInstall(ext, true);
+                        return; // Exit here, recursive call handles the rest
+                    }
                 } else {
                     alert(result.message);
                 }
@@ -110,14 +136,54 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
         }
     };
 
-    const handleImport = async () => {
+    const handleUninstall = async (ext: LoadedExtension) => {
+        if (window.electronAPI) {
+            if (confirm(t('dialog.confirmUninstall', { name: ext.manifest.name, defaultValue: `Are you sure you want to uninstall "${ext.manifest.name}"?` }))) {
+                const result = await window.electronAPI.uninstallExtension(ext.manifest.id);
+                if (result.success) {
+                    BoardRegistry.unregisterExtension(ext.manifest.id);
+                    await ExtensionRegistry.reload(); // CRITICAL: Update Registry Cache
+                    loadExtensions(); // Refresh UI
+                } else {
+                    alert(result.message);
+                }
+            }
+        }
+    };
+
+    const handleImport = async (forceOptions?: { force: boolean, sourcePath: string }) => {
         if (window.electronAPI) {
             try {
-                const result = await window.electronAPI.importExtension();
+                const result = await window.electronAPI.importExtension(forceOptions);
                 if (result.success) {
-                    alert(result.message);
-                    await ExtensionRegistry.reload(); // Reload resources to update Toolbox
+                    await ExtensionRegistry.reload(); // Reload resources to update Toolbox (and translate new extensions)
                     loadExtensions(); // Refresh list UI
+
+                    // Find the imported extension to get its localized name
+                    let extName = "Extension";
+                    if (result.extensionId) {
+                        // We must fetch from the registry again because loadExtensions() sets state async
+                        const freshExtensions = ExtensionRegistry.getExtensions();
+                        const importedExt = freshExtensions.find(e => e.manifest.id === result.extensionId);
+                        if (importedExt) {
+                            extName = importedExt.manifest.name;
+                        }
+                    }
+
+                    alert(t('dialog.importSuccess', { name: extName, defaultValue: `Extension "${extName}" imported successfully!` }));
+                } else if (result.status === 'downgrade') {
+                    // Handle Downgrade Confirmation for Local Import
+                    if (confirm(t('dialog.confirmDowngrade', {
+                        current: result.currentVersion,
+                        new: result.newVersion,
+                        defaultValue: `Downgrade detected!\nCurrent: v${result.currentVersion}\nNew: v${result.newVersion}\n\nDo you want to overwrite it?`
+                    }))) {
+                        if (result.actualSourcePath) {
+                            await handleImport({ force: true, sourcePath: result.actualSourcePath });
+                        } else {
+                            alert("Error: Cannot retry import (path lost). Please try again.");
+                        }
+                    }
                 } else {
                     if (result.message !== 'Canceled') {
                         alert('Import Failed: ' + result.message);
@@ -133,9 +199,10 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
         }
     };
 
-    const handleOpenGuide = () => {
-        if (window.electronAPI && window.electronAPI.openHelpGuide) {
-            window.electronAPI.openHelpGuide('marketplace');
+    const handleOpenGuide = async () => {
+        if (window.electronAPI) {
+            const result = await window.electronAPI.readHelpFile('marketplace');
+            openHelp(t('help.guide', 'Guide'), result.content, result.path);
         }
     };
 
@@ -173,7 +240,7 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                     </div>
                     {/* Import Button */}
                     <button
-                        onClick={handleImport}
+                        onClick={() => handleImport()}
                         className="flex items-center gap-2 px-3 py-1.5 bg-[#333] hover:bg-[#444] text-slate-200 rounded text-xs border border-slate-600 transition-colors"
                         title={t('extensions.importLocal')}
                     >
@@ -201,7 +268,7 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                                 <span>{t('extensions.hardware', 'Hardware Support')}</span>
                                             </div>
                                             {extensions.filter(e => e.hasBoards).map((ext) => (
-                                                <ExtensionItem key={ext.manifest.id} ext={ext} onReload={loadExtensions} />
+                                                <ExtensionItem key={ext.manifest.id} ext={ext} onUninstall={handleUninstall} />
                                             ))}
                                         </div>
                                     )}
@@ -214,7 +281,7 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                                 <span>{t('extensions.software', 'Software Extensions')}</span>
                                             </div>
                                             {extensions.filter(e => !e.hasBoards).map((ext) => (
-                                                <ExtensionItem key={ext.manifest.id} ext={ext} onReload={loadExtensions} />
+                                                <ExtensionItem key={ext.manifest.id} ext={ext} onUninstall={handleUninstall} />
                                             ))}
                                         </div>
                                     )}
@@ -265,6 +332,15 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                         >
                                             {t('common.confirm')}
                                         </button>
+                                        <button
+                                            onClick={() => {
+                                                setNewMarketplaceUrl('');
+                                                setIsAddingMarketplace(false);
+                                            }}
+                                            className="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded text-sm transition-colors"
+                                        >
+                                            {t('dialog.cancel', 'Cancel')}
+                                        </button>
                                     </div>
                                 )}
 
@@ -300,17 +376,34 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                         <p className="max-w-md mx-auto mb-6">
                                             {t('extensions.noExtensionsFound', "No extensions found in the registered marketplaces.")}
                                         </p>
-                                        <button
-                                            onClick={handleOpenGuide}
-                                            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm text-slate-200 flex items-center gap-2 mx-auto transition-colors"
-                                        >
-                                            <BookOpen size={16} />
-                                            {t('help.viewGuide', 'Read Publishing Guide')}
-                                        </button>
                                     </div>
                                 ) : (
                                     remoteExtensions.map((ext) => {
-                                        const isInstalled = extensions.some(le => le.manifest.id === ext.id);
+                                        const installedExt = extensions.find(le => le.manifest.id === ext.id);
+                                        const isInstalled = !!installedExt;
+
+                                        let btnLabel = t('extensions.install');
+                                        let btnClass = "bg-blue-600 hover:bg-blue-500 text-white border-blue-500";
+                                        let isDisabled = false;
+
+                                        if (isInstalled) {
+                                            const comparison = compareVersions(ext.version, installedExt.manifest.version);
+                                            if (comparison > 0) {
+                                                // Remote is newer -> Update
+                                                btnLabel = t('extensions.update', { version: ext.version, defaultValue: `Update to v${ext.version}` });
+                                                btnClass = "bg-green-600 hover:bg-green-500 text-white border-green-500";
+                                            } else if (comparison < 0) {
+                                                // Remote is older -> Downgrade (Warning)
+                                                btnLabel = t('extensions.downgrade', { version: ext.version, defaultValue: `Downgrade to v${ext.version}` });
+                                                btnClass = "bg-red-900/50 hover:bg-red-900/80 text-red-200 border-red-800";
+                                            } else {
+                                                // Same version
+                                                btnLabel = t('extensions.installed');
+                                                btnClass = "bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed";
+                                                isDisabled = true;
+                                            }
+                                        }
+
                                         return (
                                             <div key={ext.id} className="bg-[#252526] border border-slate-700 rounded-lg p-4 flex gap-4 hover:border-slate-600 transition-colors">
                                                 <div className="w-16 h-16 bg-[#333] rounded-md flex items-center justify-center text-slate-500 shrink-0 overflow-hidden">
@@ -327,14 +420,11 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                                             <p className="text-xs text-slate-500 font-mono mb-1">{ext.id} v{ext.version} {ext.author && t('extensions.installedBy', { author: ext.author })}</p>
                                                         </div>
                                                         <button
-                                                            disabled={isInstalled}
+                                                            disabled={isDisabled}
                                                             onClick={() => handleInstall(ext)}
-                                                            className={`text-xs px-4 py-1.5 rounded transition-colors flex items-center gap-1 border ${isInstalled
-                                                                ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed'
-                                                                : 'bg-blue-600 hover:bg-blue-500 text-white border-blue-500'
-                                                                }`}
+                                                            className={`text-xs px-4 py-1.5 rounded transition-colors flex items-center gap-1 border ${btnClass}`}
                                                         >
-                                                            {isInstalled ? t('extensions.installed') : t('extensions.install')}
+                                                            {btnLabel}
                                                         </button>
                                                     </div>
                                                     <p className="text-sm text-slate-300 mt-2 line-clamp-2">{ext.description}</p>
@@ -352,7 +442,7 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
     );
 };
 
-const ExtensionItem: React.FC<{ ext: LoadedExtension, onReload: () => void }> = ({ ext, onReload }) => {
+const ExtensionItem: React.FC<{ ext: LoadedExtension, onUninstall: (ext: LoadedExtension) => void }> = ({ ext, onUninstall }) => {
     const { t } = useTranslation();
     const [iconUrl, setIconUrl] = useState<string | null>(null);
 
@@ -425,17 +515,9 @@ const ExtensionItem: React.FC<{ ext: LoadedExtension, onReload: () => void }> = 
                     {/* Uninstall Button */}
                     <button
                         className="text-xs bg-red-900/30 hover:bg-red-900/50 text-red-400 px-3 py-1.5 rounded transition-colors border border-red-900/50 flex items-center gap-1"
-                        onClick={async (e) => {
+                        onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm(`${t('dialog.unsavedChangesDesc', "Are you sure you want to uninstall")} "${ext.manifest.name}"?`)) {
-                                const result = await window.electronAPI.uninstallExtension(ext.manifest.id);
-                                if (result.success) {
-                                    BoardRegistry.unregisterExtension(ext.manifest.id);
-                                    onReload(); // Refresh list
-                                } else {
-                                    alert(result.message);
-                                }
-                            }
+                            onUninstall(ext);
                         }}
                         title={t('extensions.uninstall')}
                     >

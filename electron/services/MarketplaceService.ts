@@ -85,7 +85,7 @@ export class MarketplaceService {
         }
     }
 
-    public async installExtension(ext: MarketplaceExtension): Promise<{ success: boolean, message: string }> {
+    public async installExtension(ext: MarketplaceExtension, force: boolean = false): Promise<{ success: boolean, message: string, status?: string, currentVersion?: string, newVersion?: string }> {
         const downloadUrl = ext.downloadUrl;
         const targetZip = path.join(this.tempDir, `${ext.id}.zip`);
         const targetExtractDir = path.join(this.tempDir, ext.id);
@@ -126,7 +126,7 @@ export class MarketplaceService {
                 return { success: false, message: 'Invalid extension ZIP: manifest.json not found' };
             }
 
-            const result = await extensionService.importExtension(sourcePath);
+            const result = await extensionService.importExtension(sourcePath, force);
 
             // Cleanup temp
             fs.rmSync(targetZip, { force: true });
