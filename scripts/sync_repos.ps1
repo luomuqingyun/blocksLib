@@ -39,12 +39,16 @@ function Update-BlocksLib {
 
     Push-Location "blocksLib"
 
-    # 1. 执行自动打包
+    # 1. 执行自动打包 (带询问)
     if (Test-Path "pack_plugins.ps1") {
-        Write-Host ">>> 执行插件打包逻辑..." -ForegroundColor Yellow
-        .\pack_plugins.ps1
-    }
-    else {
+        $shouldPack = Read-Host "是否执行插件打包与市场更新 (Run pack_plugins.ps1)? [Y/n]"
+        if ($shouldPack -eq "" -or $shouldPack -match "^[Yy]$") {
+            Write-Host ">>> 执行插件打包逻辑..." -ForegroundColor Yellow
+            .\pack_plugins.ps1
+        } else {
+            Write-Host ">>> 跳过打包步骤。" -ForegroundColor Gray
+        }
+    } else {
         Write-Warning "未找到 pack_plugins.ps1，跳过打包步骤。"
     }
 
