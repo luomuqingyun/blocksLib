@@ -11,15 +11,20 @@ interface ProjectMetadata {
     buildConfig?: any;
 }
 
+export interface ProjectState {
+    path: string | null;
+    metadata: ProjectMetadata | null;
+    isDirty: boolean;
+    code: string;
+}
+
 interface ProjectOpsProps {
     blocklyRef: React.RefObject<BlocklyWrapperHandle>;
-    currentFilePath: string | null;
-    setCurrentFilePath: React.Dispatch<React.SetStateAction<string | null>>;
-    setProjectMetadata: React.Dispatch<React.SetStateAction<ProjectMetadata | null>>;
-    projectMetadata: ProjectMetadata | null;
-    setCode: (code: string) => void;
-    code: string;
+    projectState: ProjectState;
+    setPath: (path: string | null) => void;
+    setMetadata: (metadata: ProjectMetadata | null) => void;
     setIsDirty: (dirty: boolean) => void;
+    setCode: (code: string) => void;
     setPendingXml: (xml: string | null) => void;
     markWorkspaceDirty: () => void;
     setIsNewProjectOpen: (open: boolean) => void;
@@ -29,18 +34,18 @@ interface ProjectOpsProps {
 export const useProjectOps = (props: ProjectOpsProps) => {
     const {
         blocklyRef,
-        currentFilePath,
-        setCurrentFilePath,
-        setProjectMetadata,
-        projectMetadata,
-        setCode,
-        code,
+        projectState,
+        setPath,
+        setMetadata,
         setIsDirty,
+        setCode,
         setPendingXml,
         markWorkspaceDirty,
         setIsNewProjectOpen,
         setIsSaveAsOpen
     } = props;
+
+    const { path: currentFilePath, metadata: projectMetadata, code, isDirty } = projectState;
 
     const createNewProject = useCallback(async (name: string, boardId: string, parentDir: string) => {
         if (!window.electronAPI) return { success: false, error: 'Electron API not found' };
@@ -55,8 +60,8 @@ export const useProjectOps = (props: ProjectOpsProps) => {
                     setPendingXml(emptyState);
                 }
 
-                setCurrentFilePath(result.path);
-                setProjectMetadata({
+                setPath(result.path);
+                setMetadata({
                     version: '1.0.0',
                     name: name,
                     boardId: boardId,
@@ -72,7 +77,7 @@ export const useProjectOps = (props: ProjectOpsProps) => {
             console.error(e);
             return { success: false, error: String(e) };
         }
-    }, [blocklyRef, setCurrentFilePath, setProjectMetadata, setIsDirty, setPendingXml]);
+    }, [blocklyRef, setPath, setMetadata, setIsDirty, setPendingXml]);
 
     const openProject = useCallback(async () => {
         try {
@@ -105,11 +110,11 @@ export const useProjectOps = (props: ProjectOpsProps) => {
 
                 setPendingXml(xml);
                 setCode(code);
-                setCurrentFilePath(result.projectPath);
-                setProjectMetadata(metadata);
+                setPath(result.projectPath);
+                setMetadata(metadata);
             }
         } catch (e) { console.error(e); }
-    }, [markWorkspaceDirty, setCode, setCurrentFilePath, setIsDirty, setPendingXml, setProjectMetadata]);
+    }, [markWorkspaceDirty, setCode, setPath, setIsDirty, setPendingXml, setMetadata]);
 
     const openProjectByPath = useCallback(async (path: string) => {
         try {
@@ -142,8 +147,8 @@ export const useProjectOps = (props: ProjectOpsProps) => {
 
                 setPendingXml(xml);
                 setCode(code);
-                setCurrentFilePath(result.projectPath);
-                setProjectMetadata(metadata);
+                setPath(result.projectPath);
+                setMetadata(metadata);
                 return { success: true };
             } else if (result.error) {
                 return { success: false, error: result.error };
@@ -153,7 +158,7 @@ export const useProjectOps = (props: ProjectOpsProps) => {
             console.error(e);
             return { success: false, error: String(e) };
         }
-    }, [markWorkspaceDirty, setCode, setCurrentFilePath, setIsDirty, setPendingXml, setProjectMetadata]);
+    }, [markWorkspaceDirty, setCode, setPath, setIsDirty, setPendingXml, setMetadata]);
 
     const saveProject = useCallback(async () => {
         if (!window.electronAPI) return;
@@ -206,12 +211,11 @@ export const useProjectOps = (props: ProjectOpsProps) => {
             const result = await window.electronAPI.copyProject(currentFilePath, parentDir, newName);
             if (!result.success || !result.newPath) return { success: false, error: result.error || 'Copy failed' };
 
-            setCurrentFilePath(result.newPath);
+            setPath(result.newPath);
 
-            setProjectMetadata(prev => {
-                if (!prev) return null;
-                return { ...prev, name: newName, lastModified: Date.now() };
-            });
+            if (projectMetadata) {
+                setMetadata({ ...projectMetadata, name: newName, lastModified: Date.now() });
+            }
 
             const state = blocklyRef.current?.getXml() || '';
             const finalBuildConfig = projectMetadata?.buildConfig;
@@ -229,7 +233,7 @@ export const useProjectOps = (props: ProjectOpsProps) => {
         } catch (e: any) {
             return { success: false, error: e.message };
         }
-    }, [currentFilePath, code, projectMetadata, blocklyRef, setCurrentFilePath, setProjectMetadata, setIsDirty]);
+    }, [currentFilePath, code, projectMetadata, blocklyRef, setPath, setMetadata, setIsDirty]);
 
     return {
         createNewProject,

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
 import { SerialPortInfo } from '../types/serial';
 import { useTranslation } from 'react-i18next';
 import { useSerialMonitor, SerialDataEvent } from '../hooks/serial/useSerialMonitor';
@@ -6,16 +6,15 @@ export type { SerialDataEvent };
 import { useSerialActions } from '../hooks/serial/useSerialActions';
 
 // ============================================================
-// 1. 定义 Context 接口
+// 1. 类型定义 (Types & State)
 // ============================================================
 
-interface SerialContextType {
+export interface SerialState {
     ports: SerialPortInfo[];
     selectedPort: string;
     isConnected: boolean;
     serialInput: string;
     sentHistory: string[];
-
     baudRate: number;
     dataBits: 5 | 6 | 7 | 8;
     stopBits: 1 | 1.5 | 2;
@@ -28,12 +27,106 @@ interface SerialContextType {
     clearInputOnSend: boolean;
     historyDeduplication: boolean;
     inputSpellCheck: boolean;
-
     dtrState: boolean;
     rtsState: boolean;
-    toggleDTR: () => void;
-    toggleRTS: () => void;
+    isConfigLoaded: boolean;
+}
 
+type SerialAction =
+    | { type: 'SET_PORTS'; payload: SerialPortInfo[] }
+    | { type: 'SET_SELECTED_PORT'; payload: string }
+    | { type: 'SET_CONNECTED'; payload: boolean }
+    | { type: 'SET_SERIAL_INPUT'; payload: string }
+    | { type: 'SET_SENT_HISTORY'; payload: string[] }
+    | { type: 'SET_BAUD_RATE'; payload: number }
+    | { type: 'SET_DATA_BITS'; payload: any }
+    | { type: 'SET_STOP_BITS'; payload: any }
+    | { type: 'SET_PARITY'; payload: any }
+    | { type: 'SET_HEX_DISPLAY'; payload: boolean }
+    | { type: 'SET_HEX_SEND'; payload: boolean }
+    | { type: 'SET_LINE_ENDING'; payload: any }
+    | { type: 'SET_ENCODING'; payload: any }
+    | { type: 'SET_ENTER_SENDS'; payload: boolean }
+    | { type: 'SET_CLEAR_INPUT_ON_SEND'; payload: boolean }
+    | { type: 'SET_HISTORY_DEDUPLICATION'; payload: boolean }
+    | { type: 'SET_INPUT_SPELL_CHECK'; payload: boolean }
+    | { type: 'SET_DTR_STATE'; payload: boolean }
+    | { type: 'SET_RTS_STATE'; payload: boolean }
+    | { type: 'SET_CONFIG_LOADED'; payload: boolean }
+    | { type: 'RESTORE_DEFAULTS'; payload: { ports: SerialPortInfo[] } };
+
+const initialState: SerialState = {
+    ports: [],
+    selectedPort: '',
+    isConnected: false,
+    serialInput: '',
+    sentHistory: [],
+    baudRate: 115200,
+    dataBits: 8,
+    stopBits: 1,
+    parity: 'none',
+    hexDisplay: false,
+    hexSend: false,
+    lineEnding: 'lf',
+    encoding: 'utf-8',
+    enterSends: false,
+    clearInputOnSend: false,
+    historyDeduplication: true,
+    inputSpellCheck: false,
+    dtrState: false,
+    rtsState: false,
+    isConfigLoaded: false
+};
+
+const DEFAULT_SETTINGS = {
+    baudRate: 115200,
+    dataBits: 8 as 5 | 6 | 7 | 8,
+    stopBits: 1 as 1 | 1.5 | 2,
+    parity: 'none' as 'none' | 'even' | 'mark' | 'odd' | 'space',
+    hexDisplay: false,
+    hexSend: false,
+    lineEnding: 'lf' as 'none' | 'lf' | 'cr' | 'crlf',
+    encoding: 'utf-8' as 'utf-8' | 'gbk' | 'ascii' | 'latin1',
+    enterSends: false,
+    clearInputOnSend: false,
+    historyDeduplication: true,
+    inputSpellCheck: false
+};
+
+function serialReducer(state: SerialState, action: SerialAction): SerialState {
+    switch (action.type) {
+        case 'SET_PORTS': return { ...state, ports: action.payload };
+        case 'SET_SELECTED_PORT': return { ...state, selectedPort: action.payload };
+        case 'SET_CONNECTED': return { ...state, isConnected: action.payload };
+        case 'SET_SERIAL_INPUT': return { ...state, serialInput: action.payload };
+        case 'SET_SENT_HISTORY': return { ...state, sentHistory: action.payload };
+        case 'SET_BAUD_RATE': return { ...state, baudRate: action.payload };
+        case 'SET_DATA_BITS': return { ...state, dataBits: action.payload };
+        case 'SET_STOP_BITS': return { ...state, stopBits: action.payload };
+        case 'SET_PARITY': return { ...state, parity: action.payload };
+        case 'SET_HEX_DISPLAY': return { ...state, hexDisplay: action.payload };
+        case 'SET_HEX_SEND': return { ...state, hexSend: action.payload };
+        case 'SET_LINE_ENDING': return { ...state, lineEnding: action.payload };
+        case 'SET_ENCODING': return { ...state, encoding: action.payload };
+        case 'SET_ENTER_SENDS': return { ...state, enterSends: action.payload };
+        case 'SET_CLEAR_INPUT_ON_SEND': return { ...state, clearInputOnSend: action.payload };
+        case 'SET_HISTORY_DEDUPLICATION': return { ...state, historyDeduplication: action.payload };
+        case 'SET_INPUT_SPELL_CHECK': return { ...state, inputSpellCheck: action.payload };
+        case 'SET_DTR_STATE': return { ...state, dtrState: action.payload };
+        case 'SET_RTS_STATE': return { ...state, rtsState: action.payload };
+        case 'SET_CONFIG_LOADED': return { ...state, isConfigLoaded: action.payload };
+        case 'RESTORE_DEFAULTS':
+            return {
+                ...state,
+                ...DEFAULT_SETTINGS,
+                selectedPort: action.payload.ports.length > 0 ? action.payload.ports[0].path : ''
+            };
+        default: return state;
+    }
+}
+
+interface SerialContextType extends SerialState {
+    dispatch: React.Dispatch<SerialAction>;
     setSelectedPort: (port: string) => void;
     setSerialInput: (input: string) => void;
     setBaudRate: (rate: number) => void;
@@ -55,6 +148,8 @@ interface SerialContextType {
     sendSerialData: (data?: string) => Promise<'success' | 'error_format' | 'error_range' | 'error_send'>;
     restoreDefaults: () => Promise<void>;
     reloadHistory: () => Promise<void>;
+    toggleDTR: () => void;
+    toggleRTS: () => void;
 
     addSerialListener: (callback: (event: SerialDataEvent) => void) => void;
     removeSerialListener: (callback: (event: SerialDataEvent) => void) => void;
@@ -64,50 +159,13 @@ interface SerialContextType {
 
 const SerialContext = createContext<SerialContextType | undefined>(undefined);
 
-const DEFAULT_SERIAL_SETTINGS = {
-    baudRate: 115200,
-    dataBits: 8,
-    stopBits: 1,
-    parity: 'none',
-    hexDisplay: false,
-    hexSend: false,
-    lineEnding: 'lf' as 'none' | 'lf' | 'cr' | 'crlf',
-    encoding: 'utf-8' as 'utf-8' | 'gbk' | 'ascii' | 'latin1',
-    enterSends: false,
-    clearInputOnSend: false,
-    historyDeduplication: true,
-    inputSpellCheck: false
-};
-
 // ============================================================
 // 2. Provider 组件
 // ============================================================
 
 export const SerialProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { t } = useTranslation();
-
-    const [ports, setPorts] = useState<SerialPortInfo[]>([]);
-    const [selectedPort, setSelectedPort] = useState<string>('');
-    const [isConnected, setIsConnected] = useState(false);
-
-    const [baudRate, setBaudRate] = useState(115200);
-    const [dataBits, setDataBits] = useState<5 | 6 | 7 | 8>(8);
-    const [stopBits, setStopBits] = useState<1 | 1.5 | 2>(1);
-    const [parity, setParity] = useState<'none' | 'even' | 'mark' | 'odd' | 'space'>('none');
-    const [hexDisplay, setHexDisplay] = useState(false);
-    const [hexSend, setHexSend] = useState(false);
-    const [lineEnding, setLineEnding] = useState<'none' | 'lf' | 'cr' | 'crlf'>('lf');
-    const [encoding, setEncoding] = useState<'utf-8' | 'gbk' | 'ascii' | 'latin1'>('utf-8');
-    const [enterSends, setEnterSends] = useState(false);
-    const [clearInputOnSend, setClearInputOnSend] = useState(false);
-    const [historyDeduplication, setHistoryDeduplication] = useState(true);
-    const [inputSpellCheck, setInputSpellCheck] = useState(false);
-
-    const [serialInput, setSerialInput] = useState('');
-    const [sentHistory, setSentHistory] = useState<string[]>([]);
-    const [isConfigLoaded, setIsConfigLoaded] = useState(false);
-    const [dtrState, setDtrState] = useState(false);
-    const [rtsState, setRtsState] = useState(false);
+    const [state, dispatch] = useReducer(serialReducer, initialState);
 
     const listenersRef = useRef<((event: SerialDataEvent) => void)[]>([]);
     const clearListenersRef = useRef<(() => void)[]>([]);
@@ -138,6 +196,28 @@ export const SerialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         clearListenersRef.current = clearListenersRef.current.filter(x => x !== cb);
     }, []);
 
+    // Helper functions for common dispatch actions (to maintain backward compatibility in some places)
+    const setSelectedPort = (port: string) => dispatch({ type: 'SET_SELECTED_PORT', payload: port });
+    const setSerialInput = (input: string) => dispatch({ type: 'SET_SERIAL_INPUT', payload: input });
+    const setIsConnected = (connected: boolean) => dispatch({ type: 'SET_CONNECTED', payload: connected });
+    const setIsConfigLoaded = (loaded: boolean) => dispatch({ type: 'SET_CONFIG_LOADED', payload: loaded });
+    const setBaudRate = (rate: number) => dispatch({ type: 'SET_BAUD_RATE', payload: rate });
+    const setDataBits = (bits: any) => dispatch({ type: 'SET_DATA_BITS', payload: bits });
+    const setStopBits = (bits: any) => dispatch({ type: 'SET_STOP_BITS', payload: bits });
+    const setParity = (parity: any) => dispatch({ type: 'SET_PARITY', payload: parity });
+    const setHexDisplay = (enabled: boolean) => dispatch({ type: 'SET_HEX_DISPLAY', payload: enabled });
+    const setHexSend = (enabled: boolean) => dispatch({ type: 'SET_HEX_SEND', payload: enabled });
+    const setLineEnding = (ending: any) => dispatch({ type: 'SET_LINE_ENDING', payload: ending });
+    const setEncoding = (encoding: any) => dispatch({ type: 'SET_ENCODING', payload: encoding });
+    const setEnterSends = (enabled: boolean) => dispatch({ type: 'SET_ENTER_SENDS', payload: enabled });
+    const setClearInputOnSend = (enabled: boolean) => dispatch({ type: 'SET_CLEAR_INPUT_ON_SEND', payload: enabled });
+    const setHistoryDeduplication = (enabled: boolean) => dispatch({ type: 'SET_HISTORY_DEDUPLICATION', payload: enabled });
+    const setInputSpellCheck = (enabled: boolean) => dispatch({ type: 'SET_INPUT_SPELL_CHECK', payload: enabled });
+    const setSentHistory = (history: string[]) => dispatch({ type: 'SET_SENT_HISTORY', payload: history });
+    const setPorts = (ports: any[]) => dispatch({ type: 'SET_PORTS', payload: ports });
+    const setDtrState = (state: boolean) => dispatch({ type: 'SET_DTR_STATE', payload: state });
+    const setRtsState = (state: boolean) => dispatch({ type: 'SET_RTS_STATE', payload: state });
+
     // 引入业务逻辑 Hooks
     useSerialMonitor({
         setIsConnected, setSelectedPort, broadcastEvent, setIsConfigLoaded,
@@ -147,9 +227,7 @@ export const SerialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
 
     const actions = useSerialActions({
-        isConnected, selectedPort, baudRate, dataBits, stopBits, parity,
-        hexSend, lineEnding, encoding, clearInputOnSend, historyDeduplication,
-        sentHistory, serialInput, dtrState, rtsState,
+        ...state,
         setSerialInput, setSentHistory, setDtrState, setRtsState,
         broadcastEvent, broadcastClear
     });
@@ -158,45 +236,38 @@ export const SerialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // 配置保存逻辑
     useEffect(() => {
-        if (!isConfigLoaded || !window.electronAPI) return;
+        if (!state.isConfigLoaded || !window.electronAPI) return;
         const settings = {
-            baudRate, dataBits, stopBits, parity, hexDisplay, hexSend, lineEnding, encoding,
-            enterSends, clearInputOnSend, historyDeduplication, inputSpellCheck,
-            lastPort: selectedPort
+            baudRate: state.baudRate,
+            dataBits: state.dataBits,
+            stopBits: state.stopBits,
+            parity: state.parity,
+            hexDisplay: state.hexDisplay,
+            hexSend: state.hexSend,
+            lineEnding: state.lineEnding,
+            encoding: state.encoding,
+            enterSends: state.enterSends,
+            clearInputOnSend: state.clearInputOnSend,
+            historyDeduplication: state.historyDeduplication,
+            inputSpellCheck: state.inputSpellCheck,
+            lastPort: state.selectedPort
         };
         window.electronAPI.setConfig('serialSettings', settings);
-    }, [baudRate, dataBits, stopBits, parity, hexDisplay, hexSend, lineEnding, encoding, enterSends, clearInputOnSend, historyDeduplication, inputSpellCheck, selectedPort, isConfigLoaded]);
-
-    // 历史记录去重逻辑
-    useEffect(() => {
-        if (historyDeduplication && sentHistory.length > 0 && window.electronAPI) {
-            const unique = [...new Set([...sentHistory].reverse())].reverse();
-            if (unique.length !== sentHistory.length) {
-                setSentHistory(unique);
-                window.electronAPI.updateHistory(unique);
-            }
-        }
-    }, [historyDeduplication, sentHistory, setSentHistory]);
+    }, [state.baudRate, state.dataBits, state.stopBits, state.parity, state.hexDisplay, state.hexSend, state.lineEnding, state.encoding, state.enterSends, state.clearInputOnSend, state.historyDeduplication, state.inputSpellCheck, state.selectedPort, state.isConfigLoaded]);
 
     const refreshPorts = async () => {
         if (window.electronAPI) {
             const list = await window.electronAPI.listPorts();
             setPorts(list);
-            if (list.length > 0 && !selectedPort) setSelectedPort(list[0].path);
+            if (list.length > 0 && !state.selectedPort) setSelectedPort(list[0].path);
         }
     };
 
     const restoreDefaults = async () => {
         if (!window.electronAPI) return;
         if (confirm(t('serial.confirmRestoreDefaults'))) {
-            if (isConnected) await window.electronAPI.closeSerial();
-            setBaudRate(DEFAULT_SERIAL_SETTINGS.baudRate);
-            setDataBits(8); setStopBits(1); setParity('none');
-            setHexDisplay(false); setHexSend(false);
-            setLineEnding('lf'); setEncoding('utf-8');
-            setHistoryDeduplication(true); setInputSpellCheck(false);
-            if (ports.length > 0) setSelectedPort(ports[0].path);
-            else setSelectedPort('');
+            if (state.isConnected) await window.electronAPI.closeSerial();
+            dispatch({ type: 'RESTORE_DEFAULTS', payload: { ports: state.ports } });
         }
     };
 
@@ -208,12 +279,11 @@ export const SerialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     const value = {
-        ports, selectedPort, isConnected, serialInput, sentHistory,
-        baudRate, dataBits, stopBits, parity, hexDisplay, hexSend, lineEnding, encoding, enterSends, clearInputOnSend, historyDeduplication, inputSpellCheck,
-        dtrState, rtsState, toggleDTR, toggleRTS,
+        ...state,
+        dispatch,
         setSelectedPort, setSerialInput, setBaudRate, setDataBits, setStopBits,
         setParity, setHexDisplay, setHexSend, setLineEnding, setEncoding, setEnterSends, setClearInputOnSend, setHistoryDeduplication, setInputSpellCheck,
-        refreshPorts, toggleSerial, clearSerial, sendSerialData, restoreDefaults, reloadHistory,
+        refreshPorts, toggleSerial, clearSerial, sendSerialData, restoreDefaults, reloadHistory, toggleDTR, toggleRTS,
         addSerialListener, removeSerialListener, addClearListener, removeClearListener
     };
 

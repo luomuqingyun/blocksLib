@@ -82,10 +82,18 @@ src/modules/extensions/ (推荐新建此目录用于存放扩展)
 
 | 模块 | 核心 Hook | 职责 |
 | :--- | :--- | :--- |
-| **文件系统** | `useProjectOps` | 处理项目创建、打开、保存、元数据同步。 |
+| **文件系统** | `useProjectOps` | 处理项目创建、打开、保存、元数据同步。接收分组后的 `ProjectState` 对象。 |
 | | `useAutoBackup` | 处理静默自动保存逻辑（防抖时间 3000ms）。 |
-| **串口通讯** | `useSerialMonitor` | 统一订阅和分发后端 IPC 串口事件（状态、数据）。 |
+| **串口通讯** | `useSerialMonitor` | 统一订阅和分发后端 IPC 串口事件。在 `SerialContext` 中结合 `useReducer` 管理复杂状态。 |
 | | `useSerialActions` | 封装所有底层的串口控制指令。 |
+| **UI/Toolbox** | `useToolbox` | 核心解耦 Hook。封装了基于当前型号和语言的工具箱分类加载、过滤与刷新逻辑。 |
+
+### 2.2 状态管理进化：useReducer 模式
+对于具有大量关联参数的模块（如串口设置），我们采用了 `useReducer` 替代分散的 `useState`。
+
+**优势**:
+- **原子性**: 确保波特率、校验位等多个关联参数在同一个 Action 中更新，防止由于渲染异步导致的中间状态不一致。
+- **可维护性**: 所有的状态修改逻辑都集中在 Reducer 函数中，易于追踪和调试。
 
 ### 2.2 代码生成引擎 (CodeBuilder)
 为了解决复杂的库依赖和 Setup/Loop 初始化冲突，项目引入了 `CodeBuilder` 机制。

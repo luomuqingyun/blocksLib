@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { BlocklyWrapperHandle } from '../components/BlocklyWrapper';
 import { BoardRegistry } from '../registries/BoardRegistry';
 import { useUI } from './UIContext';
 import { ProjectBuildConfig } from '../types/board';
 
 // Import refactored hooks
-import { useProjectOps } from '../hooks/project/useProjectOps';
+import { useProjectOps, ProjectState } from '../hooks/project/useProjectOps';
 import { useAutoBackup } from '../hooks/project/useAutoBackup';
 import { useSavePrompt } from '../hooks/useSavePrompt';
 
@@ -82,6 +82,14 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setWorkspaceVersion(v => v + 1);
     }, []);
 
+    // Memoize the state object to prevent unnecessary re-renders of consumers
+    const projectState: ProjectState = useMemo(() => ({
+        path: currentFilePath,
+        metadata: projectMetadata as any,
+        isDirty,
+        code
+    }), [currentFilePath, projectMetadata, isDirty, code]);
+
     // 1. 初始化 (Initialize)
     useEffect(() => {
         if (window.electronAPI) {
@@ -122,13 +130,11 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const projectOps = useProjectOps({
         blocklyRef,
-        currentFilePath,
-        setCurrentFilePath,
-        setProjectMetadata,
-        projectMetadata: projectMetadata as any,
-        setCode,
-        code,
+        projectState,
+        setPath: setCurrentFilePath,
+        setMetadata: setProjectMetadata as any,
         setIsDirty,
+        setCode,
         setPendingXml,
         markWorkspaceDirty,
         setIsNewProjectOpen,

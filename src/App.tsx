@@ -18,84 +18,20 @@ import { ExtensionRegistry } from './registries/ExtensionRegistry';
 import { BoardRegistry } from './registries/BoardRegistry';
 import { RightPanel } from './components/Layout/RightPanel';
 import { DiagnosticOverlay } from './components/DiagnosticOverlay';
+import { useToolbox } from './hooks/useToolbox';
 
 function AppContent() {
   const { isConnected } = useSerial();
-  const { blocklyRef, code, setCode, projectMetadata, pendingXml, clearPendingXml, setIsDirty, markWorkspaceDirty, currentFilePath } = useFileSystem();
-  const { selectedBoard, setSelectedBoard } = useBuild();
+  const { blocklyRef, code, setCode, pendingXml, clearPendingXml, markWorkspaceDirty, currentFilePath } = useFileSystem();
+  const { selectedBoard } = useBuild();
   const {
     rightPanelWidth, setRightPanelWidth,
     isManualEditMode,
     activeTab, setActiveTab
   } = useUI();
 
-  // Removed manual useEffect for pendingXml. Handled by BlocklyWrapper prop.
-
-  // Local state for toolbox
-  const [toolboxConfig, setToolboxConfig] = useState<any>(null);
-
-  // Sync Toolbox when board changes, Language changes, or Registry updates
-  const { i18n } = useTranslation();
-
-  const refreshToolbox = async () => {
-    if (selectedBoard) {
-      // Get base config from Registry
-      const baseConfig = BoardRegistry.getToolboxConfig(selectedBoard);
-
-      // Get user config for visibility
-      let hiddenCategories: string[] = [];
-      if (window.electronAPI) {
-        const userConfig = await window.electronAPI.getConfig();
-        hiddenCategories = userConfig.toolbox?.hiddenCategories || [];
-      }
-
-      if (hiddenCategories.length === 0) {
-        setToolboxConfig(baseConfig);
-        return;
-      }
-
-      // Filter contents
-      // We assume baseConfig is { kind: 'categoryToolbox', contents: [...] }
-      const newContents = (baseConfig.contents || []).filter((item: any) => {
-        // If it's a category, check if its ID (or Name which we use as ID in settings) is hidden
-        if (item.kind === 'category') {
-          // The settings uses the 'name' property (e.g. %{BKY_CAT_LOGIC}) or 'id' property as the key
-          const key = item.id || item.name;
-          if (key && hiddenCategories.includes(key)) {
-            return false;
-          }
-        }
-        return true;
-      });
-
-      console.log(`[App] 刷新工具箱 (Refresh Toolbox) - Board: ${selectedBoard}, Hidden: ${hiddenCategories.length}`);
-      setToolboxConfig({ ...baseConfig, contents: newContents });
-    }
-  };
-
-  useEffect(() => {
-    refreshToolbox();
-  }, [selectedBoard, i18n.language]);
-
-  // Subscribe to dynamic registry updates (e.g. extension loaded)
-  useEffect(() => {
-    const unsubscribe = BoardRegistry.subscribe(() => {
-      console.log('[App] BoardRegistry updated, refreshing toolbox...');
-      refreshToolbox();
-    });
-
-    // Also listen for custom config update events (dispatched by Settings)
-    const handleConfigUpdate = () => {
-      console.log('[App] Config updated, refreshing toolbox...');
-      refreshToolbox();
-    };
-    window.addEventListener('embedblocks:config-updated', handleConfigUpdate);
-
-    return () => {
-      unsubscribe();
-      window.removeEventListener('embedblocks:config-updated', handleConfigUpdate);
-    };
-  }, [selectedBoard]);
+  // Custom hook for toolbox management
+  const toolboxConfig = useToolbox(selectedBoard);
 
   // Auto-open Serial Monitor when connected
   useEffect(() => {

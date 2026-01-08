@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-01-08
+
+### 架构深度优化与解耦 (Architectural Optimization & Decoupling)
+- **Toolbox 逻辑提取 (useToolbox Hook)**:
+    - **逻辑解耦**: 将原本集成在 `App.tsx` 中的工具箱配置获取、多语言同步及用户自定义分类过滤逻辑完整提取至 `src/hooks/useToolbox.ts`。
+    - **性能优化**: 实现了基于 `BoardRegistry` 事件订阅的精准刷新，避免了 `App.tsx` 频繁的重渲染，显著降低了顶层组件的复杂度。
+- **SerialContext 状态流转重构 (useReducer Pattern)**:
+    - **数据模型整合**: 弃用了 15 个零散的 `useState`，改为使用统一的 `SerialState` 对象和 `useReducer` 进行管理。
+    - **原子化操作**: 通过 Action 分发（Dispatch）确保了串口设置（波特率、编码、DTR/RTS 等）修改的原子性和数据一致性。
+    - **接口向后兼容**: 在 Provider 层保留了原有 Setter 函数的封装，确保了现有 UI 组件无需修改即可无缝迁移。
+- **FileSystemContext 状态分组 (State Grouping)**:
+    - **结构优化**: 引入 `ProjectState` 接口，将路径、元数据、脏状态及代码内容进行逻辑分组。
+    - **Prop Drilling 缩减**: 重构了 `useProjectOps`、`useAutoBackup` 等核心逻辑 Hook，使其接受分组后的状态对象，减少了传递的参数数量，提升了代码的可读性和维护性。
+    - **渲染防御**: 使用 `useMemo` 对项目状态进行缓存，仅在核心数据变化时通知下游 Hook，有效防止了由于文件操作引起的连锁渲染性能问题。
+- **类型安全增强 (Type Safety Upgrade)**:
+    - 修复了 `SerialContext` 与 `useProjectOps` 中的多处 TypeScript 类型不匹配及非功能性 Setter 调用的警告。
+    - 统一了串口配置参数（dataBits, stopBits, parity）的联合类型约束。
+
 ## 2026-01-07
 
 ### 全量国际化治理与插件多语言系统 (Holistic I18n & Plugin Translation)
