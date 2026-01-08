@@ -69,6 +69,13 @@ interface ElectronAPI {
   readHelpFile: (type: 'user' | 'plugin' | 'about') => Promise<{ content: string; path: string }>;
   openExternal: (path: string) => Promise<boolean>;
 
+  // --- Marketplace ---
+  marketplaceListUrls: () => Promise<string[]>;
+  marketplaceAddUrl: (url: string) => Promise<boolean>;
+  marketplaceRemoveUrl: (url: string) => Promise<boolean>;
+  marketplaceFetchRemote: (url: string) => Promise<any[]>;
+  marketplaceInstall: (ext: any) => Promise<{ success: boolean; message: string }>;
+
   // --- Menu ---
   onMenuAction: (callback: (action: string, arg?: any) => void) => () => void;
 }

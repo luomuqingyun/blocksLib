@@ -9,7 +9,7 @@ import * as Blockly from 'blockly';
 export const initComplexBlock = () => {
     registerBlock('complex_sensor_read', {
         init: function () {
-            this.appendDummyInput().appendField("Read Complex Data");
+            this.appendDummyInput().appendField(Blockly.Msg.ARD_EXAMPLE_COMPLEX_READ);
             this.setOutput(true, "Number");
             this.setColour(200);
         }

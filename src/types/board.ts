@@ -1,5 +1,11 @@
+export interface I18nString {
+    zh: string;
+    en: string;
+    [key: string]: string;
+}
+
 export interface PinDefinition {
-    label: string;
+    label: string | I18nString;
     value: string;
 }
 
@@ -53,7 +59,7 @@ export interface ProjectBuildConfig {
 
 export interface Board {
     id: string;
-    name: string;
+    name: string | I18nString;
     mcu: string;
     freq: string;
     flash: string;
@@ -73,13 +79,13 @@ export interface Board {
 
 export interface BoardSeries {
     id: string;
-    name: string;
+    name: string | I18nString;
     boards: Board[];
 }
 
 export interface BoardFamily {
-    id: 'arduino' | 'stm32' | 'esp32';
-    name: string;
+    id: 'arduino' | 'stm32' | 'esp32' | 'custom';
+    name: string | I18nString;
     series: BoardSeries[];
 }
 

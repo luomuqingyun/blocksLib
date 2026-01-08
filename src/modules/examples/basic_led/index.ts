@@ -12,14 +12,14 @@ const init = () => {
     registerBlock('example_led_control', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Control LED on Pin")
+                .appendField(Blockly.Msg.ARD_EXAMPLE_LED_CONTROL.replace('%1', '').replace('%2', ''))
                 .appendField(new Blockly.FieldTextInput("13"), "PIN")
-                .appendField("to")
+                .appendField(Blockly.Msg.ARD_IO_TO)
                 .appendField(new Blockly.FieldDropdown([["HIGH", "HIGH"], ["LOW", "LOW"]]), "STATE");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(230); // Blue
-            this.setTooltip("Set a digital pin to HIGH or LOW");
+            this.setTooltip(Blockly.Msg.ARD_EXAMPLE_LED_TOOLTIP);
             this.setHelpUrl("");
         }
     }, (block: any) => {
@@ -33,7 +33,7 @@ const init = () => {
 
 export const ExampleLedModule: BlockModule = {
     id: 'examples.led',
-    name: 'Example: LED Control',
+    name: 'examples.led_name', // Use key for registry to potentially handle (or we just manually handle if needed)
     category: 'IO',
     init: init
 };

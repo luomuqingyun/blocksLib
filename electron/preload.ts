@@ -102,6 +102,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   readHelpFile: (type: 'user' | 'plugin') => ipcRenderer.invoke('help:read-file', type),
   openExternal: (path: string) => ipcRenderer.invoke('shell:open', path),
 
+  // --- Marketplace ---
+  marketplaceListUrls: () => ipcRenderer.invoke('marketplace:list-urls'),
+  marketplaceAddUrl: (url: string) => ipcRenderer.invoke('marketplace:add-url', url),
+  marketplaceRemoveUrl: (url: string) => ipcRenderer.invoke('marketplace:remove-url', url),
+  marketplaceFetchRemote: (url: string) => ipcRenderer.invoke('marketplace:fetch-remote', url),
+  marketplaceInstall: (ext: any) => ipcRenderer.invoke('marketplace:install', ext),
+
   // Menu
   onMenuAction: (callback: (action: string, arg?: any) => void) => {
     const subscription = (_: any, action: string, arg?: any) => callback(action, arg);

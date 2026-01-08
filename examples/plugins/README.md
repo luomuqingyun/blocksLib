@@ -42,4 +42,4 @@
 ## 开发文档
 
 详细的开发指南请参考文档：
-👉 [docs/plugin_system.md](../../docs/plugin_system.md)
+👉 [docs/插件系统开发手册.md](../../docs/插件系统开发手册.md)

@@ -12,6 +12,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Save, RotateCcw } from 'lucide-react';
+import { BaseModal } from '../BaseModal';
 import { BoardRegistry } from '../../registries/BoardRegistry';
 import { useUI } from '../../contexts/UIContext';
 import { useFileSystem } from '../../contexts/FileSystemContext';
@@ -124,7 +125,7 @@ export const ProjectSettingsModal: React.FC = () => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <BaseModal isOpen={isProjectSettingsOpen} onClose={() => setIsProjectSettingsOpen(false)}>
             <div className="bg-[#1e1e1e] w-[700px] h-[500px] rounded-lg shadow-2xl border border-[#333] flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[#333] bg-[#252526]">
@@ -356,6 +357,6 @@ export const ProjectSettingsModal: React.FC = () => {
                     </button>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     );
 };

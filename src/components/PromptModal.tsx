@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { BaseModal } from './BaseModal';
 import * as Blockly from 'blockly';
 
 interface PromptModalProps {
@@ -20,7 +21,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, title, default
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000] backdrop-blur-sm">
+    <BaseModal isOpen={isOpen} onClose={onClose}>
       <div className="bg-white rounded-lg shadow-xl w-96 p-6 transform transition-all scale-100">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
@@ -36,7 +37,6 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, title, default
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') onConfirm(value);
-            if (e.key === 'Escape') onClose();
           }}
           autoFocus
         />
@@ -56,6 +56,6 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, title, default
           </button>
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 };

@@ -1255,6 +1255,13 @@ const CustomMsgs = {
         ARD_GROVE_DIO: "Dio Pin",
         ARD_GROVE_COUNT: "Count",
         ARD_GROVE_INDEX: "Index",
+        // Examples
+        ARD_EXAMPLE_LED_CONTROL: "Control LED on Pin %1 to %2",
+        ARD_EXAMPLE_LED_TOOLTIP: "Set a digital pin to HIGH or LOW",
+        ARD_EXAMPLE_DHT_INIT: "Initialize DHT Sensor on Pin %1 Type %2",
+        ARD_EXAMPLE_DHT_TOOLTIP: "Setup DHT sensor",
+        ARD_EXAMPLE_DHT_READ_TEMP: "Read Temperature (C)",
+        ARD_EXAMPLE_COMPLEX_READ: "Read Complex Data",
 
 
 
@@ -2483,6 +2490,13 @@ const CustomMsgs = {
         ARD_GROVE_DIO: "Dio 引脚",
         ARD_GROVE_COUNT: "数量",
         ARD_GROVE_INDEX: "索引",
+        // 示例
+        ARD_EXAMPLE_LED_CONTROL: "控制引脚 %1 的 LED 为 %2",
+        ARD_EXAMPLE_LED_TOOLTIP: "设置数字引脚为高电平或低电平",
+        ARD_EXAMPLE_DHT_INIT: "初始化 DHT 传感器 引脚 %1 类型 %2",
+        ARD_EXAMPLE_DHT_TOOLTIP: "设置 DHT 传感器",
+        ARD_EXAMPLE_DHT_READ_TEMP: "读取温度 (C)",
+        ARD_EXAMPLE_COMPLEX_READ: "读取复杂数据",
     }
 };
 

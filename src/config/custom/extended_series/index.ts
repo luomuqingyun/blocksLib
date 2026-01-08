@@ -34,7 +34,7 @@ for (const path in modules) {
 
 export const MY_CUSTOM_SERIES: BoardSeries = {
     id: 'my_custom_series',
-    name: 'My Custom Extended Series',
+    name: { zh: '我的自定义扩展系列', en: 'My Custom Extended Series' },
     boards: autoLoadedBoards
 };
 

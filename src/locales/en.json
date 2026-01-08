@@ -4,7 +4,9 @@
         "save": "Save",
         "cancel": "Cancel",
         "open": "Open",
-        "advanced": "Advanced"
+        "advanced": "Advanced",
+        "add": "Add",
+        "confirm": "Confirm"
     },
     "help": {
         "userGuide": "User Guide",
@@ -28,7 +30,14 @@
         "libs": "Libs",
         "version": "Version",
         "author": "Author",
-        "uninstall": "Uninstall"
+        "uninstall": "Uninstall",
+        "marketplaceSources": "Marketplace Sources",
+        "placeholderUrl": "Marketplace JSON URL or GitHub Repo",
+        "searching": "Searching for extensions...",
+        "noExtensionsFound": "No extensions found in the registered marketplaces.",
+        "installed": "Installed",
+        "install": "Install",
+        "installedBy": "by {{author}}"
     },
     "search": {
         "workspace": "Search Workspace...",
@@ -246,6 +255,11 @@
         "ai": "Artificial Intelligence",
         "data": "Data Processing",
         "diagnostics": "Diagnostics"
+    },
+    "examples": {
+        "led_name": "Basic LED (Example)",
+        "dht_name": "Advanced DHT (Example)",
+        "complex_name": "Complex Module (Example)"
     },
     "welcome": {
         "subtitle": "Visual Embedded Programming for Everyone",

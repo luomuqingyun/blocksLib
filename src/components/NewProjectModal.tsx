@@ -14,9 +14,11 @@ import { useFileSystem } from '../contexts/FileSystemContext';
 import { useUI } from '../contexts/UIContext';
 import { BoardRegistry } from '../registries/BoardRegistry';
 import { useBoards } from '../hooks/useBoards';
+import { BaseModal } from './BaseModal';
+import { getI18nString } from '../utils/i18n_utils';
 
 export const NewProjectModal: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const {
         isNewProjectOpen, setIsNewProjectOpen,
         isSaveAsOpen, setIsSaveAsOpen,
@@ -157,7 +159,7 @@ export const NewProjectModal: React.FC = () => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[10000] pointer-events-none">
+        <BaseModal isOpen={isOpen} onClose={handleClose}>
             <div
                 style={{ left: pos.x, top: pos.y }}
                 className="absolute bg-[#1e1e1e] w-[500px] rounded-lg shadow-2xl border border-slate-700 flex flex-col overflow-hidden pointer-events-auto"
@@ -237,7 +239,7 @@ export const NewProjectModal: React.FC = () => {
                             className={`w-full bg-[#333] border border-slate-600 rounded px-3 py-2 text-slate-200 text-sm focus:border-blue-500 outline-none appearance-none ${isSaveAs ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {boards.map(board => (
-                                <option key={board.id} value={board.id}>{board.name}</option>
+                                <option key={board.id} value={board.id}>{getI18nString(board.name, i18n.language)}</option>
                             ))}
                         </select>
                         {!isSaveAs ? (
@@ -274,6 +276,6 @@ export const NewProjectModal: React.FC = () => {
                     </button>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     );
 };

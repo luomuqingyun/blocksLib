@@ -8,10 +8,11 @@
 // ----------------------------------------------------------------------------
 
 import React, { useState, useEffect } from 'react';
-import { X, Package, Puzzle, Download, Box, Layers, Cpu, Code, Trash2 } from 'lucide-react';
+import { X, Package, Puzzle, Download, Box, Layers, Cpu, Code, Trash2, Plus, Link as LinkIcon, Loader2, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LoadedExtension, ExtensionRegistry } from '../registries/ExtensionRegistry';
 import { BoardRegistry } from '../registries/BoardRegistry';
+import { BaseModal } from './BaseModal';
 
 // --- 组件属性类型 ---
 interface ExtensionsModalProps {
@@ -24,16 +25,88 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
     const [extensions, setExtensions] = useState<LoadedExtension[]>([]);
     const [activeTab, setActiveTab] = useState<'installed' | 'marketplace'>('installed');
 
+    // Marketplace State
+    const [marketplaces, setMarketplaces] = useState<string[]>([]);
+    const [remoteExtensions, setRemoteExtensions] = useState<any[]>([]);
+    const [isLoadingMarketplace, setIsLoadingMarketplace] = useState(false);
+    const [isAddingMarketplace, setIsAddingMarketplace] = useState(false);
+    const [newMarketplaceUrl, setNewMarketplaceUrl] = useState('');
+
     useEffect(() => {
         if (isOpen) {
             loadExtensions();
+            if (activeTab === 'marketplace') {
+                loadMarketplaces();
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, activeTab]);
 
     const loadExtensions = async () => {
         if (window.electronAPI) {
             const exts = await window.electronAPI.extensionsList();
             setExtensions(exts);
+        }
+    };
+
+    const loadMarketplaces = async () => {
+        if (window.electronAPI) {
+            try {
+                const urls = await window.electronAPI.marketplaceListUrls();
+                setMarketplaces(urls);
+
+                setIsLoadingMarketplace(true);
+                const results = await Promise.all(urls.map(async (url) => {
+                    try {
+                        return await window.electronAPI.marketplaceFetchRemote(url);
+                    } catch (e) {
+                        console.error(`Failed to fetch from ${url}`, e);
+                        return [];
+                    }
+                }));
+                setRemoteExtensions(results.flat());
+            } catch (e) {
+                console.error("Failed to load marketplaces", e);
+            } finally {
+                setIsLoadingMarketplace(false);
+            }
+        }
+    };
+
+    const handleAddMarketplace = async () => {
+        if (!newMarketplaceUrl.trim()) return;
+        if (window.electronAPI) {
+            await window.electronAPI.marketplaceAddUrl(newMarketplaceUrl.trim());
+            setNewMarketplaceUrl('');
+            setIsAddingMarketplace(false);
+            loadMarketplaces();
+        }
+    };
+
+    const handleRemoveMarketplace = async (url: string) => {
+        if (window.electronAPI) {
+            await window.electronAPI.marketplaceRemoveUrl(url);
+            loadMarketplaces();
+        }
+    };
+
+    const handleInstall = async (ext: any) => {
+        if (window.electronAPI) {
+            setIsLoadingMarketplace(true);
+            try {
+                const result = await window.electronAPI.marketplaceInstall(ext);
+                if (result.success) {
+                    alert(result.message);
+                    await ExtensionRegistry.reload();
+                    loadExtensions();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error("Installation failed:", error);
+                alert("Installation failed: " + error);
+            } finally {
+                setIsLoadingMarketplace(false);
+            }
         }
     };
 
@@ -63,7 +136,7 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-[10005] flex items-center justify-center backdrop-blur-sm">
+        <BaseModal isOpen={isOpen} onClose={onClose}>
             <div className="bg-[#1e1e1e] w-[900px] h-[700px] rounded-lg shadow-2xl border border-slate-700 flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="h-14 bg-[#252526] border-b border-slate-700 flex items-center justify-between px-4 select-none">
@@ -119,28 +192,116 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                             )}
                         </div>
                     ) : (
-                        <div className="text-center py-10 text-slate-500">
-                            <Download size={48} className="mx-auto mb-4 opacity-50" />
-                            <h3 className="text-lg font-medium text-slate-300 mb-2">{t('extensions.marketplace')}</h3>
-                            <p className="max-w-md mx-auto mb-6">
-                                {t('extensions.hintMore')}
-                                <br />
-                                <a href="https://github.com/luomuqingyun/blocksLib" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline">
-                                    https://github.com/luomuqingyun/blocksLib
-                                </a>
-                            </p>
-                            <div className="bg-[#252526] p-4 rounded-lg max-w-sm mx-auto text-left text-sm border border-slate-700">
-                                <p className="font-bold text-slate-300 mb-2">{t('extensions.hintTitle')}</p>
-                                <ol className="list-decimal list-inside space-y-1 text-slate-400">
-                                    <li>{t('extensions.hint1')}</li>
-                                    <li>{t('extensions.hint2')}</li>
-                                </ol>
+                        <div className="space-y-6">
+                            {/* Marketplace Management */}
+                            <div className="bg-[#252526] p-4 rounded-lg border border-slate-700">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="flex items-center gap-2 text-slate-300 font-medium">
+                                        <Globe size={16} />
+                                        <span>{t('extensions.marketplaceSources')}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsAddingMarketplace(!isAddingMarketplace)}
+                                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                                    >
+                                        <Plus size={14} /> {t('common.add')}
+                                    </button>
+                                </div>
+
+                                {isAddingMarketplace && (
+                                    <div className="flex gap-2 mb-4">
+                                        <input
+                                            type="text"
+                                            placeholder={t('extensions.placeholderUrl')}
+                                            className="flex-1 bg-[#1e1e1e] border border-slate-600 rounded px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                                            value={newMarketplaceUrl}
+                                            onChange={(e) => setNewMarketplaceUrl(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleAddMarketplace()}
+                                            autoFocus
+                                        />
+                                        <button
+                                            onClick={handleAddMarketplace}
+                                            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded text-sm transition-colors"
+                                        >
+                                            {t('common.confirm')}
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    {marketplaces.map(url => (
+                                        <div key={url} className="flex justify-between items-center group bg-[#1e1e1e] p-2 rounded border border-slate-800">
+                                            <div className="flex items-center gap-2 overflow-hidden">
+                                                <LinkIcon size={12} className="text-slate-500 shrink-0" />
+                                                <span className="text-xs text-slate-400 truncate">{url}</span>
+                                            </div>
+                                            <button
+                                                onClick={() => handleRemoveMarketplace(url)}
+                                                className="text-slate-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Remote Extension List */}
+                            <div className="space-y-4">
+                                {isLoadingMarketplace ? (
+                                    <div className="text-center py-20 text-slate-500">
+                                        <Loader2 size={32} className="mx-auto mb-4 animate-spin opacity-50" />
+                                        <p>{t('extensions.searching')}</p>
+                                    </div>
+                                ) : remoteExtensions.length === 0 ? (
+                                    <div className="text-center py-10 text-slate-500">
+                                        <Download size={48} className="mx-auto mb-4 opacity-50" />
+                                        <h3 className="text-lg font-medium text-slate-300 mb-2">{t('extensions.marketplace')}</h3>
+                                        <p className="max-w-md mx-auto mb-6">
+                                            {t('extensions.noExtensionsFound')}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    remoteExtensions.map((ext) => {
+                                        const isInstalled = extensions.some(le => le.manifest.id === ext.id);
+                                        return (
+                                            <div key={ext.id} className="bg-[#252526] border border-slate-700 rounded-lg p-4 flex gap-4 hover:border-slate-600 transition-colors">
+                                                <div className="w-16 h-16 bg-[#333] rounded-md flex items-center justify-center text-slate-500 shrink-0 overflow-hidden">
+                                                    {ext.icon ? (
+                                                        <img src={ext.icon} alt={ext.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Puzzle size={28} />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h3 className="text-lg font-bold text-slate-200">{ext.name}</h3>
+                                                            <p className="text-xs text-slate-500 font-mono mb-1">{ext.id} v{ext.version} {ext.author && t('extensions.installedBy', { author: ext.author })}</p>
+                                                        </div>
+                                                        <button
+                                                            disabled={isInstalled}
+                                                            onClick={() => handleInstall(ext)}
+                                                            className={`text-xs px-4 py-1.5 rounded transition-colors flex items-center gap-1 border ${isInstalled
+                                                                ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed'
+                                                                : 'bg-blue-600 hover:bg-blue-500 text-white border-blue-500'
+                                                                }`}
+                                                        >
+                                                            {isInstalled ? t('extensions.installed') : t('extensions.install')}
+                                                        </button>
+                                                    </div>
+                                                    <p className="text-sm text-slate-300 mt-2 line-clamp-2">{ext.description}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
                         </div>
                     )}
                 </div>
             </div>
-        </div>
+        </BaseModal>
     );
 };
 

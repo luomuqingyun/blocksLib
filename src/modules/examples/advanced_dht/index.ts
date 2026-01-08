@@ -13,15 +13,15 @@ const init = () => {
     registerBlock('example_dht_init', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Initialize DHT Sensor")
-                .appendField("Pin")
+                .appendField(Blockly.Msg.ARD_EXAMPLE_DHT_INIT.replace(' %1', '').replace(' %2', ''))
+                .appendField(Blockly.Msg.ARD_SENSOR_PIN)
                 .appendField(new Blockly.FieldTextInput("2"), "PIN")
-                .appendField("Type")
+                .appendField(Blockly.Msg.ARD_SENSOR_TYPE)
                 .appendField(new Blockly.FieldDropdown([["DHT11", "DHT11"], ["DHT22", "DHT22"]]), "TYPE");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(120); // Green
-            this.setTooltip("Setup DHT sensor");
+            this.setTooltip(Blockly.Msg.ARD_EXAMPLE_DHT_TOOLTIP);
         }
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
@@ -36,7 +36,7 @@ const init = () => {
     registerBlock('example_dht_read_temp', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Read Temperature (C)");
+                .appendField(Blockly.Msg.ARD_EXAMPLE_DHT_READ_TEMP);
             this.setOutput(true, "Number");
             this.setColour(120);
         }
@@ -49,7 +49,7 @@ const init = () => {
 
 export const ExampleSensorModule: BlockModule = {
     id: 'examples.dht',
-    name: 'Example: DHT Sensor',
+    name: 'examples.dht_name',
     category: 'SENSORS',
     init: init
 };

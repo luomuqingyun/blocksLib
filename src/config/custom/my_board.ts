@@ -14,15 +14,15 @@ const PIN_LIST_DEMO = {
     analog: [
         { label: 'ADC1 (32)', value: '32' }, { label: 'ADC2 (33)', value: '33' }
     ],
-    pwm: [{ label: 'All GPIOs', value: 'any' }],
+    pwm: [{ label: { zh: '所有引脚', en: 'All GPIOs' }, value: 'any' }],
     i2c: [{ label: 'SDA (21)', value: '21' }, { label: 'SCL (22)', value: '22' }],
     spi: [{ label: 'MOSI (23)', value: '23' }, { label: 'MISO (19)', value: '19' }, { label: 'SCK (18)', value: '18' }],
-    serial: [{ label: 'Serial0', value: 'Serial' }]
+    serial: [{ label: { zh: '默认串口', en: 'Serial0' }, value: 'Serial' }]
 };
 
 export const MY_CUSTOM_BOARD = defineBoard({
     id: 'my_custom_board_v1',
-    name: 'My Custom Board V1',
+    name: { zh: '我的自定义开发板 V1', en: 'My Custom Board V1' },
     mcu: 'ESP32',
     freq: '240MHz',
     flash: '4MB',

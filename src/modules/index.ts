@@ -216,8 +216,18 @@ export const initAllModules = () => {
     // 4. Register Ported Modules
     ModuleRegistry.register(ArduinoBaseModule);
 
-    // 5. Test Modules
-    ModuleRegistry.register(TestDevBlockModule);
+    // 5. Auto-discovered Internal Extensions (孵化器)
+    const extensions = import.meta.glob(['./extensions/*/index.ts'], { eager: true });
+    for (const path in extensions) {
+        const mod = extensions[path] as any;
+        for (const key in mod) {
+            const item = mod[key];
+            // Duck typing check for BlockModule
+            if (item && item.id && item.init && typeof item.init === 'function') {
+                ModuleRegistry.register(item);
+            }
+        }
+    }
 
     // Initialize all registered modules
     ModuleRegistry.initAll();

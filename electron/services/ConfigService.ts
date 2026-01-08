@@ -30,6 +30,9 @@ export interface AppConfig {
     toolbox?: {
         hiddenCategories: string[];
     };
+    extensions?: {
+        marketplaces: string[];
+    };
 }
 
 
@@ -140,6 +143,11 @@ export class ConfigService {
             },
             toolbox: {
                 hiddenCategories: []
+            },
+            extensions: {
+                marketplaces: [
+                    'https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/marketplace.json'
+                ]
             }
         };
         return defaults;

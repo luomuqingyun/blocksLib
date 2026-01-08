@@ -2,6 +2,7 @@ import React from 'react';
 import { X, BookOpen, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MarkdownRenderer } from '../MarkdownRenderer';
+import { BaseModal } from '../BaseModal';
 
 interface HelpModalProps {
     isOpen: boolean;
@@ -17,8 +18,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, title, co
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center backdrop-blur-md transition-all duration-300">
-            <div className="bg-[#1e1e1e] w-[900px] h-[750px] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-700/50 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+        <BaseModal isOpen={isOpen} onClose={onClose}>
+            <div className="bg-[#1e1e1e] w-[900px] h-[750px] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-700/50 flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="flex justify-between items-center p-5 border-b border-slate-700/50 bg-[#252526]">
                     <div className="flex items-center gap-3">
@@ -79,6 +80,6 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, title, co
                     </button>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     );
 };

@@ -19,9 +19,10 @@ import { useTranslation } from 'react-i18next';
 import { BoardRegistry } from '../../registries/BoardRegistry';
 import { useBoards } from '../../hooks/useBoards';
 import { useToolbarActions } from '../../hooks/useToolbarActions';
+import { getI18nString } from '../../utils/i18n_utils';
 
 export const TopBar: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const boards = useBoards();
 
     // 使用聚合 Hook 替代 4 个独立 Context 调用
@@ -137,10 +138,10 @@ export const TopBar: React.FC = () => {
                                         return current && b.family === current.family;
                                     })
                                     .map(board => (
-                                        <option key={board.id} value={board.id}>{board.name}</option>
+                                        <option key={board.id} value={board.id}>{getI18nString(board.name, i18n.language)}</option>
                                     ))
                                 : boards.map(board => (
-                                    <option key={board.id} value={board.id}>{board.name}</option>
+                                    <option key={board.id} value={board.id}>{getI18nString(board.name, i18n.language)}</option>
                                 ))
                             }
                         </select>

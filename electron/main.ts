@@ -9,6 +9,7 @@ import { registerSerialHandlers, setupSerialEvents } from './ipc/SerialHandlers'
 import { registerConfigHandlers } from './ipc/ConfigHandlers';
 import { registerExtensionHandlers } from './ipc/ExtensionHandlers';
 import { registerBuildHandlers } from './ipc/BuildHandlers';
+import { registerMarketplaceHandlers } from './ipc/MarketplaceHandlers';
 
 // ============================================================
 // ============================================================
@@ -229,12 +230,13 @@ function registerAllIpcs() {
     registerConfigHandlers(ipcMain, { onMenuUpdate: buildMenu });
     registerExtensionHandlers(ipcMain);
     registerBuildHandlers(ipcMain, getMainWindow);
+    registerMarketplaceHandlers(ipcMain);
 
     // Help file reader
     ipcMain.handle('help:read-file', async (_event, type: 'user' | 'plugin' | 'about') => {
-        let fileName = 'user_guide.md';
-        if (type === 'plugin') fileName = 'plugin_system.md';
-        else if (type === 'about') fileName = 'about.md';
+        let fileName = '用户操作指南.md';
+        if (type === 'plugin') fileName = '插件系统开发手册.md';
+        else if (type === 'about') fileName = '关于项目.md';
         const possiblePaths = [
             path.join(app.getAppPath(), 'docs', fileName),
             path.join(app.getAppPath(), 'resources', 'docs', fileName),

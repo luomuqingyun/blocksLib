@@ -13,6 +13,7 @@ import { SerialSettings } from './settings/sections/SerialSettings';
 import { AdvancedSettings } from './settings/sections/AdvancedSettings';
 import { ToolboxSettings } from './settings/sections/ToolboxSettings';
 import { LayoutGrid } from 'lucide-react';
+import { BaseModal } from './BaseModal';
 
 
 interface SettingsModalProps {
@@ -37,7 +38,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
+        <BaseModal isOpen={isOpen} onClose={handleClose}>
             <div className="bg-[#1e1e1e] w-[800px] h-[600px] rounded-lg shadow-2xl border border-slate-700 flex overflow-hidden">
                 {/* Sidebar */}
                 <div className="w-48 bg-[#252526] border-r border-slate-700 flex flex-col">
@@ -141,6 +142,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                     </div>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     );
 };

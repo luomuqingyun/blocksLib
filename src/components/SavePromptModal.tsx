@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { BaseModal } from './BaseModal';
 
 interface SavePromptModalProps {
     isOpen: boolean;
@@ -15,7 +16,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({ isOpen, onSave
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] backdrop-blur-sm">
+        <BaseModal isOpen={isOpen} onClose={onCancel}>
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-[480px] p-6 transform transition-all scale-100 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-start gap-4 mb-6">
                     <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full flex-shrink-0">
@@ -56,6 +57,6 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({ isOpen, onSave
                     </button>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     );
 };
