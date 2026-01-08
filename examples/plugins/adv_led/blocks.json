@@ -1,0 +1,61 @@
+[
+    {
+        "type": "adv_led_init",
+        "message0": "%{B_ADV_LED_INIT_MSG}",
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "PIN",
+                "options": [
+                    [
+                        "D13",
+                        "13"
+                    ],
+                    [
+                        "D2",
+                        "2"
+                    ],
+                    [
+                        "A0",
+                        "A0"
+                    ]
+                ]
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "%{B_ADV_LED_INIT_TOOLTIP}",
+        "helpUrl": ""
+    },
+    {
+        "type": "adv_led_blink",
+        "message0": "%{B_ADV_LED_BLINK_MSG}",
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "PIN",
+                "options": [
+                    [
+                        "D13",
+                        "13"
+                    ],
+                    [
+                        "D2",
+                        "2"
+                    ]
+                ]
+            },
+            {
+                "type": "input_value",
+                "name": "DELAY",
+                "check": "Number"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "%{B_ADV_LED_BLINK_TOOLTIP}",
+        "helpUrl": ""
+    }
+]

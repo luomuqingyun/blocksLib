@@ -1,0 +1,11 @@
+{
+    "EXT_NAME": "OLED U8glib-HAL",
+    "EXT_DESCRIPTION": "High-performance OLED driver based on U8glib-HAL.",
+    "B_U8G2_INIT_12864_MSG0": "OLED Init (128x64 I2C)",
+    "B_U8G2_INIT_12864_TOOLTIP": "Initialize 128x64 OLED screen (I2C mode)",
+    "B_U8G2_DRAW_STR_MSG0": "Print Text %1 Font: %2 x: %3 y: %4 Content: %5",
+    "B_U8G2_DRAW_STR_TOOLTIP": "Draw text at specified coordinates",
+    "B_U8G2_FONT_STANDARD": "Standard Font",
+    "B_U8G2_FONT_LARGE": "Large Font",
+    "B_U8G2_FONT_PIXEL": "Pixel Font"
+}

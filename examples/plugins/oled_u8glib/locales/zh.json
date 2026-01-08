@@ -1,0 +1,11 @@
+{
+    "EXT_NAME": "OLED U8glib-HAL 驱动",
+    "EXT_DESCRIPTION": "基于 U8glib-HAL 的高性能 OLED 驱动插件。",
+    "B_U8G2_INIT_12864_MSG0": "OLED 初始化 (128x64 I2C)",
+    "B_U8G2_INIT_12864_TOOLTIP": "初始化 128x64 OLED 屏幕 (I2C 模式)",
+    "B_U8G2_DRAW_STR_MSG0": "打印文本 %1 字体: %2 x: %3 y: %4 内容: %5",
+    "B_U8G2_DRAW_STR_TOOLTIP": "在指定坐标绘制文本",
+    "B_U8G2_FONT_STANDARD": "标准字体",
+    "B_U8G2_FONT_LARGE": "大号字体",
+    "B_U8G2_FONT_PIXEL": "像素字体"
+}

@@ -1,0 +1,150 @@
+import React from 'react';
+import { Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useSerial } from '../../../contexts/SerialContext';
+
+interface SerialSettingsProps {
+    config: any;
+    handleSave: (key: string, value: any) => void;
+}
+
+export const SerialSettings: React.FC<SerialSettingsProps> = ({ config, handleSave }) => {
+    const { t } = useTranslation();
+    const {
+        enterSends, setEnterSends,
+        clearInputOnSend, setClearInputOnSend,
+        historyDeduplication, setHistoryDeduplication,
+        lineEnding, setLineEnding,
+        encoding, setEncoding,
+        reloadHistory,
+        inputSpellCheck, setInputSpellCheck
+    } = useSerial();
+
+    const handleClearHistory = async () => {
+        if (confirm(t('settings.confirmClearHistory'))) {
+            await window.electronAPI.updateHistory([]);
+            await reloadHistory();
+            alert(t('settings.historyCleared'));
+        }
+    };
+
+    return (
+        <div className="space-y-8">
+            {/* History Limit */}
+            <div className="space-y-3">
+                <label className="block text-sm font-medium text-slate-300">
+                    {t('settings.historyLimit')}
+                </label>
+                <div className="flex gap-2">
+                    <input
+                        type="number"
+                        value={config.serialSettings?.historyLimit || 100}
+                        onChange={(e) => handleSave('serialSettings.historyLimit', Number(e.target.value))}
+                        className="flex-1 bg-[#333] border border-slate-600 rounded px-3 py-2 text-slate-200 text-sm focus:border-blue-500 outline-none"
+                        min="10"
+                        max="1000"
+                    />
+                    <button
+                        onClick={handleClearHistory}
+                        className="flex items-center gap-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50 px-4 py-2 rounded text-sm font-medium transition-all"
+                    >
+                        <Trash2 size={16} /> {t('settings.clearHistory')}
+                    </button>
+                </div>
+                <p className="text-xs text-slate-500">{t('settings.historyLimitDesc')}</p>
+            </div>
+
+            {/* History Deduplication */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <label className="text-sm font-medium text-slate-300 block">{t('serial.historyDeduplication')}</label>
+                    <span className="text-xs text-slate-500">{t('serial.historyDeduplicationDesc')}</span>
+                </div>
+                <input
+                    type="checkbox"
+                    checked={historyDeduplication}
+                    onChange={e => setHistoryDeduplication(e.target.checked)}
+                    className="w-5 h-5 bg-[#333] border-slate-600 rounded text-blue-600 focus:ring-blue-500"
+                />
+            </div>
+
+            {/* Behavior Settings */}
+            <div className="space-y-4 pt-4 border-t border-slate-700">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">{t('serial.inputBehavior')}</h3>
+
+                <div className="flex items-center justify-between">
+                    <div>
+                        <label className="text-sm font-medium text-slate-300 block">{t('serial.lineEnding')}</label>
+                        <span className="text-xs text-slate-500">{t('serial.lineEndingDesc')}</span>
+                    </div>
+                    <select
+                        className="bg-[#333] border border-slate-600 rounded px-2 py-1 text-slate-200 text-sm focus:border-blue-500 outline-none"
+                        value={lineEnding}
+                        onChange={(e) => setLineEnding(e.target.value as any)}
+                    >
+                        <option value="none">{t('serial.lineEndingNone')}</option>
+                        <option value="lf">{t('serial.lineEndingLF')}</option>
+                        <option value="cr">{t('serial.lineEndingCR')}</option>
+                        <option value="crlf">{t('serial.lineEndingCRLF')}</option>
+                    </select>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <div>
+                        <label className="text-sm font-medium text-slate-300 block">{t('serial.encoding')}</label>
+                        <span className="text-xs text-slate-500">{t('serial.encodingDesc')}</span>
+                    </div>
+                    <select
+                        className="bg-[#333] border border-slate-600 rounded px-2 py-1 text-slate-200 text-sm focus:border-blue-500 outline-none"
+                        value={encoding}
+                        onChange={(e) => setEncoding(e.target.value as any)}
+                    >
+                        <option value="utf-8">UTF-8</option>
+                        <option value="gbk">{t('serial.encodingGBK')}</option>
+                        <option value="ascii">ASCII</option>
+                        <option value="latin1">Latin1 / ISO-8859-1</option>
+                    </select>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <div>
+                        <label className="text-sm font-medium text-slate-300 block">{t('serial.enterSends')}</label>
+                        <span className="text-xs text-slate-500">{t('serial.enterSendsDesc')}</span>
+                    </div>
+                    <input
+                        type="checkbox"
+                        checked={enterSends}
+                        onChange={e => setEnterSends(e.target.checked)}
+                        className="w-5 h-5 bg-[#333] border-slate-600 rounded text-blue-600 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <div>
+                        <label className="text-sm font-medium text-slate-300 block">{t('serial.clearInput')}</label>
+                        <span className="text-xs text-slate-500">{t('serial.clearInputDesc')}</span>
+                    </div>
+                    <input
+                        type="checkbox"
+                        checked={clearInputOnSend}
+                        onChange={e => setClearInputOnSend(e.target.checked)}
+                        className="w-5 h-5 bg-[#333] border-slate-600 rounded text-blue-600 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <div>
+                        <label className="text-sm font-medium text-slate-300 block">{t('serial.inputSpellCheck')}</label>
+                        <span className="text-xs text-slate-500">{t('serial.inputSpellCheckDesc')}</span>
+                    </div>
+                    <input
+                        type="checkbox"
+                        checked={inputSpellCheck}
+                        onChange={e => setInputSpellCheck(e.target.checked)}
+                        className="w-5 h-5 bg-[#333] border-slate-600 rounded text-blue-600 focus:ring-blue-500"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};

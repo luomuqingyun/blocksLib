@@ -1,0 +1,17 @@
+{
+    "id": "example.adv_led",
+    "version": "1.0.0",
+    "icon": "icon.png",
+    "description": "Advanced LED control extension with blinking patterns.",
+    "categories": [
+        "Advanced LED"
+    ],
+    "contributes": {
+        "blocks": [
+            "blocks.json"
+        ],
+        "generators": [
+            "generator.js"
+        ]
+    }
+}

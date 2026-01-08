@@ -1,0 +1,109 @@
+{
+    "id": "nodemcuv2",
+    "name": "NodeMCU V2 (ESP8266)",
+    "family": "arduino",
+    "mcu": "ESP8266",
+    "freq": "80MHz",
+    "flash": "4MB",
+    "ram": "64KB",
+    "fqbn": "esp8266:esp8266:nodemcuv2",
+    "build": {
+        "platform": "espressif8266",
+        "board": "nodemcuv2",
+        "framework": "arduino"
+    },
+    "pins": {
+        "digital": [
+            {
+                "label": "D0 (GPIO16)",
+                "value": "16"
+            },
+            {
+                "label": "D1 (GPIO5)",
+                "value": "5"
+            },
+            {
+                "label": "D2 (GPIO4)",
+                "value": "4"
+            },
+            {
+                "label": "D3 (GPIO0)",
+                "value": "0"
+            },
+            {
+                "label": "D4 (GPIO2)",
+                "value": "2"
+            },
+            {
+                "label": "D5 (GPIO14)",
+                "value": "14"
+            },
+            {
+                "label": "D6 (GPIO12)",
+                "value": "12"
+            },
+            {
+                "label": "D7 (GPIO13)",
+                "value": "13"
+            },
+            {
+                "label": "D8 (GPIO15)",
+                "value": "15"
+            }
+        ],
+        "analog": [
+            {
+                "label": "A0",
+                "value": "0"
+            }
+        ],
+        "pwm": [
+            {
+                "label": "D1 (GPIO5)",
+                "value": "5"
+            },
+            {
+                "label": "D2 (GPIO4)",
+                "value": "4"
+            }
+        ],
+        "i2c": [
+            {
+                "label": "SDA (D2)",
+                "value": "4"
+            },
+            {
+                "label": "SCL (D1)",
+                "value": "5"
+            }
+        ],
+        "spi": [
+            {
+                "label": "SCK (D5)",
+                "value": "14"
+            },
+            {
+                "label": "MISO (D6)",
+                "value": "12"
+            },
+            {
+                "label": "MOSI (D7)",
+                "value": "13"
+            },
+            {
+                "label": "SS (D8)",
+                "value": "15"
+            }
+        ],
+        "serial": [
+            {
+                "label": "TX",
+                "value": "1"
+            },
+            {
+                "label": "RX",
+                "value": "3"
+            }
+        ]
+    }
+}

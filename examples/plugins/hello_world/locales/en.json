@@ -1,0 +1,6 @@
+{
+    "HELLO_WORLD_NAME": "Hello World Example",
+    "HELLO_WORLD_DESC": "Basic serial print plugin example.",
+    "B_HELLO_WORLD_MSG": "Say Hello %1",
+    "B_HELLO_WORLD_TOOLTIP": "Prints a greeting message to serial"
+}

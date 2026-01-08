@@ -1,0 +1,165 @@
+{
+    "id": "micro",
+    "name": "Arduino Micro",
+    "family": "arduino",
+    "mcu": "ATmega32u4",
+    "freq": "16MHz",
+    "flash": "32KB",
+    "ram": "2.5KB",
+    "fqbn": "arduino:avr:micro",
+    "build": {
+        "platform": "atmelavr",
+        "board": "micro",
+        "framework": "arduino"
+    },
+    "pins": {
+        "digital": [
+            {
+                "label": "D0 (RX)",
+                "value": "0"
+            },
+            {
+                "label": "D1 (TX)",
+                "value": "1"
+            },
+            {
+                "label": "D2",
+                "value": "2"
+            },
+            {
+                "label": "D3",
+                "value": "3"
+            },
+            {
+                "label": "D4",
+                "value": "4"
+            },
+            {
+                "label": "D5",
+                "value": "5"
+            },
+            {
+                "label": "D6",
+                "value": "6"
+            },
+            {
+                "label": "D7",
+                "value": "7"
+            },
+            {
+                "label": "D8",
+                "value": "8"
+            },
+            {
+                "label": "D9",
+                "value": "9"
+            },
+            {
+                "label": "D10",
+                "value": "10"
+            },
+            {
+                "label": "D11",
+                "value": "11"
+            },
+            {
+                "label": "D12",
+                "value": "12"
+            },
+            {
+                "label": "D13",
+                "value": "13"
+            }
+        ],
+        "analog": [
+            {
+                "label": "A0",
+                "value": "14"
+            },
+            {
+                "label": "A1",
+                "value": "15"
+            },
+            {
+                "label": "A2",
+                "value": "16"
+            },
+            {
+                "label": "A3",
+                "value": "17"
+            },
+            {
+                "label": "A4",
+                "value": "18"
+            },
+            {
+                "label": "A5",
+                "value": "19"
+            }
+        ],
+        "pwm": [
+            {
+                "label": "D3",
+                "value": "3"
+            },
+            {
+                "label": "D5",
+                "value": "5"
+            },
+            {
+                "label": "D6",
+                "value": "6"
+            },
+            {
+                "label": "D9",
+                "value": "9"
+            },
+            {
+                "label": "D10",
+                "value": "10"
+            },
+            {
+                "label": "D11",
+                "value": "11"
+            },
+            {
+                "label": "D13",
+                "value": "13"
+            }
+        ],
+        "i2c": [
+            {
+                "label": "SDA",
+                "value": "2"
+            },
+            {
+                "label": "SCL",
+                "value": "3"
+            }
+        ],
+        "spi": [
+            {
+                "label": "SCK",
+                "value": "15"
+            },
+            {
+                "label": "MISO",
+                "value": "14"
+            },
+            {
+                "label": "MOSI",
+                "value": "16"
+            }
+        ],
+        "serial": [
+            {
+                "label": "TX",
+                "value": "1"
+            },
+            {
+                "label": "RX",
+                "value": "0"
+            }
+        ]
+    }
+}

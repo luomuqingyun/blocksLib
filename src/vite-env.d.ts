@@ -1,0 +1,134 @@
+/// <reference types="vite/client" />
+
+import { BoardBuildConfig, ProjectBuildConfig } from './types/board';
+
+interface ElectronAPI {
+  // --- System ---
+  checkSystem: () => Promise<{ success: boolean; message: string; mode: string }>;
+
+  // --- Build & Upload ---
+  buildProject: (code: string, buildConfig: BoardBuildConfig, projectPath?: string) => Promise<{ success: boolean; exitCode?: number }>;
+  uploadProject: (code: string, buildConfig: BoardBuildConfig, port?: string, projectPath?: string) => Promise<{ success: boolean; exitCode?: number }>;
+
+  // --- Logs ---
+  onLog: (callback: (msg: string) => void) => () => void;
+
+  // --- Serial ---
+  listPorts: () => Promise<SerialPort[]>;
+  openSerial: (port: string, baud: number, dataBits?: number, stopBits?: number, parity?: string) => Promise<{ success: boolean; error?: string }>;
+  closeSerial: () => Promise<{ success: boolean; error?: string }>;
+  sendSerial: (data: string | Uint8Array, options?: { encoding?: string }) => Promise<{ success: boolean; error?: string }>;
+  setSerialSignals: (dtr: boolean, rts: boolean) => Promise<{ success: boolean; error?: string }>;
+  getSerialStatus: () => Promise<{ connected: boolean; port?: string }>;
+
+  onMonitorData: (callback: (data: string) => void) => () => void;
+  onMonitorStatus: (callback: (status: { connected: boolean; port?: string }) => void) => () => void;
+  onMonitorError: (callback: (error: string) => void) => () => void;
+
+  // --- File Operations ---
+  openFileDialog: (options?: any) => Promise<{ path: string; content: string } | null>;
+  saveProjectDialog: () => Promise<{ path: string } | null>;
+  saveCodeDialog: () => Promise<string | null>;
+  saveFileContent: (content: string, path: string) => Promise<{ success: boolean; error?: string }>;
+
+  // --- Project Operations ---
+  createProject: (parentDir: string, name: string, boardId: string, buildConfig?: BoardBuildConfig) => Promise<{ success: boolean; path?: string; error?: string }>;
+  copyProject: (srcPath: string, parentDir: string, newName: string) => Promise<{ success: boolean; newPath?: string; error?: string }>;
+  saveProjectFolder: (path: string, data: { blocklyState: string, code: string, boardId?: string, buildConfig?: ProjectBuildConfig }) => Promise<{ success: boolean; error?: string }>;
+  openProjectFolder: () => Promise<{ cancelled: boolean; error?: string; projectPath?: string; data?: any }>;
+  openProjectByPath: (path: string) => Promise<{ cancelled: boolean; error?: string; projectPath?: string; data?: any }>;
+
+  // --- Backup ---
+  backupProject: (path: string, data: any) => Promise<{ success: boolean; error?: string }>;
+  checkBackup: (path: string) => Promise<{ hasBackup: boolean; timestamp?: number }>;
+  restoreBackup: (path: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+  discardBackup: (path: string) => Promise<void>;
+
+  // --- Settings ---
+  selectWorkDir: () => Promise<string | null>;
+  getWorkDir: () => Promise<string>;
+
+  // --- Legacy Support ---
+  saveProject: (content: string, filename: string) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+
+  // --- Config ---
+  getConfig: (key?: string) => Promise<any>;
+  setConfig: (key: string, value: any) => Promise<boolean>;
+  updateHistory: (history: string[]) => Promise<string[]>;
+  removeRecentProject: (path: string) => Promise<{ success: boolean }>; // New
+  restoreDefaults: (section?: string, clearHistory?: boolean) => Promise<any>;
+  openConfigDir: () => Promise<void>;
+  openConfigFile: () => Promise<void>;
+  openWorkDir: () => Promise<void>;
+
+  // --- Extensions ---
+  extensionsList: () => Promise<any[]>;
+  extensionReadFile: (extId: string, path: string, encoding?: string) => Promise<string | null>;
+  importExtension: () => Promise<{ success: boolean; message: string }>;
+  uninstallExtension: (extId: string) => Promise<{ success: boolean; message: string }>;
+  readHelpFile: (type: 'user' | 'plugin' | 'about') => Promise<{ content: string; path: string }>;
+  openExternal: (path: string) => Promise<boolean>;
+
+  // --- Menu ---
+  onMenuAction: (callback: (action: string, arg?: any) => void) => () => void;
+}
+declare global {
+  interface Window {
+    electronAPI: ElectronAPI
+  }
+}
+
+
+declare global {
+  // Web Serial API Definitions
+  // We namespace them to avoid conflict if necessary, but standard is global `SerialPort`
+  interface WebSerialPort {
+    onconnect: ((this: WebSerialPort, ev: Event) => any) | null;
+    ondisconnect: ((this: WebSerialPort, ev: Event) => any) | null;
+    readonly readable: ReadableStream<Uint8Array> | null;
+    readonly writable: WritableStream<Uint8Array> | null;
+    open(options: WebSerialOptions): Promise<void>;
+    close(): Promise<void>;
+    getInfo(): WebSerialPortInfo;
+    setSignals(signals: SerialOutputSignals): Promise<void>;
+    getSignals(): Promise<SerialInputSignals>;
+    forget(): Promise<void>;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+  }
+
+  interface SerialOutputSignals {
+    dataTerminalReady?: boolean;
+    requestToSend?: boolean;
+    break?: boolean;
+  }
+
+  interface SerialInputSignals {
+    dataClassLoaderReady: boolean;
+    clearToSend: boolean;
+    ringIndicator: boolean;
+  }
+
+  interface WebSerialOptions {
+    baudRate: number;
+    dataBits?: number;
+    stopBits?: number;
+    parity?: 'none' | 'even' | 'odd';
+    bufferSize?: number;
+    flowControl?: 'none' | 'hardware';
+  }
+
+  interface WebSerialPortInfo {
+    usbVendorId?: number;
+    usbProductId?: number;
+  }
+
+  interface Navigator {
+    serial: {
+      requestPort(options?: { filters?: Array<{ usbVendorId?: number; usbProductId?: number }> }): Promise<WebSerialPort>;
+      getPorts(): Promise<WebSerialPort[]>;
+      addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+      removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    };
+  }
+}

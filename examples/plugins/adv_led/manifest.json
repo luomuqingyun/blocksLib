@@ -1,0 +1,23 @@
+{
+    "id": "example.adv_led",
+    "version": "1.0.0",
+    "icon": "icon.png",
+    "name": "%{ADV_LED_NAME}",
+    "description": "%{ADV_LED_DESC}",
+    "categories": [
+        "Advanced LED"
+    ],
+    "compatibility": {
+        "families": [
+            "arduino"
+        ]
+    },
+    "contributes": {
+        "blocks": [
+            "blocks.json"
+        ],
+        "generators": [
+            "generator.js"
+        ]
+    }
+}

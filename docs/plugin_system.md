@@ -1,0 +1,330 @@
+# 用户插件开发指南 (User Extension Guide - Master Manual)
+
+**适用对象**: 最终用户、第三方插件开发者、课程设计者。  
+**前提条件**: **无需**安装 Node.js 或编译环境。仅需任意文本编辑器（如 VS Code, Notepad++）即可。
+
+EmbedBlocks Studio 提供了一套强大的**运行时插件系统**。您可以编写轻量级的配置文件，打包成 `.zip` 或文件夹分发，用户导入即可实现即时生效的硬件驱动与积木。
+
+---
+
+## 1. 插件目录结构 (Plugin Structure)
+
+一个规范、支持国际化和外部库引入的完整插件文件夹应遵循以下结构。**注意：文件夹名称即为插件的默认分类标识（若 manifest 中未显式定义）。**
+
+```text
+my_extension/
+├── manifest.json      # [必选] 插件心脏：定义身份、ID、版本、分类及文件索引
+├── blocks.json        # [必选] 积木定义：描述积木在工作区的外观、输入和颜色
+├── generator.js       # [必选] 生成器脚本：将逻辑积木转换为 C++ 代码的核心
+├── icon.png           # [推荐] 图标：建议 128x128，支持 PNG, JPG, SVG
+├── locales/           # [可选] 国际化资源：支持插件界面的多语言自动切换
+│   ├── zh.json        # 中文翻译包
+│   └── en.json        # 英文翻译包
+├── libraries/         # [可选] C++ 依赖库：存放所需的 (.h, .cpp) 源代码
+├── assets/            # [可选] 静态资源：存放说明文档图片或说明位图
+└── boards/            # [可选] 硬件板卡定义目录
+```
+
+---
+
+## 2. 核心机制：全量国际化 (Internationalization / i18n)
+
+EmbedBlocks 采用深度的国际化架构。插件可通过定义词条实现全自动语言适配。
+
+### 2.1 语言包定义 (locales/*.json)
+在 `locales/` 目录下创建对应的 JSON 文件。
+**示例 `zh.json`**:
+```json
+{
+    "EXT_NAME": "我的超级驱动",
+    "EXT_DESC": "这是一个支持多语言的扩展示例。",
+    "B_HELLO_MSG": "你好 %1",
+    "B_HELLO_TOOLTIP": "向串口发送问候"
+}
+```
+
+### 2.2 占位符引用语法 (`%{KEY}`)
+在后续的 `manifest.json`、`blocks.json` 或 `board.json` 中，凡是**面向用户的字符串**，均可使用 `%{KEY}` 格式。
+- **运行逻辑**: 系统加载插件时会自动检测软件当前的语言设置（如 `zh` 或 `en`），寻找匹配的文件。若找不到对应语言，将回退尝试 `en.json`，最后回退至 `locales` 下的第一个文件。
+
+---
+
+## 3. 插件清单: manifest.json
+
+这是插件的入口文件，定义了基础信息与功能索引。
+
+### 3.1 字段详解
+| 字段 | 类型 | 说明 |
+| :--- | :--- | :--- |
+| `id` | String | 唯一ID，建议使用反向域名格式（如 `com.creator.plugin`）。 |
+| `version` | String | 语义化版本号（如 `1.0.0`）。 |
+| `name` | String | 显示给用户的名称 (支持 `%{KEY}` 引用)。 |
+| `description` | String | 详细描述 (支持 `%{KEY}` 引用)。 |
+| `categories` | Array | 强制指定的工具箱分类名。若不填，默认为插件所在的目录名。 |
+| `compatibility` | Object | **[关键]** 用于限制该插件在哪些开发板下出现。 |
+| `contributes` | Object | 指向功能文件的索引（`blocks`, `generators`, `boards`）。 |
+
+### 3.2 兼容性场景指南 (Compatibility Scoping)
+`compatibility` 用于控制插件的精确投放，避免不兼容的积木出现在错误的项目中。
+
+*   **组合规则 (AND Logic)**: 
+    *   `families` (如 `arduino`, `esp32`): 针对某个芯片系列生效。
+    *   `boards` (如 `uno`, `esp32_c3`): 针对特定型号生效。
+    *   若两者同时存在，当前板卡必须**同时**满足系列**且**满足 ID 匹配才会显示。
+*   **全局有效 (Global)**:
+    *   若希望插件在任何环境下都可见（如数学运算、通用控制），请**直接省略** `compatibility` 字段。
+*   **项目级控制**:
+    *   插件是基于**硬件平台**加载的。一旦安装，所有使用该平台的项目均可见。
+
+---
+
+## 4. 积木定义: blocks.json
+
+采用 Google Blockly 标准的 JSON 格式。
+
+### 4.1 核心配置示例
+```json
+[
+  {
+    "type": "my_print",
+    "message0": "%{B_PRINT_MSG}",   // 引用国际化词条
+    "args0": [
+      {
+        "type": "input_value",     // 参数位置
+        "name": "TEXT",
+        "check": "String"
+      }
+    ],
+    "previousStatement": null,     // 允许上方连接
+    "nextStatement": null,         // 允许下方连接
+    "colour": "#2ecc71",           // 积木颜色 (支持 HEX)
+    "tooltip": "%{B_PRINT_TOOLTIP}" // 引用语义提示
+  }
+]
+```
+
+### 4.2 常用字段手册
+- **`type`**: 积木 ID，必须唯一，作为生成器的索引键。
+- **`message0`**: 文本模版（%1, %2 代表参数占位）。
+- **`previousStatement` / `nextStatement`**: 设置为 `null` 表示允许连接（语句型积木）。
+- **`output`**: 填入类型名（如 `"Number"`, `"Boolean"`）表示该积木为返回值型（圆角）。
+
+---
+
+## 5. 代码生成逻辑: generator.js
+
+生成器脚本运行在独立沙盒中，负责将积木转换为 C++ 代码。
+
+### 5.1 基本架构
+```javascript
+Blockly.Arduino['my_print'] = function(block) {
+  // 1. 获取输入参数。ORDER_ATOMIC 确保代码生成的优先级正确
+  var text = Blockly.Arduino.valueToCode(block, 'TEXT', Blockly.Arduino.ORDER_ATOMIC) || '""';
+  
+  // 2. 注入全局设置（自动去重）
+  Blockly.Arduino.addSetup('serial_begin', 'Serial.begin(115200);');
+  
+  // 3. 返回主逻辑代码
+  return 'Serial.println(' + text + ');\n';
+};
+```
+
+### 5.2 API 快速参考 (Blockly.Arduino Helpers)
+- **`addSetup(key, code)`**: 向 `void setup()` 注入代码。`key` 用于确保代码无论被调用多少次都只生成一份。
+- **`addInclude(key, code)`**: 注入 `#include` 语句。
+- **`addVariable(key, code)`**: 定义全局变量。
+- **`addFunction(key, code)`**: 定义自定义函数。
+- **`valueToCode(block, name, order)`**: 获取连接在输入槽位上的代码段。
+- **`block.getFieldValue(name)`**: 获取下拉菜单、勾选框或文本框的直接输入值。
+
+---
+
+## 6. 多媒体与资源管理 (Media & Assets)
+
+### 6.1 图片格式建议
+- **位图**: `.png` (最推荐), `.jpg`, `.gif`。建议将大图放入 `assets/`。
+- **矢量图**: `.svg`。最推荐用于图标，支持任意比例缩放不模糊。
+- **插件图标 (Icon)**: 在 `manifest.json` 中指定。软件会自动转换为 Base64。典型尺寸：**128x128**。
+
+### 6.2 资源引用 API
+开发者可以使用脚本/前端环境中的 `extensionReadFile` 常规手段读取 `assets/` 下的数据，展示在自定义帮助弹窗中。
+
+---
+
+## 7. C++ 库集成进阶 (C++ Library Integration)
+
+如果您的插件需要驱动物理设备（如 OLED、陀螺仪），可利用 `libraries/` 目录。
+
+### 7.1 文件组织规则
+确保库文件结构符合标准的 Arduino/PlatformIO 规范：
+```text
+my_extension/
+└── libraries/
+    └── MyDriver/         # 库主目录
+        ├── src/          # 推荐将 .h/.cpp 放入 src
+        │   ├── MyDriver.h
+        │   └── MyDriver.cpp
+        └── library.properties 
+```
+
+### 7.2 运行时链接机制 (Linking)
+- **零配置机制**: 系统后台会自动将 `libraries/` 路径注入编译器的环境变量 `PLATFORMIO_LIB_EXTRA_DIRS`。
+- **优势**: 开发者无需修改任何编译器路径或写入 `manifest`。只要头文件在库目录内，`generator.js` 中的 `#include <MyDriver.h>` 即可立刻编译。
+
+### 7.3 条件编译
+您可以在库的 `.h`/`.cpp` 中利用预处理宏区分平台：
+```cpp
+#ifdef ARDUINO_ARCH_ESP32
+  // ESP32 特有代码 (如 I2C 引脚定义)
+#else
+  // 标准 Arduino 项目代码
+#endif
+```
+
+---
+
+## 8. 硬件板卡开发 (Hardware Extension Support)
+
+### 8.1 标准硬件扩展目录结构
+
+一个完整的硬件板卡插件通常由清单文件、板卡定义、多语言包和图标资源组成：
+
+```text
+my_board_plugin/
+├── manifest.json      # 插件核心配置 (必须，标志此插件为 hardware 类型)
+├── board.json         # 板卡硬件定义 (必须，包含引脚映射、工具箱分类等)
+├── icon.png           # 引脚或板卡预览图 (推荐，用于新建项目时的视觉展示)
+├── locales/           # [可选] 多语言翻译文件夹
+│   ├── zh.json        # 中文翻译
+│   └── en.json        # 英文翻译
+└── assets/            # [可选] 其他视觉资源或文档 (如电路图等)
+```
+
+### 8.2 芯片配置国际化 (Board I18n Manual)
+为了适应不同复杂度的插件，系统为 `board.json` 提供了两种国际化处理方案：
+
+#### 方案 A：词条引用模式 (推荐给大型插件)
+在 `locales/` 目录下定义翻译词条，并在 JSON 中通过 `%{KEY}` 引用。该方案便于在多个积木或配置文件间复用同一个词条。
+```json
+// board.json
+{
+    "name": "%{MY_BOARD_NAME}",
+    "pins": {
+        "digital": [{ "label": "%{PIN_L_LED}", "value": "13" }]
+    }
+}
+```
+
+#### 方案 B：对象直写模式 (推荐给轻量/单硬件插件)
+**无需创建 locales 文件夹**。直接在 `board.json` 的相应字段中以对象格式编写各语言内容。系统会自动检测当前语言并提取对应的值。
+```json
+// board.json
+{
+    "name": {
+        "zh": "我的极简板",
+        "en": "My Mini Board"
+    },
+    "pins": {
+        "digital": [
+            { 
+               "label": { "zh": "灯 (13)", "en": "LED (13)" }, 
+               "value": "13" 
+            }
+        ]
+    }
+}
+```
+**注意**: 即使采用直写模式，系统依然会尝试加载 `locales/` 文件夹（如果存在）。对于芯片插件，如果不需要复用词条，**直接在 JSON 中编写对象**是最快捷的选择。
+
+### 8.2 注册与即时生效
+在 `manifest.json` 的 `contributes` 中增加 `"boards": ["board.json"]`。用户导入后，**新建项目窗口**和**顶部板卡菜单**会实时更新，无需重启。
+
+---
+
+## 9. 打包与分发 (How to Distribute)
+
+1.  **打包**: 将插件根目录下的文件全部选中（不要包含父目录），压缩为 **.zip**。
+2.  **分发**: 发送给用户即可。
+3.  **安装**: 
+    - 点击左侧 **Extensions** -> **Import Local Extension**。
+    - 选择 ZIP 文件或整个解压后的文件夹（推荐开发调试期间直接选文件夹）。
+
+---
+
+---
+
+## 11. 系统内置国际化词条参考 (Built-in I18n Tokens)
+
+为了方便开发者复用系统已有的翻译，插件可以引用以下内置词条。在 JSON 中建议使用 `%{BKY_KEY_NAME}` 格式（全面兼容 Blockly 规范）。
+
+## 11. 系统内置国际化词条全览 (Public Vocabulary Reference)
+
+为了让开发者能够完全透明地复用系统资源，下表整理了系统内置的所有公共词条。您可以在插件的 JSON 中通过 `%{BKY_KEY_NAME}` 格式直接引用。
+
+### 11.1 工具箱分类词条 (Toolbox Categories)
+引用此词条可确保您的插件分类名称与软件原生分类保持高度一致。
+
+| 引用占位符 | 中文显示 | 英文显示 |
+| :--- | :--- | :--- |
+| `%{BKY_CAT_LOGIC}` | 逻辑 | Logic |
+| `%{BKY_CAT_LOOPS}` | 循环 | Loops |
+| `%{BKY_CAT_MATH}` | 数学 | Math |
+| `%{BKY_CAT_TEXT}` | 文本 | Text |
+| `%{BKY_CAT_VARIABLES}` | 变量 | Variables |
+| `%{BKY_CAT_FUNCTIONS}` | 函数 | Functions |
+| `%{BKY_CAT_IO}` | 输入/输出 | IO |
+| `%{BKY_CAT_TIME}` | 时间 | Time |
+| `%{BKY_CAT_COMMUNICATION}` | 通信 | Communication |
+| `%{BKY_CAT_SENSORS}` | 传感器 | Sensors |
+| `%{BKY_CAT_MOTORS}` | 电机驱动 | Motors |
+| `%{BKY_CAT_DISPLAYS}` | 显示器 | Displays |
+| `%{BKY_CAT_STORAGE}` | 存储 | Storage |
+| `%{BKY_CAT_NETWORK}` | 网络 | Network |
+| `%{BKY_CAT_AUDIO}` | 音频 | Audio |
+| `%{BKY_CAT_DATA}` | 数据与安全 | Data & Security |
+| `%{BKY_CAT_SIGNALS}` | 信号处理 | Signals |
+| `%{BKY_CAT_CONTROL}` | 控制算法 | Control |
+| `%{BKY_CAT_ROBOTS}` | 机器人 | Robots |
+| `%{BKY_CAT_AI}` | 人工智能 | AI |
+
+### 11.2 分隔标签词条 (UI Labels)
+常用于 `board.json` 的引脚分组标题或积木工作区标签：
+
+| 引用占位符 | 显示内容 (zh/en) | 说明 |
+| :--- | :--- | :--- |
+| `%{BKY_LABEL_WIRELESS}` | ━━ 无线通讯 / WIRELESS ━━ | 装饰性标题 |
+| `%{BKY_LABEL_SENSORS}` | ━━ 传感器 / SENSORS ━━ | |
+| `%{BKY_LABEL_DISPLAYS}` | --- 显示器 / DISPLAYS --- | |
+| `%{BKY_LABEL_RTC}` | ━━ 实时时钟 / RTC ━━ | |
+| `%{BKY_LABEL_TIMERS}` | ━━ 定时器 / TIMERS ━━ | |
+| `%{BKY_LABEL_OLED}` | ━━ OLED 屏幕 / OLED ━━ | |
+| `%{BKY_LABEL_DCMOTOR}` | ━━ 直流电机 / DC MOTOR ━━ | |
+| `%{BKY_LABEL_STEPPERBASIC}` | ━━ 步进电机 / STEPPER ━━ | |
+| `%{BKY_LABEL_ADVANCED}` | ━━ 高级 / ADVANCED ━━ | |
+| `%{BKY_LABEL_PRO}` | ━━ 专业级 / PRO ━━ | |
+
+### 11.3 通用硬件术语 (Common Hardware Terms)
+这些词条经过精修，建议在定义参数标签时优先引用：
+
+| 引用占位符 | 内容 (zh/en) | 引用占位符 | 内容 (zh/en) |
+| :--- | :--- | :--- | :--- |
+| `%{BKY_ARD_DISPLAY_NAME}` | 名称 / Name | `%{BKY_ARD_VAR_VAL}` | 数值 / Value |
+| `%{BKY_ARD_IO_FREQ}` | 频率 / Frequency | `%{BKY_ARD_IO_DUR}` | 持续时长 / Duration |
+| `%{BKY_ARD_SERIAL_BAUD}` | 波特率 / Baud Rate | `%{BKY_ARD_TIME_MS}` | 毫秒 / ms |
+| `%{BKY_ARD_TIME_MICROS}` | 微秒 / us | `%{BKY_ARD_SYS_INPUT}` | 输入 / Input |
+
+### 11.4 提示：如何发现更多？
+如果您需要引用的某个单词并未出现在上表中，有一个“开发者窍门”：
+1. 在软件中找到显示该单词的积木或 UI。
+2. 即使没有源码，如果您是在开发模式下（或参考现有的插件包），可以尝试在 `Blockly.Msg` 的全局变量中根据单词的含义进行猜测（如 `ARD_IO_...`）。
+3. **[最推荐]**：对于插件特有的垂直领域词条，建议还是在插件自己的 `locales/` 文件中定义，以确保插件在独立迁移时的完整性。
+
+---
+
+## 12. 官方示例参考 (Reference Examples)
+
+通过分析现有工程是学习的最快途径：
+*   **[oled_u8glib](../examples/plugins/oled_u8glib/)**: **[深度推荐]** 展示了完整的国际化、第三方 C++ 库集成以及精确引脚映射的综合案例。
+*   **[hello_world](../examples/plugins/hello_world/)**: 基础的国际化占位符用法与简单积木定义。
+*   **[board_esp8266](../examples/plugins/board_esp8266/)**: 纯配置方式添加新芯片环境的范例。
+*   **[adv_led](../examples/plugins/adv_led/)**: 进阶的下拉菜单与状态控制。

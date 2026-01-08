@@ -1,0 +1,8 @@
+{
+    "ADV_LED_NAME": "Advanced LED Control",
+    "ADV_LED_DESC": "An advanced example providing LED initialization and blink functions.",
+    "B_ADV_LED_INIT_MSG": "Setup LED on Pin %1",
+    "B_ADV_LED_INIT_TOOLTIP": "Initializes the specified LED pin as output",
+    "B_ADV_LED_BLINK_MSG": "Blink LED Pin %1 Delay %2 ms",
+    "B_ADV_LED_BLINK_TOOLTIP": "Blinks the specified LED pin"
+}

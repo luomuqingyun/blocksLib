@@ -1,0 +1,8 @@
+{
+    "ADV_LED_NAME": "高级 LED 控制",
+    "ADV_LED_DESC": "提供 LED 初始化和闪烁功能的高级示例。",
+    "B_ADV_LED_INIT_MSG": "初始化 LED 引脚 %1",
+    "B_ADV_LED_INIT_TOOLTIP": "初始化指定的 LED 引脚为输出模式",
+    "B_ADV_LED_BLINK_MSG": "闪烁 LED 引脚 %1 延迟 %2 毫秒",
+    "B_ADV_LED_BLINK_TOOLTIP": "让指定的 LED 引脚闪烁"
+}

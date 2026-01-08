@@ -1,0 +1,259 @@
+import * as Blockly from 'blockly';
+import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
+import { BlockModule } from '../../registries/ModuleRegistry';
+
+const init = () => {
+
+    // =========================================================================
+    // LCD I2C (LiquidCrystal_I2C)
+    // =========================================================================
+
+    // Init Block
+    registerBlock('display_lcd_init', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_LCD_INIT);
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_ADDR)
+                .appendField(new Blockly.FieldTextInput("0x27"), "ADDR");
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_COLS)
+                .appendField(new Blockly.FieldNumber(16), "COLS");
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_ROWS)
+                .appendField(new Blockly.FieldNumber(2), "ROWS");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(60);
+            this.setTooltip(Blockly.Msg.ARD_LCD_INIT_TOOLTIP);
+        }
+    }, (block: any) => {
+        const addr = block.getFieldValue('ADDR');
+        const cols = block.getFieldValue('COLS');
+        const rows = block.getFieldValue('ROWS');
+
+        arduinoGenerator.addInclude('lcd_lib', '#include <LiquidCrystal_I2C.h>');
+        arduinoGenerator.addVariable('lcd_def', `LiquidCrystal_I2C lcd(${addr}, ${cols}, ${rows});`);
+        arduinoGenerator.addSetup('lcd_init', 'lcd.init();\n  lcd.backlight();');
+
+        return '';
+    });
+
+    // Print Block
+    registerBlock('display_lcd_print', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_LCD_PRINT);
+            this.appendValueInput("TEXT")
+                .setCheck("String")
+                .appendField(Blockly.Msg.ARD_DISPLAY_TEXT);
+            this.appendValueInput("COL")
+                .setCheck("Number")
+                .appendField(Blockly.Msg.ARD_DISPLAY_COL);
+            this.appendValueInput("ROW")
+                .setCheck("Number")
+                .appendField(Blockly.Msg.ARD_DISPLAY_ROW);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(60);
+            this.setTooltip(Blockly.Msg.ARD_LCD_PRINT_TOOLTIP);
+            this.setInputsInline(true);
+        }
+    }, (block: any) => {
+        const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '""';
+        const col = arduinoGenerator.valueToCode(block, 'COL', Order.ATOMIC) || '0';
+        const row = arduinoGenerator.valueToCode(block, 'ROW', Order.ATOMIC) || '0';
+
+        return `lcd.setCursor(${col}, ${row});\nlcd.print(${text});\n`;
+    });
+
+    // Clear Block
+    registerBlock('display_lcd_clear', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_LCD_CLEAR);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(60);
+            this.setTooltip(Blockly.Msg.ARD_LCD_CLEAR_TOOLTIP);
+        }
+    }, (block: any) => {
+        return `lcd.clear();\n`;
+    });
+
+
+    // =========================================================================
+    // NeoPixel (Adafruit_NeoPixel)
+    // =========================================================================
+
+    // Init Block
+    registerBlock('display_neopixel_init', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_NEOPIXEL_INIT);
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_SENSOR_PIN)
+                .appendField(new Blockly.FieldTextInput("6"), "PIN");
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_COUNT)
+                .appendField(new Blockly.FieldNumber(12), "COUNT");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(160);
+            this.setTooltip(Blockly.Msg.ARD_NEOPIXEL_INIT2_TOOLTIP);
+        }
+    }, (block: any) => {
+        const pin = block.getFieldValue('PIN');
+        const count = block.getFieldValue('COUNT');
+
+        reservePin(block, pin, 'OUTPUT');
+
+        arduinoGenerator.addInclude('neopixel_lib', '#include <Adafruit_NeoPixel.h>');
+        arduinoGenerator.addVariable(`neopixel_def_${pin}`, `Adafruit_NeoPixel strip_${pin}(${count}, ${pin}, NEO_GRB + NEO_KHZ800);`);
+        arduinoGenerator.addSetup(`neopixel_init_${pin}`, `strip_${pin}.begin();\n  strip_${pin}.show();`);
+
+        return '';
+    });
+
+    // Set Color Block
+    registerBlock('display_neopixel_set', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_NEOPIXEL_SET);
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_SENSOR_PIN)
+                .appendField(new Blockly.FieldTextInput("6"), "PIN");
+            this.appendValueInput("LED")
+                .setCheck("Number")
+                .appendField(Blockly.Msg.ARD_DISPLAY_PIXEL);
+            this.appendValueInput("R")
+                .setCheck("Number")
+                .appendField("R");
+            this.appendValueInput("G")
+                .setCheck("Number")
+                .appendField("G");
+            this.appendValueInput("B")
+                .setCheck("Number")
+                .appendField("B");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(160);
+            this.setTooltip(Blockly.Msg.ARD_NEOPIXEL_SET2_TOOLTIP);
+            this.setInputsInline(true);
+        }
+    }, (block: any) => {
+        const pin = block.getFieldValue('PIN');
+        const led = arduinoGenerator.valueToCode(block, 'LED', Order.ATOMIC) || '0';
+        const r = arduinoGenerator.valueToCode(block, 'R', Order.ATOMIC) || '0';
+        const g = arduinoGenerator.valueToCode(block, 'G', Order.ATOMIC) || '0';
+        const b = arduinoGenerator.valueToCode(block, 'B', Order.ATOMIC) || '0';
+
+        return `strip_${pin}.setPixelColor(${led}, strip_${pin}.Color(${r}, ${g}, ${b}));\nstrip_${pin}.show();\n`;
+    });
+
+    registerBlock('display_neopixel_fill', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_NEOPIXEL_FILL);
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_SENSOR_PIN)
+                .appendField(new Blockly.FieldTextInput("6"), "PIN");
+            this.appendValueInput("R").setCheck("Number").appendField("R");
+            this.appendValueInput("G").setCheck("Number").appendField("G");
+            this.appendValueInput("B").setCheck("Number").appendField("B");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(160);
+            this.setTooltip(Blockly.Msg.ARD_NEOPIXEL_FILL_TOOLTIP);
+            this.setInputsInline(true);
+        }
+    }, (block: any) => {
+        const pin = block.getFieldValue('PIN');
+        const r = arduinoGenerator.valueToCode(block, 'R', Order.ATOMIC) || '0';
+        const g = arduinoGenerator.valueToCode(block, 'G', Order.ATOMIC) || '0';
+        const b = arduinoGenerator.valueToCode(block, 'B', Order.ATOMIC) || '0';
+
+        // Helper function for fill
+        const funcName = `neopixel_fill_${pin}`;
+        arduinoGenerator.addFunction(funcName, `
+void ${funcName}(int r, int g, int b) {
+  for(int i=0; i<strip_${pin}.numPixels(); i++) {
+    strip_${pin}.setPixelColor(i, strip_${pin}.Color(r, g, b));
+  }
+  strip_${pin}.show();
+}`);
+        return `${funcName}(${r}, ${g}, ${b});\n`;
+    });
+
+    registerBlock('display_neopixel_clear', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_NEOPIXEL_CLEAR);
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_SENSOR_PIN)
+                .appendField(new Blockly.FieldTextInput("6"), "PIN");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(160);
+            this.setTooltip(Blockly.Msg.ARD_NEOPIXEL_CLEAR_TOOLTIP);
+        }
+    }, (block: any) => {
+        const pin = block.getFieldValue('PIN');
+        return `strip_${pin}.clear();\nstrip_${pin}.show();\n`;
+    });
+
+    registerBlock('display_neopixel_rainbow', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_NEOPIXEL_RAINBOW);
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_SENSOR_PIN)
+                .appendField(new Blockly.FieldTextInput("6"), "PIN");
+            this.appendValueInput("WAIT").setCheck("Number").appendField(Blockly.Msg.ARD_DISPLAY_WAIT);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(160);
+            this.setTooltip(Blockly.Msg.ARD_NEOPIXEL_RAINBOW_TOOLTIP);
+        }
+    }, (block: any) => {
+        const pin = block.getFieldValue('PIN');
+        const wait = arduinoGenerator.valueToCode(block, 'WAIT', Order.ATOMIC) || '20';
+
+        const funcName = `neopixel_rainbow_${pin}`;
+        arduinoGenerator.addFunction(funcName, `
+void ${funcName}(int wait) {
+  for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
+    for(int i=0; i<strip_${pin}.numPixels(); i++) {
+      int pixelHue = firstPixelHue + (i * 65536L / strip_${pin}.numPixels());
+      strip_${pin}.setPixelColor(i, strip_${pin}.gamma32(strip_${pin}.ColorHSV(pixelHue)));
+    }
+    strip_${pin}.show();
+    delay(wait);
+  }
+}`);
+        return `${funcName}(${wait});\n`;
+    });
+
+    registerBlock('display_lcd_backlight', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_LCD_BACKLIGHT);
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown([["ON", "backlight"], ["OFF", "noBacklight"]]), "STATE");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(60);
+            this.setTooltip(Blockly.Msg.ARD_LCD_BACKLIGHT_TOOLTIP);
+        }
+    }, (block: any) => {
+        const state = block.getFieldValue('STATE');
+        return `lcd.${state}();\n`;
+    });
+};
+
+export const DisplaysModule: BlockModule = {
+    id: 'hardware.displays',
+    name: 'Displays & Lights',
+    category: 'Displays',
+    init
+};

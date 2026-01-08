@@ -1,0 +1,24 @@
+{
+    "id": "example.hello_world",
+    "version": "1.0.0",
+    "name": "%{HELLO_WORLD_NAME}",
+    "description": "%{HELLO_WORLD_DESC}",
+    "categories": [
+        "Hello World"
+    ],
+    "compatibility": {
+        "families": [
+            "arduino",
+            "esp32",
+            "stm32"
+        ]
+    },
+    "contributes": {
+        "blocks": [
+            "blocks.json"
+        ],
+        "generators": [
+            "generator.js"
+        ]
+    }
+}

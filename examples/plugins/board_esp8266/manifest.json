@@ -1,0 +1,12 @@
+{
+    "id": "embedblocks.board.esp8266",
+    "version": "1.0.0",
+    "name": "ESP8266 NodeMCU Support",
+    "description": "Add support for ESP8266 NodeMCU V2 board via plugin.",
+    "author": "EmbedBlocks Team",
+    "contributes": {
+        "boards": [
+            "board.json"
+        ]
+    }
+}

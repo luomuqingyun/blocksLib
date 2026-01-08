@@ -1,0 +1,24 @@
+{
+    "id": "org.marlin.u8glib_hal",
+    "version": "1.0.0",
+    "name": "%{EXT_NAME}",
+    "description": "%{EXT_DESCRIPTION}",
+    "icon": "icon.png",
+    "categories": [
+        "Display"
+    ],
+    "contributes": {
+        "blocks": [
+            "blocks.json"
+        ],
+        "generators": [
+            "generator.js"
+        ]
+    },
+    "compatibility": {
+        "families": [
+            "ESP32",
+            "Arduino"
+        ]
+    }
+}

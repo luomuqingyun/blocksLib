@@ -1,0 +1,6 @@
+{
+    "HELLO_WORLD_NAME": "你好世界示例",
+    "HELLO_WORLD_DESC": "基本的串口打印插件示例。",
+    "B_HELLO_WORLD_MSG": "打印问候 %1",
+    "B_HELLO_WORLD_TOOLTIP": "向串口打印一条问候语"
+}

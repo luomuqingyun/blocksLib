@@ -1,0 +1,47 @@
+﻿node.exe : npm warn Unknown user config "electron_mirror". This will stop working in the 
+next major version of npm.
+At D:\Program Files\nodejs\npm.ps1:16 char:5
++     & "$basedir/node$exe"  "$basedir/node_modules/npm/bin/npm-cli.js" ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...version of npm.:String) [ 
+   ], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm warn Unknown user config "electron_builder_binaries_mirror". This will stop working i
+n the next major version of npm.
+
+> embedblocks-studio@1.0.0 build
+> npm run clean:build && tsc && vite build && vite build -c vite.sandbox.config.ts
+
+npm warn Unknown env config "electron-builder-binaries-mirror". This will stop working in
+ the next major version of npm.
+npm warn Unknown env config "electron-mirror". This will stop working in the next major v
+ersion of npm.
+npm warn Unknown user config "electron_mirror". This will stop working in the next major 
+version of npm.
+npm warn Unknown user config "electron_builder_binaries_mirror". This will stop working i
+n the next major version of npm.
+
+> embedblocks-studio@1.0.0 clean:build
+> rimraf dist dist-electron
+
+[31mfailed to load config from C:\Users\wofy\Desktop\embedblocks-studio\vite.config.ts[
+39m
+[31merror during build:
+TypeError: monacoEditorPlugin is not a function
+    at file:///C:/Users/wofy/Desktop/embedblocks-studio/node_modules/.vite-temp/vite.conf
+ig.ts.timestamp-1767075441265-249094299ee028.mjs:32:5
+    at ModuleJob.run (node:internal/modules/esm/module_job:327:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:663:26)
+    at async loadConfigFromBundledFile (file:///C:/Users/wofy/Desktop/embedblocks-studio/
+node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:49451:15)
+    at async bundleAndLoadConfigFile (file:///C:/Users/wofy/Desktop/embedblocks-studio/no
+de_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:49294:22)
+    at async loadConfigFromFile (file:///C:/Users/wofy/Desktop/embedblocks-studio/node_mo
+dules/vite/dist/node/chunks/dep-D4NMHUTW.js:49257:44)
+    at async resolveConfig (file:///C:/Users/wofy/Desktop/embedblocks-studio/node_modules
+/vite/dist/node/chunks/dep-D4NMHUTW.js:48752:24)
+    at async createBuilder (file:///C:/Users/wofy/Desktop/embedblocks-studio/node_modules
+/vite/dist/node/chunks/dep-D4NMHUTW.js:46736:18)
+    at async CAC.<anonymous> (file:///C:/Users/wofy/Desktop/embedblocks-studio/node_modul
+es/vite/dist/node/cli.js:862:23)[39m

@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "name": "MyProject1",
+    "boardId": "uno",
+    "createdAt": 1767093378485,
+    "lastModified": 1767784301232,
+    "buildConfig": {
+      "envName": "uno",
+      "platform": "atmelavr",
+      "board": "uno",
+      "framework": "arduino"
+    }
+  },
+  "blocks": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "arduino_entry_root",
+          "id": "cVNQeb0JX}=]qw2Jdrte",
+          "x": 50,
+          "y": 50
+        }
+      ]
+    },
+    "viewState": {
+      "scrollX": 841.2674102783203,
+      "scrollY": 314.5,
+      "scale": 1,
+      "viewWidth": 1940,
+      "viewHeight": 852
+    }
+  }
+}

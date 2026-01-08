@@ -1,0 +1,107 @@
+{
+  "name": "embedblocks-studio",
+  "private": true,
+  "version": "1.0.0",
+  "main": "dist-electron/main.js",
+  "description": "Visual Embedded Programming Studio",
+  "author": "EmbedBlocks",
+  "scripts": {
+    "dev": "vite",
+    "predev": "node scripts/cleanup.js",
+    "build": "npm run clean:build && tsc && vite build && vite build -c vite.sandbox.config.js",
+    "start": "npm run build && electron .",
+    "release": "npm run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps",
+    "rebuild": "electron-builder install-app-deps",
+    "preview": "vite preview",
+    "clean:build": "rimraf dist dist-electron",
+    "clean:all": "rimraf node_modules dist dist-electron release package-lock.json",
+    "clean:pio": "rimraf bundled_pio",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@blockly/block-plus-minus": "^9.0.5",
+    "@blockly/field-angle": "^6.0.5",
+    "@blockly/field-multilineinput": "^6.0.5",
+    "@blockly/field-slider": "^8.0.5",
+    "@blockly/plugin-cross-tab-copy-paste": "^8.0.4",
+    "@monaco-editor/react": "^4.7.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^5.3.0",
+    "blockly": "^12.3.1",
+    "i18next": "^25.7.1",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "iconv-lite": "^0.7.1",
+    "lucide-react": "^0.344.0",
+    "monaco-editor": "^0.55.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^16.3.5",
+    "react-jss": "^10.10.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "serialport": "^12.0.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.2",
+    "@types/node": "^20.19.27",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@types/serialport": "^8.0.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "electron": "^29.0.0",
+    "electron-builder": "^24.9.1",
+    "jimp": "^1.6.0",
+    "png-to-ico": "^3.0.1",
+    "postcss": "^8.4.35",
+    "rimraf": "^5.0.10",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2",
+    "vite": "^6.0.0",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "vite-plugin-monaco-editor": "^1.1.0",
+    "vitest": "^1.6.1"
+  },
+  "build": {
+    "appId": "com.embedblocks.studio",
+    "productName": "EmbedBlocks Studio",
+    "directories": {
+      "output": "release"
+    },
+    "fileAssociations": [
+      {
+        "ext": "ebproj",
+        "name": "EmbedBlocks Project",
+        "role": "Editor",
+        "icon": "icon.ico"
+      }
+    ],
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "icon.ico",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "bundled_pio",
+        "to": "bundled_pio",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "mac": {
+      "target": "dmg"
+    }
+  }
+}

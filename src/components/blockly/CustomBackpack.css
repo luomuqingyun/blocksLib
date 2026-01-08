@@ -1,0 +1,268 @@
+/* Custom Backpack Styles */
+
+.custom-backpack {
+    position: absolute;
+    bottom: 250px;
+    right: 14px;
+    z-index: 50;
+}
+
+.custom-backpack-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    transition: all 0.2s ease;
+    position: relative;
+    opacity: 0.5;
+}
+
+.custom-backpack-btn:hover {
+    opacity: 0.8;
+    color: #6b7280;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.custom-backpack-btn.active {
+    opacity: 1;
+    color: #3b82f6;
+}
+
+.custom-backpack-btn.has-items {
+    opacity: 0.7;
+    color: #6b7280;
+}
+
+/* Drag over - highlight when dragging block over */
+.custom-backpack-btn.drag-over {
+    opacity: 1;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.15);
+    transform: scale(1.2);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+}
+
+.custom-backpack-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.custom-backpack-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 3px;
+    border-radius: 7px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Panel */
+.custom-backpack-panel {
+    position: absolute;
+    bottom: 50px;
+    right: 0;
+    width: 280px;
+    max-height: 350px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    animation: backpackSlideIn 0.2s ease-out;
+}
+
+@keyframes backpackSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.custom-backpack-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.custom-backpack-count {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 400;
+    flex: 1;
+}
+
+.custom-backpack-clear {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.custom-backpack-clear:hover {
+    opacity: 1;
+}
+
+/* Empty state */
+.custom-backpack-empty {
+    padding: 30px 20px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.custom-backpack-empty small {
+    color: #cbd5e1;
+}
+
+/* Items list */
+.custom-backpack-list {
+    list-style: none;
+    margin: 0;
+    padding: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.custom-backpack-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    background: #f8fafc;
+    transition: background 0.1s ease;
+}
+
+.custom-backpack-item:last-child {
+    margin-bottom: 0;
+}
+
+.custom-backpack-item:hover {
+    background: #e2e8f0;
+}
+
+.custom-backpack-item-content {
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.custom-backpack-item-preview {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chain-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: #3b82f6;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.custom-backpack-item-type {
+    font-size: 10px;
+    color: #94a3b8;
+    font-family: ui-monospace, monospace;
+}
+
+.custom-backpack-item-remove {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.1s ease;
+}
+
+.custom-backpack-item-remove:hover {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+    .custom-backpack-btn {
+        background: rgba(30, 41, 59, 0.9);
+        color: #94a3b8;
+    }
+
+    .custom-backpack-btn:hover {
+        background: #334155;
+        color: #f1f5f9;
+    }
+
+    .custom-backpack-panel {
+        background: #1e293b;
+    }
+
+    .custom-backpack-header {
+        background: #0f172a;
+        border-color: #334155;
+        color: #f1f5f9;
+    }
+
+    .custom-backpack-item {
+        background: #0f172a;
+    }
+
+    .custom-backpack-item:hover {
+        background: #334155;
+    }
+
+    .custom-backpack-item-preview {
+        color: #f1f5f9;
+    }
+}

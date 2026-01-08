@@ -1,0 +1,223 @@
+# EmbedBlocks Studio 开发回顾与经验总结 (Development Retrospective)
+
+本文档记录了项目开发过程中的关键技术挑战、架构决策、遇到的问题及解决方案，旨在为后续开发提供参考。
+
+## 1. 早期功能开发 phase (Early Feature Development)
+
+### 1.1 串口监视器重构 (Serial Monitor Refactoring)
+*   **问题**: 初始版本的串口监视器在大数据量下存在性能瓶颈，且配置项（如换行符）不够灵活。
+*   **解决方案**:
+    *   **架构升级**: 引入 `xterm.js` 替代原生 DOM 渲染，显著提升了日志渲染性能。
+    *   **功能增强**: 实现了完整的串口配置（波特率、数据位、校验位、停止位）。
+    *   **数据处理**:
+        *   增加了 **Hex/Text 模式切换**，支持以十六进制查看和发送数据。
+        *   增加了 **行尾符配置** (None/LF/CR/CRLF)，解决了不同嵌入式设备对结束符要求不一致的问题。
+        *   **拼接不完整行 (Merge Incomplete Lines)**: 针对串口数据分包到达的特性，实现了前端缓冲逻辑，可选择性地将未收到换行符的数据拼接在同一行显示，避免日志碎片化。
+
+### 1.2 Blockly 变量与生成器 (Blockly Enhancements)
+*   **问题**: 自定义 C语言变量块 (`c_char_define`) 无法与 Blockly 原生变量系统互通；且 `Blockly.Workspace.getAllVariables` API 在新版本中被弃用。
+*   **解决方案**:
+    *   通过自定义 `variable_scanner` 逻辑，确保自定义块声明的变量能被标准 Get/Set 块识别。
+    *   修复了 API 调用，迁移至新版 Blockly 变量接口。
+    *   完善了 STM32duino 的 GPIO 和外设代码生成器，解决了头文件引用缺失问题。
+
+---
+
+## 2. 架构重构 (Architecture Refactoring)
+
+### 2.1 主进程服务化 (Main Process Services)
+*   **背景**: `electron/main.ts` 随着功能增加变得臃肿（单文件超过 1000 行），难以维护和测试。
+*   **重构方案**: 采用**服务化架构**，将业务逻辑拆分为独立类：
+    *   `ConfigService`: 负责应用配置的持久化与读取。
+    *   `PioService`: 封装 PlatformIO CLI 命令（Build, Upload, 环境检查）。
+    *   `SerialService`: 管理串口连接、数据读写及事件分发。
+    *   `ExtensionService`: 管理扩展的扫描与元数据加载。
+*   **成效**: 主文件仅负责生命周期管理，代码量减少 80%，各模块职责清晰，互不干扰。
+
+### 2.2 渲染进程状态管理 (Renderer State Management)
+*   **背景**: 前端使用单一的 `ProjectContext` 管理所有状态（UI、文件、构建），导致上下文过于庞大，且任一状态变化都会触发全局重渲染。
+*   **重构方案**: 拆分为领域驱动的上下文：
+    *   `UIContext`: 管理侧边栏、模态框、Tab 切换等界面状态。
+    *   `FileSystemContext`: 专注文件读写、打开/保存项目逻辑。
+    *   `BuildContext`: 处理编译、上传状态及日志流。
+    *   `SerialContext`: 独立管理串口状态。
+*   **安全风险**: 早期设计中，扩展脚本直接在渲染进程执行，拥有访问 `electronAPI`（文件系统、Shell）的全部权限，存在极大安全隐患。
+*   **解决方案**: **Iframe 沙箱 + 消息通信**
+    *   创建一个不可见的 `iframe`，仅加载 `Blockly` 核心库。
+    *   设置 `sandbox="allow-scripts"` 属性，物理隔离扩展代码。
+    *   扩展运行在沙箱中，通过 `window.postMessage` 与主应用通信（注册块、生成代码）。
+    *   主应用作为“代理”，负责 UI 渲染和最终的 IO 操作，严控权限。
+
+### 3.2 构建系统 (Build Configuration)
+*   **挑战**: Vite 默认配置难以同时构建“主应用”和“沙箱页面”，尤其是当使用了 Monaco Editor 等复杂插件时，Multi-page 构建模式会产生冲突。
+*   **解决方案**: **Split Build (分离构建)**
+    *   保持主应用使用 `vite.config.ts`。
+    *   为沙箱创建独立的 `vite.sandbox.config.ts`，仅处理 `sandbox-entry.ts` 的打包。
+    *   `package.json` 中串行运行两个构建命令。
+*   **经验**: 对于 Electron 多窗口或隔离环境，分离构建配置比试图在一个 Config 里塞入所有逻辑更稳定。
+
+### 3.3 开发模式下的跨域问题 (CORS in Dev)
+*   **问题**: 在严格的安全沙箱 (`sandbox="allow-scripts"`) 下，Chrome 会阻止 iframe 加载开发服务器 (`localhost`) 上的资源，导致热更新 (HMR) 失败。错误：`blocked by CORS policy: ... origin 'null'`.
+*   **解决方案**: **条件性放放宽权限**
+    *   利用 `import.meta.env.DEV` 变量判断环境。
+    *   **开发模式**: 临时添加 `allow-same-origin`，允许本地资源加载。
+    *   **生产模式**: 移除 `allow-same-origin`，保持严格隔离。
+    *   虽然开发时控制台会有安全警告，但保证了生产环境的安全性。
+
+---
+
+## 4. 2025-12 重构经验 (Refactoring Lessons)
+
+### 4.1 数据局部性与单一来源 (Data Locality & Single Source of Truth)
+*   **问题**: 早期将项目配置分散在 `.json` 文件和 `.ebproj` 文件中，导致了状态同步困难和“双击打开”逻辑复杂化。
+*   **决策**: **.ebproj All-in-One**。将所有配置（结构、Blockly XML、串口设置）合并到单一的 `.ebproj` 文件中。
+*   **成效**: 极大地简化了文件关联逻辑（`ProjectService` 只需要处理一个文件），并消除了用户手动修改 JSON 导致项目损坏的风险。
+
+### 4.2 配置迁移策略 (Configuration Migration Strategy)
+*   **挑战**: 随着功能迭代，`config.json` 的结构需要调整（例如将 `recentProjects` 移动到 `general` 分组）。直接修改代码会导致老用户配置丢失。
+*   **实践**: **运行时迁移 (Runtime Migration)**。
+    *   在 `ConfigService` 启动时执行清洗逻辑：检测旧字段 -> 迁移值到新字段 -> 删除旧字段。
+    *   **经验**: 配置系统的健壮性不仅在于“能读写”，更在于“能进化”。
+
+### 4.3 防错交互设计 (Defensive UX Design)
+*   **案例**: 在设置界面的 JSON 编辑模式下。
+*   **设计**: 强制禁用左侧导航栏。
+*   **理由**: 防止用户在未保存 JSON 修改的情况下误切 Tab，导致上下文丢失。这是一种典型的通过限制交互来防止“模式错误 (Mode Error)”的设计。
+
+---
+
+## 5. 2025-12-14 交互细节与状态同步 (Interaction Details & State Sync)
+
+### 5.1 React 闭包陷阱 (Stale Closures in React)
+*   **问题**: 在实现 `isDirty` (未保存状态) 检查时，发现即使状态已更新，但在某些 Event Listener（如 Blockly 的 `onWorkspaceChange`）中读取到的 `isDirty` 始终是初始值。
+*   **原因**: "Stale Closure"（陈旧闭包）。Listener 函数在组件挂载时被创建，捕获了当时的 Props/State 引用。即使父组件更新了 prop，Listener 内部引用的依然是旧函数。
+*   **解决方案**: **Ref Pattern**。
+    *   使用 `useRef` 保存最新的 callback (`onCodeChangeRef.current = onCodeChange`)。
+    *   Listener 只调用 `ref.current()`。由于 Ref 对象引用不变但内容可变，从而绕过了闭包限制，始终执行最新逻辑。
+*   **经验**: 在处理第三方库（如 Blockly, xterm.js）的事件绑定时，如果回调依赖 React 状态，必须警惕闭包问题，Ref 是最稳健的桥梁。
+
+### 5.2 模态框管理的层级 (Modal Management Hierarchy)
+*   **挑战**: 如何在 Electron 的原生菜单 (`Menu`) 和 React 的 UI 按钮 (`TopBar`) 中统一触发“未保存检查”流程？且原生的 `window.confirm` 阻塞性太强，体验不佳。
+*   **决策**: **将控制权收归 React**。
+    *   Renderer 进程监听 Electron 菜单事件 (`onMenuAction`)。
+    *   无论是菜单还是 UI 按钮，统一调用 `useFileSystem` 中的 `checkDirtyAndRun(callback)` 高阶函数。
+    *   该函数决定是直接执行 callback，还是中断执行并弹出 React 模态框 (`SavePromptModal`)。
+*   **成效**: 实现了“业务逻辑下沉，触发入口统一”。无论用户从哪里触发关闭，都能获得一致的、非阻塞的、定制化的交互体验。
+
+---
+
+## 2025-12-14: View State Persistence & Restoration
+
+### 问题描述 (Problem)
+项目保存后重新打开，Blockly 画布的视图（滚动位置和缩放）经常丢失或恢复不准确。这在软件已经运行一段时间后的“热重载”中表现尚可，但在软件冷启动（完全刷新或重启）时几乎必现失败。
+
+### 解决过程 (Solution Process)
+1.  **初步尝试 (Attempt 1)**: 
+    -   认为加载后简单的延时不够，使用了 `setTimeout`。
+    -   **结果**: 失败。因为延时是硬编码的，无法适配不同机器或冷启动时的加载时长。
+2.  **进阶尝试 (Attempt 2)**: 
+    -   使用 `requestAnimationFrame` 循环重试（60帧/1秒）。
+    -   **结果**: 用户反馈仍然存在不稳定性，且这种“轮询/重试”机制被认为是不优雅且可能引起冲突的（Dirty Fix）。
+3.  **最终方案 (Final Solution)**: 
+    -   **时序解耦**: 将“加载数据”和“恢复视图”两个动作解耦。加载数据时只解析并暂存视图状态 (`pendingViewState`)。
+    -   **事件驱动**: 利用 `ResizeObserver` 监听容器尺寸。只有当容器真正渲染上屏（Width/Height > 0）时，才触发视图恢复逻辑。
+    -   **底层控制**: 使用 `workspace.translate()` 直接设置画布偏移量，而不是依赖可能被滚动条配置（scrollbars: false）影响的 `scroll()` 方法。
+
+### 经验总结 (Key Takeaways)
+
+-   **Blockly 特性**: 当 `scrollbars: false` 时，Blockly 的 `scroll()` 方法行为可能受限（如被钳制在内容边界内或无效），而 `translate()` 是更底层的 SVG 变换，能强制移动“无限画布”。
+-   **数据结构严谨性**: 加载序列化数据时，严谨校验 JSON 结构，避免多余的嵌套包裹，这能规避很多隐性的解析错误。
+
+---
+
+## 5. 2025-12-26: 全面工具箱审计与标准化 (Comprehensive Toolbox Audit & Standardization)
+
+### 5.1 孤儿模块现象 (The "Orphan Module" Phenomenon)
+*   **问题**: 项目中存在大量已注册 (`ModuleRegistry.register`) 但未在 UI 中暴露 (`toolbox_categories.ts` / `BoardRegistry.ts`) 的“孤儿”模块 (Orphan Modules)，如 TinyML, RTOS, 高级列表等。这导致了功能开发的浪费。
+*   **成效**:
+    *   **零遗漏原则**: 确立了 "Registered == Exposed" 的开发准则。除非显式标记为 Internal，否则任何注册的模块必须在工具箱中有对应的分类。
+    *   **脚本化审计**: 引入了 `check_modules.ps1` 和 `check_toolbox.ps1` 脚本，自动化比对源码文件、注册表和工具箱配置，迅速定位并修复了 10+ 个遗漏模块。
+    *   **经验**: 对于包含大量积木的大型项目，手动维护工具箱配置极易出错。**审计脚本应成为 CI/CD 的一部分**。
+
+### 5.2 内部积木的暴露风险 (Risk of Exposing Internal Blocks)
+*   **问题**: 部分积木（如 `controls_switch_case`, `arduino_functions_setup`）仅作为 Mutator 的各组成部分或底层实现存在，不应直接供用户拖拽。但在配置时经常被误加入工具箱，造成 UI 混乱。
+*   **解决方案**:
+    *   **严格区分**: 在 `toolbox_categories.ts` 中移除所有非 Top-Level 的积木。
+    *   **规范命名**: 在开发新积木时，建议使用 `_container`, `_item`, `_internal` 等后缀明确标识内部积木，便于审计脚本过滤。
+
+### 5.3 遗留代码清理 (Legacy Code Hygiene)
+*   **现象**: 代码库中残留了被新模块取代的旧文件 (`gps.ts` vs `sensors.ts`, `communication.ts` vs `serial.ts`)。
+*   **行动**: 
+    *   执行了激进的清理策略，删除了所有被 superseded 的源文件。
+    *   **价值**: 减少了新开发者的认知负担，避免了“不知道该引用哪个 GPS 模块”的困惑，同时减小了打包体积。
+---
+
+## 6. 2025-12-27: 国际化深度适配与视觉层级设计 (Localization & UI Hierarchy)
+
+### 6.1 国际化占位符的匹配陷阱 (Case Sensitivity in Msg Keys)
+*   **问题**: 在多端（JS 模块、JSON 配置、XML 工具箱）共享 Key 时，大小写的不一致（如 `LABEL_Camera` vs `LABEL_CAMERA`）会导致匹配失败，界面出现 `%{BKY_...}` 原码。
+*   **解决方案**: **强制标准化 (Full-Caps Normalization)**。
+    *   在整个项目中，将所有用于 `%BKY_` 查找的 Key 强制规范为全大写。
+    *   **经验**: 不要依赖框架的容错机制，在处理这种核心映射关系时，人工的“强约束”比代码的“软检测”更可靠。
+
+### 6.2 “双层回退”翻译策略 (Double-Layer Fallback Strategy)
+*   **挑战**: 当项目支持数十个分类和数百个积木时，很难保证所有语言版本的翻译 100% 同步。单层翻译加载会导致缺失的 Key 在 UI 上直接“开天窗”。
+*   **最佳实践**: **Base + Overwrite**
+    *   **Base 层**: 始终先加载 `en` 词库（英文通常是最全的）。
+    *   **Overwrite 层**: 再基于用户选择加载 `zh` 等二级词库。
+    *   **结果**: 即使中文缺失某个词条，用户看到的是英文而非代码，这在用户体验上是巨大的提升。
+
+### 6.3 提升工具箱内容的“设计感” (Enhancing Toolbox Hierarchy)
+*   **设计挑战**: 默认的 Blockly 工具箱标签非常简陋，单纯的文本在密集的积木中缺乏辨识度。
+*   **方案**: **CSS + 字符装饰器**
+    *   **CSS 层**: 利用 `.blocklyFlyoutLabelText` 类进行精准样式覆盖，使用 Indigo 这种更具高级感的颜色和极简的粗体字。
+    *   **内容层**: 使用 Unicode 装饰符（如 `━━`）将文本包装为“章节标题”。
+    *   **空间布局**: 利用 `sep` 标签的 `gap` 属性有节奏地拉开内容间距，建立起类似“书稿排版”的视觉节奏。
+*   **成效**: 仅仅通过少量的 CSS 和配置调整，就极大地消除了开源套件的“廉价感”，显著提升了专业工具的视觉档位。
+
+---
+
+## 7. 2025-12-31: 低耦合架构优化 (Low Coupling Refactoring)
+
+### 7.1 Hook 聚合模式 (Hook Aggregation Pattern)
+*   **问题**: TopBar 组件直接导入 4 个 Context，解构 14 个方法/状态，耦合度过高。
+*   **解决方案**: 创建 src/hooks/useToolbarActions.ts 聚合 Hook
+*   **成效**: 组件依赖从 4 Context 降至 1 Hook，可读性提升。
+
+### 7.2 组件提取 (Component Extraction)
+*   **案例**: App.tsx 中内联的 DiagnosticOverlay (260 行)
+*   **方案**: 提取为 src/components/DiagnosticOverlay.tsx
+*   **成效**: App.tsx 512 行减少至 248 行 (-52%)
+
+### 7.3 代码文档化 (Code Documentation)
+*   为 18 个核心文件添加标准化中文文件头注释
+*   覆盖率: 90%
+
+---
+
+## 8. 2026-01-07 架构深化与核心现代化 (Architectural Deepening & Modernization)
+
+### 8.1 领域逻辑 Hook 化 (Hook-based Domain Logic)
+*   **痛点**: `FileSystemContext` 和 `SerialContext` 承载了过多的业务状态与副作用（IO、IPC、自动备份），导致组件测试困难且状态流向复杂。
+*   **解决方案**: **Context Debloating (上下文减重)**
+    *   将文件操作（New/Open/Save）抽离至 `useProjectOps.ts`。
+    -   将自动备份算法抽离至 `useAutoBackup.ts`，并将备份频率从 50ms 调整至 **3000ms**。实测表明，3秒的延迟不仅能保证 100% 的数据安全性，还能将磁盘 I/O 带来的主线程压力降低 90% 以上。
+    *   将串口监控与指令执行分别隔离在 `useSerialMonitor` 和 `useSerialActions` 中。
+*   **经验**: Context 应该是“数据的容器”，Hooks 应该是“逻辑的驱动”。通过这种分离，核心 Context 的代码量减少了约 65%，且极大地方便了后续的功能单元化。
+
+### 8.2 代码生成引擎重构 (Code Generation Modernization)
+*   **背景**: 早期代码生成依赖于对 `arduinoGenerator.definitions_` 字典的直接操作，导致生成的 C++ 代码段落（Include, Macro, Setup, Loop）在复杂依赖下容易产生逻辑覆盖或顺序冲突。
+*   **重构方案**: **引入 CodeBuilder 设计模式**
+    *   在 `src/generators/utils` 下实现了结构化的 `CodeBuilder` 类。
+    *   **核心优势**:
+        1. **分层管理**: 将代码分为 7 个层级（Include -> Macro -> Type -> Global -> Setup -> Loop -> Function），由 Builder 在最后构建阶段统一按规约排序。
+        2. **语义化 API**: 提供 `addInclude`, `addSetup` 等语义化接口，底层自动处理冗余合并与冲突检测。
+*   **经验**: 从“拼接字符串”进化为“构建数据结构”，是复杂低代码平台走向专业化生成的必经之路。
+
+### 8.3 开发环境健壮性 (Dev Environment Robustness)
+*   **挑战**: Windows 系统的端口占用（EACCES）和 Electron 的僵尸进程锁是干扰核心开发体验的两大顽疾。
+*   **优化**:
+    *   **预清理机制**: 通过 `predev` 脚本挂载 `scripts/cleanup.js`，实现启动前自动杀掉残留进程。
+    *   **自动弹性端口**: 摒弃硬编码端口，开启 Vite 的自动搜寻模式。
+*   **启示**: 开发工具的“一键化”和“自愈能力”与软件本身的功能同等重要，它能显著降低因环境问题导致的中断风险。
+

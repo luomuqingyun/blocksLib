@@ -1,0 +1,71 @@
+# 项目设置指南 (PlatformIO 配置)
+
+EmbedBlocks Studio 允许您为每个项目配置高级 PlatformIO 构建选项。这些设置存储在项目文件 (`.ebproj`) 中，并严格遵循 [PlatformIO 项目配置文件](https://docs.platformio.org/en/latest/projectconf/index.html) 标准。
+
+## 如何进入设置
+点击顶部菜单栏中的 **项目设置** 按钮 (滑块图标 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="3" y2="3"/><line x1="4" x2="20" y1="12" y2="12"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="3" r="2"/><circle cx="12" cy="21" r="2"/></svg>)。
+
+## 配置选项卡说明
+
+### 1. 常规 (General)
+- **描述 (Description)**: 项目配置的备注信息。
+
+### 2. 调试接口 (Debug Interface)
+高级调试设置。
+- **调试工具 (Debug Tool)**: 设置用于 `pio debug` 的调试探针。
+    - `default`: 使用默认的调试器。
+    - `jlink`: SEGGER J-Link。
+    - `stlink`: ST-Link V2/V3。
+    - `cmsis-dap`: DAPLink/CMSIS-DAP。
+    - `blackmagic`: Black Magic Probe。
+    - `esp-prog`: ESP 官方 JTAG 调试器。
+    - `atmel-ice`: AVR/SAM 系列调试器。
+
+- **接口类型 (Interface)**: 选择物理连接方式，对于 J-Link 等工具至关重要。
+    - `Auto`: 自动检测 (默认)。
+    - `SWD`: 2线串行调试 (SWCLK, SWDIO)，节省引脚，小型板常用。
+    - `JTAG`: 4线标准调试 (TCK, TMS, TDI, TDO)，全功能。
+
+### 3. 编译选项 (Compiler Options)
+控制 C++ 代码的编译方式。
+- **优化等级 (Optimization Level)**: 对应添加至 `build_flags` 的标准 GCC 标志。
+    - `-Os` (默认): 体积优先优化 (Size Optimization)。
+    - `-O0`: 无优化 (适合调试)。
+    - `-O1`, `-O2`, `-O3`: 不同程度的速度优化。
+- **C++ 标准 (C++ Standard)**: 设置语言标准 (例如 `-std=gnu++17`)。
+
+### 4. 库管理 (Libraries)
+管理 `lib_deps`依赖项。
+- 输入库名称 (例如 `FastLED`, `Adafruit NeoPixel`) 或 Git 仓库地址。
+- **格式**: 输入框中每行一个库。
+- **效果**: 在生成的 `platformio.ini` 中自动转换为逗号分隔的 `lib_deps` 条目。
+
+### 4. 上传与监控 (Upload & Monitor)
+高级硬件交互设置。
+- **上传协议 (Upload Protocol)**: 对 STM32 和 ESP32 用户尤为重要。
+    - `default`: 使用默认的串口 Bootloader。
+    - `stlink`: 适用于 STM32 ST-Link V2 下载器。
+    - `jlink`: 适用于 SEGGER J-Link。
+    - `cmsis-dap`: 适用于 DAPLink/CMSIS-DAP 调试器。
+- **监控波特率 (Monitor Speed)**: 串口监视器的波特率 (例如 `115200`)。
+- **上传波特率 (Upload Speed)**: 烧录时的波特率 (例如 ESP32 常用的 `921600`)。
+
+### 5. 高级 (Advanced)
+供专家用户使用，支持原生 INI控制。
+- **额外构建标志 (Extra Build Flags)**: 添加自定义宏或标志 (例如 `-D DEBUG_MODE`)。
+- **自定义 INI 内容 (Custom INI Content)**: 将原始内容直接追加到 `platformio.ini` 的末尾。可用于覆盖其他设置或添加高级 PIO 功能，如 `monitor_filters` 或 `extra_scripts`。
+
+## 验证
+所有设置都会在构建时生成到 `platformio.ini` 文件中。构建完成后，您可以检查项目目录下的 `platformio.ini` 文件来验证生成的配置是否正确。
+
+## 6. 工具箱管理 (Toolbox Management)
+**(v1.2 新增)** 允许用户自定义左侧积木工具栏的分类可见性。
+
+- **位置**: 设置 (Settings) -> 工具箱 (Toolbox)。
+- **功能**:
+    - 提供所有标准分类的列表（如 Logic, IO, Sensors 等）。
+    - **所见即所得**: 列表会根据您当前选择的开发板自动更新，仅显示该硬件支持的分类。
+    - **勾选 (Eye Icon)**: 显示该分类。
+    - **取消勾选 (Eye Off Icon)**: 隐藏该分类。
+- **作用**: 帮助小屏幕用户或特定场景用户（如纯软件逻辑教学）隐藏干扰项，专注于常用的积木分类。该设置是全局的，对所有项目生效。
+

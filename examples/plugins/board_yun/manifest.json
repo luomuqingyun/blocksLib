@@ -1,0 +1,12 @@
+{
+    "id": "embedblocks.board.yun",
+    "version": "1.0.0",
+    "name": "Arduino Yun Support",
+    "description": "Add support for Arduino Yun board via plugin.",
+    "author": "EmbedBlocks Team",
+    "contributes": {
+        "boards": [
+            "board.json"
+        ]
+    }
+}
