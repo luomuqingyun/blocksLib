@@ -56,7 +56,7 @@ function Update-BlocksLib {
     Write-Host ">>> 提交代码..." -ForegroundColor Yellow
     Run-GitCommand "add ."
     
-    $commitMsg = Read-Host "请输入提交信息 (默认为 'Update plugins')"
+    $commitMsg = Read-Host "请输入blocksLib子项目提交信息 (默认为 'Update plugins')"
     if ([string]::IsNullOrWhiteSpace($commitMsg)) { $commitMsg = "Update plugins" }
     
     Run-GitCommand "commit -m ""$commitMsg"""
@@ -82,7 +82,7 @@ function Update-MainRepo {
     Write-Host ">>> 提交代码..." -ForegroundColor Yellow
     Run-GitCommand "add ."
     
-    $commitMsg = Read-Host "请输入提交信息 (默认为 'Update project')"
+    $commitMsg = Read-Host "请输入主项目提交信息 (默认为 'Update project')"
     if ([string]::IsNullOrWhiteSpace($commitMsg)) { $commitMsg = "Update project" }
     
     Run-GitCommand "commit -m ""$commitMsg"""
