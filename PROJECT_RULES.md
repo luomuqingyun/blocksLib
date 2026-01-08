@@ -1,3 +1,7 @@
+# Agent Guidelines
+1. **Language**: Strictly use Simplified Chinese (简体中文) for all thinking, reasoning, and communication with the user.
+2. **Documentation**: When generating code comments, READMEs, or implementation plans, always use Simplified Chinese.Code comments must be in Simplified Chinese.
+
 # 协作默契指南 (Collaboration Agreement)
 
 为了提升开发效率并保持 EmbedBlocks Studio 项目的代码质量，Antigravity（AI 助手）与开发者共同遵守以下约定：
@@ -23,3 +27,4 @@
 
 ---
 *本指南由 Antigravity 自动维护，作为我们协作的“思维契约”。*
+
