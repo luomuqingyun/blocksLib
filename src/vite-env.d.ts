@@ -67,6 +67,7 @@ interface ElectronAPI {
   importExtension: () => Promise<{ success: boolean; message: string }>;
   uninstallExtension: (extId: string) => Promise<{ success: boolean; message: string }>;
   readHelpFile: (type: 'user' | 'plugin' | 'about') => Promise<{ content: string; path: string }>;
+  openHelpGuide: (type: 'user' | 'plugin' | 'marketplace') => Promise<{ success: boolean; message?: string }>;
   openExternal: (path: string) => Promise<boolean>;
 
   // --- Marketplace ---

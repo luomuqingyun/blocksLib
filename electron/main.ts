@@ -232,27 +232,46 @@ function registerAllIpcs() {
     registerBuildHandlers(ipcMain, getMainWindow);
     registerMarketplaceHandlers(ipcMain);
 
-    // Help file reader
-    ipcMain.handle('help:read-file', async (_event, type: 'user' | 'plugin' | 'about') => {
-        let fileName = '用户操作指南.md';
-        if (type === 'plugin') fileName = '插件系统开发手册.md';
-        else if (type === 'about') fileName = '关于项目.md';
+    // Helper to find help files
+    const findDocPath = (fileName: string): string | null => {
         const possiblePaths = [
             path.join(app.getAppPath(), 'docs', fileName),
             path.join(app.getAppPath(), 'resources', 'docs', fileName),
             path.join(__dirname, '../docs', fileName),
             path.join(__dirname, '../../docs', fileName),
         ];
+        return possiblePaths.find(p => fs.existsSync(p)) || null;
+    };
 
-        for (const p of possiblePaths) {
-            if (fs.existsSync(p)) {
-                return {
-                    content: fs.readFileSync(p, 'utf8'),
-                    path: p
-                };
-            }
+    // Help file reader
+    ipcMain.handle('help:read-file', async (_event, type: 'user' | 'plugin' | 'about') => {
+        let fileName = '用户操作指南.md';
+        if (type === 'plugin') fileName = '插件系统开发手册.md';
+        else if (type === 'about') fileName = '关于项目.md';
+
+        const validPath = findDocPath(fileName);
+        if (validPath) {
+            return {
+                content: fs.readFileSync(validPath, 'utf8'),
+                path: validPath
+            };
         }
         return { content: `Error: Could not find help file ${fileName}`, path: '' };
+    });
+
+    // Helper to open guide externally
+    ipcMain.handle('help:open-guide', async (_event, type: 'user' | 'plugin' | 'marketplace') => {
+        let fileName = '用户操作指南.md';
+        if (type === 'plugin') fileName = '插件系统开发手册.md';
+        else if (type === 'marketplace') fileName = '插件市场发布指南.md';
+        else if (type === 'user') fileName = '用户操作指南.md';
+
+        const validPath = findDocPath(fileName);
+        if (validPath) {
+            await shell.openPath(validPath);
+            return { success: true };
+        }
+        return { success: false, message: 'File not found' };
     });
 
     // Universal shell open

@@ -90,5 +90,5 @@ export interface BoardFamily {
 }
 
 export interface BoardConfig extends Board {
-    family: 'arduino' | 'stm32' | 'esp32';
+    family: 'arduino' | 'stm32' | 'esp32' | 'custom';
 }

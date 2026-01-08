@@ -100,6 +100,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   importExtension: () => ipcRenderer.invoke('extensions:import'),
   uninstallExtension: (extId: string) => ipcRenderer.invoke('extensions:uninstall', extId),
   readHelpFile: (type: 'user' | 'plugin') => ipcRenderer.invoke('help:read-file', type),
+  openHelpGuide: (type: 'user' | 'plugin' | 'marketplace') => ipcRenderer.invoke('help:open-guide', type),
   openExternal: (path: string) => ipcRenderer.invoke('shell:open', path),
 
   // --- Marketplace ---

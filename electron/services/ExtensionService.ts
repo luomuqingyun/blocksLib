@@ -151,7 +151,29 @@ export class ExtensionService {
             }
 
             if (!fs.existsSync(manifestPath)) {
-                return { success: false, message: 'Invalid extension: manifest.json missing' };
+                // FALLBACK: Smart Folder Detection
+                // Check if user selected a wrapper folder (e.g. 'download/my-plugin-v1/my-plugin/manifest.json')
+                // We assume there is only one subdirectory inside.
+                try {
+                    const subEntries = await fs.promises.readdir(sourcePath, { withFileTypes: true });
+                    const dirs = subEntries.filter(e => e.isDirectory() && !e.name.startsWith('.'));
+
+                    if (dirs.length === 1) {
+                        const nestedPath = path.join(sourcePath, dirs[0].name);
+                        const nestedManifest = path.join(nestedPath, 'manifest.json');
+                        if (fs.existsSync(nestedManifest)) {
+                            console.log(`[Smart Import] Detected nested extension at: ${nestedPath}`);
+                            sourcePath = nestedPath; // Rewrite source path
+                            manifestPath = nestedManifest; // Rewrite manifest path
+                        }
+                    }
+                } catch (e) {
+                    console.log("[Smart Import] Scanning failed, ignoring fallback.");
+                }
+            }
+
+            if (!fs.existsSync(manifestPath)) {
+                return { success: false, message: 'Invalid extension: manifest.json missing (checked root and 1-level deep)' };
             }
 
             const manifestContent = await fs.promises.readFile(manifestPath, 'utf-8');

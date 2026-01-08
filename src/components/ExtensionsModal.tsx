@@ -8,7 +8,7 @@
 // ----------------------------------------------------------------------------
 
 import React, { useState, useEffect } from 'react';
-import { X, Package, Puzzle, Download, Box, Layers, Cpu, Code, Trash2, Plus, Link as LinkIcon, Loader2, Globe } from 'lucide-react';
+import { X, Package, Puzzle, Download, Box, Layers, Cpu, Code, Trash2, Plus, Link as LinkIcon, Loader2, Globe, BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LoadedExtension, ExtensionRegistry } from '../registries/ExtensionRegistry';
 import { BoardRegistry } from '../registries/BoardRegistry';
@@ -133,6 +133,12 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
         }
     };
 
+    const handleOpenGuide = () => {
+        if (window.electronAPI && window.electronAPI.openHelpGuide) {
+            window.electronAPI.openHelpGuide('marketplace');
+        }
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -200,12 +206,21 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                         <Globe size={16} />
                                         <span>{t('extensions.marketplaceSources')}</span>
                                     </div>
-                                    <button
-                                        onClick={() => setIsAddingMarketplace(!isAddingMarketplace)}
-                                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
-                                    >
-                                        <Plus size={14} /> {t('common.add')}
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setIsAddingMarketplace(!isAddingMarketplace)}
+                                            className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                                        >
+                                            <Plus size={14} /> {t('common.add')}
+                                        </button>
+                                        <button
+                                            onClick={handleOpenGuide}
+                                            className="text-xs text-slate-400 hover:text-white flex items-center gap-1"
+                                            title={t('help.viewGuide', 'View Publishing Guide')}
+                                        >
+                                            <BookOpen size={14} />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {isAddingMarketplace && (
@@ -258,8 +273,15 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                         <Download size={48} className="mx-auto mb-4 opacity-50" />
                                         <h3 className="text-lg font-medium text-slate-300 mb-2">{t('extensions.marketplace')}</h3>
                                         <p className="max-w-md mx-auto mb-6">
-                                            {t('extensions.noExtensionsFound')}
+                                            {t('extensions.noExtensionsFound', "No extensions found in the registered marketplaces.")}
                                         </p>
+                                        <button
+                                            onClick={handleOpenGuide}
+                                            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm text-slate-200 flex items-center gap-2 mx-auto transition-colors"
+                                        >
+                                            <BookOpen size={16} />
+                                            {t('help.viewGuide', 'Read Publishing Guide')}
+                                        </button>
                                     </div>
                                 ) : (
                                     remoteExtensions.map((ext) => {
@@ -301,7 +323,7 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                     )}
                 </div>
             </div>
-        </BaseModal>
+        </BaseModal >
     );
 };
 
