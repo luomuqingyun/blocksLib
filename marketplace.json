@@ -1,1 +1,35 @@
-{"extensions":[{"id":"test.board.esp32c3","version":"1.0.0","name":"ESP32-C3 Mock Board","description":"Support for ESP32-C3 Mock Board","author":"Chip Vendor X","downloadUrl":"https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-esp32-c3-mock.zip","homepage":"https://github.com/luomuqingyun/blocksLib","icon":"https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-esp32-c3-mock/icon.png","type":"board"},{"id":"test.sensors.kit","version":"2.0.0","name":"Super Sensor Kit","description":"A comprehensive library for various sensors (Temp, Hum, Light). v2.0 includes I2C support.","author":"EmbedBlocks Labs","downloadUrl":"https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-sensors-kit.zip","homepage":"https://github.com/luomuqingyun/blocksLib","icon":"https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-sensors-kit/icon.png"},{"id":"test.smart.home","version":"1.1.0","name":"Smart Home IoT","description":"Control lights, fans, and relays easily.","author":"IoT Makers","downloadUrl":"https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-smart-home.zip","homepage":"https://github.com/luomuqingyun/blocksLib","icon":"https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-smart-home/icon.png"}]}
+{
+  "extensions": [
+    {
+      "id": "test.board.esp32c3",
+      "version": "1.0.0",
+      "name": "ESP32-C3 Mock Board",
+      "description": "Support for ESP32-C3 Mock Board",
+      "author": "Chip Vendor X",
+      "downloadUrl": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-esp32-c3-mock.zip",
+      "homepage": "https://github.com/luomuqingyun/blocksLib",
+      "icon": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-esp32-c3-mock/icon.png",
+      "type": "board"
+    },
+    {
+      "id": "test.sensors.kit",
+      "version": "2.0.0",
+      "name": "Super Sensor Kit",
+      "description": "A comprehensive library for various sensors (Temp, Hum, Light). v2.0 includes I2C support.",
+      "author": "EmbedBlocks Labs",
+      "downloadUrl": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-sensors-kit.zip",
+      "homepage": "https://github.com/luomuqingyun/blocksLib",
+      "icon": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-sensors-kit/icon.png"
+    },
+    {
+      "id": "test.smart.home",
+      "version": "1.1.0",
+      "name": "Smart Home IoT",
+      "description": "Control lights, fans, and relays easily.",
+      "author": "IoT Makers",
+      "downloadUrl": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-smart-home.zip",
+      "homepage": "https://github.com/luomuqingyun/blocksLib",
+      "icon": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-smart-home/icon.png"
+    }
+  ]
+}

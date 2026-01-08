@@ -90,7 +90,7 @@ $marketJson = [Ordered]@{
     extensions = $extensionsList
 }
 
-$jsonContent = $marketJson | ConvertTo-Json -Depth 5 -Compress
+$jsonContent = $marketJson | ConvertTo-Json -Depth 5
 # 美化 JSON 输出 (PowerShell ConvertTo-Json 默认格式可能不太好看，手动加点换行)
 # 为了简单，直接写入，大部分编辑器能自动格式化。这里不强求完美缩进。
 
