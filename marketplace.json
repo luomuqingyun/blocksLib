@@ -6,9 +6,9 @@
             "name": "Super Sensor Kit",
             "description": "A comprehensive library for various sensors. Updated with I2C support.",
             "author": "EmbedBlocks Labs",
-            "downloadUrl": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/blocksLib/test-sensors-kit.zip",
+            "downloadUrl": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-sensors-kit.zip",
             "homepage": "https://github.com/luomuqingyun/blocksLib",
-            "icon": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/blocksLib/test-sensors-kit/icon.png"
+            "icon": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-sensors-kit/icon.png"
         },
         {
             "id": "test.smart.home",
@@ -16,9 +16,9 @@
             "name": "Smart Home IoT",
             "description": "Control lights, fans, and relays. v1.1 Fixes relay bug.",
             "author": "IoT Makers",
-            "downloadUrl": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/blocksLib/test-smart-home.zip",
+            "downloadUrl": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-smart-home.zip",
             "homepage": "https://github.com/luomuqingyun/blocksLib",
-            "icon": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/blocksLib/test-smart-home/icon.png"
+            "icon": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-smart-home/icon.png"
         },
         {
             "id": "test.board.esp32c3",
@@ -27,9 +27,9 @@
             "description": "Support for ESP32-C3 Mock Board.",
             "type": "board",
             "author": "Chip Vendor X",
-            "downloadUrl": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/blocksLib/test-esp32-c3-mock.zip",
+            "downloadUrl": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-esp32-c3-mock.zip",
             "homepage": "https://github.com/luomuqingyun/blocksLib",
-            "icon": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/blocksLib/test-esp32-c3-mock/icon.png"
+            "icon": "https://raw.githubusercontent.com/luomuqingyun/blocksLib/main/test-esp32-c3-mock/icon.png"
         }
     ]
 }
