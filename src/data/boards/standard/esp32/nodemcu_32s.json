@@ -1,0 +1,339 @@
+{
+  "id": "nodemcu-32s",
+  "name": "NodeMCU-32S",
+  "mcu": "ESP32",
+  "specs": "4096k Flash / 320k RAM",
+  "capabilities": [
+    "wifi",
+    "bluetooth",
+    "ethernet",
+    "can"
+  ],
+  "package": "BOARD_DIP_38",
+  "pinCount": 38,
+  "pinMap": [
+    {
+      "name": "3V3",
+      "position": "1"
+    },
+    {
+      "name": "EN",
+      "position": "2"
+    },
+    {
+      "name": "VP",
+      "position": "3"
+    },
+    {
+      "name": "VN",
+      "position": "4"
+    },
+    {
+      "name": "P34",
+      "position": "5"
+    },
+    {
+      "name": "P35",
+      "position": "6"
+    },
+    {
+      "name": "P32",
+      "position": "7"
+    },
+    {
+      "name": "P33",
+      "position": "8"
+    },
+    {
+      "name": "P25",
+      "position": "9"
+    },
+    {
+      "name": "P26",
+      "position": "10"
+    },
+    {
+      "name": "P27",
+      "position": "11"
+    },
+    {
+      "name": "P14",
+      "position": "12"
+    },
+    {
+      "name": "P12",
+      "position": "13"
+    },
+    {
+      "name": "GND",
+      "position": "14"
+    },
+    {
+      "name": "P13",
+      "position": "15"
+    },
+    {
+      "name": "SD2",
+      "position": "16"
+    },
+    {
+      "name": "SD3",
+      "position": "17"
+    },
+    {
+      "name": "CMD",
+      "position": "18"
+    },
+    {
+      "name": "5V",
+      "position": "19"
+    },
+    {
+      "name": "CLK",
+      "position": "20"
+    },
+    {
+      "name": "SD0",
+      "position": "21"
+    },
+    {
+      "name": "SD1",
+      "position": "22"
+    },
+    {
+      "name": "P15",
+      "position": "23"
+    },
+    {
+      "name": "P2",
+      "position": "24"
+    },
+    {
+      "name": "P0",
+      "position": "25"
+    },
+    {
+      "name": "P4",
+      "position": "26"
+    },
+    {
+      "name": "P16",
+      "position": "27"
+    },
+    {
+      "name": "P17",
+      "position": "28"
+    },
+    {
+      "name": "P5",
+      "position": "29"
+    },
+    {
+      "name": "P18",
+      "position": "30"
+    },
+    {
+      "name": "P19",
+      "position": "31"
+    },
+    {
+      "name": "GND",
+      "position": "32"
+    },
+    {
+      "name": "P21",
+      "position": "33"
+    },
+    {
+      "name": "RX",
+      "position": "34"
+    },
+    {
+      "name": "TX",
+      "position": "35"
+    },
+    {
+      "name": "P22",
+      "position": "36"
+    },
+    {
+      "name": "P23",
+      "position": "37"
+    },
+    {
+      "name": "GND",
+      "position": "38"
+    }
+  ],
+  "pin_options": {
+    "digital": [
+      [
+        "GPIO0",
+        "0"
+      ],
+      [
+        "GPIO1",
+        "1"
+      ],
+      [
+        "GPIO2",
+        "2"
+      ],
+      [
+        "GPIO3",
+        "3"
+      ],
+      [
+        "GPIO4",
+        "4"
+      ],
+      [
+        "GPIO5",
+        "5"
+      ],
+      [
+        "GPIO12",
+        "12"
+      ],
+      [
+        "GPIO13",
+        "13"
+      ],
+      [
+        "GPIO14",
+        "14"
+      ],
+      [
+        "GPIO15",
+        "15"
+      ],
+      [
+        "GPIO16",
+        "16"
+      ],
+      [
+        "GPIO17",
+        "17"
+      ],
+      [
+        "GPIO18",
+        "18"
+      ],
+      [
+        "GPIO19",
+        "19"
+      ],
+      [
+        "GPIO21",
+        "21"
+      ],
+      [
+        "GPIO22",
+        "22"
+      ],
+      [
+        "GPIO23",
+        "23"
+      ],
+      [
+        "GPIO25",
+        "25"
+      ],
+      [
+        "GPIO26",
+        "26"
+      ],
+      [
+        "GPIO27",
+        "27"
+      ],
+      [
+        "GPIO32",
+        "32"
+      ],
+      [
+        "GPIO33",
+        "33"
+      ],
+      [
+        "GPIO34",
+        "34"
+      ],
+      [
+        "GPIO35",
+        "35"
+      ],
+      [
+        "GPIO36",
+        "36"
+      ],
+      [
+        "GPIO39",
+        "39"
+      ]
+    ],
+    "analog": [
+      [
+        "GPIO32 (ADC1_4)",
+        "32"
+      ],
+      [
+        "GPIO33 (ADC1_5)",
+        "33"
+      ],
+      [
+        "GPIO34 (ADC1_6)",
+        "34"
+      ],
+      [
+        "GPIO35 (ADC1_7)",
+        "35"
+      ],
+      [
+        "GPIO36 (VP)",
+        "36"
+      ],
+      [
+        "GPIO39 (VN)",
+        "39"
+      ],
+      [
+        "GPIO25 (ADC2_8)",
+        "25"
+      ],
+      [
+        "GPIO26 (ADC2_9)",
+        "26"
+      ]
+    ],
+    "pwm": [],
+    "i2c": [
+      [
+        "SDA",
+        "21"
+      ],
+      [
+        "SCL",
+        "22"
+      ]
+    ],
+    "spi": [
+      [
+        "MOSI",
+        "23"
+      ],
+      [
+        "MISO",
+        "19"
+      ],
+      [
+        "SCK",
+        "18"
+      ],
+      [
+        "SS",
+        "5"
+      ]
+    ]
+  }
+}

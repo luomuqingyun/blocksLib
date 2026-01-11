@@ -1,0 +1,190 @@
+{
+  "id": "esp32cam",
+  "name": "AI Thinker ESP32-CAM",
+  "mcu": "ESP32",
+  "specs": "4MB Flash / 512KB RAM / 4MB PSRAM",
+  "capabilities": [
+    "wifi",
+    "bluetooth",
+    "camera",
+    "sd-card"
+  ],
+  "description": "经典的 ESP32 摄像头开发板 (OV2640)，集成 PSRAM 和 SD 卡槽，适合低成本 AIoT 视觉项目。",
+  "page_url": "https://docs.ai-thinker.com/esp32-cam",
+  "package": "BOARD_DIP_16",
+  "pinCount": 16,
+  "pinMap": [
+    {
+      "name": "16",
+      "position": "1"
+    },
+    {
+      "name": "0",
+      "position": "2"
+    },
+    {
+      "name": "GND",
+      "position": "3"
+    },
+    {
+      "name": "3V3",
+      "position": "4"
+    },
+    {
+      "name": "3",
+      "position": "5"
+    },
+    {
+      "name": "1",
+      "position": "6"
+    },
+    {
+      "name": "GND",
+      "position": "7"
+    },
+    {
+      "name": "5V",
+      "position": "8"
+    },
+    {
+      "name": "12",
+      "position": "9"
+    },
+    {
+      "name": "13",
+      "position": "10"
+    },
+    {
+      "name": "15",
+      "position": "11"
+    },
+    {
+      "name": "14",
+      "position": "12"
+    },
+    {
+      "name": "2",
+      "position": "13"
+    },
+    {
+      "name": "4",
+      "position": "14"
+    },
+    {
+      "name": "GND",
+      "position": "15"
+    },
+    {
+      "name": "5V",
+      "position": "16"
+    }
+  ],
+  "pin_options": {
+    "digital": [
+      [
+        "GPIO0",
+        "0"
+      ],
+      [
+        "GPIO1 (U0TX)",
+        "1"
+      ],
+      [
+        "GPIO3 (U0RX)",
+        "3"
+      ],
+      [
+        "GPIO4 (Flash)",
+        "4"
+      ],
+      [
+        "GPIO12",
+        "12"
+      ],
+      [
+        "GPIO13",
+        "13"
+      ],
+      [
+        "GPIO14",
+        "14"
+      ],
+      [
+        "GPIO15",
+        "15"
+      ],
+      [
+        "GPIO16",
+        "16"
+      ]
+    ],
+    "analog": [
+      [
+        "GPIO12",
+        "12"
+      ],
+      [
+        "GPIO13",
+        "13"
+      ],
+      [
+        "GPIO14",
+        "14"
+      ],
+      [
+        "GPIO15",
+        "15"
+      ]
+    ],
+    "pwm": [
+      [
+        "GPIO4",
+        "4"
+      ],
+      [
+        "GPIO12",
+        "12"
+      ],
+      [
+        "GPIO13",
+        "13"
+      ],
+      [
+        "GPIO14",
+        "14"
+      ],
+      [
+        "GPIO15",
+        "15"
+      ]
+    ],
+    "i2c": [
+      [
+        "SDA",
+        "13"
+      ],
+      [
+        "SCL",
+        "15"
+      ]
+    ],
+    "spi": [
+      [
+        "CS",
+        "15"
+      ],
+      [
+        "MOSI",
+        "13"
+      ],
+      [
+        "MISO",
+        "12"
+      ],
+      [
+        "SCK",
+        "14"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,251 @@
+{
+  "id": "wemos_d1_mini32",
+  "name": "WEMOS D1 MINI ESP32",
+  "mcu": "ESP32",
+  "specs": "4096k Flash / 320k RAM",
+  "capabilities": [
+    "wifi",
+    "bluetooth",
+    "ethernet",
+    "can"
+  ],
+  "package": "BOARD_DIP_16",
+  "pinCount": 16,
+  "pinMap": [
+    {
+      "name": "RST",
+      "position": "1"
+    },
+    {
+      "name": "A0",
+      "position": "2"
+    },
+    {
+      "name": "D0",
+      "position": "3"
+    },
+    {
+      "name": "D5",
+      "position": "4"
+    },
+    {
+      "name": "D6",
+      "position": "5"
+    },
+    {
+      "name": "D7",
+      "position": "6"
+    },
+    {
+      "name": "D8",
+      "position": "7"
+    },
+    {
+      "name": "3V3",
+      "position": "8"
+    },
+    {
+      "name": "TX",
+      "position": "9"
+    },
+    {
+      "name": "RX",
+      "position": "10"
+    },
+    {
+      "name": "D1",
+      "position": "11"
+    },
+    {
+      "name": "D2",
+      "position": "12"
+    },
+    {
+      "name": "D3",
+      "position": "13"
+    },
+    {
+      "name": "D4",
+      "position": "14"
+    },
+    {
+      "name": "GND",
+      "position": "15"
+    },
+    {
+      "name": "5V",
+      "position": "16"
+    }
+  ],
+  "pin_options": {
+    "digital": [
+      [
+        "GPIO0",
+        "0"
+      ],
+      [
+        "GPIO1",
+        "1"
+      ],
+      [
+        "GPIO2",
+        "2"
+      ],
+      [
+        "GPIO3",
+        "3"
+      ],
+      [
+        "GPIO4",
+        "4"
+      ],
+      [
+        "GPIO5",
+        "5"
+      ],
+      [
+        "GPIO12",
+        "12"
+      ],
+      [
+        "GPIO13",
+        "13"
+      ],
+      [
+        "GPIO14",
+        "14"
+      ],
+      [
+        "GPIO15",
+        "15"
+      ],
+      [
+        "GPIO16",
+        "16"
+      ],
+      [
+        "GPIO17",
+        "17"
+      ],
+      [
+        "GPIO18",
+        "18"
+      ],
+      [
+        "GPIO19",
+        "19"
+      ],
+      [
+        "GPIO21",
+        "21"
+      ],
+      [
+        "GPIO22",
+        "22"
+      ],
+      [
+        "GPIO23",
+        "23"
+      ],
+      [
+        "GPIO25",
+        "25"
+      ],
+      [
+        "GPIO26",
+        "26"
+      ],
+      [
+        "GPIO27",
+        "27"
+      ],
+      [
+        "GPIO32",
+        "32"
+      ],
+      [
+        "GPIO33",
+        "33"
+      ],
+      [
+        "GPIO34",
+        "34"
+      ],
+      [
+        "GPIO35",
+        "35"
+      ],
+      [
+        "GPIO36",
+        "36"
+      ],
+      [
+        "GPIO39",
+        "39"
+      ]
+    ],
+    "analog": [
+      [
+        "GPIO32 (ADC1_4)",
+        "32"
+      ],
+      [
+        "GPIO33 (ADC1_5)",
+        "33"
+      ],
+      [
+        "GPIO34 (ADC1_6)",
+        "34"
+      ],
+      [
+        "GPIO35 (ADC1_7)",
+        "35"
+      ],
+      [
+        "GPIO36 (VP)",
+        "36"
+      ],
+      [
+        "GPIO39 (VN)",
+        "39"
+      ],
+      [
+        "GPIO25 (ADC2_8)",
+        "25"
+      ],
+      [
+        "GPIO26 (ADC2_9)",
+        "26"
+      ]
+    ],
+    "pwm": [],
+    "i2c": [
+      [
+        "SDA",
+        "21"
+      ],
+      [
+        "SCL",
+        "22"
+      ]
+    ],
+    "spi": [
+      [
+        "MOSI",
+        "23"
+      ],
+      [
+        "MISO",
+        "19"
+      ],
+      [
+        "SCK",
+        "18"
+      ],
+      [
+        "SS",
+        "5"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,384 @@
+{
+  "id": "esp32-s3-devkitc-1",
+  "name": "Espressif ESP32-S3-DevKitC-1-N8 (8 MB QD, No PSRAM)",
+  "mcu": "ESP32S3",
+  "specs": "8192k Flash / 320k RAM",
+  "capabilities": [
+    "bluetooth",
+    "wifi"
+  ],
+  "package": "BOARD_DIP_44",
+  "pinCount": 44,
+  "pinMap": [
+    {
+      "name": "3V3",
+      "position": "1"
+    },
+    {
+      "name": "3V3",
+      "position": "2"
+    },
+    {
+      "name": "RST",
+      "position": "3"
+    },
+    {
+      "name": "0",
+      "position": "4"
+    },
+    {
+      "name": "1",
+      "position": "5"
+    },
+    {
+      "name": "2",
+      "position": "6"
+    },
+    {
+      "name": "3",
+      "position": "7"
+    },
+    {
+      "name": "4",
+      "position": "8"
+    },
+    {
+      "name": "5",
+      "position": "9"
+    },
+    {
+      "name": "6",
+      "position": "10"
+    },
+    {
+      "name": "7",
+      "position": "11"
+    },
+    {
+      "name": "8",
+      "position": "12"
+    },
+    {
+      "name": "9",
+      "position": "13"
+    },
+    {
+      "name": "10",
+      "position": "14"
+    },
+    {
+      "name": "11",
+      "position": "15"
+    },
+    {
+      "name": "12",
+      "position": "16"
+    },
+    {
+      "name": "13",
+      "position": "17"
+    },
+    {
+      "name": "14",
+      "position": "18"
+    },
+    {
+      "name": "15",
+      "position": "19"
+    },
+    {
+      "name": "16",
+      "position": "20"
+    },
+    {
+      "name": "17",
+      "position": "21"
+    },
+    {
+      "name": "5V",
+      "position": "22"
+    },
+    {
+      "name": "GND",
+      "position": "23"
+    },
+    {
+      "name": "18",
+      "position": "24"
+    },
+    {
+      "name": "19",
+      "position": "25"
+    },
+    {
+      "name": "20",
+      "position": "26"
+    },
+    {
+      "name": "21",
+      "position": "27"
+    },
+    {
+      "name": "35",
+      "position": "28"
+    },
+    {
+      "name": "36",
+      "position": "29"
+    },
+    {
+      "name": "37",
+      "position": "30"
+    },
+    {
+      "name": "38",
+      "position": "31"
+    },
+    {
+      "name": "39",
+      "position": "32"
+    },
+    {
+      "name": "40",
+      "position": "33"
+    },
+    {
+      "name": "41",
+      "position": "34"
+    },
+    {
+      "name": "42",
+      "position": "35"
+    },
+    {
+      "name": "43",
+      "position": "36"
+    },
+    {
+      "name": "44",
+      "position": "37"
+    },
+    {
+      "name": "45",
+      "position": "38"
+    },
+    {
+      "name": "46",
+      "position": "39"
+    },
+    {
+      "name": "47",
+      "position": "40"
+    },
+    {
+      "name": "48",
+      "position": "41"
+    },
+    {
+      "name": "RX",
+      "position": "42"
+    },
+    {
+      "name": "TX",
+      "position": "43"
+    },
+    {
+      "name": "GND",
+      "position": "44"
+    }
+  ],
+  "description": "ESP32S3开发板通用配置，集成 2.4 GHz Wi-Fi 和 Bluetooth 5 (LE) 的 MCU 芯片，支持远距离模式 (Long Range)。",
+  "pin_options": {
+    "digital": [
+      [
+        "GPIO0",
+        "0"
+      ],
+      [
+        "GPIO1",
+        "1"
+      ],
+      [
+        "GPIO2",
+        "2"
+      ],
+      [
+        "GPIO3",
+        "3"
+      ],
+      [
+        "GPIO4",
+        "4"
+      ],
+      [
+        "GPIO5",
+        "5"
+      ],
+      [
+        "GPIO6",
+        "6"
+      ],
+      [
+        "GPIO7",
+        "7"
+      ],
+      [
+        "GPIO8",
+        "8"
+      ],
+      [
+        "GPIO9",
+        "9"
+      ],
+      [
+        "GPIO10",
+        "10"
+      ],
+      [
+        "GPIO11",
+        "11"
+      ],
+      [
+        "GPIO12",
+        "12"
+      ],
+      [
+        "GPIO13",
+        "13"
+      ],
+      [
+        "GPIO14",
+        "14"
+      ],
+      [
+        "GPIO15",
+        "15"
+      ],
+      [
+        "GPIO16",
+        "16"
+      ],
+      [
+        "GPIO17",
+        "17"
+      ],
+      [
+        "GPIO18",
+        "18"
+      ],
+      [
+        "GPIO19",
+        "19"
+      ],
+      [
+        "GPIO20",
+        "20"
+      ],
+      [
+        "GPIO21",
+        "21"
+      ],
+      [
+        "GPIO35",
+        "35"
+      ],
+      [
+        "GPIO36",
+        "36"
+      ],
+      [
+        "GPIO37",
+        "37"
+      ],
+      [
+        "GPIO38",
+        "38"
+      ],
+      [
+        "GPIO39",
+        "39"
+      ],
+      [
+        "GPIO40",
+        "40"
+      ],
+      [
+        "GPIO41",
+        "41"
+      ],
+      [
+        "GPIO42",
+        "42"
+      ],
+      [
+        "GPIO43",
+        "43"
+      ],
+      [
+        "GPIO44",
+        "44"
+      ],
+      [
+        "GPIO45",
+        "45"
+      ],
+      [
+        "GPIO46",
+        "46"
+      ],
+      [
+        "GPIO47",
+        "47"
+      ],
+      [
+        "GPIO48",
+        "48"
+      ]
+    ],
+    "analog": [
+      [
+        "GPIO1",
+        "1"
+      ],
+      [
+        "GPIO2",
+        "2"
+      ],
+      [
+        "GPIO3",
+        "3"
+      ],
+      [
+        "GPIO4",
+        "4"
+      ],
+      [
+        "GPIO5",
+        "5"
+      ],
+      [
+        "GPIO6",
+        "6"
+      ],
+      [
+        "GPIO7",
+        "7"
+      ],
+      [
+        "GPIO8",
+        "8"
+      ],
+      [
+        "GPIO9",
+        "9"
+      ],
+      [
+        "GPIO10",
+        "10"
+      ]
+    ],
+    "pwm": [],
+    "i2c": [],
+    "spi": []
+  }
+}

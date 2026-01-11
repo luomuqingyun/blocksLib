@@ -1,0 +1,281 @@
+{
+  "id": "nanoatmega328",
+  "name": "Arduino Nano ATmega328",
+  "mcu": "ATMEGA328P",
+  "specs": "30k Flash / 2k RAM",
+  "capabilities": [],
+  "package": "BOARD_DIP_30",
+  "pinCount": 30,
+  "pinMap": [
+    {
+      "name": "D12",
+      "position": "1"
+    },
+    {
+      "name": "D11",
+      "position": "2"
+    },
+    {
+      "name": "D10",
+      "position": "3"
+    },
+    {
+      "name": "D9",
+      "position": "4"
+    },
+    {
+      "name": "D8",
+      "position": "5"
+    },
+    {
+      "name": "D7",
+      "position": "6"
+    },
+    {
+      "name": "D6",
+      "position": "7"
+    },
+    {
+      "name": "D5",
+      "position": "8"
+    },
+    {
+      "name": "D4",
+      "position": "9"
+    },
+    {
+      "name": "D3",
+      "position": "10"
+    },
+    {
+      "name": "D2",
+      "position": "11"
+    },
+    {
+      "name": "GND",
+      "position": "12"
+    },
+    {
+      "name": "RST",
+      "position": "13"
+    },
+    {
+      "name": "RX0",
+      "position": "14"
+    },
+    {
+      "name": "TX1",
+      "position": "15"
+    },
+    {
+      "name": "D13",
+      "position": "16"
+    },
+    {
+      "name": "3V3",
+      "position": "17"
+    },
+    {
+      "name": "REF",
+      "position": "18"
+    },
+    {
+      "name": "A0",
+      "position": "19"
+    },
+    {
+      "name": "A1",
+      "position": "20"
+    },
+    {
+      "name": "A2",
+      "position": "21"
+    },
+    {
+      "name": "A3",
+      "position": "22"
+    },
+    {
+      "name": "A4",
+      "position": "23"
+    },
+    {
+      "name": "A5",
+      "position": "24"
+    },
+    {
+      "name": "A6",
+      "position": "25"
+    },
+    {
+      "name": "A7",
+      "position": "26"
+    },
+    {
+      "name": "5V",
+      "position": "27"
+    },
+    {
+      "name": "RST",
+      "position": "28"
+    },
+    {
+      "name": "GND",
+      "position": "29"
+    },
+    {
+      "name": "VIN",
+      "position": "30"
+    }
+  ],
+  "description": "Arduino Nano 是一款基于ATmega328P的开源电子原型平台，包含数字I/O口14个（其中6个支持PWM输出），模拟输入口6个，16MHz晶振，USB接口，电源接口，ICSP接口等。",
+  "page_url": "https://arduino.me/s/board?aid=698",
+  "pin_options": {
+    "digital": [
+      [
+        "0",
+        "0"
+      ],
+      [
+        "1",
+        "1"
+      ],
+      [
+        "2",
+        "2"
+      ],
+      [
+        "3",
+        "3"
+      ],
+      [
+        "4",
+        "4"
+      ],
+      [
+        "5",
+        "5"
+      ],
+      [
+        "6",
+        "6"
+      ],
+      [
+        "7",
+        "7"
+      ],
+      [
+        "8",
+        "8"
+      ],
+      [
+        "9",
+        "9"
+      ],
+      [
+        "10",
+        "10"
+      ],
+      [
+        "11",
+        "11"
+      ],
+      [
+        "12",
+        "12"
+      ],
+      [
+        "13",
+        "13"
+      ]
+    ],
+    "analog": [
+      [
+        "A0",
+        "A0"
+      ],
+      [
+        "A1",
+        "A1"
+      ],
+      [
+        "A2",
+        "A2"
+      ],
+      [
+        "A3",
+        "A3"
+      ],
+      [
+        "A4",
+        "A4"
+      ],
+      [
+        "A5",
+        "A5"
+      ],
+      [
+        "A6",
+        "A6"
+      ],
+      [
+        "A7",
+        "A7"
+      ]
+    ],
+    "pwm": [
+      [
+        "3",
+        "3"
+      ],
+      [
+        "5",
+        "5"
+      ],
+      [
+        "6",
+        "6"
+      ],
+      [
+        "9",
+        "9"
+      ],
+      [
+        "10",
+        "10"
+      ],
+      [
+        "11",
+        "11"
+      ]
+    ],
+    "i2c": [
+      [
+        "SDA",
+        "A4"
+      ],
+      [
+        "SCL",
+        "A5"
+      ]
+    ],
+    "spi": [
+      [
+        "MOSI",
+        "11"
+      ],
+      [
+        "MISO",
+        "12"
+      ],
+      [
+        "SCK",
+        "13"
+      ],
+      [
+        "SS",
+        "10"
+      ]
+    ]
+  }
+}

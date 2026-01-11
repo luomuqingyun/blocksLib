@@ -1,0 +1,308 @@
+{
+  "id": "esp32dev",
+  "name": "Espressif ESP32 Dev Module",
+  "mcu": "ESP32",
+  "specs": "4096k Flash / 320k RAM",
+  "capabilities": [
+    "wifi",
+    "bluetooth",
+    "ethernet",
+    "can"
+  ],
+  "package": "BOARD_DIP_30",
+  "pinCount": 30,
+  "pinMap": [
+    {
+      "name": "EN",
+      "position": "1"
+    },
+    {
+      "name": "VP",
+      "position": "2"
+    },
+    {
+      "name": "VN",
+      "position": "3"
+    },
+    {
+      "name": "D34",
+      "position": "4"
+    },
+    {
+      "name": "D35",
+      "position": "5"
+    },
+    {
+      "name": "D32",
+      "position": "6"
+    },
+    {
+      "name": "D33",
+      "position": "7"
+    },
+    {
+      "name": "D25",
+      "position": "8"
+    },
+    {
+      "name": "D26",
+      "position": "9"
+    },
+    {
+      "name": "D27",
+      "position": "10"
+    },
+    {
+      "name": "D14",
+      "position": "11"
+    },
+    {
+      "name": "D12",
+      "position": "12"
+    },
+    {
+      "name": "D13",
+      "position": "13"
+    },
+    {
+      "name": "GND",
+      "position": "14"
+    },
+    {
+      "name": "VIN",
+      "position": "15"
+    },
+    {
+      "name": "D23",
+      "position": "16"
+    },
+    {
+      "name": "D22",
+      "position": "17"
+    },
+    {
+      "name": "TX0",
+      "position": "18"
+    },
+    {
+      "name": "RX0",
+      "position": "19"
+    },
+    {
+      "name": "D21",
+      "position": "20"
+    },
+    {
+      "name": "GND",
+      "position": "21"
+    },
+    {
+      "name": "D19",
+      "position": "22"
+    },
+    {
+      "name": "D18",
+      "position": "23"
+    },
+    {
+      "name": "D5",
+      "position": "24"
+    },
+    {
+      "name": "D17",
+      "position": "25"
+    },
+    {
+      "name": "D16",
+      "position": "26"
+    },
+    {
+      "name": "D4",
+      "position": "27"
+    },
+    {
+      "name": "D0",
+      "position": "28"
+    },
+    {
+      "name": "D2",
+      "position": "29"
+    },
+    {
+      "name": "D15",
+      "position": "30"
+    }
+  ],
+  "description": "ESP32开发板通用配置，为双核Xtensa LX6 MCU，集成2.4GHzWi-Fi和蓝��双模通信，支持802.11 b/g/n协议与蓝牙v4.2 BR/EDR/BLE标准。",
+  "pin_options": {
+    "digital": [
+      [
+        "GPIO0",
+        "0"
+      ],
+      [
+        "GPIO1",
+        "1"
+      ],
+      [
+        "GPIO2",
+        "2"
+      ],
+      [
+        "GPIO3",
+        "3"
+      ],
+      [
+        "GPIO4",
+        "4"
+      ],
+      [
+        "GPIO5",
+        "5"
+      ],
+      [
+        "GPIO12",
+        "12"
+      ],
+      [
+        "GPIO13",
+        "13"
+      ],
+      [
+        "GPIO14",
+        "14"
+      ],
+      [
+        "GPIO15",
+        "15"
+      ],
+      [
+        "GPIO16",
+        "16"
+      ],
+      [
+        "GPIO17",
+        "17"
+      ],
+      [
+        "GPIO18",
+        "18"
+      ],
+      [
+        "GPIO19",
+        "19"
+      ],
+      [
+        "GPIO21",
+        "21"
+      ],
+      [
+        "GPIO22",
+        "22"
+      ],
+      [
+        "GPIO23",
+        "23"
+      ],
+      [
+        "GPIO25",
+        "25"
+      ],
+      [
+        "GPIO26",
+        "26"
+      ],
+      [
+        "GPIO27",
+        "27"
+      ],
+      [
+        "GPIO32",
+        "32"
+      ],
+      [
+        "GPIO33",
+        "33"
+      ],
+      [
+        "GPIO34",
+        "34"
+      ],
+      [
+        "GPIO35",
+        "35"
+      ],
+      [
+        "GPIO36",
+        "36"
+      ],
+      [
+        "GPIO39",
+        "39"
+      ]
+    ],
+    "analog": [
+      [
+        "GPIO32 (ADC1_4)",
+        "32"
+      ],
+      [
+        "GPIO33 (ADC1_5)",
+        "33"
+      ],
+      [
+        "GPIO34 (ADC1_6)",
+        "34"
+      ],
+      [
+        "GPIO35 (ADC1_7)",
+        "35"
+      ],
+      [
+        "GPIO36 (VP)",
+        "36"
+      ],
+      [
+        "GPIO39 (VN)",
+        "39"
+      ],
+      [
+        "GPIO25 (ADC2_8)",
+        "25"
+      ],
+      [
+        "GPIO26 (ADC2_9)",
+        "26"
+      ]
+    ],
+    "pwm": [],
+    "i2c": [
+      [
+        "SDA",
+        "21"
+      ],
+      [
+        "SCL",
+        "22"
+      ]
+    ],
+    "spi": [
+      [
+        "MOSI",
+        "23"
+      ],
+      [
+        "MISO",
+        "19"
+      ],
+      [
+        "SCK",
+        "18"
+      ],
+      [
+        "SS",
+        "5"
+      ]
+    ]
+  }
+}

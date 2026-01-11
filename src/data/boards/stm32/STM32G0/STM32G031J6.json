@@ -1,0 +1,429 @@
+{
+  "id": "disco_g031j6",
+  "name": "STM32G031J6",
+  "platform": "ststm32",
+  "mcu": "STM32G031J6",
+  "variant": "G031J(4-6)M_G041J6M",
+  "pinCount": 8,
+  "package": "SOIC",
+  "fcpu": 64000000,
+  "specs": "128k Flash / 8k RAM",
+  "description": "STM32G031J6 - STM32G0 series board",
+  "defaults": {
+    "serial": {
+      "tx": "PA2",
+      "rx": "PA15"
+    },
+    "i2c": {
+      "sda": "PA10R",
+      "scl": "PA9R"
+    },
+    "spi": {
+      "mosi": "PA2",
+      "miso": "PA11",
+      "sck": "PA1",
+      "ss": "PA15"
+    }
+  },
+  "pinout": {
+    "UART": {
+      "LPUART1": {
+        "TX": [
+          "PA2"
+        ],
+        "RTS": [
+          "PB1"
+        ]
+      },
+      "USART2": {
+        "TX": [
+          "PA2",
+          "PA14"
+        ],
+        "RX": [
+          "PA15"
+        ],
+        "RTS": [
+          "PA1"
+        ],
+        "CTS": [
+          "PA0"
+        ]
+      },
+      "USART1": {
+        "TX": [
+          "PA9_R",
+          "PB6"
+        ],
+        "RX": [
+          "PA10_R",
+          "PB7"
+        ],
+        "RTS": [
+          "PA12"
+        ],
+        "CTS": [
+          "PA11"
+        ]
+      }
+    },
+    "SPI": {
+      "SPI1": {
+        "MOSI": [
+          "PA2",
+          "PA12",
+          "PB5"
+        ],
+        "MISO": [
+          "PA11"
+        ],
+        "SCLK": [
+          "PA1"
+        ],
+        "SSEL": [
+          "PA15",
+          "PB0"
+        ]
+      },
+      "SPI2": {
+        "MOSI": [
+          "PA10_R",
+          "PB7"
+        ],
+        "MISO": [
+          "PA9_R",
+          "PB6"
+        ],
+        "SCLK": [
+          "PA0",
+          "PB8"
+        ],
+        "SSEL": [
+          "PA8",
+          "PB9"
+        ]
+      }
+    },
+    "I2C": {
+      "I2C1": {
+        "SDA": [
+          "PA10_R",
+          "PB7",
+          "PB9"
+        ],
+        "SCL": [
+          "PA9_R",
+          "PB6",
+          "PB8"
+        ]
+      },
+      "I2C2": {
+        "SDA": [
+          "PA12"
+        ],
+        "SCL": [
+          "PA11"
+        ]
+      }
+    },
+    "TIM": {
+      "TIM2": {
+        "CH1": [
+          "PA0",
+          "PA15"
+        ],
+        "CH2": [
+          "PA1"
+        ],
+        "CH3": [
+          "PA2"
+        ]
+      },
+      "TIM1": {
+        "CH1": [
+          "PA8"
+        ],
+        "CH2": [
+          "PA9_R"
+        ],
+        "CH3": [
+          "PA10_R",
+          "PB6"
+        ],
+        "CH4": [
+          "PA11"
+        ],
+        "CH2N": [
+          "PB0"
+        ],
+        "CH3N": [
+          "PB1"
+        ]
+      },
+      "TIM3": {
+        "CH3": [
+          "PB0"
+        ],
+        "CH4": [
+          "PB1"
+        ],
+        "CH2": [
+          "PB5"
+        ]
+      },
+      "TIM14": {
+        "CH1": [
+          "PB1"
+        ]
+      },
+      "TIM16": {
+        "CH1N": [
+          "PB6"
+        ],
+        "CH1": [
+          "PB8"
+        ]
+      },
+      "TIM17": {
+        "CH1N": [
+          "PB7"
+        ],
+        "CH1": [
+          "PB9"
+        ]
+      }
+    },
+    "ADC": {
+      "ADC1": {
+        "IN": [
+          "PA0",
+          "PA1",
+          "PA2",
+          "PA11",
+          "PA12",
+          "PA13",
+          "PA14",
+          "PB0",
+          "PB1",
+          "PB7"
+        ]
+      }
+    }
+  },
+  "pinMap": [
+    {
+      "name": "PB7",
+      "position": "1"
+    },
+    {
+      "name": "VDD/VDDA",
+      "position": "2"
+    },
+    {
+      "name": "VSS/VSSA",
+      "position": "3"
+    },
+    {
+      "name": "PA0",
+      "position": "4"
+    },
+    {
+      "name": "PA11",
+      "position": "5"
+    },
+    {
+      "name": "PA10",
+      "position": "6"
+    },
+    {
+      "name": "PA13",
+      "position": "7"
+    },
+    {
+      "name": "PA14",
+      "position": "8"
+    }
+  ],
+  "pin_options": {
+    "digital": [
+      [
+        "PA0",
+        "PA0"
+      ],
+      [
+        "PA1",
+        "PA1"
+      ],
+      [
+        "PA10_R",
+        "PA10_R"
+      ],
+      [
+        "PA11",
+        "PA11"
+      ],
+      [
+        "PA12",
+        "PA12"
+      ],
+      [
+        "PA13",
+        "PA13"
+      ],
+      [
+        "PA14",
+        "PA14"
+      ],
+      [
+        "PA15",
+        "PA15"
+      ],
+      [
+        "PA2",
+        "PA2"
+      ],
+      [
+        "PA8",
+        "PA8"
+      ],
+      [
+        "PA9_R",
+        "PA9_R"
+      ],
+      [
+        "PB0",
+        "PB0"
+      ],
+      [
+        "PB1",
+        "PB1"
+      ],
+      [
+        "PB5",
+        "PB5"
+      ],
+      [
+        "PB6",
+        "PB6"
+      ],
+      [
+        "PB7",
+        "PB7"
+      ],
+      [
+        "PB8",
+        "PB8"
+      ],
+      [
+        "PB9",
+        "PB9"
+      ]
+    ],
+    "analog": [
+      [
+        "PA0",
+        "PA0"
+      ],
+      [
+        "PA1",
+        "PA1"
+      ],
+      [
+        "PA11",
+        "PA11"
+      ],
+      [
+        "PA12",
+        "PA12"
+      ],
+      [
+        "PA13",
+        "PA13"
+      ],
+      [
+        "PA14",
+        "PA14"
+      ],
+      [
+        "PA2",
+        "PA2"
+      ],
+      [
+        "PB0",
+        "PB0"
+      ],
+      [
+        "PB1",
+        "PB1"
+      ],
+      [
+        "PB7",
+        "PB7"
+      ]
+    ],
+    "pwm": [
+      [
+        "PA0",
+        "PA0"
+      ],
+      [
+        "PA1",
+        "PA1"
+      ],
+      [
+        "PA10_R",
+        "PA10_R"
+      ],
+      [
+        "PA11",
+        "PA11"
+      ],
+      [
+        "PA15",
+        "PA15"
+      ],
+      [
+        "PA2",
+        "PA2"
+      ],
+      [
+        "PA8",
+        "PA8"
+      ],
+      [
+        "PA9_R",
+        "PA9_R"
+      ],
+      [
+        "PB0",
+        "PB0"
+      ],
+      [
+        "PB1",
+        "PB1"
+      ],
+      [
+        "PB5",
+        "PB5"
+      ],
+      [
+        "PB6",
+        "PB6"
+      ],
+      [
+        "PB7",
+        "PB7"
+      ],
+      [
+        "PB8",
+        "PB8"
+      ],
+      [
+        "PB9",
+        "PB9"
+      ]
+    ],
+    "i2c": [],
+    "spi": []
+  }
+}

@@ -1,0 +1,2925 @@
+{
+  "STM32": {
+    "STM32F4": [
+      {
+        "id": "1bitsy_stm32f415rgt",
+        "name": "1Bitsy",
+        "platform": "ststm32",
+        "mcu": "STM32F415RGT",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_f412zg",
+        "name": "32F412GDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F412ZGT6",
+        "fcpu": 100000000,
+        "specs": "1024k Flash / 256k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "armed_v1",
+        "name": "3D Printer Controller",
+        "platform": "ststm32",
+        "mcu": "STM32F407VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "rumba32_f446ve",
+        "name": "3D Printer control board",
+        "platform": "ststm32",
+        "mcu": "STM32F446RET6",
+        "fcpu": 180000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "st3dp001_eval",
+        "name": "3DP001V1 Evaluation board for 3D printer",
+        "platform": "ststm32",
+        "mcu": "STM32F401VET6",
+        "fcpu": 84000000,
+        "specs": "512k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "b96b_argonkey",
+        "name": "96Boards Argonkey (STEVAL-MKI187V1)",
+        "platform": "ststm32",
+        "mcu": "STM32F412CG",
+        "fcpu": 100000000,
+        "specs": "1024k Flash / 256k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "b96b_f446ve",
+        "name": "96Boards B96B-F446VE",
+        "platform": "ststm32",
+        "mcu": "STM32F446VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "b96b_aerocore2",
+        "name": "96Boards Neonkey",
+        "platform": "ststm32",
+        "mcu": "STM32F427VIT6",
+        "fcpu": 168000000,
+        "specs": "2042.7265625k Flash / 256k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "b96b_neonkey",
+        "name": "96Boards Neonkey",
+        "platform": "ststm32",
+        "mcu": "STM32F411CE",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "adafruit_feather_f405",
+        "name": "Adafruit Feather STM32F405",
+        "platform": "ststm32",
+        "mcu": "STM32F405RGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "armstrap_eagle1024",
+        "name": "Armstrap Eagle 1024",
+        "platform": "ststm32",
+        "mcu": "STM32F417VGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 192k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "armstrap_eagle2048",
+        "name": "Armstrap Eagle 2048",
+        "platform": "ststm32",
+        "mcu": "STM32F427VIT6",
+        "fcpu": 168000000,
+        "specs": "2042.7265625k Flash / 256k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "armstrap_eagle512",
+        "name": "Armstrap Eagle 512",
+        "platform": "ststm32",
+        "mcu": "STM32F407VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 192k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "black_f407ve",
+        "name": "Black STM32F407VE",
+        "platform": "ststm32",
+        "mcu": "STM32F407VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "black_f407vg",
+        "name": "Black STM32F407VG",
+        "platform": "ststm32",
+        "mcu": "STM32F407VGT6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "black_f407ze",
+        "name": "Black STM32F407ZE",
+        "platform": "ststm32",
+        "mcu": "STM32F407ZET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "black_f407zg",
+        "name": "Black STM32F407ZG",
+        "platform": "ststm32",
+        "mcu": "STM32F407ZGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "blue_f407ve_mini",
+        "name": "Blue STM32F407VE Mini",
+        "platform": "ststm32",
+        "mcu": "STM32F407VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "coreboard_f401rc",
+        "name": "Core board F401RCT6",
+        "platform": "ststm32",
+        "mcu": "STM32F401RCT6",
+        "fcpu": 84000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "elmo_f411re",
+        "name": "Espotel LoRa Module",
+        "platform": "ststm32",
+        "mcu": "STM32F411RET6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "diymore_f407vgt",
+        "name": "F407VG",
+        "platform": "ststm32",
+        "mcu": "STM32F407VGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "fk407m1",
+        "name": "FK407M1",
+        "platform": "ststm32",
+        "mcu": "STM32F407VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "fysetc_s6",
+        "name": "FYSETC S6",
+        "platform": "ststm32",
+        "mcu": "STM32F446VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "mts_dragonfly_f411re",
+        "name": "MTS Dragonfly",
+        "platform": "ststm32",
+        "mcu": "STM32F411RET6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "cellular"
+        ]
+      },
+      {
+        "id": "mbed_connect_odin",
+        "name": "Mbed Connect Cloud",
+        "platform": "ststm32",
+        "mcu": "STM32F439ZIY6",
+        "fcpu": 168000000,
+        "specs": "2048k Flash / 256k RAM",
+        "capabilities": [
+          "bluetooth",
+          "can",
+          "ethernet",
+          "wifi"
+        ]
+      },
+      {
+        "id": "mxchip_az3166",
+        "name": "Microsoft Azure IoT Development Kit (MXChip AZ3166)",
+        "platform": "ststm32",
+        "mcu": "STM32F412ZGT6",
+        "fcpu": 100000000,
+        "specs": "1024k Flash / 256k RAM",
+        "capabilities": [
+          "can",
+          "wifi"
+        ]
+      },
+      {
+        "id": "mts_mdot_f405rg",
+        "name": "MultiTech mDot",
+        "platform": "ststm32",
+        "mcu": "STM32F411RET6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "mts_mdot_f411re",
+        "name": "MultiTech mDot F411",
+        "platform": "ststm32",
+        "mcu": "STM32F411RET6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "netduino2plus",
+        "name": "N2+",
+        "platform": "ststm32",
+        "mcu": "STM32F405RGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "olimex_p405",
+        "name": "Olimex STM32-P405",
+        "platform": "ststm32",
+        "mcu": "STM32F405RGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "pybstick26_pro",
+        "name": "PYBStick 26 Pro",
+        "platform": "ststm32",
+        "mcu": "STM32F412RE",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 256k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "pybstick26_lite",
+        "name": "PYBStick Lite 26",
+        "platform": "ststm32",
+        "mcu": "STM32F401CEU6",
+        "fcpu": 84000000,
+        "specs": "512k Flash / 96k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "pybstick26_std",
+        "name": "PYBStick Standard 26",
+        "platform": "ststm32",
+        "mcu": "STM32F411CEU6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "prntr_v2",
+        "name": "PrntrBoard V2",
+        "platform": "ststm32",
+        "mcu": "STM32F407VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "rymcu_f407ve",
+        "name": "RYMCU STM32F407VE (192k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F407VET6",
+        "fcpu": 168000000,
+        "specs": "502.234375k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "cloud_jam",
+        "name": "RushUp Cloud-JAM",
+        "platform": "ststm32",
+        "mcu": "STM32F401RET6",
+        "fcpu": 84000000,
+        "specs": "512k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_f401vc",
+        "name": "ST 32F401CDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F401VCT6",
+        "fcpu": 84000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_f411ve",
+        "name": "ST 32F411EDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F411VET6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_f413zh",
+        "name": "ST 32F413HDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F413ZHT6",
+        "fcpu": 100000000,
+        "specs": "1536k Flash / 320k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_f429zi",
+        "name": "ST 32F429IDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F429ZIT6",
+        "fcpu": 180000000,
+        "specs": "2048k Flash / 256k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_f469ni",
+        "name": "ST 32F469IDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F469NIH6",
+        "fcpu": 180000000,
+        "specs": "2048k Flash / 384k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_f401re",
+        "name": "ST Nucleo F401RE",
+        "platform": "ststm32",
+        "mcu": "STM32F401RET6",
+        "fcpu": 84000000,
+        "specs": "512k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f410rb",
+        "name": "ST Nucleo F410RB",
+        "platform": "ststm32",
+        "mcu": "STM32F410RBT6",
+        "fcpu": 100000000,
+        "specs": "128k Flash / 32k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f411re",
+        "name": "ST Nucleo F411RE",
+        "platform": "ststm32",
+        "mcu": "STM32F411RET6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f412zg",
+        "name": "ST Nucleo F412ZG",
+        "platform": "ststm32",
+        "mcu": "STM32F412ZGT6",
+        "fcpu": 100000000,
+        "specs": "1024k Flash / 256k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f413zh",
+        "name": "ST Nucleo F413ZH",
+        "platform": "ststm32",
+        "mcu": "STM32F413ZHT6",
+        "fcpu": 100000000,
+        "specs": "1536k Flash / 320k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_f429zi",
+        "name": "ST Nucleo F429ZI",
+        "platform": "ststm32",
+        "mcu": "STM32F429ZIT6",
+        "fcpu": 180000000,
+        "specs": "2048k Flash / 192k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "nucleo_f439zi",
+        "name": "ST Nucleo F439ZI",
+        "platform": "ststm32",
+        "mcu": "STM32F439ZIT6",
+        "fcpu": 180000000,
+        "specs": "2048k Flash / 256k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "nucleo_f446re",
+        "name": "ST Nucleo F446RE",
+        "platform": "ststm32",
+        "mcu": "STM32F446RET6",
+        "fcpu": 180000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_f446ze",
+        "name": "ST Nucleo F446ZE",
+        "platform": "ststm32",
+        "mcu": "STM32F446ZET6",
+        "fcpu": 180000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_f407vg",
+        "name": "ST STM32F4DISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F407VGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "steval_fcu001v1",
+        "name": "STEVAL-FCU001V1 Flight controller unit evaluation board",
+        "platform": "ststm32",
+        "mcu": "STM32F401CCU6",
+        "fcpu": 84000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "olimex_e407",
+        "name": "STM32-E407",
+        "platform": "ststm32",
+        "mcu": "STM32F407ZGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "olimex_h407",
+        "name": "STM32-H407",
+        "platform": "ststm32",
+        "mcu": "STM32F407ZGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "genericSTM32F401CB",
+        "name": "STM32F401CB (64k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F401CBU6",
+        "fcpu": 84000000,
+        "specs": "128k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F401CC",
+        "name": "STM32F401CC (64k RAM. 256k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F401CCU6",
+        "fcpu": 84000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F401CD",
+        "name": "STM32F401CD (96k RAM. 384k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F401CDU6",
+        "fcpu": 84000000,
+        "specs": "384k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F401CE",
+        "name": "STM32F401CE (96k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F401CEU6",
+        "fcpu": 84000000,
+        "specs": "512k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F401RB",
+        "name": "STM32F401RB (64k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F401RBT6",
+        "fcpu": 84000000,
+        "specs": "128k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F401RC",
+        "name": "STM32F401RC (64k RAM. 256k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F401RCT6",
+        "fcpu": 84000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F401RD",
+        "name": "STM32F401RD (96k RAM. 384k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F401RDT6",
+        "fcpu": 84000000,
+        "specs": "384k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F401RE",
+        "name": "STM32F401RE (96k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F401RET6",
+        "fcpu": 84000000,
+        "specs": "512k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F405RG",
+        "name": "STM32F405RG (128k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F405RGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F407IGT6",
+        "name": "STM32F407IG (192k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F407IGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 192k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F407VET6",
+        "name": "STM32F407VE (192k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F407VET6",
+        "fcpu": 168000000,
+        "specs": "502.234375k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F407VGT6",
+        "name": "STM32F407VG (128k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F407VGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F410C8",
+        "name": "STM32F410C8 (32k RAM. 64k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F410C8T6",
+        "fcpu": 100000000,
+        "specs": "64k Flash / 32k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F410CB",
+        "name": "STM32F410CB (32k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F410CBT6",
+        "fcpu": 100000000,
+        "specs": "128k Flash / 32k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F410R8",
+        "name": "STM32F410R8 (32k RAM. 64k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F410R8T6",
+        "fcpu": 100000000,
+        "specs": "64k Flash / 32k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F410RB",
+        "name": "STM32F410RB (32k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F410RBT6",
+        "fcpu": 100000000,
+        "specs": "128k Flash / 32k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F411CC",
+        "name": "STM32F411CC (128k RAM. 256k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F411CCU6",
+        "fcpu": 100000000,
+        "specs": "256k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F411CE",
+        "name": "STM32F411CE (128k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F411CEU6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F411RC",
+        "name": "STM32F411RC (128k RAM. 256k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F411RCT6",
+        "fcpu": 100000000,
+        "specs": "256k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F411RE",
+        "name": "STM32F411RE (128k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F411RET6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F412CE",
+        "name": "STM32F412CE (256k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F412CEU6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 256k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F412CG",
+        "name": "STM32F412CG (256k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F412CGU6",
+        "fcpu": 100000000,
+        "specs": "1024k Flash / 256k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F412RE",
+        "name": "STM32F412RE (256k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F412RET6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 256k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F412RG",
+        "name": "STM32F412RG (256k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F412RGT6",
+        "fcpu": 100000000,
+        "specs": "1024k Flash / 256k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F413CG",
+        "name": "STM32F413CG (320k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F413CGU6",
+        "fcpu": 100000000,
+        "specs": "1024k Flash / 320k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F413CH",
+        "name": "STM32F413CH (320k RAM. 1536k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F413CHU6",
+        "fcpu": 100000000,
+        "specs": "1536k Flash / 320k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F413RG",
+        "name": "STM32F413RG (320k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F413RGT6",
+        "fcpu": 100000000,
+        "specs": "1024k Flash / 320k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F413RH",
+        "name": "STM32F413RH (320k RAM. 1536k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F413RHT6",
+        "fcpu": 100000000,
+        "specs": "1536k Flash / 320k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F415RG",
+        "name": "STM32F415RG (128k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F415RGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F417VE",
+        "name": "STM32F417VE (128k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F417VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F417VG",
+        "name": "STM32F417VG (128k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F417VGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F423CH",
+        "name": "STM32F423CH (320k RAM. 1536k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F423CHU6",
+        "fcpu": 100000000,
+        "specs": "1536k Flash / 320k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F423RH",
+        "name": "STM32F423RH (320k RAM. 1536k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F423RHT6",
+        "fcpu": 100000000,
+        "specs": "1536k Flash / 320k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F446RC",
+        "name": "STM32F446RC (128k RAM. 256k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F446RCT6",
+        "fcpu": 180000000,
+        "specs": "256k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F446RE",
+        "name": "STM32F446RE (128k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F446RET6",
+        "fcpu": 180000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "stm32f4stamp",
+        "name": "STM32F4Stamp F405",
+        "platform": "ststm32",
+        "mcu": "STM32F405RGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "seeedArchMax",
+        "name": "Seeed Arch Max",
+        "platform": "ststm32",
+        "mcu": "STM32F407VET6",
+        "fcpu": 168000000,
+        "specs": "512k Flash / 192k RAM",
+        "capabilities": [
+          "ethernet"
+        ]
+      },
+      {
+        "id": "wio_3g",
+        "name": "Seeed Wio 3G",
+        "platform": "ststm32",
+        "mcu": "STM32F439VI",
+        "fcpu": 180000000,
+        "specs": "2048k Flash / 256k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "sparkfun_micromod_f405",
+        "name": "SparkFun MicroMod STM32F405",
+        "platform": "ststm32",
+        "mcu": "STM32F405RGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "thunder_pack_f411",
+        "name": "ThunderPack v1.1+",
+        "platform": "ststm32",
+        "mcu": "STM32F411CEU6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "vake_v1",
+        "name": "VAkE v1.0",
+        "platform": "ststm32",
+        "mcu": "STM32F446RET6",
+        "fcpu": 180000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "vccgnd_f407zg_mini",
+        "name": "VCCGND F407ZGT6 Mini",
+        "platform": "ststm32",
+        "mcu": "STM32F407ZGT6",
+        "fcpu": 168000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "blackpill_f401cc",
+        "name": "WeAct Studio BlackPill V2.0 (STM32F401CC)",
+        "platform": "ststm32",
+        "mcu": "STM32F401CCU6",
+        "fcpu": 84000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "blackpill_f411ce",
+        "name": "WeAct Studio BlackPill V2.0 (STM32F411CE)",
+        "platform": "ststm32",
+        "mcu": "STM32F411CEU6",
+        "fcpu": 100000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "blackpill_f401ce",
+        "name": "WeAct Studio BlackPill V3.0 (STM32F401CE)",
+        "platform": "ststm32",
+        "mcu": "STM32F401CEU6",
+        "fcpu": 84000000,
+        "specs": "512k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "sakuraio_evb_01",
+        "name": "sakura.io Evaluation Board",
+        "platform": "ststm32",
+        "mcu": "STM32F411RET6",
+        "fcpu": 100000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "ublox_c030_n211",
+        "name": "u-blox C030-N211 IoT Starter Kit",
+        "platform": "ststm32",
+        "mcu": "STM32F437VG",
+        "fcpu": 180000000,
+        "specs": "1024k Flash / 256k RAM",
+        "capabilities": [
+          "gps",
+          "ethernet",
+          "cellular"
+        ]
+      },
+      {
+        "id": "ublox_c030_r410m",
+        "name": "u-blox C030-R410M IoT",
+        "platform": "ststm32",
+        "mcu": "STM32F437VG",
+        "fcpu": 180000000,
+        "specs": "1024k Flash / 256k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "ublox_c030_u201",
+        "name": "u-blox C030-U201 IoT Starter Kit",
+        "platform": "ststm32",
+        "mcu": "STM32F437VG",
+        "fcpu": 180000000,
+        "specs": "1024k Flash / 256k RAM",
+        "capabilities": [
+          "gps",
+          "cellular"
+        ]
+      },
+      {
+        "id": "ublox_evk_odin_w2",
+        "name": "u-blox EVK-ODIN-W2",
+        "platform": "ststm32",
+        "mcu": "STM32F439ZIY6",
+        "fcpu": 168000000,
+        "specs": "2048k Flash / 256k RAM",
+        "capabilities": [
+          "bluetooth",
+          "can",
+          "ethernet",
+          "wifi"
+        ]
+      },
+      {
+        "id": "mtb_ublox_odin_w2",
+        "name": "u-blox ODIN-W2",
+        "platform": "ststm32",
+        "mcu": "STM32F439ZIY6",
+        "fcpu": 168000000,
+        "specs": "2048k Flash / 256k RAM",
+        "capabilities": [
+          "bluetooth",
+          "can",
+          "ethernet",
+          "wifi"
+        ]
+      }
+    ],
+    "STM32F7": [
+      {
+        "id": "disco_f723ie",
+        "name": "32F723EDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F723IEK6",
+        "fcpu": 216000000,
+        "specs": "512k Flash / 192k RAM",
+        "capabilities": [
+          "can",
+          "wifi"
+        ]
+      },
+      {
+        "id": "remram_v1",
+        "name": "3D printer controller",
+        "platform": "ststm32",
+        "mcu": "STM32F765VIT6",
+        "fcpu": 216000000,
+        "specs": "2048k Flash / 512k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_f746ng",
+        "name": "ST 32F746GDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F746NGH6",
+        "fcpu": 216000000,
+        "specs": "1024k Flash / 320k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "disco_f769ni",
+        "name": "ST 32F769IDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F769NIH6",
+        "fcpu": 216000000,
+        "specs": "2048k Flash / 512k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "nucleo_f722ze",
+        "name": "ST Nucleo F722ZE",
+        "platform": "ststm32",
+        "mcu": "STM32F722ZET6",
+        "fcpu": 216000000,
+        "specs": "512k Flash / 256k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_f746zg",
+        "name": "ST Nucleo F746ZG",
+        "platform": "ststm32",
+        "mcu": "STM32F746ZGT6",
+        "fcpu": 216000000,
+        "specs": "1024k Flash / 320k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "nucleo_f756zg",
+        "name": "ST Nucleo F756ZG",
+        "platform": "ststm32",
+        "mcu": "STM32F756ZG",
+        "fcpu": 216000000,
+        "specs": "1024k Flash / 320k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "nucleo_f767zi",
+        "name": "ST Nucleo F767ZI",
+        "platform": "ststm32",
+        "mcu": "STM32F767ZIT6",
+        "fcpu": 216000000,
+        "specs": "2048k Flash / 512k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "disco_f750n8",
+        "name": "STM32F7508-DK",
+        "platform": "ststm32",
+        "mcu": "STM32F750N8H6",
+        "fcpu": 216000000,
+        "specs": "64k Flash / 340k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      }
+    ],
+    "STM32L0": [
+      {
+        "id": "acsip_s76s",
+        "name": "ACSIP S76S",
+        "platform": "ststm32",
+        "mcu": "STM32L073RZ",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "cicada_l082cz",
+        "name": "Cicada-L082CZ",
+        "platform": "ststm32",
+        "mcu": "STM32L082CZY6",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "cricket_l082cz",
+        "name": "Cricket-L082CZ",
+        "platform": "ststm32",
+        "mcu": "STM32L082CZY6",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "econode_l082cz",
+        "name": "Econode-L082CZ",
+        "platform": "ststm32",
+        "mcu": "STM32L082CZY6",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "gnat_l082cz",
+        "name": "Gnat-L082CZ",
+        "platform": "ststm32",
+        "mcu": "STM32L082CZY6",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "grasshopper_l082cz",
+        "name": "Grasshopper-L082CZ",
+        "platform": "ststm32",
+        "mcu": "STM32L082CZY6",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "piconomix_px_her0",
+        "name": "Piconomix PX-HER0",
+        "platform": "ststm32",
+        "mcu": "STM32L072RB",
+        "fcpu": 32000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "rhf76_052",
+        "name": "RHF76 052",
+        "platform": "ststm32",
+        "mcu": "STM32L051C8T6",
+        "fcpu": 32000000,
+        "specs": "64k Flash / 8k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_l053c8",
+        "name": "ST 32L0538DISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32L053C8T6",
+        "fcpu": 32000000,
+        "specs": "64k Flash / 8k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_l072cz_lrwan1",
+        "name": "ST DISCO-L072CZ-LRWAN1",
+        "platform": "ststm32",
+        "mcu": "STM32L072CZ",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l010rb",
+        "name": "ST Nucleo L010RB",
+        "platform": "ststm32",
+        "mcu": "STM32L010RBT6",
+        "fcpu": 32000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l011k4",
+        "name": "ST Nucleo L011K4",
+        "platform": "ststm32",
+        "mcu": "STM32L011K4T6",
+        "fcpu": 32000000,
+        "specs": "16k Flash / 2k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l031k6",
+        "name": "ST Nucleo L031K6",
+        "platform": "ststm32",
+        "mcu": "STM32L031K6T6",
+        "fcpu": 32000000,
+        "specs": "32k Flash / 8k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l053r8",
+        "name": "ST Nucleo L053R8",
+        "platform": "ststm32",
+        "mcu": "STM32L053R8T6",
+        "fcpu": 32000000,
+        "specs": "64k Flash / 8k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l073rz",
+        "name": "ST Nucleo L073RZ",
+        "platform": "ststm32",
+        "mcu": "STM32L073RZ",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "eval_l073z",
+        "name": "ST STM32L073Z-EVAL",
+        "platform": "ststm32",
+        "mcu": "STM32L073VZT6",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "thunder_pack",
+        "name": "ThunderPack v1.0",
+        "platform": "ststm32",
+        "mcu": "STM32L072KZ",
+        "fcpu": 32000000,
+        "specs": "192k Flash / 20k RAM",
+        "capabilities": []
+      }
+    ],
+    "STM32F1": [
+      {
+        "id": "afroflight_f103cb",
+        "name": "AfroFlight Rev5 (8MHz)",
+        "platform": "ststm32",
+        "mcu": "STM32F103CBT6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "blackpill_f103c8",
+        "name": "BlackPill F103C8",
+        "platform": "ststm32",
+        "mcu": "STM32F103C8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "blackpill_f103c8_128",
+        "name": "BlackPill F103C8 (128k)",
+        "platform": "ststm32",
+        "mcu": "STM32F103C8T6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "bluepill_f103c6",
+        "name": "BluePill F103C6",
+        "platform": "ststm32",
+        "mcu": "STM32F103C6T6",
+        "fcpu": 72000000,
+        "specs": "32k Flash / 10k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "bluepill_f103c8",
+        "name": "BluePill F103C8",
+        "platform": "ststm32",
+        "mcu": "STM32F103C8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "bluepill_f103c8_128k",
+        "name": "BluePill F103C8 (128k)",
+        "platform": "ststm32",
+        "mcu": "STM32F103C8T6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "malyanm200_f103cb",
+        "name": "Malyan M200 V1",
+        "platform": "ststm32",
+        "mcu": "STM32F103CBT6",
+        "fcpu": 72000000,
+        "specs": "120k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "maple",
+        "name": "Maple",
+        "platform": "ststm32",
+        "mcu": "STM32F103RBT6",
+        "fcpu": 72000000,
+        "specs": "108k Flash / 17k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "maple_ret6",
+        "name": "Maple (RET6)",
+        "platform": "ststm32",
+        "mcu": "STM32F103RET6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 48k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "maple_mini_b20",
+        "name": "Maple Mini Bootloader 2.0",
+        "platform": "ststm32",
+        "mcu": "STM32F103CBT6",
+        "fcpu": 72000000,
+        "specs": "120k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "maple_mini_origin",
+        "name": "Maple Mini Original",
+        "platform": "ststm32",
+        "mcu": "STM32F103CBT6",
+        "fcpu": 72000000,
+        "specs": "108k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "microduino32_flash",
+        "name": "Microduino Core STM32 to Flash",
+        "platform": "ststm32",
+        "mcu": "STM32F103CBT6",
+        "fcpu": 72000000,
+        "specs": "105.46875k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "olimexino",
+        "name": "OLIMEXINO-STM32",
+        "platform": "ststm32",
+        "mcu": "STM32F103RBT6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "olimex_f103",
+        "name": "Olimex STM32-H103",
+        "platform": "ststm32",
+        "mcu": "STM32F103RBT6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "rymcu_nebulapi_f103ve",
+        "name": "RYMCU Nebula Pi F103VE (64k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103VET6",
+        "fcpu": 72000000,
+        "specs": "512k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f103rb",
+        "name": "ST Nucleo F103RB",
+        "platform": "ststm32",
+        "mcu": "STM32F103RBT6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_f100rb",
+        "name": "ST STM32VLDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F100RBT6",
+        "fcpu": 24000000,
+        "specs": "128k Flash / 8k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "eval_f107vc",
+        "name": "STM3210C-EVAL",
+        "platform": "ststm32",
+        "mcu": "STM32F107VCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103C4",
+        "name": "STM32F103C4 (6k RAM. 16k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103C4T6",
+        "fcpu": 72000000,
+        "specs": "16k Flash / 6k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103C6",
+        "name": "STM32F103C6 (10k RAM. 32k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103C6T6",
+        "fcpu": 72000000,
+        "specs": "32k Flash / 10k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103C8",
+        "name": "STM32F103C8 (20k RAM. 64k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103C8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103CB",
+        "name": "STM32F103CB (20k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103CBT6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103R4",
+        "name": "STM32F103R4 (6k RAM. 16k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103R4T6",
+        "fcpu": 72000000,
+        "specs": "16k Flash / 6k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103R6",
+        "name": "STM32F103R6 (10k RAM. 32k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103R6T6",
+        "fcpu": 72000000,
+        "specs": "32k Flash / 10k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103R8",
+        "name": "STM32F103R8 (20k RAM. 64 Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103R8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103RB",
+        "name": "STM32F103RB (20k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103RBT6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103RC",
+        "name": "STM32F103RC (48k RAM. 256k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103RCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 48k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103RD",
+        "name": "STM32F103RD (64k RAM. 384k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103RDT6",
+        "fcpu": 72000000,
+        "specs": "384k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103RE",
+        "name": "STM32F103RE (64k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103RET6",
+        "fcpu": 72000000,
+        "specs": "512k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103RF",
+        "name": "STM32F103RF (96k RAM. 768k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103RFT6",
+        "fcpu": 72000000,
+        "specs": "768k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103RG",
+        "name": "STM32F103RG (96k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103RGT6",
+        "fcpu": 72000000,
+        "specs": "1024k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103T4",
+        "name": "STM32F103T4 (6k RAM. 16k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103T4U6",
+        "fcpu": 72000000,
+        "specs": "16k Flash / 6k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103T6",
+        "name": "STM32F103T6 (10k RAM. 32k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103T6U6",
+        "fcpu": 72000000,
+        "specs": "32k Flash / 10k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103T8",
+        "name": "STM32F103T8 (20k RAM. 64k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103T8U6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103TB",
+        "name": "STM32F103TB (20k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103TBU6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103V8",
+        "name": "STM32F103V8 (20k RAM. 64k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103V8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103VB",
+        "name": "STM32F103VB (20k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103VBT6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103VC",
+        "name": "STM32F103VC (48k RAM. 256k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103VCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 48k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103VD",
+        "name": "STM32F103VD (64k RAM. 384k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103VDT6",
+        "fcpu": 72000000,
+        "specs": "384k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103VE",
+        "name": "STM32F103VE (64k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103VET6",
+        "fcpu": 72000000,
+        "specs": "512k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103VF",
+        "name": "STM32F103VF (96k RAM. 768k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103VFT6",
+        "fcpu": 72000000,
+        "specs": "768k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103VG",
+        "name": "STM32F103VG (96k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103VGT6",
+        "fcpu": 72000000,
+        "specs": "1024k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103ZC",
+        "name": "STM32F103ZC (48k RAM. 256k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103ZCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 48k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103ZD",
+        "name": "STM32F103ZD (64k RAM. 384k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103ZDT6",
+        "fcpu": 72000000,
+        "specs": "384k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103ZE",
+        "name": "STM32F103ZE (64k RAM. 512k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103ZET6",
+        "fcpu": 72000000,
+        "specs": "512k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103ZF",
+        "name": "STM32F103ZF (96k RAM. 768k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103ZFT6",
+        "fcpu": 72000000,
+        "specs": "768k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F103ZG",
+        "name": "STM32F103ZG (96k RAM. 1024k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F103ZGT6",
+        "fcpu": 72000000,
+        "specs": "1024k Flash / 96k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "genericSTM32F105R8",
+        "name": "STM32F105R8 (64k RAM. 64 Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F105R8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "storm32_v1_31_rc",
+        "name": "STorM32 BGC v1.31 RC",
+        "platform": "ststm32",
+        "mcu": "STM32F103RCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 48k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "hy_tinystm103tb",
+        "name": "Tiny STM103T",
+        "platform": "ststm32",
+        "mcu": "STM32F103TBU6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 20k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "vccgnd_f103zet6",
+        "name": "VCCGND F103ZET6 Mini",
+        "platform": "ststm32",
+        "mcu": "STM32F103ZET6",
+        "fcpu": 72000000,
+        "specs": "512k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "waveshare_open103z",
+        "name": "Waveshare Open103Z",
+        "platform": "ststm32",
+        "mcu": "STM32F103ZET6",
+        "fcpu": 72000000,
+        "specs": "512k Flash / 64k RAM",
+        "capabilities": []
+      }
+    ],
+    "STM32H7": [
+      {
+        "id": "giga_r1_m4",
+        "name": "Arduino Giga R1 (M4 core)",
+        "platform": "ststm32",
+        "mcu": "STM32H747XIH6",
+        "fcpu": 480000000,
+        "specs": "1024k Flash / 287.3515625k RAM",
+        "capabilities": [
+          "bluetooth",
+          "wifi"
+        ]
+      },
+      {
+        "id": "giga_r1_m7",
+        "name": "Arduino Giga R1 (M7 core)",
+        "platform": "ststm32",
+        "mcu": "STM32H747XIH6",
+        "fcpu": 480000000,
+        "specs": "768k Flash / 511.3515625k RAM",
+        "capabilities": [
+          "bluetooth",
+          "wifi"
+        ]
+      },
+      {
+        "id": "nicla_vision",
+        "name": "Arduino Nicla Vision",
+        "platform": "ststm32",
+        "mcu": "STM32H747XIH6",
+        "fcpu": 480000000,
+        "specs": "768k Flash / 511.3515625k RAM",
+        "capabilities": [
+          "bluetooth",
+          "wifi"
+        ]
+      },
+      {
+        "id": "nicla_vision_m4",
+        "name": "Arduino Nicla Vision (M4 core)",
+        "platform": "ststm32",
+        "mcu": "STM32H747XIH6",
+        "fcpu": 480000000,
+        "specs": "1024k Flash / 287.3515625k RAM",
+        "capabilities": [
+          "bluetooth",
+          "wifi"
+        ]
+      },
+      {
+        "id": "opta",
+        "name": "Arduino Opta",
+        "platform": "ststm32",
+        "mcu": "STM32H747XIH6",
+        "fcpu": 480000000,
+        "specs": "768k Flash / 511.3515625k RAM",
+        "capabilities": [
+          "bluetooth",
+          "wifi"
+        ]
+      },
+      {
+        "id": "opta_m4",
+        "name": "Arduino Opta (M4 core)",
+        "platform": "ststm32",
+        "mcu": "STM32H747XIH6",
+        "fcpu": 480000000,
+        "specs": "1024k Flash / 287.3515625k RAM",
+        "capabilities": [
+          "bluetooth",
+          "wifi"
+        ]
+      },
+      {
+        "id": "portenta_h7_m4",
+        "name": "Arduino Portenta H7 (M4 core)",
+        "platform": "ststm32",
+        "mcu": "STM32H747XIH6",
+        "fcpu": 480000000,
+        "specs": "1024k Flash / 287.3515625k RAM",
+        "capabilities": [
+          "bluetooth",
+          "wifi"
+        ]
+      },
+      {
+        "id": "portenta_h7_m7",
+        "name": "Arduino Portenta H7 (M7 core)",
+        "platform": "ststm32",
+        "mcu": "STM32H747XIH6",
+        "fcpu": 480000000,
+        "specs": "768k Flash / 511.3515625k RAM",
+        "capabilities": [
+          "bluetooth",
+          "wifi"
+        ]
+      },
+      {
+        "id": "devebox_h743vitx",
+        "name": "DevEBox H743VITX",
+        "platform": "ststm32",
+        "mcu": "STM32H743VIT6",
+        "fcpu": 480000000,
+        "specs": "2048k Flash / 512k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "devebox_h750vbtx",
+        "name": "DevEBox H750VBTX",
+        "platform": "ststm32",
+        "mcu": "STM32H750VBT6",
+        "fcpu": 480000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "electrosmith_daisy",
+        "name": "Electrosmith Daisy",
+        "platform": "ststm32",
+        "mcu": "STM32H750IBK6",
+        "fcpu": 400000000,
+        "specs": "128k Flash / 512k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "electrosmith_daisy_patch_sm",
+        "name": "Electrosmith Daisy Patch SM",
+        "platform": "ststm32",
+        "mcu": "STM32H750IBK6",
+        "fcpu": 400000000,
+        "specs": "128k Flash / 512k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "electrosmith_daisy_petal_sm",
+        "name": "Electrosmith Daisy Petal SM",
+        "platform": "ststm32",
+        "mcu": "STM32H750IBK6",
+        "fcpu": 400000000,
+        "specs": "128k Flash / 512k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_h723zg",
+        "name": "ST Nucleo H723ZG",
+        "platform": "ststm32",
+        "mcu": "STM32H723ZGT6",
+        "fcpu": 550000000,
+        "specs": "1024k Flash / 320k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "nucleo_h743zi",
+        "name": "ST Nucleo H743ZI",
+        "platform": "ststm32",
+        "mcu": "STM32H743ZIT6",
+        "fcpu": 400000000,
+        "specs": "2048k Flash / 512k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "nucleo_h745zi_q",
+        "name": "ST Nucleo H745ZI-Q",
+        "platform": "ststm32",
+        "mcu": "STM32H745ZIT6",
+        "fcpu": 480000000,
+        "specs": "1024k Flash / 512k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "nucleo_h753zi",
+        "name": "ST Nucleo H753ZI",
+        "platform": "ststm32",
+        "mcu": "STM32H753ZIT6",
+        "fcpu": 400000000,
+        "specs": "2048k Flash / 864k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "disco_h735ig",
+        "name": "STM32H735G-DK Discovery kit",
+        "platform": "ststm32",
+        "mcu": "STM32H735IGK6",
+        "fcpu": 550000000,
+        "specs": "1024k Flash / 432k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "disco_h747xi",
+        "name": "STM32H747I-DISCO",
+        "platform": "ststm32",
+        "mcu": "STM32H747XIH6",
+        "fcpu": 400000000,
+        "specs": "2048k Flash / 512k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "genericSTM32H750VB",
+        "name": "STM32H750VBT6 (1024k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32H750VBT6",
+        "fcpu": 480000000,
+        "specs": "128k Flash / 1024k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "weact_mini_h743vitx",
+        "name": "WeAct Studio MiniSTM32H743VITX",
+        "platform": "ststm32",
+        "mcu": "STM32H743VIT6",
+        "fcpu": 480000000,
+        "specs": "2048k Flash / 512k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "weact_mini_h750vbtx",
+        "name": "WeAct Studio MiniSTM32H750VBTX",
+        "platform": "ststm32",
+        "mcu": "STM32H750VBT6",
+        "fcpu": 480000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      }
+    ],
+    "Other": [
+      {
+        "id": "btt_ebb42_v1_1",
+        "name": "Big Tree Tech EBB42 V1.1",
+        "platform": "ststm32",
+        "mcu": "STM32G0B1RET6",
+        "fcpu": 64000000,
+        "specs": "128k Flash / 144k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "blues_swan_r5",
+        "name": "Blues Swan R5",
+        "platform": "ststm32",
+        "mcu": "STM32L4R5ZIY6",
+        "fcpu": 120000000,
+        "specs": "2048k Flash / 640k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "bw_swan_r5",
+        "name": "BluesWireless Swan R5",
+        "platform": "ststm32",
+        "mcu": "STM32L4R5ZIY6",
+        "fcpu": 120000000,
+        "specs": "2048k Flash / 640k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "ebyte_e77_dev",
+        "name": "Ebyte E77 Dev Board",
+        "platform": "ststm32",
+        "mcu": "STM32WLE5CC",
+        "fcpu": 48000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "mkr_sharky",
+        "name": "MKR Sharky",
+        "platform": "ststm32",
+        "mcu": "STM32WB55CG",
+        "fcpu": 64000000,
+        "specs": "512k Flash / 192k RAM",
+        "capabilities": [
+          "bluetooth"
+        ]
+      },
+      {
+        "id": "nucleo_wb55rg_p",
+        "name": "P-Nucleo WB55RG",
+        "platform": "ststm32",
+        "mcu": "STM32WB55RG",
+        "fcpu": 64000000,
+        "specs": "512k Flash / 192k RAM",
+        "capabilities": [
+          "bluetooth"
+        ]
+      },
+      {
+        "id": "disco_b_u585i_iot02a",
+        "name": "ST B-U585I-IOT02A Discovery",
+        "platform": "ststm32",
+        "mcu": "STM32U585AII6Q",
+        "fcpu": 160000000,
+        "specs": "2048k Flash / 256k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_g0b1re",
+        "name": "ST Nucleo G0B1RE",
+        "platform": "ststm32",
+        "mcu": "STM32G0B1RET6",
+        "fcpu": 64000000,
+        "specs": "512k Flash / 144k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_h563zi",
+        "name": "ST Nucleo H563ZI",
+        "platform": "ststm32",
+        "mcu": "STM32H563ZIT6U",
+        "fcpu": 250000000,
+        "specs": "2048k Flash / 640k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      },
+      {
+        "id": "nucleo_l4r5zi",
+        "name": "ST Nucleo L4R5ZI",
+        "platform": "ststm32",
+        "mcu": "STM32L4R5ZIT6",
+        "fcpu": 120000000,
+        "specs": "2048k Flash / 640k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_l552ze_q",
+        "name": "ST Nucleo L552ZE-Q",
+        "platform": "ststm32",
+        "mcu": "STM32L552ZET6",
+        "fcpu": 80000000,
+        "specs": "512k Flash / 192k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_u575zi_q",
+        "name": "ST Nucleo U575ZI-Q",
+        "platform": "ststm32",
+        "mcu": "STM32U575ZIT6Q",
+        "fcpu": 160000000,
+        "specs": "2048k Flash / 256k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_wl55jc",
+        "name": "ST Nucleo WL55JC",
+        "platform": "ststm32",
+        "mcu": "STM32WL55JC",
+        "fcpu": 48000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_l4s5i_iot01a",
+        "name": "ST STM32L4+ Discovery kit IoT node",
+        "platform": "ststm32",
+        "mcu": "STM32L4S5VIT6",
+        "fcpu": 80000000,
+        "specs": "2048k Flash / 640k RAM",
+        "capabilities": [
+          "bluetooth",
+          "can",
+          "wifi"
+        ]
+      },
+      {
+        "id": "lora_e5_dev_board",
+        "name": "SeeedStudio LoRa E5 Dev Board",
+        "platform": "ststm32",
+        "mcu": "STM32WLE5JC",
+        "fcpu": 48000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "lora_e5_mini",
+        "name": "SeeedStudio LoRa-E5 mini",
+        "platform": "ststm32",
+        "mcu": "STM32WLE5JC",
+        "fcpu": 48000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "steval_mksboxv1",
+        "name": "SensorTile.box",
+        "platform": "ststm32",
+        "mcu": "STM32L4R9ZI",
+        "fcpu": 120000000,
+        "specs": "2048k Flash / 640k RAM",
+        "capabilities": [
+          "bluetooth",
+          "can"
+        ]
+      },
+      {
+        "id": "we_oceanus1_ev",
+        "name": "WE Oceanus-I EV",
+        "platform": "ststm32",
+        "mcu": "STM32WLE5CCU6 ",
+        "fcpu": 48000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "we_oceanus1",
+        "name": "WE Oceanus-I Module",
+        "platform": "ststm32",
+        "mcu": "STM32WLE5CCU6 ",
+        "fcpu": 48000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      }
+    ],
+    "STM32F3": [
+      {
+        "id": "robotdyn_blackpill_f303cc",
+        "name": "BlackPill F303CC",
+        "platform": "ststm32",
+        "mcu": "STM32F303CCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 40k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "olimexino_stm32f3",
+        "name": "Olimex OLIMEXINO-STM32F3",
+        "platform": "ststm32",
+        "mcu": "STM32F303RCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 40k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_f334c8",
+        "name": "ST 32F3348DISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F334C8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 12k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f302r8",
+        "name": "ST Nucleo F302R8",
+        "platform": "ststm32",
+        "mcu": "STM32F302R8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 16k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_f303k8",
+        "name": "ST Nucleo F303K8",
+        "platform": "ststm32",
+        "mcu": "STM32F303K8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 12k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_f303re",
+        "name": "ST Nucleo F303RE",
+        "platform": "ststm32",
+        "mcu": "STM32F303RET6",
+        "fcpu": 72000000,
+        "specs": "512k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f303ze",
+        "name": "ST Nucleo F303ZE",
+        "platform": "ststm32",
+        "mcu": "STM32F303ZET6",
+        "fcpu": 72000000,
+        "specs": "512k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f334r8",
+        "name": "ST Nucleo F334R8",
+        "platform": "ststm32",
+        "mcu": "STM32F334R8T6",
+        "fcpu": 72000000,
+        "specs": "64k Flash / 16k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_f303vc",
+        "name": "ST STM32F3DISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F303VCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 40k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "eval_f373vc",
+        "name": "STM32373C-EVAL",
+        "platform": "ststm32",
+        "mcu": "STM32F373VCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 32k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "genericSTM32F303CB",
+        "name": "STM32F303CB (32k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F303CBT6",
+        "fcpu": 72000000,
+        "specs": "128k Flash / 32k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "genericSTM32F373RC",
+        "name": "STM32F373RC (32k RAM. 256k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32F373RCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 32k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "sparky_v1",
+        "name": "Sparky V1 F303",
+        "platform": "ststm32",
+        "mcu": "STM32F303CCT6",
+        "fcpu": 72000000,
+        "specs": "256k Flash / 40k RAM",
+        "capabilities": [
+          "can"
+        ]
+      }
+    ],
+    "STM32L4": [
+      {
+        "id": "blues_cygnet",
+        "name": "Blues Cygnet",
+        "platform": "ststm32",
+        "mcu": "STM32L433CCT6",
+        "fcpu": 80000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "rhombio_l476dmw1k",
+        "name": "L476DMW1K",
+        "platform": "ststm32",
+        "mcu": "STM32L476VGT6",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "leafony_ap03",
+        "name": "Leafony Systems AP03",
+        "platform": "ststm32",
+        "mcu": "STM32L452RET6",
+        "fcpu": 80000000,
+        "specs": "512k Flash / 160k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "cloud_jam_l4",
+        "name": "RushUp Cloud-JAM L4",
+        "platform": "ststm32",
+        "mcu": "STM32L476RGT6",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_l476vg",
+        "name": "ST 32L476GDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32L476VGT6",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_l496ag",
+        "name": "ST 32L496GDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32L496AGI6",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 320k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_l475vg_iot01a",
+        "name": "ST B-L475E-IOT01A Discovery kit",
+        "platform": "ststm32",
+        "mcu": "STM32L475VGT6",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 96k RAM",
+        "capabilities": [
+          "bluetooth",
+          "can",
+          "wifi"
+        ]
+      },
+      {
+        "id": "nucleo_l412kb",
+        "name": "ST Nucleo L412KB",
+        "platform": "ststm32",
+        "mcu": "STM32L412KBU6",
+        "fcpu": 80000000,
+        "specs": "128k Flash / 40k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l412rb_p",
+        "name": "ST Nucleo L412RB-P",
+        "platform": "ststm32",
+        "mcu": "STM32L412RBT6P",
+        "fcpu": 80000000,
+        "specs": "128k Flash / 40k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l432kc",
+        "name": "ST Nucleo L432KC",
+        "platform": "ststm32",
+        "mcu": "STM32L432KCU6",
+        "fcpu": 80000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l433rc_p",
+        "name": "ST Nucleo L433RC-P",
+        "platform": "ststm32",
+        "mcu": "STM32L433RC",
+        "fcpu": 80000000,
+        "specs": "256k Flash / 64k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l452re",
+        "name": "ST Nucleo L452RE",
+        "platform": "ststm32",
+        "mcu": "STM32L452RET6",
+        "fcpu": 80000000,
+        "specs": "512k Flash / 160k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_l476rg",
+        "name": "ST Nucleo L476RG",
+        "platform": "ststm32",
+        "mcu": "STM32L476RGT6",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 96k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_l486rg",
+        "name": "ST Nucleo L486RG",
+        "platform": "ststm32",
+        "mcu": "STM32L486RGT6",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_l496zg",
+        "name": "ST Nucleo L496ZG",
+        "platform": "ststm32",
+        "mcu": "STM32L496ZGT6",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 320k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_l496zg_p",
+        "name": "ST Nucleo L496ZG-P",
+        "platform": "ststm32",
+        "mcu": "STM32L496ZGT6P",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 320k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "silica_sensor_node",
+        "name": "ST Sensor Node",
+        "platform": "ststm32",
+        "mcu": "STM32L476JG",
+        "fcpu": 80000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": [
+          "can",
+          "6LoWPAN"
+        ]
+      }
+    ],
+    "STM32F0": [
+      {
+        "id": "demo_f030f4",
+        "name": "Demo F030F4",
+        "platform": "ststm32",
+        "mcu": "STM32F030F4P6",
+        "fcpu": 48000000,
+        "specs": "16k Flash / 4k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "elektor_f072cb",
+        "name": "Elektor LoRa Node Core F072C8 (128 kB)",
+        "platform": "ststm32",
+        "mcu": "STM32F072C8T6",
+        "fcpu": 48000000,
+        "specs": "128k Flash / 16k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "elektor_f072c8",
+        "name": "Elektor LoRa Node Core F072C8 (64 kB)",
+        "platform": "ststm32",
+        "mcu": "STM32F072C8T6",
+        "fcpu": 48000000,
+        "specs": "64k Flash / 16k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "malyanm200_f070cb",
+        "name": "M200 V2",
+        "platform": "ststm32",
+        "mcu": "STM32F070CBT6",
+        "fcpu": 48000000,
+        "specs": "120k Flash / 14.8125k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "malyanm300_f070cb",
+        "name": "M300",
+        "platform": "ststm32",
+        "mcu": "STM32F070CBT6",
+        "fcpu": 48000000,
+        "specs": "120k Flash / 14.8125k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "pybstick26_duino",
+        "name": "PYBSTICK26 Duino",
+        "platform": "ststm32",
+        "mcu": "STM32F072RB",
+        "fcpu": 48000000,
+        "specs": "128k Flash / 16k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_f072rb",
+        "name": "ST Discovery F072RB",
+        "platform": "ststm32",
+        "mcu": "STM32F072RBT6",
+        "fcpu": 48000000,
+        "specs": "128k Flash / 16k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_f030r8",
+        "name": "ST Nucleo F030R8",
+        "platform": "ststm32",
+        "mcu": "STM32F030R8T6",
+        "fcpu": 48000000,
+        "specs": "64k Flash / 8k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f031k6",
+        "name": "ST Nucleo F031K6",
+        "platform": "ststm32",
+        "mcu": "STM32F031K6T6",
+        "fcpu": 48000000,
+        "specs": "32k Flash / 4k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f042k6",
+        "name": "ST Nucleo F042K6",
+        "platform": "ststm32",
+        "mcu": "STM32F042K6T6",
+        "fcpu": 48000000,
+        "specs": "32k Flash / 6k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_f070rb",
+        "name": "ST Nucleo F070RB",
+        "platform": "ststm32",
+        "mcu": "STM32F070RBT6",
+        "fcpu": 48000000,
+        "specs": "128k Flash / 16k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_f072rb",
+        "name": "ST Nucleo F072RB",
+        "platform": "ststm32",
+        "mcu": "STM32F072RBT6",
+        "fcpu": 48000000,
+        "specs": "128k Flash / 16k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_f091rc",
+        "name": "ST Nucleo F091RC",
+        "platform": "ststm32",
+        "mcu": "STM32F091RCT6",
+        "fcpu": 48000000,
+        "specs": "256k Flash / 32k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_f030r8",
+        "name": "ST STM32F0308DISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F030R8T6",
+        "fcpu": 48000000,
+        "specs": "64k Flash / 8k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_f051r8",
+        "name": "ST STM32F0DISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32F051R8T6",
+        "fcpu": 48000000,
+        "specs": "64k Flash / 8k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "eval_f072vb",
+        "name": "STM32F072-EVAL",
+        "platform": "ststm32",
+        "mcu": "STM32F072VBT6",
+        "fcpu": 48000000,
+        "specs": "128k Flash / 16k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "wraith32_v1",
+        "name": "Wraith V1 ESC",
+        "platform": "ststm32",
+        "mcu": "STM32F051K6",
+        "fcpu": 48000000,
+        "specs": "32k Flash / 7.75k RAM",
+        "capabilities": []
+      }
+    ],
+    "STM32L1": [
+      {
+        "id": "xdot_l151cc",
+        "name": "MultiTech xDot",
+        "platform": "ststm32",
+        "mcu": "STM32L151CCU6",
+        "fcpu": 32000000,
+        "specs": "256k Flash / 32k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "mote_l152rc",
+        "name": "NAMote72",
+        "platform": "ststm32",
+        "mcu": "STM32L152RC",
+        "fcpu": 32000000,
+        "specs": "256k Flash / 32k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "rak811_tracker",
+        "name": "RAK811 LoRa Tracker",
+        "platform": "ststm32",
+        "mcu": "STM32L151RBT6",
+        "fcpu": 32000000,
+        "specs": "128k Flash / 16k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "rak811_tracker_32",
+        "name": "RAK811 LoRa Tracker",
+        "platform": "ststm32",
+        "mcu": "STM32L151RBT6",
+        "fcpu": 32000000,
+        "specs": "128k Flash / 32k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_l100rc",
+        "name": "ST 32L100DISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32L100RCT6",
+        "fcpu": 32000000,
+        "specs": "256k Flash / 16k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_l152re",
+        "name": "ST Nucleo L152RE",
+        "platform": "ststm32",
+        "mcu": "STM32L152RET6",
+        "fcpu": 32000000,
+        "specs": "512k Flash / 80k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_l152rb",
+        "name": "ST STM32LDISCOVERY",
+        "platform": "ststm32",
+        "mcu": "STM32L152RBT6",
+        "fcpu": 32000000,
+        "specs": "128k Flash / 16k RAM",
+        "capabilities": []
+      }
+    ],
+    "STM32G0": [
+      {
+        "id": "nucleo_g070rb",
+        "name": "Nucleo G070RB",
+        "platform": "ststm32",
+        "mcu": "STM32G070RBT6",
+        "fcpu": 64000000,
+        "specs": "128k Flash / 36k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_g071rb",
+        "name": "Nucleo G071RB",
+        "platform": "ststm32",
+        "mcu": "STM32G071RBT6",
+        "fcpu": 64000000,
+        "specs": "128k Flash / 36k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "nucleo_g031k8",
+        "name": "ST NUCLEO-G031K8",
+        "platform": "ststm32",
+        "mcu": "STM32G031K8",
+        "fcpu": 64000000,
+        "specs": "64k Flash / 8k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_g031j6",
+        "name": "ST STM32G0316-DISCO",
+        "platform": "ststm32",
+        "mcu": "STM32G031J6",
+        "fcpu": 64000000,
+        "specs": "128k Flash / 8k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "disco_g071rb",
+        "name": "ST STM32G071B Discovery",
+        "platform": "ststm32",
+        "mcu": "STM32G071RBT6",
+        "fcpu": 64000000,
+        "specs": "128k Flash / 36k RAM",
+        "capabilities": []
+      },
+      {
+        "id": "agafia_sg0",
+        "name": "Sigma IC AGAFIA SG0",
+        "platform": "ststm32",
+        "mcu": "STM32G071RBT6",
+        "fcpu": 64000000,
+        "specs": "128k Flash / 36k RAM",
+        "capabilities": []
+      }
+    ],
+    "STM32G4": [
+      {
+        "id": "nucleo_g431kb",
+        "name": "Nucleo G431KB",
+        "platform": "ststm32",
+        "mcu": "STM32G431KBT6",
+        "fcpu": 170000000,
+        "specs": "128k Flash / 32k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_g431rb",
+        "name": "Nucleo G431RB",
+        "platform": "ststm32",
+        "mcu": "STM32G431RBT6",
+        "fcpu": 170000000,
+        "specs": "128k Flash / 32k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_g474re",
+        "name": "Nucleo G474RE",
+        "platform": "ststm32",
+        "mcu": "STM32G474RET6",
+        "fcpu": 170000000,
+        "specs": "512k Flash / 128k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "nucleo_g491re",
+        "name": "Nucleo G491RE",
+        "platform": "ststm32",
+        "mcu": "STM32G491RET6",
+        "fcpu": 170000000,
+        "specs": "512k Flash / 112k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "disco_b_g431b_esc1",
+        "name": "ST B-G431B-ESC1 Discovery",
+        "platform": "ststm32",
+        "mcu": "STM32G431CBU6",
+        "fcpu": 170000000,
+        "specs": "128k Flash / 32k RAM",
+        "capabilities": [
+          "can"
+        ]
+      },
+      {
+        "id": "genericSTM32G431CB",
+        "name": "STM32G431CB (32k RAM. 128k Flash)",
+        "platform": "ststm32",
+        "mcu": "STM32G431CBU6",
+        "fcpu": 170000000,
+        "specs": "128k Flash / 32k RAM",
+        "capabilities": [
+          "can"
+        ]
+      }
+    ],
+    "STM32F2": [
+      {
+        "id": "nucleo_f207zg",
+        "name": "ST Nucleo F207ZG",
+        "platform": "ststm32",
+        "mcu": "STM32F207ZGT6",
+        "fcpu": 120000000,
+        "specs": "1024k Flash / 128k RAM",
+        "capabilities": [
+          "can",
+          "ethernet"
+        ]
+      }
+    ]
+  }
+}

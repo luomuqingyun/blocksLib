@@ -1,0 +1,307 @@
+{
+  "id": "lolin32",
+  "name": "WEMOS LOLIN32",
+  "mcu": "ESP32",
+  "specs": "4096k Flash / 320k RAM",
+  "capabilities": [
+    "wifi",
+    "bluetooth",
+    "ethernet",
+    "can"
+  ],
+  "package": "BOARD_DIP_30",
+  "pinCount": 30,
+  "pinMap": [
+    {
+      "name": "VP",
+      "position": "1"
+    },
+    {
+      "name": "VN",
+      "position": "2"
+    },
+    {
+      "name": "34",
+      "position": "3"
+    },
+    {
+      "name": "35",
+      "position": "4"
+    },
+    {
+      "name": "32",
+      "position": "5"
+    },
+    {
+      "name": "33",
+      "position": "6"
+    },
+    {
+      "name": "25",
+      "position": "7"
+    },
+    {
+      "name": "26",
+      "position": "8"
+    },
+    {
+      "name": "27",
+      "position": "9"
+    },
+    {
+      "name": "14",
+      "position": "10"
+    },
+    {
+      "name": "12",
+      "position": "11"
+    },
+    {
+      "name": "13",
+      "position": "12"
+    },
+    {
+      "name": "GND",
+      "position": "13"
+    },
+    {
+      "name": "VIN",
+      "position": "14"
+    },
+    {
+      "name": "23",
+      "position": "15"
+    },
+    {
+      "name": "22",
+      "position": "16"
+    },
+    {
+      "name": "TX",
+      "position": "17"
+    },
+    {
+      "name": "RX",
+      "position": "18"
+    },
+    {
+      "name": "21",
+      "position": "19"
+    },
+    {
+      "name": "GND",
+      "position": "20"
+    },
+    {
+      "name": "19",
+      "position": "21"
+    },
+    {
+      "name": "18",
+      "position": "22"
+    },
+    {
+      "name": "5",
+      "position": "23"
+    },
+    {
+      "name": "17",
+      "position": "24"
+    },
+    {
+      "name": "16",
+      "position": "25"
+    },
+    {
+      "name": "4",
+      "position": "26"
+    },
+    {
+      "name": "0",
+      "position": "27"
+    },
+    {
+      "name": "2",
+      "position": "28"
+    },
+    {
+      "name": "15",
+      "position": "29"
+    },
+    {
+      "name": "3V3",
+      "position": "30"
+    }
+  ],
+  "pin_options": {
+    "digital": [
+      [
+        "GPIO0",
+        "0"
+      ],
+      [
+        "GPIO1",
+        "1"
+      ],
+      [
+        "GPIO2",
+        "2"
+      ],
+      [
+        "GPIO3",
+        "3"
+      ],
+      [
+        "GPIO4",
+        "4"
+      ],
+      [
+        "GPIO5",
+        "5"
+      ],
+      [
+        "GPIO12",
+        "12"
+      ],
+      [
+        "GPIO13",
+        "13"
+      ],
+      [
+        "GPIO14",
+        "14"
+      ],
+      [
+        "GPIO15",
+        "15"
+      ],
+      [
+        "GPIO16",
+        "16"
+      ],
+      [
+        "GPIO17",
+        "17"
+      ],
+      [
+        "GPIO18",
+        "18"
+      ],
+      [
+        "GPIO19",
+        "19"
+      ],
+      [
+        "GPIO21",
+        "21"
+      ],
+      [
+        "GPIO22",
+        "22"
+      ],
+      [
+        "GPIO23",
+        "23"
+      ],
+      [
+        "GPIO25",
+        "25"
+      ],
+      [
+        "GPIO26",
+        "26"
+      ],
+      [
+        "GPIO27",
+        "27"
+      ],
+      [
+        "GPIO32",
+        "32"
+      ],
+      [
+        "GPIO33",
+        "33"
+      ],
+      [
+        "GPIO34",
+        "34"
+      ],
+      [
+        "GPIO35",
+        "35"
+      ],
+      [
+        "GPIO36",
+        "36"
+      ],
+      [
+        "GPIO39",
+        "39"
+      ]
+    ],
+    "analog": [
+      [
+        "GPIO32 (ADC1_4)",
+        "32"
+      ],
+      [
+        "GPIO33 (ADC1_5)",
+        "33"
+      ],
+      [
+        "GPIO34 (ADC1_6)",
+        "34"
+      ],
+      [
+        "GPIO35 (ADC1_7)",
+        "35"
+      ],
+      [
+        "GPIO36 (VP)",
+        "36"
+      ],
+      [
+        "GPIO39 (VN)",
+        "39"
+      ],
+      [
+        "GPIO25 (ADC2_8)",
+        "25"
+      ],
+      [
+        "GPIO26 (ADC2_9)",
+        "26"
+      ]
+    ],
+    "pwm": [],
+    "i2c": [
+      [
+        "SDA",
+        "21"
+      ],
+      [
+        "SCL",
+        "22"
+      ]
+    ],
+    "spi": [
+      [
+        "MOSI",
+        "23"
+      ],
+      [
+        "MISO",
+        "19"
+      ],
+      [
+        "SCK",
+        "18"
+      ],
+      [
+        "SS",
+        "5"
+      ]
+    ]
+  }
+}

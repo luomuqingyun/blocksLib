@@ -1,9 +1,11 @@
 // ----------------------------------------------------------------------------
 // 新建项目模态框 (New Project Modal)
 // ----------------------------------------------------------------------------
-// 改进版: 支持标准/高级视图双模式选择
-// - Standard: 常用板卡 (列表视图 + 预览)
-// - Advanced: STM32全系列 (层级树视图 + 预览)
+// 核心功能:
+// 1. 支持标准 (Standard) 和 高级 (Advanced) 两种板卡选择视角。
+// 2. 标准视角: 以品牌分类展示常用开发板 (如 Arduino, ESP32)。
+// 3. 高级视角: 以树形目录展示 STM32 全系列芯片及其详细引脚图预览。
+// 4. 集成 BoardRepository 实现数据的按需加载与缓存。
 // ----------------------------------------------------------------------------
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -15,12 +17,12 @@ import { BaseModal } from './BaseModal';
 import { BoardPreview } from './BoardPreview';
 import { getI18nString } from '../utils/i18n_utils';
 
-// Import Data (Moved to src/data)
-import standardDataRaw from '../data/standard_board_data.json';
-import stm32DataRaw from '../data/stm32_board_data.json';
+// 通过 BoardRepository 统一访问底层硬件定义文件 (JSON)
+import { boardRepository } from '../data/BoardRepository';
 
-const standardData: any = standardDataRaw;
-const stm32Data: any = stm32DataRaw;
+// 数据加载器: 利用 Vite Glob 静态分析出的板卡词典
+const standardData = boardRepository.getStandardBoards();
+const stm32Data = boardRepository.getSTM32Boards();
 
 export const NewProjectModal: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -34,52 +36,67 @@ export const NewProjectModal: React.FC = () => {
     const isOpen = isNewProjectOpen || isSaveAsOpen;
     const isSaveAs = isSaveAsOpen;
 
-    // ----- State -----
-    const [projectName, setProjectName] = useState('MyProject');
-    const [parentDir, setParentDir] = useState('');
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    // ----- 业务状态 -----
+    const [projectName, setProjectName] = useState('MyProject'); // 项目名称
+    const [parentDir, setParentDir] = useState('');              // 父级保存路径
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); // 错误提示
     const nameInputRef = React.useRef<HTMLInputElement>(null);
 
-    // UI State
-    const [activeTab, setActiveTab] = useState<'standard' | 'advanced'>('standard');
-    const [selectedBoardId, setSelectedBoardId] = useState<string>('');
-    const [selectedBoardData, setSelectedBoardData] = useState<any>(null); // For preview
+    // 交互状态
+    const [activeTab, setActiveTab] = useState<'standard' | 'advanced'>('standard'); // 当前选项卡
+    const [selectedBoardId, setSelectedBoardId] = useState<string>('');              // 选中的板卡 ID
+    const [selectedBoardData, setSelectedBoardData] = useState<any>(null);           // 选中的板卡完整数据 (用于预览)
 
-    // STM32 Tree State
+    // STM32 树形视图状态
     const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
-    // Window Dragging
+    // 窗口拖拽位置状态
     const [pos, setPos] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-    // ----- Effects -----
+    // ----- 副作用处理 -----
 
-    // Center on open & Init
+    // 切换选项卡时的副作用: 重置选中状态
+    useEffect(() => {
+        if (!isOpen) return;
+
+        // 当切换到 Standard 模式时，尝试自动选中第一个板卡 (Arduino Uno)
+        if (activeTab === 'standard') {
+            const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
+            if (uno && !selectedBoardId) handleSelectBoard(uno);
+        }
+        // 当切换到 Advanced 模式时，清空选中状态，让用户看到“ST”Logo等待选择
+        else if (activeTab === 'advanced') {
+            setSelectedBoardId('');
+            setSelectedBoardData(null);
+        }
+    }, [activeTab]);
+
+    // 弹窗打开时的初始化逻辑
     useEffect(() => {
         if (isOpen) {
+            // 居中显示
             setPos({ x: (window.innerWidth - 800) / 2, y: (window.innerHeight - 600) / 2 });
             setErrorMessage(null);
 
             if (isSaveAs) {
+                // 如果是“另存为”模式，默认名称加前缀
                 const currentName = projectMetadata?.name || 'MyProject';
                 setProjectName(`${currentName}_copy`);
-                // Restore board if possible (flat check)
-                // If ID exists in standard, switch to standard. If in STM32, switch.
             } else {
                 if (projectName === 'MyProject' || !projectName) setProjectName('MyProject');
 
-                // Default Selection: Arduino Uno
-                if (!selectedBoardId) {
-                    // Try to find Uno in standard data
-                    const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
-                    if (uno) handleSelectBoard(uno);
-                }
+                // 默认选中 Arduino Uno (仅当在 Standard 模式或初始加载时)
+                // 强制将选项卡重置为 Standard (符合用户习惯)
+                setActiveTab('standard');
+                const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
+                if (uno) handleSelectBoard(uno);
             }
 
             setParentDir(workDir);
 
-            // Focus Name
+            // 自动聚焦并全选输入框内容
             setTimeout(() => {
                 nameInputRef.current?.focus();
                 nameInputRef.current?.select();
@@ -87,12 +104,12 @@ export const NewProjectModal: React.FC = () => {
         }
     }, [isOpen]);
 
-    // Update parent dir if global workDir changes while open
+    // 当全局工作目录变化时，同步更新路径输入框
     useEffect(() => {
         if (isOpen) setParentDir(workDir);
     }, [workDir, isOpen]);
 
-    // Dragging Logic
+    // 实现模态框的自定义拖拽逻辑
     useEffect(() => {
         const onMouseMove = (e: MouseEvent) => {
             if (isDragging) setPos({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y });
@@ -108,13 +125,20 @@ export const NewProjectModal: React.FC = () => {
         };
     }, [isDragging, dragOffset]);
 
-    // ----- Handlers -----
+    // ----- 处理器函数 -----
 
+    /**
+     * 选择板卡时的处理
+     * @param board 板卡数据对象
+     */
     const handleSelectBoard = (board: any) => {
         setSelectedBoardId(board.id);
         setSelectedBoardData(board);
     };
 
+    /**
+     * 切换 STM32 树节点的展开/折叠状态
+     */
     const toggleNode = (nodeName: string) => {
         const newSet = new Set(expandedNodes);
         if (newSet.has(nodeName)) newSet.delete(nodeName);
@@ -122,11 +146,17 @@ export const NewProjectModal: React.FC = () => {
         setExpandedNodes(newSet);
     };
 
+    /**
+     * 关闭弹窗
+     */
     const handleClose = () => {
         setIsNewProjectOpen(false);
         setIsSaveAsOpen(false);
     };
 
+    /**
+     * 确认提交逻辑
+     */
     const handleConfirm = async () => {
         setErrorMessage(null);
         if (!projectName.trim()) return setErrorMessage(t('dialog.enterProjectName'));
@@ -138,15 +168,14 @@ export const NewProjectModal: React.FC = () => {
             if (res.success) handleClose();
             else setErrorMessage(res.error || 'Save As failed');
         } else {
-            // Note: Currently creating project just with ID.
-            // Future: Pass extra variant path data if needed.
+            // 通过 FileSystemContext 调用后端服务创建物理项目目录
             const res = await createNewProject(projectName, selectedBoardId, parentDir);
             if (res.success) handleClose();
             else setErrorMessage(res.error || 'Creation failed');
         }
     };
 
-    // ----- Render Helpers -----
+    // ----- 渲染部分辅助函数 -----
 
     const renderStandardList = () => (
         <div className="space-y-4">
@@ -159,8 +188,8 @@ export const NewProjectModal: React.FC = () => {
                                 key={board.id}
                                 onClick={() => handleSelectBoard(board)}
                                 className={`w-full text-left px-3 py-2 rounded flex items-center justify-between group transition-colors ${selectedBoardId === board.id
-                                        ? 'bg-blue-600/20 text-blue-300 border border-blue-600/50'
-                                        : 'hover:bg-[#333] text-slate-300 border border-transparent'
+                                    ? 'bg-blue-600/20 text-blue-300 border border-blue-600/50'
+                                    : 'hover:bg-[#333] text-slate-300 border border-transparent'
                                     }`}
                             >
                                 <span className="text-sm truncate">{board.name}</span>
@@ -175,37 +204,36 @@ export const NewProjectModal: React.FC = () => {
 
     const renderSTM32Tree = (data: any, pathIdx = 0) => {
         // Recursive tree renderer for STM32 structure
-        // Structure: { STM32: { STM32F0: { ...vars... }, STM32F1: { ... } } }
-        // Or if it's already the sub-object.
+        if (!data) return null;
 
-        if (!data || typeof data !== 'object') return null;
+        // Case 1: Array (Leaf List found under a Series, e.g. STM32F4 -> [boards...])
+        if (Array.isArray(data)) {
+            return (
+                <div className="pl-2 border-l border-slate-700/50 space-y-1">
+                    {data.map((board: any) => (
+                        <button
+                            key={board.id}
+                            onClick={() => handleSelectBoard(board)}
+                            className={`w-full text-left px-2 py-1.5 rounded flex items-center gap-2 text-sm ${selectedBoardId === board.id
+                                ? 'bg-purple-600/20 text-purple-300'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-[#333]'
+                                }`}
+                        >
+                            <Box size={14} className="opacity-70" />
+                            <span className="truncate">{board.name || board.id}</span>
+                        </button>
+                    ))}
+                </div>
+            );
+        }
 
-        return (
-            <div className="pl-2 border-l border-slate-700/50 space-y-1">
-                {Object.entries(data).map(([key, value]: [string, any]) => {
-                    const isLeaf = value.id && value.mcu; // It's a board definition
-                    const id = isLeaf ? value.id : key;
-                    const isExpanded = expandedNodes.has(key);
+        // Case 2: Object (Directory/Group, e.g. STM32 -> STM32F4)
+        if (typeof data === 'object') {
+            return (
+                <div className="pl-2 border-l border-slate-700/50 space-y-1">
+                    {Object.entries(data).map(([key, value]: [string, any]) => {
+                        const isExpanded = expandedNodes.has(key);
 
-                    if (isLeaf) {
-                        // Leaf Node (Board)
-                        // Note: In refined data, leaves might be inside an array or directly objects.
-                        // stm32_board_data structure: { STM32: { Series: { Board: { info } } } }
-                        return (
-                            <button
-                                key={value.id}
-                                onClick={() => handleSelectBoard(value)}
-                                className={`w-full text-left px-2 py-1.5 rounded flex items-center gap-2 text-sm ${selectedBoardId === value.id
-                                        ? 'bg-purple-600/20 text-purple-300'
-                                        : 'text-slate-400 hover:text-slate-200 hover:bg-[#333]'
-                                    }`}
-                            >
-                                <Box size={14} className="opacity-70" />
-                                <span className="truncate">{key}</span>
-                            </button>
-                        );
-                    } else {
-                        // Directory Node (Series/Group)
                         return (
                             <div key={key}>
                                 <button
@@ -218,10 +246,12 @@ export const NewProjectModal: React.FC = () => {
                                 {isExpanded && renderSTM32Tree(value, pathIdx + 1)}
                             </div>
                         );
-                    }
-                })}
-            </div>
-        );
+                    })}
+                </div>
+            );
+        }
+
+        return null;
     };
 
     if (!isOpen) return null;
@@ -321,6 +351,11 @@ export const NewProjectModal: React.FC = () => {
                         {selectedBoardData ? (
                             <BoardPreview
                                 name={selectedBoardData.name || selectedBoardData.id}
+                                mcu={selectedBoardData.mcu}
+                                packageType={selectedBoardData.package}
+                                pinCount={selectedBoardData.pinCount}
+                                pinMap={selectedBoardData.pinMap}
+                                pins={selectedBoardData.pin_options?.digital?.map((p: any) => Array.isArray(p) ? p[0] : p)}
                                 description={selectedBoardData.description || t('board.noDescription')}
                                 specs={selectedBoardData.specs} // e.g. "32k Flash"
                                 images={selectedBoardData.images}
@@ -328,9 +363,22 @@ export const NewProjectModal: React.FC = () => {
                                 className="flex-1 shadow-lg"
                             />
                         ) : (
-                            <div className="flex-1 flex flex-col items-center justify-center text-slate-600 border border-slate-700 border-dashed rounded-lg bg-[#252526]/50">
-                                <Cpu size={48} className="mb-2 opacity-50" />
-                                <span className="text-sm">Select a board to view details</span>
+                            <div className="flex-1 flex flex-col items-center justify-center text-slate-600 border border-slate-700 border-dashed rounded-lg bg-[#252526]/50 select-none">
+                                {activeTab === 'advanced' ? (
+                                    <>
+                                        {/* ST Logo Generic Placeholder */}
+                                        <div className="w-24 h-24 bg-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-blue-900/20">
+                                            <span className="text-white font-bold text-4xl italic tracking-tighter">ST</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-slate-200 mb-1">STM32 Series</h3>
+                                        <span className="text-sm">Select a chip to view details</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Cpu size={48} className="mb-2 opacity-50" />
+                                        <span className="text-sm">Select a board to view details</span>
+                                    </>
+                                )}
                             </div>
                         )}
 
@@ -356,8 +404,8 @@ export const NewProjectModal: React.FC = () => {
                     <button
                         onClick={handleConfirm}
                         className={`px-6 py-2 rounded text-sm font-medium transition-colors shadow-lg ${!projectName || !selectedBoardId
-                                ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
-                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
                             }`}
                     >
                         {isSaveAs ? t('app.saveAs') : t('dialog.create')}

@@ -9,6 +9,11 @@ export interface PinDefinition {
     value: string;
 }
 
+export interface PinMapping {
+    name: string;
+    position: string;
+}
+
 export interface BoardPins {
     digital: PinDefinition[];
     analog: PinDefinition[];
@@ -61,6 +66,9 @@ export interface Board {
     id: string;
     name: string | I18nString;
     mcu: string;
+    pinCount?: number; // 新增：用于芯片预览渲染
+    package?: string;  // 新增：用于芯片预览渲染
+    pinMap?: PinMapping[]; // 新增：物理引脚映射
     freq: string;
     flash: string;
     ram: string;
