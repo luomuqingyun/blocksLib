@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 舵机模块 (Servo Motors Module)
+ * ============================================================
+ * 
+ * 提供标准舵机控制积木 (Servo.h):
+ * - arduino_servo_attach: 连接舵机到引脚
+ * - arduino_servo_write: 设置角度 (0-180°)
+ * - arduino_servo_read: 读取当前角度
+ * - arduino_servo_detach: 断开舵机
+ * 
+ * @file src/modules/hardware/servo.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
 import { FieldAngle } from '@blockly/field-angle';
+
 
 const init = () => {
 

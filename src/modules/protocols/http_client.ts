@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * HTTP 客户端模块 (HTTP Client)
+ * ============================================================
+ * 
+ * 提供 HTTP 请求积木:
+ * - http_get: GET 请求
+ * - http_post: POST 请求 (支持 JSON/Form/Plain)
+ * 
+ * 使用 HTTPClient.h 库，需要 WiFi 连接。
+ * 
+ * @file src/modules/protocols/http_client.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

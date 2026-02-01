@@ -1,6 +1,22 @@
+/**
+ * ============================================================
+ * 系统工具模块 (System Utilities Module)
+ * ============================================================
+ * 
+ * 提供系统级控制积木:
+ * - 中断: attachInterrupt/detachInterrupt/启用/禁用
+ * - pulseIn: 读取脉冲宽度
+ * - millis/micros: 时间测量
+ * - 软件复位
+ * 
+ * @file src/modules/core/system_control.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

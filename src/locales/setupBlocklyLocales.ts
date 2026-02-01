@@ -1,3 +1,26 @@
+/**
+ * ============================================================
+ * Blockly 多语言配置 (Blockly Localization Setup)
+ * ============================================================
+ * 
+ * 管理 Blockly 积木块的多语言翻译，支持中英文动态切换。
+ * 
+ * 核心功能:
+ * - setBlocklyLocale(): 动态加载 Blockly 官方语言包
+ * - CustomMsgs: 自定义积木块的翻译词条 (中/英)
+ * - 自动合并官方翻译和自定义翻译
+ * 
+ * 翻译覆盖范围:
+ * - 变量/数组/结构体/枚举相关积木
+ * - I/O/串口/通信相关积木
+ * - 传感器/显示器/电机相关积木
+ * - IoT/网络/高级功能积木
+ * - 系统工具和机器人相关积木
+ * 
+ * @file src/locales/setupBlocklyLocales.ts
+ * @module EmbedBlocks/Locales/Blockly
+ */
+
 import * as Blockly from 'blockly';
 // import * as En from 'blockly/msg/en'; // Removed for Dynamic Import
 // import * as ZhHans from 'blockly/msg/zh-hans'; // Removed for Dynamic Import

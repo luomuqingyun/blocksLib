@@ -1,3 +1,20 @@
+/**
+ * ============================================================
+ * 应用控制器 Hook (App Controller Hook)
+ * ============================================================
+ * 
+ * 处理菜单栏和快捷键的动作响应:
+ * - 新建/打开/保存项目
+ * - 打开设置/扩展模态框
+ * - 帮助文档入口
+ * - 诊断面板切换
+ * 
+ * 通过 IPC 监听主进程转发的菜单动作。
+ * 
+ * @file src/hooks/useAppController.ts
+ * @module EmbedBlocks/Frontend/Hooks
+ */
+
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUI } from '../contexts/UIContext';

@@ -1,7 +1,22 @@
+/**
+ * ============================================================
+ * 时间模块 (Time Module)
+ * ============================================================
+ * 
+ * 提供 Arduino 时间相关积木:
+ * - delay(): 毫秒延时
+ * - millis(): 运行时间 (毫秒)
+ * - micros(): 运行时间 (微秒)
+ * 
+ * @file src/modules/core/time.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 import * as Blockly from 'blockly';
 import { Order, registerBlock, arduinoGenerator } from '../../generators/arduino-base';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
     registerBlock('arduino_delay_ms', {

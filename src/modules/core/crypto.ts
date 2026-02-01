@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 加密模块 (Cryptography Module)
+ * ============================================================
+ * 
+ * 提供加密和编码相关积木:
+ * - crypto_md5: MD5 哈希
+ * - crypto_sha256: SHA256 哈希
+ * - crypto_base64_encode: Base64 编码
+ * - crypto_base64_decode: Base64 解码
+ * 
+ * @file src/modules/core/crypto.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,114 +1,240 @@
-import { BoardFamily, BoardPins, Board, BoardSeries } from '../types/board';
-import stm32SeriesData from '../../stm32_series_data.json';
+/**
+ * ============================================================
+ * STM32 板卡家族配置 (STM32 Board Family Configuration)
+ * ============================================================
+ * 
+ * 自动从 src/data/boards/stm32/ 目录扫描并生成 STM32 板卡列表。
+ * 
+ * 优化说明:
+ * - 使用 Vite 的 import.meta.glob 动态导入芯片数据
+ * - 按系列 (F1, F4, H7 等) 自动分组
+ * - 无需维护单独的系列数据文件，直接从芯片 JSON 生成
+ * 
+ * 数据来源: src/data/boards/stm32/[系列]/[芯片].json
+ * 
+ * @file src/config/stm32_boards.ts
+ * @module EmbedBlocks/Config/Boards
+ */
 
-// Helper to generate generic pins for STM32
-const generateGenericPins = (count: number, hasAnalog: boolean = true): BoardPins => {
+import { BoardFamily, BoardPins, Board, BoardSeries } from '../types/board';
+
+// ------------------------------------------------------------------
+// 自动扫描 STM32 芯片数据 (Auto-discovery STM32 Chip Data)
+// ------------------------------------------------------------------
+
+/**
+ * 使用 Vite 的 import.meta.glob 自动导入所有 STM32 芯片 JSON 文件
+ * 路径格式: ../data/boards/stm32/[系列]/[芯片].json
+ */
+const stm32ChipModules = import.meta.glob('../data/boards/stm32/**/*.json', { eager: true });
+
+/**
+ * 解析芯片 JSON 并按系列分组
+ */
+const parseChipsBySeries = (): Map<string, any[]> => {
+    const seriesMap = new Map<string, any[]>();
+
+    for (const path in stm32ChipModules) {
+        const chipData = (stm32ChipModules[path] as any).default || stm32ChipModules[path];
+
+        // 从路径提取系列名: ../data/boards/stm32/STM32F1/STM32F103C8.json -> STM32F1
+        const pathParts = path.split('/');
+        const seriesName = pathParts[pathParts.length - 2]; // e.g., "STM32F1"
+
+        if (seriesName && seriesName.startsWith('STM32')) {
+            if (!seriesMap.has(seriesName)) {
+                seriesMap.set(seriesName, []);
+            }
+            seriesMap.get(seriesName)!.push(chipData);
+        }
+    }
+
+    return seriesMap;
+};
+
+// ------------------------------------------------------------------
+// 引脚转换工具 (Pin Conversion Utilities)
+// ------------------------------------------------------------------
+
+/**
+ * 从芯片数据中提取引脚选项，转换为 BoardPins 格式
+ */
+const extractBoardPins = (chipData: any): BoardPins => {
     const pins: BoardPins = {
-        digital: [], analog: [], pwm: [], i2c: [], spi: [], serial: []
+        digital: [],
+        analog: [],
+        pwm: [],
+        i2c: [],
+        spi: [],
+        serial: []
     };
 
-    // Standard STM32 naming: PA0-PA15, PB0-PB15, etc.
-    const ports = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-    let pinCount = 0;
+    // 使用预生成的 pin_options (如果存在)
+    if (chipData.pin_options) {
+        const opts = chipData.pin_options;
 
-    for (const port of ports) {
-        for (let i = 0; i <= 15; i++) {
-            if (pinCount >= count) break;
-            const pinName = `P${port}${i}`;
-            pins.digital.push({ label: pinName, value: pinName });
-
-            // Simplified assumptions for generic boards
-            if (hasAnalog && port < 'C') pins.analog.push({ label: pinName, value: pinName }); // PA/PB often analog
-            if (i % 2 !== 0) pins.pwm.push({ label: pinName, value: pinName }); // Rough approximation for generic
-
-            pinCount++;
+        if (opts.digital) {
+            pins.digital = opts.digital.map((pin: [string, string]) => ({
+                label: pin[0],
+                value: pin[1]
+            }));
+        }
+        if (opts.analog) {
+            pins.analog = opts.analog.map((pin: [string, string]) => ({
+                label: pin[0],
+                value: pin[1]
+            }));
+        }
+        if (opts.pwm) {
+            pins.pwm = opts.pwm.map((pin: [string, string]) => ({
+                label: pin[0],
+                value: pin[1]
+            }));
+        }
+        if (opts.i2c) {
+            pins.i2c = opts.i2c.map((pin: [string, string]) => ({
+                label: pin[0],
+                value: pin[1]
+            }));
+        }
+        if (opts.spi) {
+            pins.spi = opts.spi.map((pin: [string, string]) => ({
+                label: pin[0],
+                value: pin[1]
+            }));
+        }
+        if (opts.serial) {
+            pins.serial = opts.serial.map((pin: [string, string]) => ({
+                label: pin[0],
+                value: pin[1]
+            }));
         }
     }
 
     return pins;
 };
 
-// Map Series to a representative generic environment for build compatibility
-// Since we are generating hundreds of variants, we map them to a safe "Common Denominator" build config
-// The user selects the specific chip for logic reasons, but compilation uses a generic target.
-const SERIES_BUILD_MAP: Record<string, any> = {
-    'STM32C0': { env: 'nucleo_c031c6', board: 'nucleo_c031c6', mcu: 'STM32C0xx', pins: 20 },
-    'STM32F0': { env: 'nucleo_f030r8', board: 'nucleo_f030r8', mcu: 'STM32F0xx', pins: 48 },
-    'STM32F1': { env: 'genericSTM32F103C8', board: 'genericSTM32F103C8', mcu: 'STM32F1xx', pins: 48 },
-    'STM32F2': { env: 'nucleo_f207zg', board: 'nucleo_f207zg', mcu: 'STM32F2xx', pins: 100 },
-    'STM32F3': { env: 'nucleo_f303re', board: 'nucleo_f303re', mcu: 'STM32F3xx', pins: 64 },
-    'STM32F4': { env: 'genericSTM32F401CC', board: 'genericSTM32F401CC', mcu: 'STM32F4xx', pins: 48 },
-    'STM32F7': { env: 'nucleo_f746zg', board: 'nucleo_f746zg', mcu: 'STM32F7xx', pins: 144 },
-    'STM32G0': { env: 'disco_g071rb', board: 'disco_g071rb', mcu: 'STM32G0xx', pins: 32 },
-    'STM32G4': { env: 'nucleo_g474re', board: 'nucleo_g474re', mcu: 'STM32G4xx', pins: 48 },
-    'STM32H5': { env: 'nucleo_h563zi', board: 'nucleo_h563zi', mcu: 'STM32H5xx', pins: 100 },
-    'STM32H7': { env: 'nucleo_h743zi', board: 'nucleo_h743zi', mcu: 'STM32H7xx', pins: 144 },
-    'STM32L0': { env: 'nucleo_l073rz', board: 'nucleo_l073rz', mcu: 'STM32L0xx', pins: 32 },
-    'STM32L1': { env: 'nucleo_l152re', board: 'nucleo_l152re', mcu: 'STM32L1xx', pins: 64 },
-    'STM32L4': { env: 'nucleo_l476rg', board: 'nucleo_l476rg', mcu: 'STM32L4xx', pins: 64 },
-    'STM32L5': { env: 'nucleo_l552ze_q', board: 'nucleo_l552ze_q', mcu: 'STM32L5xx', pins: 64 },
-    'STM32MP1': { env: 'disco_mp157_caa', board: 'disco_mp157_caa', mcu: 'STM32MP1xx', pins: 100 }, // Approximate
-    'STM32MP2': { env: 'disco_mp157_caa', board: 'disco_mp157_caa', mcu: 'STM32MP2xx', pins: 100 }, // Placeholder
-    'STM32N6': { env: 'nucleo_h743zi', board: 'nucleo_h743zi', mcu: 'STM32N6xx', pins: 100 }, // Placeholder
-    'STM32U0': { env: 'nucleo_u083rc', board: 'nucleo_u083rc', mcu: 'STM32U0xx', pins: 32 },
-    'STM32U3': { env: 'nucleo_u575zi_q', board: 'nucleo_u575zi_q', mcu: 'STM32U3xx', pins: 64 }, // Placeholder
-    'STM32U5': { env: 'nucleo_u575zi_q', board: 'nucleo_u575zi_q', mcu: 'STM32U5xx', pins: 100 },
-    'STM32WB': { env: 'p_nucleo_wb55', board: 'p_nucleo_wb55', mcu: 'STM32WBxx', pins: 48 },
-    'STM32WB0': { env: 'p_nucleo_wb55', board: 'p_nucleo_wb55', mcu: 'STM32WB0xx', pins: 32 }, // Placeholder
-    'STM32WBA': { env: 'nucleo_wba52cg', board: 'nucleo_wba52cg', mcu: 'STM32WBAxx', pins: 48 },
-    'STM32WL': { env: 'nucleo_wl55jc', board: 'nucleo_wl55jc', mcu: 'STM32WLxx', pins: 48 },
-    'STM32WL3': { env: 'nucleo_wl55jc', board: 'nucleo_wl55jc', mcu: 'STM32WL3xx', pins: 32 }, // Placeholder
+// ------------------------------------------------------------------
+// 系列构建配置映射 (Series Build Configuration Mapping)
+// ------------------------------------------------------------------
+
+/**
+ * 映射系列到默认的构建环境
+ * 用于未明确指定 build 配置的芯片
+ */
+const SERIES_BUILD_DEFAULTS: Record<string, { env: string; board: string }> = {
+    'STM32C0': { env: 'nucleo_c031c6', board: 'nucleo_c031c6' },
+    'STM32F0': { env: 'nucleo_f030r8', board: 'nucleo_f030r8' },
+    'STM32F1': { env: 'genericSTM32F103C8', board: 'genericSTM32F103C8' },
+    'STM32F2': { env: 'nucleo_f207zg', board: 'nucleo_f207zg' },
+    'STM32F3': { env: 'nucleo_f303re', board: 'nucleo_f303re' },
+    'STM32F4': { env: 'genericSTM32F401CC', board: 'genericSTM32F401CC' },
+    'STM32F7': { env: 'nucleo_f746zg', board: 'nucleo_f746zg' },
+    'STM32G0': { env: 'disco_g071rb', board: 'disco_g071rb' },
+    'STM32G4': { env: 'nucleo_g474re', board: 'nucleo_g474re' },
+    'STM32H5': { env: 'nucleo_h563zi', board: 'nucleo_h563zi' },
+    'STM32H7': { env: 'nucleo_h743zi', board: 'nucleo_h743zi' },
+    'STM32L0': { env: 'nucleo_l073rz', board: 'nucleo_l073rz' },
+    'STM32L1': { env: 'nucleo_l152re', board: 'nucleo_l152re' },
+    'STM32L4': { env: 'nucleo_l476rg', board: 'nucleo_l476rg' },
+    'STM32L4+': { env: 'nucleo_l496zg', board: 'nucleo_l496zg' },
+    'STM32L5': { env: 'nucleo_l552ze_q', board: 'nucleo_l552ze_q' },
+    'STM32U0': { env: 'nucleo_u083rc', board: 'nucleo_u083rc' },
+    'STM32U5': { env: 'nucleo_u575zi_q', board: 'nucleo_u575zi_q' },
+    'STM32WB': { env: 'p_nucleo_wb55', board: 'p_nucleo_wb55' },
+    'STM32WBA': { env: 'nucleo_wba52cg', board: 'nucleo_wba52cg' },
+    'STM32WL': { env: 'nucleo_wl55jc', board: 'nucleo_wl55jc' },
 };
 
-// Generate Series array from JSON
-const generateSeries = (): BoardSeries[] => {
+// ------------------------------------------------------------------
+// 系列生成器 (Series Generator)
+// ------------------------------------------------------------------
+
+/**
+ * 从扫描的芯片数据生成 BoardSeries 数组
+ */
+const generateSeriesFromData = (): BoardSeries[] => {
+    const seriesMap = parseChipsBySeries();
     const seriesList: BoardSeries[] = [];
 
-    // Keys are "STM32F1", "STM32F4", etc.
-    const keys = Object.keys(stm32SeriesData).sort();
+    // 按系列名称排序
+    const sortedSeriesNames = Array.from(seriesMap.keys()).sort();
 
-    keys.forEach(seriesKey => {
-        const variants = (stm32SeriesData as any)[seriesKey] as string[];
-        const mapping = SERIES_BUILD_MAP[seriesKey] || SERIES_BUILD_MAP['STM32F1']; // FallbackF1
+    for (const seriesName of sortedSeriesNames) {
+        const chips = seriesMap.get(seriesName)!;
 
-        const boards: Board[] = variants.map(variant => {
-            // variant is like "STM32F103xx"
+        // 获取默认构建配置
+        const buildDefaults = SERIES_BUILD_DEFAULTS[seriesName] || SERIES_BUILD_DEFAULTS['STM32F1'];
+
+        // 将每个芯片转换为 Board
+        const boards: Board[] = chips.map(chip => {
+            const mcuName = chip.mcu || chip.name || 'Unknown';
+
             return {
-                id: variant.toLowerCase(), // stm32f103xx
-                name: `${variant} Generic`, // STM32F103xx Generic
-                mcu: variant, // STM32F103xx
-                freq: 'N/A', // Generic don't imply freq
-                flash: 'N/A',
-                ram: 'N/A',
-                fqbn: `STMicroelectronics:stm32:Gen${seriesKey.replace('STM32', '')}:pnum=Generic_${variant.replace('STM32', '').substring(0, 4)}`, // Rough guess or unused
-                pins: generateGenericPins(mapping.pins),
+                id: chip.id || mcuName.toLowerCase(),
+                name: chip.name || mcuName,
+                mcu: mcuName,
+                freq: chip.fcpu ? `${chip.fcpu / 1000000} MHz` : 'N/A',
+                flash: chip.specs?.split('/')[0]?.trim() || 'N/A',
+                ram: chip.specs?.split('/')[1]?.trim() || 'N/A',
+                fqbn: `STMicroelectronics:stm32:${seriesName}:pnum=${mcuName}`,
+                pins: extractBoardPins(chip),
                 capabilities: {
                     rtos: true,
-                    analogOut: true, // Most STM32s have DAC
-                    wifi: seriesKey === 'STM32WB' || seriesKey === 'STM32WL' // Rudimentary check
+                    analogOut: chip.capabilities?.dac !== false,
+                    wifi: seriesName.includes('WB') || seriesName.includes('WL'),
+                    can: chip.capabilities?.can || false,
+                    usb: chip.capabilities?.usb || false,
+                    ethernet: chip.capabilities?.ethernet || false
                 },
                 build: {
-                    envName: mapping.env,
-                    platform: 'ststm32',
-                    board: mapping.board,
+                    envName: chip.id || buildDefaults.env,
+                    platform: chip.platform || 'ststm32',
+                    board: chip.id || buildDefaults.board,
                     framework: 'arduino',
                     upload_protocol: 'stlink'
+                },
+                // 附加原始数据供高级功能使用
+                _rawData: {
+                    package: chip.package,
+                    pinCount: chip.pinCount,
+                    variant: chip.variant,
+                    pinout: chip.pinout,
+                    pinMap: chip.pinMap,
+                    defaults: chip.defaults
                 }
             };
         });
 
+        // 按芯片名称排序 (处理 I18nString 类型)
+        boards.sort((a, b) => {
+            const nameA = typeof a.name === 'string' ? a.name : a.name.en;
+            const nameB = typeof b.name === 'string' ? b.name : b.name.en;
+            return nameA.localeCompare(nameB);
+        });
+
         seriesList.push({
-            id: seriesKey.toLowerCase(),
-            name: `${seriesKey} Series`,
+            id: seriesName.toLowerCase(),
+            name: `${seriesName} Series`,
             boards: boards
         });
-    });
+    }
 
     return seriesList;
 };
 
+// ------------------------------------------------------------------
+// 导出 STM32 板卡家族 (Export STM32 Board Family)
+// ------------------------------------------------------------------
+
 export const STM32_FAMILY: BoardFamily = {
     id: 'stm32',
     name: 'STM32',
-    series: generateSeries()
+    series: generateSeriesFromData()
 };
+
+// 调试: 输出加载的芯片数量
+if (import.meta.env.DEV) {
+    const totalChips = STM32_FAMILY.series.reduce((sum, s) => sum + s.boards.length, 0);
+    console.log(`[STM32Boards] Loaded ${STM32_FAMILY.series.length} series, ${totalChips} chips`);
+}

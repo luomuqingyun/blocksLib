@@ -1,7 +1,21 @@
+/**
+ * ============================================================
+ * 数据格式模块 (Data Formats - CSV)
+ * ============================================================
+ * 
+ * 提供 CSV 数据格式处理积木:
+ * - data_csv_create: 创建 CSV 行
+ * - data_csv_parse: 解析 CSV 获取项目
+ * 
+ * @file src/modules/core/data_formats.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

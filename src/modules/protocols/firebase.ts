@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * Firebase 数据库模块 (Realtime Database)
+ * ============================================================
+ * 
+ * 提供 Firebase 实时数据库积木:
+ * - firebase_config: 配置 URL 和密钥
+ * - firebase_set_int/string: 写入数据
+ * - firebase_get_int: 读取整数数据
+ * 
+ * 使用 IOXhop_FirebaseESP32.h 库。
+ * 
+ * @file src/modules/protocols/firebase.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,7 +1,26 @@
+/**
+ * ============================================================
+ * MQTT 通信模块 (MQTT Protocol Module)
+ * ============================================================
+ * 
+ * 提供 MQTT 消息队列协议相关积木:
+ * - mqtt_setup: 配置服务器和端口
+ * - mqtt_connect: 连接到 Broker
+ * - mqtt_publish: 发布消息
+ * - mqtt_subscribe: 订阅主题
+ * - mqtt_callback: 接收消息回调
+ * 
+ * 使用 PubSubClient 库实现。
+ * 
+ * @file src/modules/protocols/mqtt.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

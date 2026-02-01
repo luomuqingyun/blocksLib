@@ -1,9 +1,34 @@
+/**
+ * ============================================================
+ * 串口通信上下文 (Serial Context)
+ * ============================================================
+ * 
+ * 管理串口监视器的全局状态:
+ * - 端口列表和选中端口
+ * - 连接状态
+ * - 通信参数 (波特率、数据位、停止位、校验)
+ * - 显示设置 (HEX 显示、编码格式)
+ * - 发送历史记录
+ * - DTR/RTS 信号控制
+ * 
+ * 使用 useReducer 管理复杂状态，
+ * 配置自动持久化到 electronAPI。
+ * 
+ * 依赖的 Hooks:
+ * - useSerialMonitor: 监听串口事件
+ * - useSerialActions: 串口操作 (连接、发送等)
+ * 
+ * @file src/contexts/SerialContext.tsx
+ * @module EmbedBlocks/Frontend/Contexts/Serial
+ */
+
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
 import { SerialPortInfo } from '../types/serial';
 import { useTranslation } from 'react-i18next';
 import { useSerialMonitor, SerialDataEvent } from '../hooks/serial/useSerialMonitor';
 export type { SerialDataEvent };
 import { useSerialActions } from '../hooks/serial/useSerialActions';
+
 
 // ============================================================
 // 1. 类型定义 (Types & State)

@@ -1,7 +1,25 @@
+/**
+ * ============================================================
+ * 蓝牙串口模块 (Bluetooth Serial Module)
+ * ============================================================
+ * 
+ * 提供 ESP32 蓝牙经典串口 (SPP) 积木:
+ * - bt_serial_init: 初始化并设置设备名称
+ * - bt_serial_available: 检查是否有数据
+ * - bt_serial_read: 读取字符串
+ * - bt_serial_print: 发送数据
+ * 
+ * 使用 BluetoothSerial 库 (ESP32 专用)。
+ * 
+ * @file src/modules/protocols/bluetooth.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

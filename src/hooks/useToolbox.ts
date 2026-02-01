@@ -1,3 +1,17 @@
+/**
+ * ============================================================
+ * 工具箱配置 Hook (Toolbox Hook)
+ * ============================================================
+ * 
+ * 管理 Blockly 工具箱的配置和过滤逻辑:
+ * - 根据选中的开发板加载对应工具箱
+ * - 应用用户自定义的类别隐藏设置
+ * - 订阅板卡注册表更新和配置变更
+ * 
+ * @file src/hooks/useToolbox.ts
+ * @module EmbedBlocks/Frontend/Hooks
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BoardRegistry } from '../registries/BoardRegistry';
@@ -6,6 +20,7 @@ import { BoardRegistry } from '../registries/BoardRegistry';
  * Hook to manage toolbox configuration and filtering logic.
  * Encapsulates board-specific toolbox loading and user-defined category filtering.
  */
+
 export const useToolbox = (selectedBoard: string | null) => {
     const { i18n } = useTranslation();
     const [toolboxConfig, setToolboxConfig] = useState<any>(null);

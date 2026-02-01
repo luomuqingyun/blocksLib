@@ -1,7 +1,25 @@
+/**
+ * ============================================================
+ * MP3 播放器模块 (DFPlayer Mini)
+ * ============================================================
+ * 
+ * 提供 DFPlayer Mini MP3 模块积木:
+ * - mp3_init: 初始化 (RX/TX 引脚)
+ * - mp3_play: 播放指定曲目
+ * - mp3_control: 控制 (上一曲/下一曲/暂停/播放/停止)
+ * - mp3_volume: 设置音量 (0-30)
+ * 
+ * 使用 DFRobotDFPlayerMini.h 库。
+ * 
+ * @file src/modules/hardware/mp3.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

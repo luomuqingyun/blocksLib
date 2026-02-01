@@ -1,3 +1,26 @@
+/**
+ * ============================================================
+ * Arduino 开发板家族配置 (Arduino Board Family)
+ * ============================================================
+ * 
+ * 定义 Arduino 系列开发板的配置，包括 AVR Standard 和 AVR Mega 两个系列。
+ * 
+ * 包含板卡:
+ * - Arduino Uno (ATmega328P)
+ * - Arduino Nano (ATmega328P)
+ * - Arduino Leonardo (ATmega32u4)
+ * - Arduino Mega 2560 (ATmega2560)
+ * 
+ * 每个板卡配置包含:
+ * - MCU/频率/Flash/RAM 规格
+ * - 引脚定义 (digital/analog/pwm/i2c/spi/serial)
+ * - PlatformIO 构建配置
+ * - 设备能力标志 (wifi/analogOut 等)
+ * 
+ * @file src/config/arduino_boards.ts
+ * @module EmbedBlocks/Config/Boards
+ */
+
 import { BoardFamily, BoardPins } from '../types/board';
 
 const STANDARD_PINS: BoardPins = {

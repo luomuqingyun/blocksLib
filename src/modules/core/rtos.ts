@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * RTOS 多任务模块 (RTOS Multitasking Module)
+ * ============================================================
+ * 
+ * 提供 FreeRTOS 多任务相关积木:
+ * - rtos_task_create: 创建任务 (含优先级、栈大小、循环体)
+ * - rtos_delay: 任务延时 (vTaskDelay)
+ * 
+ * 适用于 ESP32 等内置 FreeRTOS 的平台。
+ * 
+ * @file src/modules/core/rtos.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, cleanName } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

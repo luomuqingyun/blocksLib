@@ -1,6 +1,21 @@
+/**
+ * ============================================================
+ * 存储模块 (Storage Module - SD/EEPROM/SPIFFS)
+ * ============================================================
+ * 
+ * 提供数据存储相关积木:
+ * - SD 卡: 初始化、读写文件、检查存在
+ * - EEPROM: 字节读写 (支持 ESP32/ESP8266 兼容)
+ * - SPIFFS: ESP32 内置文件系统
+ * 
+ * @file src/modules/hardware/storage.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

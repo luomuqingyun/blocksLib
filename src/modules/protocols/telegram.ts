@@ -1,7 +1,25 @@
+/**
+ * ============================================================
+ * Telegram 机器人模块 (Telegram Bot)
+ * ============================================================
+ * 
+ * 提供 Telegram 聊天机器人积木:
+ * - telegram_config: 初始化机器人 (Token)
+ * - telegram_check: 检查新消息并处理
+ * - telegram_send: 发送消息
+ * - telegram_msg_text: 获取消息文本
+ * 
+ * 使用 UniversalTelegramBot.h 库。
+ * 
+ * @file src/modules/protocols/telegram.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 工业自动化模块 (Industrial Automation - Modbus/CAN)
+ * ============================================================
+ * 
+ * 提供工业通信协议积木:
+ * - Modbus RTU: 初始化/读取寄存器/获取缓冲区
+ * - CAN Bus (ESP32 TWAI): 初始化/发送消息
+ * 
+ * Modbus 使用 ModbusMaster.h 库。
+ * CAN 使用 ESP32 原生 TWAI 驱动。
+ * 
+ * @file src/modules/protocols/automation.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

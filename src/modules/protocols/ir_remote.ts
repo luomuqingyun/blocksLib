@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 红外遥控模块 (Infrared Remote Module)
+ * ============================================================
+ * 
+ * 提供红外线收发积木 (IRremote.h):
+ * - ir_recv_setup: 初始化接收器
+ * - ir_recv_available: 检测信号
+ * - ir_recv_get_hex: 获取编码 (十六进制)
+ * - ir_recv_resume: 继续接收
+ * - ir_send_nec: 发送 NEC 编码
+ * 
+ * @file src/modules/protocols/ir_remote.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

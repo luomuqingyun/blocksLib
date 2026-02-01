@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * Web 服务器模块 (ESP32/ESP8266 Web Server)
+ * ============================================================
+ * 
+ * 提供 HTTP Web 服务器积木 (WebServer.h):
+ * - web_server_init: 初始化服务器 (80端口)
+ * - web_server_on: 注册路由处理
+ * - web_server_send: 发送响应
+ * - web_server_start: 启动服务器
+ * - web_server_handle_client: 处理请求循环
+ * 
+ * @file src/modules/protocols/web_server.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

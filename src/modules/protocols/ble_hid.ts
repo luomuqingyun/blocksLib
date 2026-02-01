@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 蓝牙 HID 模块 (Bluetooth HID Module)
+ * ============================================================
+ * 
+ * 提供 ESP32 蓝牙 HID 设备积木:
+ * - BLE 键盘: 初始化、打字、按键
+ * - BLE 鼠标: 初始化、移动、点击
+ * 
+ * 使用 BleKeyboard.h / BleMouse.h 库。
+ * 设备可模拟为蓝牙键盘或鼠标连接到 PC/手机。
+ * 
+ * @file src/modules/protocols/ble_hid.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

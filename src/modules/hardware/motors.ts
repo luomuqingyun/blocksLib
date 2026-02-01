@@ -1,6 +1,20 @@
+/**
+ * ============================================================
+ * 电机模块 (Motors Module)
+ * ============================================================
+ * 
+ * 提供电机控制积木:
+ * - 直流电机 (L298N): 前进、后退、停止，可调速度
+ * - 步进电机 (Stepper.h): 配置和步进控制
+ * 
+ * @file src/modules/hardware/motors.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,6 +1,22 @@
+/**
+ * ============================================================
+ * Sharp 红外测距传感器模块 (Sharp IR Distance Sensor)
+ * ============================================================
+ * 
+ * 提供 Sharp 红外测距积木:
+ * - sharp_ir_init: 初始化 (引脚/型号)
+ * - sharp_ir_read: 读取距离 (cm)
+ * 
+ * 使用 SharpIR.h 库。支持 GP2Y0A21 (10-80cm) 等型号。
+ * 
+ * @file src/modules/hardware/sharp_ir.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

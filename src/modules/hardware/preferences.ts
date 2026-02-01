@@ -1,7 +1,25 @@
+/**
+ * ============================================================
+ * Preferences 存储模块 (ESP32 NVS Flash Storage)
+ * ============================================================
+ * 
+ * 提供 ESP32 NVS (Non-Volatile Storage) 键值存储积木:
+ * - nvs_begin: 打开命名空间
+ * - nvs_put_int/get_int: 存取整数
+ * - nvs_put_string/get_string: 存取字符串
+ * 
+ * 数据断电不丢失，适合保存配置参数。
+ * 使用 Preferences.h 库。
+ * 
+ * @file src/modules/hardware/preferences.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

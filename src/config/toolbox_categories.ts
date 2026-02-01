@@ -1,3 +1,31 @@
+/**
+ * ============================================================
+ * 工具箱分类内容配置 (Toolbox Category Contents)
+ * ============================================================
+ * 
+ * 定义 Blockly 工具箱中每个分类包含的积木块数组。
+ * 由 BoardRegistry.getToolboxConfig() 使用，根据板卡配置组合不同分类。
+ * 
+ * 分类组织:
+ * - 核心语言: LOGIC, LOOPS, LISTS, MATH, TEXT, FUNCTIONS
+ * - 硬件基础: IO, TIME, SERIAL, SERVO
+ * - 外设: SENSORS, MOTORS, DISPLAYS, AUDIO, STORAGE
+ * - 网络: IOT, PROTOCOLS
+ * - 高级: AI, RTOS, GAME, PID, JSON
+ * - 平台特定: ESP32, STM32
+ * - 输入设备: INPUTS, EXPANSION, HID
+ * - 特殊: RFID, QR_CODE, PS2
+ * 
+ * 每个积木块配置支持:
+ * - kind: 'block' | 'label' | 'sep'
+ * - type: 积木类型 ID
+ * - inputs: 输入的 Shadow Block 预设
+ * - extraState: Mutator 额外状态
+ * 
+ * @file src/config/toolbox_categories.ts
+ * @module EmbedBlocks/Config/Toolbox
+ */
+
 export const LOGIC_CONTENTS = [
     { kind: 'block', type: 'controls_if' },
     { kind: 'block', type: 'controls_switch' },

@@ -1,8 +1,23 @@
+/**
+ * ============================================================
+ * React 应用入口点 (React Application Entry Point)
+ * ============================================================
+ * 
+ * 这是 Vite 构建系统的入口文件，负责:
+ * 1. 挂载 React 应用到 DOM
+ * 2. 引入全局样式 (Tailwind CSS)
+ * 3. 初始化 i18n 国际化
+ * 
+ * @file src/index.tsx
+ * @module EmbedBlocks/Frontend/Entry
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './index.css'; // 必须引入这个文件，Tailwind 样式才能生效
-import './i18n'; // Import i18n config
+import './index.css'; // Tailwind CSS 样式，必须引入
+import './i18n'; // 国际化配置初始化
+
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

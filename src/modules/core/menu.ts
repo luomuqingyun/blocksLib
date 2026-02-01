@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 菜单系统模块 (Menu System Module)
+ * ============================================================
+ * 
+ * 提供简易菜单导航积木:
+ * - menu_create: 创建菜单
+ * - menu_add_item: 添加菜单项
+ * - menu_nav: 导航 (上/下)
+ * - menu_get_current: 获取当前项
+ * 
+ * @file src/modules/core/menu.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

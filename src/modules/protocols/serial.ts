@@ -1,8 +1,26 @@
+/**
+ * ============================================================
+ * 串口通信模块 (Serial Communication Module)
+ * ============================================================
+ * 
+ * 提供基础串口通信积木:
+ * - serial_begin: 初始化串口 (波特率)
+ * - serial_print: 打印数据
+ * - serial_available: 检查数据可用
+ * - serial_read: 读取数据
+ * 
+ * 支持动态选择硬件串口 (根据开发板配置)。
+ * 
+ * @file src/modules/protocols/serial.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
 import { BoardRegistry } from '../../registries/BoardRegistry';
+
 
 // ============================================================
 // 动态生成串口选项 (Generate Serial Options)

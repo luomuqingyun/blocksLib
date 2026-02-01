@@ -1,3 +1,28 @@
+/**
+ * ============================================================
+ * EmbedBlocks 应用主入口 (Main Application Entry)
+ * ============================================================
+ * 
+ * 本文件是前端 React 应用的根组件，负责:
+ * 1. 组合所有 Context Provider (状态管理层)
+ * 2. 根据项目状态切换 WelcomeScreen / 工作区视图
+ * 3. 管理全局模态框 (设置、扩展、新建项目等)
+ * 4. 处理原生菜单事件 (通过 useAppController)
+ * 
+ * 组件层级结构:
+ * App (Provider 嵌套)
+ *  └─ AppInner (路由逻辑)
+ *       ├─ WelcomeScreen (无项目时)
+ *       └─ AppContent (编辑器主界面)
+ *            ├─ TopBar
+ *            └─ WorkspaceLayout
+ *                 ├─ BlocklyWrapper (左侧)
+ *                 └─ RightPanel (右侧: 代码/串口)
+ * 
+ * @file src/App.tsx
+ * @module EmbedBlocks/Frontend/App
+ */
+
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FileSystemProvider, useFileSystem } from './contexts/FileSystemContext';
@@ -20,7 +45,12 @@ import { RightPanel } from './components/Layout/RightPanel';
 import { DiagnosticOverlay } from './components/DiagnosticOverlay';
 import { useToolbox } from './hooks/useToolbox';
 
+/**
+ * 应用主内容区域
+ * 包含 Blockly 编辑器和右侧面板的工作区布局
+ */
 function AppContent() {
+
   const { isConnected } = useSerial();
   const { blocklyRef, code, setCode, pendingXml, clearPendingXml, markWorkspaceDirty, currentFilePath } = useFileSystem();
   const { selectedBoard } = useBuild();

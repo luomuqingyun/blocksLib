@@ -1,6 +1,24 @@
+/**
+ * ============================================================
+ * 执行器模块 (Actuators Module)
+ * ============================================================
+ * 
+ * 提供通用执行器/输出设备积木:
+ * - actuator_relay: 继电器开关控制
+ * - actuator_solenoid: 电磁阀/电磁铁脉冲
+ * - actuator_buzzer: 蜂鸣器 (tone)
+ * - actuator_vibration: 振动马达
+ * 
+ * 均为数字输出控制。
+ * 
+ * @file src/modules/hardware/actuators.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

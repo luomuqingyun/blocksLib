@@ -1,8 +1,24 @@
+/**
+ * ============================================================
+ * 增强文本模块 (Enhanced Text Module)
+ * ============================================================
+ * 
+ * 提供字符串处理积木:
+ * - text_char: 字符字面量
+ * - c_to_string: 转换为字符串
+ * - c_text_join: 拼接字符串
+ * - text_length/substring/to_case/to_number: 字符串操作
+ * 
+ * @file src/modules/core/text_enhanced.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, cleanName } from '../../generators/arduino-base';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

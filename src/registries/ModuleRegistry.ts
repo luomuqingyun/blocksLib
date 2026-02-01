@@ -1,10 +1,47 @@
+/**
+ * ============================================================
+ * 积木模块注册服务 (Module Registry Service)
+ * ============================================================
+ * 
+ * 管理 Blockly 积木块的模块化注册和初始化。
+ * 每个功能模块 (如传感器、显示器等) 独立注册，支持按需加载。
+ * 
+ * 核心功能:
+ * - register(): 注册新的积木模块
+ * - initAll(): 初始化所有已注册模块
+ * - reinitializeAll(): 强制重新初始化 (语言切换等场景)
+ * 
+ * 模块结构:
+ * - id: 唯一标识符 (如 'core.variables', 'sensors.dht')
+ * - name: 模块显示名称
+ * - category: 对应的工具箱分类 ID
+ * - init(): 初始化函数，注册 blocks 和 generators
+ * 
+ * @file src/registries/ModuleRegistry.ts
+ * @module EmbedBlocks/Frontend/Registries
+ */
+
+/**
+ * 积木模块接口
+ * 定义一个可注册的功能模块
+ */
 export interface BlockModule {
+    /** 模块唯一标识符 */
     id: string;
+    /** 模块显示名称 */
     name: string;
-    category?: string; // Optional Toolbox Category ID
+    /** 可选的工具箱分类 ID */
+    category?: string;
+    /** 模块描述 */
     description?: string;
-    init: () => void; // Function to register blocks and generators
+    /** 初始化函数，注册 blocks 和 generators */
+    init: () => void;
 }
+
+/**
+ * 模块注册服务类
+ * 管理积木模块的注册和初始化
+ */
 
 class ModuleRegistryService {
     private modules: Map<string, BlockModule> = new Map();

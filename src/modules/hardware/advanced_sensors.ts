@@ -1,6 +1,23 @@
+/**
+ * ============================================================
+ * 高级传感器模块 (Advanced Sensors Module)
+ * ============================================================
+ * 
+ * 提供多种专业传感器积木:
+ * - PIR 人体红外感应
+ * - ADXL362 三轴加速度计
+ * - APDS-9960 手势/颜色传感器
+ * - HX711 称重传感器 (电子秤)
+ * - BMP280 气压/温度/海拔
+ * 
+ * @file src/modules/hardware/advanced_sensors.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,37 +1,101 @@
+/**
+ * ============================================================
+ * 扩展插件注册服务 (Extension Registry Service)
+ * ============================================================
+ * 
+ * 负责管理第三方扩展插件的加载、注册和代码生成。
+ * 使用沙箱 iframe 隔离不可信的扩展代码。
+ * 
+ * 核心功能:
+ * - 扫描并加载扩展目录中的所有插件
+ * - 加载插件的 Blocks 定义和 Generator 脚本
+ * - 在沙箱环境中执行代码生成
+ * - 支持多语言翻译
+ * 
+ * 安全机制:
+ * - 沙箱 iframe 隔离执行不可信代码
+ * - 开发环境使用 allow-same-origin，生产环境严格隔离
+ * - 通过 postMessage 与沙箱通信
+ * 
+ * 扩展清单格式 (manifest.json):
+ * - id: 唯一标识符
+ * - version: 版本号
+ * - name/description: 名称和描述
+ * - compatibility: 兼容的板卡家族/型号
+ * - contributes: 贡献的 boards/blocks/generators
+ * 
+ * @file src/registries/ExtensionRegistry.ts
+ * @module EmbedBlocks/Frontend/Registries
+ */
+
 import * as Blockly from 'blockly';
 import { BoardConfig } from '../types/board';
 import { BoardRegistry } from './BoardRegistry';
 import i18n from '../i18n';
 
+/**
+ * 扩展清单接口
+ * 定义扩展插件的元数据和贡献项
+ */
 export interface ExtensionManifest {
+    /** 扩展唯一标识符 */
     id: string;
+    /** 版本号 */
     version: string;
+    /** 扩展名称 (支持国际化键) */
     name: string;
+    /** 扩展描述 (支持国际化键) */
     description: string;
+    /** 扩展分类标签 */
     categories?: string[];
+    /** 图标路径 */
     icon?: string;
+    /** 兼容性约束 */
     compatibility?: {
-        families?: string[]; // e.g. ['arduino', 'esp32']
-        boards?: string[];   // e.g. ['uno', 'nano']
-    };
-    contributes: {
+        /** 兼容的板卡家族列表 (如 ['arduino', 'esp32']) */
+        families?: string[];
+        /** 兼容的具体板卡型号列表 (如 ['uno', 'nano']) */
         boards?: string[];
+    };
+    /** 贡献项配置 */
+    contributes: {
+        /** 板卡定义文件路径列表 */
+        boards?: string[];
+        /** Block 定义文件路径列表 */
         blocks?: string[];
+        /** Generator 脚本文件路径列表 */
         generators?: string[];
     };
 }
 
+/**
+ * 已加载的扩展信息接口
+ */
 export interface LoadedExtension {
+    /** 扩展清单 */
     manifest: ExtensionManifest;
+    /** 扩展目录路径 */
     path: string;
+    /** 图标 Base64 数据 */
     icon?: string;
+    /** 是否包含板卡定义 */
     hasBoards: boolean;
+    /** 是否包含 Block 定义 */
     hasBlocks: boolean;
+    /** 是否包含 Generator */
     hasGenerators: boolean;
+    /** 是否包含库依赖 */
     hasLibraries: boolean;
+    /** 支持的语言列表 */
     languages: string[];
+    /** 原始清单 (用于语言切换时恢复) */
     originalManifest?: ExtensionManifest;
 }
+
+/**
+ * 扩展插件注册服务类
+ * 管理扩展的加载、注册和沙箱通信
+ */
 
 class ExtensionRegistryService {
     private extensions: LoadedExtension[] = [];

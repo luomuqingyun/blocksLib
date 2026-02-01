@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 音频模块 (Audio Module - Tone)
+ * ============================================================
+ * 
+ * 提供 Arduino 蜂鸣器/扬声器音频积木:
+ * - audio_tone: 播放指定频率音调
+ * - audio_notone: 停止播放
+ * - audio_note_freq: 音符频率常量 (C4-A5)
+ * 
+ * 使用 Arduino 内置 tone() 函数。
+ * 
+ * @file src/modules/hardware/audio.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

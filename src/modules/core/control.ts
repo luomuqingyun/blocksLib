@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 控制系统模块 (Control Systems Module)
+ * ============================================================
+ * 
+ * 提供 PID 控制器相关积木:
+ * - pid_create: 创建 PID 控制器实例
+ * - pid_compute: 执行 PID 计算
+ * - pid_tunings: 调整 Kp/Ki/Kd 参数
+ * 
+ * 使用 PID_v1 库实现闭环控制算法。
+ * 
+ * @file src/modules/core/control.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, cleanName } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

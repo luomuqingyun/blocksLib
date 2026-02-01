@@ -1,4 +1,20 @@
+/**
+ * ============================================================
+ * 串口监视器 Hook (Serial Monitor Hook)
+ * ============================================================
+ * 
+ * 管理串口监视器的初始化和事件监听:
+ * - 加载用户保存的串口配置
+ * - 监听串口数据接收事件
+ * - 监听连接状态变化和错误
+ * - 广播事件给 UI 组件
+ * 
+ * @file src/hooks/serial/useSerialMonitor.ts
+ * @module EmbedBlocks/Frontend/Hooks/Serial
+ */
+
 import { useEffect, useCallback } from 'react';
+
 
 export interface SerialDataEvent {
     type: 'rx' | 'tx';

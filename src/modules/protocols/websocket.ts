@@ -1,7 +1,25 @@
+/**
+ * ============================================================
+ * WebSocket 服务器模块 (WebSocket Server Module)
+ * ============================================================
+ * 
+ * 提供 WebSocket 实时通信服务器积木:
+ * - ws_server_init: 初始化服务器 (端口)
+ * - ws_on_event: 事件回调处理
+ * - ws_check_type: 检查事件类型 (连接/断开/文本)
+ * - ws_send_all: 广播消息给所有客户端
+ * 
+ * 使用 WebSocketsServer.h 库。
+ * 
+ * @file src/modules/protocols/websocket.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

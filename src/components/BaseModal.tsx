@@ -1,5 +1,25 @@
+/**
+ * ============================================================
+ * 基础模态框组件 (Base Modal Component)
+ * ============================================================
+ * 
+ * 所有弹窗的基座组件，提供:
+ * - 半透明模糊背景遮罩
+ * - 点击遮罩关闭
+ * - ESC 键关闭
+ * - 开启/关闭动画效果
+ * - 阻止背景滚动
+ * 
+ * 所有业务模态框 (SettingsModal, ExtensionsModal, NewProjectModal 等)
+ * 均应基于此组件构建。
+ * 
+ * @file src/components/BaseModal.tsx
+ * @module EmbedBlocks/Frontend/Components/BaseModal
+ */
+
 import React, { useEffect, useRef } from 'react';
 
+/** 基础模态框属性 */
 interface BaseModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -9,13 +29,14 @@ interface BaseModalProps {
 }
 
 /**
- * BaseModal handles the common logic for all popups:
- * - Overlay background with blur
- * - Click outside to close
- * - ESC key to close
- * - Animation container
+ * BaseModal: 处理所有弹窗的通用逻辑
+ * - 模糊背景遮罩
+ * - 点击外部关闭
+ * - ESC 键关闭
+ * - 动画容器
  */
 export const BaseModal: React.FC<BaseModalProps> = ({
+
     isOpen,
     onClose,
     children,

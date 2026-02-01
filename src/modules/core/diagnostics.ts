@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 系统诊断模块 (System Diagnostics Module)
+ * ============================================================
+ * 
+ * 提供 ESP32 系统诊断积木:
+ * - temp_read: 读取内部温度
+ * - diag_free_heap: 可用堆内存
+ * - diag_uptime: 运行时间
+ * - diag_restart_reason: 重启原因
+ * - diag_chip_model: 芯片型号
+ * 
+ * @file src/modules/core/diagnostics.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

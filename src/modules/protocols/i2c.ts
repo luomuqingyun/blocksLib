@@ -1,8 +1,14 @@
-// ============================================================
-// I2C 协议模块 (I2C Protocol Module)
-// ============================================================
-// 封装了 Arduino 标准 Wire 库，支持 I2C 总线通信。
-// 提供的积木包括：初始化、写入数据、读取数据、总线扫描。
+/**
+ * ============================================================
+ * I2C 协议模块 (I2C Protocol Module)
+ * ============================================================
+ * 
+ * 封装了 Arduino 标准 Wire 库，支持 I2C 总线通信。
+ * 提供的积木包括：初始化、写入数据、读取数据、总线扫描。
+ * 
+ * @file src/modules/protocols/i2c.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
 
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';

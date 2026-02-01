@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 高级舵机模块 (PCA9685 16-Channel PWM Driver)
+ * ============================================================
+ * 
+ * 提供 PCA9685 I2C PWM 扩展积木:
+ * - pca9685_init: 初始化 (地址/频率)
+ * - pca9685_set_servo: 设置舵机角度
+ * - pca9685_set_pwm: 设置原始 PWM 值
+ * 
+ * 使用 Adafruit_PWMServoDriver.h 库。
+ * 
+ * @file src/modules/hardware/servos_adv.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

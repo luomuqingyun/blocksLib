@@ -1,6 +1,23 @@
+/**
+ * ============================================================
+ * OLED 显示模块 (OLED Display Module - SSD1306)
+ * ============================================================
+ * 
+ * 提供 OLED SSD1306 显示屏积木 (Adafruit_SSD1306 + Adafruit_GFX):
+ * - oled_init: 初始化 (地址, 尺寸)
+ * - oled_print: 文本输出 (X, Y, 字号)
+ * - oled_clear: 清屏
+ * - oled_draw_line/rect/circle: 图形绘制
+ * - oled_display: 刷新显示
+ * 
+ * @file src/modules/hardware/display_oled.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

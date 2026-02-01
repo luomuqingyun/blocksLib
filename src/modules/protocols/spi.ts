@@ -1,8 +1,14 @@
-// ============================================================
-// SPI 协议模块 (SPI Protocol Module)
-// ============================================================
-// 封装了 Arduino 标准 SPI 库，支持高速同步串行通信。
-// 提供的积木包括：初始化、数据传输 (全双工发送与接收)。
+/**
+ * ============================================================
+ * SPI 协议模块 (SPI Protocol Module)
+ * ============================================================
+ * 
+ * 封装了 Arduino 标准 SPI 库，支持高速同步串行通信。
+ * 提供的积木包括：初始化、数据传输 (全双工发送与接收)。
+ * 
+ * @file src/modules/protocols/spi.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
 
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';

@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 条形码扫描器模块 (Serial Barcode Scanner)
+ * ============================================================
+ * 
+ * 提供串口条形码扫描器积木:
+ * - barcode_init: 初始化 (RX/TX 引脚)
+ * - barcode_available: 检查数据可用
+ * - barcode_read: 读取条形码字符串
+ * 
+ * 使用 Serial2 通信。
+ * 
+ * @file src/modules/hardware/barcode.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

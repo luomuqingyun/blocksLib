@@ -1,6 +1,22 @@
+/**
+ * ============================================================
+ * ESP 工具模块 (ESP Utilities)
+ * ============================================================
+ * 
+ * 提供 ESP8266/ESP32 系统工具积木:
+ * - esp_deep_sleep: 深度睡眠
+ * - esp_restart: 重启
+ * - esp_yield: 让出 CPU
+ * - Ticker: 定时器中断 (attach/detach)
+ * 
+ * @file src/modules/hardware/esp_utils.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

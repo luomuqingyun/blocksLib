@@ -1,6 +1,20 @@
+/**
+ * ============================================================
+ * 传感器模块 (Sensors Module)
+ * ============================================================
+ * 
+ * 提供常用传感器积木:
+ * - 超声波传感器 (HC-SR04): 距离测量
+ * - 温湿度传感器 (DHT11/22/21): 温度和湿度读取
+ * 
+ * @file src/modules/hardware/sensors.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin, cleanName } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

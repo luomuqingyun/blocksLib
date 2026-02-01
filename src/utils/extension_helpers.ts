@@ -1,3 +1,18 @@
+/**
+ * ============================================================
+ * 扩展开发辅助函数 (Extension Development Helpers)
+ * ============================================================
+ * 
+ * 提供类型安全的辅助函数，简化扩展插件和积木模块的开发。
+ * 
+ * 辅助函数:
+ * - defineBoard(): 定义开发板配置，获得 TypeScript 类型提示
+ * - defineBlockModule(): 定义积木模块，获得类型提示
+ * - defineBlock(): 简化单个积木块的注册
+ * 
+ * @file src/utils/extension_helpers.ts
+ * @module EmbedBlocks/Frontend/Utils
+ */
 
 import { Board } from '../types/board';
 import { BlockModule } from '../registries/ModuleRegistry';

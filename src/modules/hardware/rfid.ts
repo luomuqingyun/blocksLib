@@ -1,6 +1,26 @@
+/**
+ * ============================================================
+ * RFID 模块 (RFID Module - MFRC522)
+ * ============================================================
+ * 
+ * 提供 MFRC522 RFID 读卡器积木:
+ * - rfid_init: 初始化 (SDA/RST 引脚)
+ * - rfid_is_new_card: 检测新卡
+ * - rfid_read_uid: 读取卡片 UID
+ * - rfid_auth: 认证块
+ * - rfid_read_block/write_block: 读写数据块
+ * - rfid_halt: 停止通信
+ * 
+ * 使用默认密钥 0xFF×6 进行 MIFARE Classic 操作。
+ * 
+ * @file src/modules/hardware/rfid.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

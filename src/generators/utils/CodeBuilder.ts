@@ -1,8 +1,33 @@
 /**
- * 代码构建器类 (CodeBuilder Class)
+ * ============================================================
+ * 代码构建器 (CodeBuilder)
+ * ============================================================
  * 
- * 用于结构化、模块化地生成 C++ / Arduino 代码。
- * 解决简单的字符串拼接难以处理 Include 冲突、全局变量顺序和 Setup/Loop 初始化顺序的问题。
+ * 用于结构化、模块化地生成 C++/Arduino 代码。
+ * 解决简单的字符串拼接难以处理 Include 冲突、全局变量顺序和 
+ * Setup/Loop 初始化顺序的问题。
+ * 
+ * 代码生成顺序:
+ * 1. Includes (#include 语句)
+ * 2. Macros (#define 宏定义)
+ * 3. Types (struct/enum 类型定义)
+ * 4. Globals (全局变量)
+ * 5. Prototypes (函数原型)
+ * 6. setup() 函数
+ * 7. loop() 函数
+ * 8. Functions (用户定义函数)
+ * 
+ * 去重机制:
+ * - Includes 使用 Set 去重
+ * - 其他使用 Map 按 key 去重
+ * 
+ * @file src/generators/utils/CodeBuilder.ts
+ * @module EmbedBlocks/Frontend/Generators/Utils
+ */
+
+/**
+ * 代码构建器类
+ * 管理各类代码片段的收集和最终拼接
  */
 export class CodeBuilder {
     private includes: Set<string> = new Set();

@@ -1,6 +1,25 @@
+/**
+ * ============================================================
+ * DFRobot 模块 (DFPlayer Mini MP3)
+ * ============================================================
+ * 
+ * 提供 DFPlayer Mini MP3 播放器积木:
+ * - dfrobot_player_init: 初始化 (RX/TX)
+ * - dfrobot_player_play: 播放曲目
+ * - dfrobot_player_volume: 设置音量
+ * - dfrobot_player_control: 播放控制
+ * - dfrobot_player_eq: 均衡器设置
+ * 
+ * 使用 DFRobotDFPlayerMini.h 和 SoftwareSerial。
+ * 
+ * @file src/modules/vendor/dfrobot.ts
+ * @module EmbedBlocks/Frontend/Modules/Vendor
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

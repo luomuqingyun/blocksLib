@@ -1,6 +1,21 @@
+/**
+ * ============================================================
+ * 用户输入模块 (User Inputs Module)
+ * ============================================================
+ * 
+ * 提供人机交互输入设备积木:
+ * - 矩阵键盘 (Keypad.h): 4x4 按键初始化与读取
+ * - 摇杆 (Joystick): 模拟轴读取
+ * - 旋转编码器 (Encoder.h): 位置读取与复位
+ * 
+ * @file src/modules/hardware/inputs.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

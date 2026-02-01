@@ -1,9 +1,34 @@
-// ------------------------------------------------------------------
-// Blockly 包装器组件 (Blockly Wrapper Component)
-// ------------------------------------------------------------------
-// 核心组件，负责初始化和管理 Blockly 工作区 (Workspace)。
-// 包含主题定制、工具箱 (Toolbox) 配置、多语言支持以及代码生成集成。
-// ------------------------------------------------------------------
+/**
+ * ============================================================
+ * Blockly 包装器组件 (Blockly Wrapper Component)
+ * ============================================================
+ * 
+ * 核心组件，负责初始化和管理 Blockly 工作区 (Workspace)。
+ * 
+ * 核心功能:
+ * - Blockly 工作区的创建和配置
+ * - 主题定制 (深色/浅色自动切换)
+ * - 工具箱 (Toolbox) 动态配置和分类回调
+ * - 多语言支持 (i18n)
+ * - 代码生成集成 (Arduino Generator)
+ * - 工作区状态持久化 (XML/JSON)
+ * - 积木块验证和错误提示
+ * 
+ * 暴露的方法 (通过 ref):
+ * - getXml(): 获取工作区状态
+ * - loadXml(): 加载工作区状态
+ * - resize(): 强制调整大小
+ * - clear(): 清空工作区
+ * 
+ * 内部 Hooks:
+ * - useWorkspacePersistence: 工作区持久化
+ * - useBlocklyDynamicToolbox: 动态工具箱
+ * - useBlocklyShortcuts: 快捷键处理
+ * - useBlocklyValidation: 积木块验证
+ * 
+ * @file src/components/BlocklyWrapper.tsx
+ * @module EmbedBlocks/Frontend/Components
+ */
 import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
 // @ts-ignore
 import * as Blockly from 'blockly';

@@ -1,6 +1,25 @@
+/**
+ * ============================================================
+ * DS18B20 温度传感器模块 (Waterproof Temperature Sensor)
+ * ============================================================
+ * 
+ * 提供 DS18B20 单总线温度传感器积木:
+ * - ds18b20_init: 初始化 (数据引脚)
+ * - ds18b20_request: 发起温度转换
+ * - ds18b20_read: 读取温度 (摄氏度)
+ * - ds18b20_set_resolution: 设置精度 (9-12位)
+ * - ds18b20_get_device_count: 获取传感器数量
+ * 
+ * 使用 OneWire + DallasTemperature 库。
+ * 
+ * @file src/modules/hardware/ds18b20.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

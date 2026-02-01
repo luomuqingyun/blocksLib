@@ -1,6 +1,24 @@
+/**
+ * ============================================================
+ * 高级电机模块 (Step/Dir Stepper Drivers - A4988/DRV8825)
+ * ============================================================
+ * 
+ * 提供步进电机驱动器积木:
+ * - motor_stepper_driver_init: 初始化 (STEP/DIR 引脚)
+ * - motor_stepper_driver_step: 步进移动
+ * - motor_stepper_enable: 使能控制
+ * - motor_stepper_move_relative: 相对位置移动
+ * 
+ * 适用于 A4988、DRV8825 等驱动板。
+ * 
+ * @file src/modules/hardware/motors_adv.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

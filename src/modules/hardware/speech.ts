@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 语音合成模块 (Speech Synthesis - ESP8266SAM)
+ * ============================================================
+ * 
+ * 提供文本转语音 (TTS) 积木:
+ * - speech_init: 初始化 (输出引脚)
+ * - speech_say: 朗读文本
+ * 
+ * 使用 ESP8266SAM 库，输出到 I2S/DAC。
+ * 
+ * @file src/modules/hardware/speech.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

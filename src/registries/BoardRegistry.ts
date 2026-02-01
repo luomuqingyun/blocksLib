@@ -1,3 +1,29 @@
+/**
+ * ============================================================
+ * 开发板注册服务 (Board Registry Service)
+ * ============================================================
+ * 
+ * 负责管理所有支持的开发板配置，并根据所选开发板动态生成工具箱 (Toolbox)。
+ * 实现了单例模式 (Singleton Pattern)。
+ * 
+ * 核心功能:
+ * - register(): 注册新的开发板配置
+ * - get()/getAll(): 获取开发板配置
+ * - getToolboxConfig(): 动态生成板卡对应的工具箱
+ * - registerExtensionCategory(): 注册扩展插件的工具箱分类
+ * - subscribe(): 订阅注册表变更事件
+ * 
+ * 工具箱生成逻辑:
+ * 1. 通用分类 (逻辑、循环、数学等)
+ * 2. 硬件分类 (I/O、串口、传感器等)
+ * 3. 按能力可选分类 (WiFi/RTOS/CAN等)
+ * 4. 板卡家族特定分类 (STM32/ESP32等)
+ * 5. 外部扩展插件分类
+ * 
+ * @file src/registries/BoardRegistry.ts
+ * @module EmbedBlocks/Frontend/Registries
+ */
+
 import { BoardConfig } from '../types/board';
 // @ts-ignore
 import * as Blockly from 'blockly';
@@ -18,12 +44,10 @@ import {
 } from '../config/toolbox_categories';
 import { CATEGORY_COLORS } from '../config/theme';
 
-// ------------------------------------------------------------------
-// 开发板注册服务 (Board Registry Service)
-// ------------------------------------------------------------------
-// 负责管理所有支持的开发板配置，并根据所选开发板动态生成工具箱 (Toolbox)。
-// 实现了单例模式 (Singleton Pattern)。
-// ------------------------------------------------------------------
+/**
+ * 开发板注册服务类
+ * 管理所有支持的开发板配置，动态生成工具箱
+ */
 class BoardRegistryService {
     private boards: Map<string, BoardConfig> = new Map();
     private toolboxCache: Map<string, any> = new Map();

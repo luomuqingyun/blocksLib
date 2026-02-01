@@ -1,8 +1,19 @@
-// ============================================================
-// STM32 CAN Protocol Module
-// ============================================================
-// Supports STM32 internal CAN controller via HardwareCAN library.
-// Blocks: Init, Write, Read.
+/**
+ * ============================================================
+ * STM32 CAN 总线模块 (CAN Bus Protocol)
+ * ============================================================
+ * 
+ * 提供 STM32 内置 CAN 控制器积木:
+ * - stm32_can_init: 初始化 (速度)
+ * - stm32_can_send: 发送数据
+ * - stm32_can_available: 检查数据可用
+ * - stm32_can_read: 读取数据
+ * 
+ * 使用 HardwareCAN.h 库。
+ * 
+ * @file src/modules/stm32/can.ts
+ * @module EmbedBlocks/Frontend/Modules/STM32
+ */
 
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';

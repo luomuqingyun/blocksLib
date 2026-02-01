@@ -1,10 +1,33 @@
+/**
+ * ============================================================
+ * 编译构建上下文 (Build Context)
+ * ============================================================
+ * 
+ * 管理编译和上传的全局状态:
+ * - selectedBoard: 当前选择的开发板 ID
+ * - logs: 编译输出日志
+ * - isBuilding: 是否正在编译/上传
+ * - buildProject(): 触发编译
+ * - uploadProject(): 触发上传
+ * 
+ * 配置合并逻辑:
+ * 1. 从 BoardRegistry 获取板卡默认配置
+ * 2. 合并项目级别的 buildConfig 覆盖配置
+ * 3. 生成最终的 PlatformIO 配置
+ * 
+ * @file src/contexts/BuildContext.tsx
+ * @module EmbedBlocks/Frontend/Contexts/Build
+ */
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { BoardRegistry } from '../registries/BoardRegistry';
 import { useFileSystem } from './FileSystemContext';
 import { useUI } from './UIContext';
 import { useSerial } from './SerialContext';
 
+/** 编译上下文类型定义 */
 interface BuildContextType {
+
     selectedBoard: string;
     setSelectedBoard: (boardId: string) => void;
     logs: string[];

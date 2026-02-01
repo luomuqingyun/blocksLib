@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * ESP32 摄像头模块 (ESP32 Camera Module)
+ * ============================================================
+ * 
+ * 提供 ESP32-CAM 摄像头积木 (esp_camera.h):
+ * - camera_init: 初始化 (AI-Thinker 引脚配置)
+ * - camera_take_photo: 拍照并获取帧缓冲区
+ * 
+ * 适用于 ESP32-CAM 开发板。
+ * 
+ * @file src/modules/hardware/camera.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

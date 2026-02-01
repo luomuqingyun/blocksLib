@@ -1,6 +1,24 @@
+/**
+ * ============================================================
+ * 网络模块 (Network Module - Ethernet/WiFi)
+ * ============================================================
+ * 
+ * 提供网络通信相关积木:
+ * - Ethernet: DHCP 初始化、获取 IP
+ * - WiFi: 连接 AP、开启 SoftAP、状态检测
+ * - NTP: 网络时间同步
+ * - HTTP: GET/POST 请求
+ * 
+ * 根据板卡自动选择 ESP32 或 ESP8266 库。
+ * 
+ * @file src/modules/protocols/network.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

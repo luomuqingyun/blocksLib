@@ -1,3 +1,30 @@
+/**
+ * ============================================================
+ * 全局数据同步器 (Global Data Synchronizer)
+ * ============================================================
+ * 
+ * 一键同步所有 STM32 相关数据源并重新生成板卡数据。
+ * 
+ * 工作流程 (3 步):
+ * 1. [Git Pull] 同步本地克隆的 GitHub 仓库:
+ *    - ST_OPEN_PIN_DATA_PATH  (ST 官方引脚数据)
+ *    - EMBASSY_STM32_DATA_PATH (embassy-rs 芯片数据)
+ *    - ARDUINO_CORE_STM32_PATH (STM32duino 变体)
+ * 
+ * 2. [PIO Boards] 从 PlatformIO CLI 获取最新的 STM32 板卡列表:
+ *    - 执行 `pio boards ststm32 --json-output`
+ *    - 保存到 scripts/pio_stm32_full.json
+ * 
+ * 3. [Generation] 运行完整的数据生成流水线:
+ *    - 执行 `npm run gen:stm32`
+ *    - 更新 src/data/boards/stm32/ 下的所有芯片 JSON 文件
+ * 
+ * 使用方法: npx tsx scripts/global_sync_data.ts
+ * 
+ * @file scripts/global_sync_data.ts
+ * @module EmbedBlocks/Scripts/GlobalSyncData
+ */
+
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';

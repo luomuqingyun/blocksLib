@@ -1,7 +1,22 @@
+/**
+ * ============================================================
+ * 高级列表模块 (Advanced Lists Module)
+ * ============================================================
+ * 
+ * 提供高级列表操作积木 (std::vector):
+ * - lists_sort_num: 数字排序 (升序/降序)
+ * - lists_reverse: 反转列表
+ * - lists_find_index: 查找元素索引
+ * 
+ * @file src/modules/core/lists_advanced.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,9 +1,28 @@
+/**
+ * ============================================================
+ * 变量系统模块 (Variables System Module)
+ * ============================================================
+ * 
+ * 提供完整的变量管理系统积木:
+ * - 全局/局部变量: 声明、赋值、获取
+ * - 数组: 创建、访问、修改
+ * - 结构体: 定义、实例化、字段访问
+ * - 宏定义: #define
+ * - 参数定义: 函数参数
+ * 
+ * 支持动态类型选择和变量扫描。
+ * 
+ * @file src/modules/core/variables.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-nocheck
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, cleanName } from '../../generators/arduino-base';
 import { scanVariablesCategorized, getUserTypesDropdownOptions } from '../../utils/variable_scanner';
 import { VAR_TYPES } from './system';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 // 从共享工具模块导入
 import {

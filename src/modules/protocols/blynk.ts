@@ -1,6 +1,25 @@
+/**
+ * ============================================================
+ * Blynk IoT 平台模块 (Blynk Cloud)
+ * ============================================================
+ * 
+ * 提供 Blynk 物联网平台积木:
+ * - blynk_setup_wifi: WiFi 连接初始化
+ * - blynk_write: 写入虚拟引脚
+ * - blynk_notify: 发送推送通知
+ * - blynk_email: 发送邮件
+ * - blynk_connected: 检查连接状态
+ * 
+ * 使用 BlynkSimpleEsp32.h 库。
+ * 
+ * @file src/modules/protocols/blynk.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

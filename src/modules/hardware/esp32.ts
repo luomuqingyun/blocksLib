@@ -1,8 +1,24 @@
+/**
+ * ============================================================
+ * ESP32 专用模块 (ESP32 Hardware Module)
+ * ============================================================
+ * 
+ * 提供 ESP32 特有功能积木:
+ * - esp32_wifi_connect: WiFi 连接
+ * - esp32_deep_sleep: 深度睡眠
+ * - esp32_hall_read: 内置霍尔传感器
+ * - esp32_touch_read: 触摸引脚 (T0-T9)
+ * 
+ * @file src/modules/hardware/esp32.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

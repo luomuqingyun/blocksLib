@@ -1,12 +1,39 @@
+/**
+ * ============================================================
+ * Arduino 代码生成器基类 (Arduino Generator Base)
+ * ============================================================
+ * 
+ * 扩展自 Blockly 的 Generator 类，专门用于生成 C/C++ 代码。
+ * 这是整个代码生成系统的核心，所有积木块的代码生成都依赖于此。
+ * 
+ * 核心功能:
+ * - 管理代码缩进和格式化
+ * - 统一处理 Include、Macro、Variable、Function 等代码片段
+ * - 生成标准的 setup() 和 loop() 结构
+ * - 支持多平台 (Arduino/ESP32/STM32)
+ * 
+ * 代码生成流程:
+ * 1. init(): 初始化状态，重置 CodeBuilder
+ * 2. 遍历工作区积木块，调用各自的生成器函数
+ * 3. 生成器函数调用 addInclude/addSetup/addLoop 等方法
+ * 4. finish(): 使用 CodeBuilder 拼接最终代码
+ * 
+ * 代理方法:
+ * 大部分 add* 方法都代理到 CodeBuilder 实例，
+ * 解决了传统字符串拼接的 Include 冲突和顺序问题。
+ * 
+ * @file src/generators/arduino-base.ts
+ * @module EmbedBlocks/Frontend/Generators
+ */
+
 import * as Blockly from 'blockly';
 import { Order } from './utils/generator_constants';
 import { ArduinoGenerator } from './utils/generator_types';
 import { CodeBuilder } from './utils/CodeBuilder';
 
 /**
- * 核心代码生成器基类 (Core Arduino Generator)
- * 扩展自 Blockly 的 Generator 类，专门用于生成 C/C++ 代码。
- * 负责管理代码缩进、变量定义、Setup/Loop 结构生成等。
+ * 核心代码生成器实例
+ * 扩展自 Blockly.Generator，添加 Arduino 特定功能
  */
 export const arduinoGenerator = new Blockly.Generator('Arduino') as ArduinoGenerator;
 

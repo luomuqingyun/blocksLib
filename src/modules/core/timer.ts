@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 软件定时器模块 (Software Timers Module)
+ * ============================================================
+ * 
+ * 提供非阻塞定时器积木:
+ * - timer_every: 每隔 N 毫秒执行
+ * - timer_once: 启动后 N 毫秒执行一次
+ * 
+ * 使用 millis() 实现，不阻塞主循环。
+ * 
+ * @file src/modules/core/timer.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, cleanName } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

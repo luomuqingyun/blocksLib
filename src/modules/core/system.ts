@@ -1,8 +1,25 @@
+/**
+ * ============================================================
+ * 系统模块 (System Module)
+ * ============================================================
+ * 
+ * 定义 C/C++ 变量类型系统和函数相关积木:
+ * - VAR_TYPES: 基础类型、stdint 类型、指针类型下拉选项
+ * - 函数定义 (arduino_functions_def_flexible)
+ * - 函数调用 (arduino_functions_call_dynamic)
+ * - 参数定义 (arduino_param_def)
+ * - 返回语句 (arduino_functions_return)
+ * 
+ * @file src/modules/core/system.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, cleanName } from '../../generators/arduino-base';
 import { getFunctionDropdownOptions } from '../../utils/variable_scanner';
 // 引用自定义字段，用于智能下拉菜单
 import { FieldDropdownSmart } from '../../utils/custom_fields';
+
 
 // 基础类型引用 (导出给 variables.ts 使用)
 export const VAR_TYPES = [

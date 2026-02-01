@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 游戏引擎模块 (Game Engine Module)
+ * ============================================================
+ * 
+ * 提供简易游戏开发积木:
+ * - game_init: 初始化游戏状态
+ * - game_create_sprite: 创建精灵
+ * - game_set_velocity: 设置速度
+ * - game_update_all: 更新物理
+ * - game_check_collision: 碰撞检测
+ * 
+ * @file src/modules/core/game.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

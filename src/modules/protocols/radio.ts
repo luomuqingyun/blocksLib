@@ -1,6 +1,23 @@
+/**
+ * ============================================================
+ * 433MHz 无线电模块 (RF433 Radio - RCSwitch)
+ * ============================================================
+ * 
+ * 提供 433MHz 无线电发射/接收积木:
+ * - radio_tx_init/send: 发射端初始化/发送
+ * - radio_rx_init/available/get/reset/info: 接收端
+ * 
+ * 使用 RCSwitch.h 库。
+ * 适用于遥控开关、无线门铃等应用。
+ * 
+ * @file src/modules/protocols/radio.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

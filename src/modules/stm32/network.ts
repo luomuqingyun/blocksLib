@@ -1,8 +1,17 @@
-// ============================================================
-// STM32 Network Module (Ethernet)
-// ============================================================
-// Supports Ethernet (W5500/LAN8720) via standard Ethernet library.
-// Blocks: Init, Local IP, Connect.
+/**
+ * ============================================================
+ * STM32 网络模块 (Ethernet - W5500/LAN8720)
+ * ============================================================
+ * 
+ * 提供 STM32 以太网积木:
+ * - stm32_ethernet_init: 初始化 (MAC/CS)
+ * - stm32_ethernet_ip: 获取本地 IP
+ * 
+ * 使用 Ethernet.h 库。
+ * 
+ * @file src/modules/stm32/network.ts
+ * @module EmbedBlocks/Frontend/Modules/STM32
+ */
 
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';

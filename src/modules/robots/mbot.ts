@@ -1,6 +1,24 @@
+/**
+ * ============================================================
+ * mBot 机器人模块 (Makeblock mBot / mCore)
+ * ============================================================
+ * 
+ * 提供 mBot 教育机器人积木:
+ * - mbot_motor_move/stop: 运动控制
+ * - mbot_ultrasonic: 超声波测距
+ * - mbot_line_follower: 巡线传感器
+ * - mbot_rgb: RGB LED 控制
+ * 
+ * 使用 MeMCore.h 库。
+ * 
+ * @file src/modules/robots/mbot.ts
+ * @module EmbedBlocks/Frontend/Modules/Robots
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,3 +1,29 @@
+/**
+ * ============================================================
+ * Vite 环境类型定义 (Vite Environment Type Definitions)
+ * ============================================================
+ * 
+ * 为 TypeScript 提供类型声明，主要包含:
+ * 
+ * 1. ElectronAPI 接口:
+ *    - 系统检查 (checkSystem)
+ *    - 构建和上传 (buildProject/uploadProject)
+ *    - 串口通信 (listPorts/openSerial/sendSerial 等)
+ *    - 文件操作 (openFileDialog/saveProject 等)
+ *    - 项目管理 (createProject/openProjectFolder 等)
+ *    - 设置配置 (getConfig/setConfig 等)
+ *    - 扩展插件 (extensionsList/importExtension 等)
+ *    - 应用菜单交互 (onMenuAction)
+ * 
+ * 2. Web Serial API 类型:
+ *    - WebSerialPort 接口
+ *    - 串口选项和信号类型
+ *    - Navigator.serial 扩展
+ * 
+ * @file src/vite-env.d.ts
+ * @module EmbedBlocks/Types/Environment
+ */
+
 /// <reference types="vite/client" />
 
 import { BoardBuildConfig, ProjectBuildConfig } from './types/board';

@@ -1,7 +1,26 @@
+/**
+ * ============================================================
+ * NeoPixel LED 模块 (WS2812 RGB LED Strip)
+ * ============================================================
+ * 
+ * 提供 NeoPixel/WS2812 可寻址 LED 灯带积木:
+ * - neopixel_init: 初始化 (引脚, 数量)
+ * - neopixel_set_color: 设置单个像素颜色
+ * - neopixel_show: 刷新显示
+ * - neopixel_clear: 清除所有像素
+ * - neopixel_brightness: 设置亮度
+ * 
+ * 使用 Adafruit_NeoPixel.h 库。
+ * 
+ * @file src/modules/hardware/neopixel.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

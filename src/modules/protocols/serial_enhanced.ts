@@ -1,9 +1,28 @@
+/**
+ * ============================================================
+ * 增强串口模块 (Enhanced Serial Communication)
+ * ============================================================
+ * 
+ * 提供高级串口通信积木:
+ * - serial_setup: 初始化 (波特率)
+ * - serial_print: 打印 (可选换行)
+ * - serial_available_check: 检查数据可用
+ * - serial_read_string/char: 读取数据
+ * - serial_write: 写入原始字节
+ * 
+ * 支持多串口动态选择 (根据开发板自动生成选项)。
+ * 
+ * @file src/modules/protocols/serial_enhanced.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
 import { BoardRegistry } from '../../registries/BoardRegistry';
+
 
 // ============================================================
 // 动态生成串口选项 (Generate Serial Options)

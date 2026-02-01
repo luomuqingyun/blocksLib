@@ -1,8 +1,17 @@
-// ============================================================
-// STM32 USB Module
-// ============================================================
-// Supports USB HID (Keyboard/Mouse) and SerialUSB.
-// Blocks: Keyboard Print, Mouse Move.
+/**
+ * ============================================================
+ * STM32 USB 模块 (USB HID - Keyboard/Mouse)
+ * ============================================================
+ * 
+ * 提供 STM32 USB HID 积木:
+ * - stm32_usb_kb_init/print: 键盘初始化/打印
+ * - stm32_usb_mouse_init/move: 鼠标初始化/移动
+ * 
+ * 使用 Keyboard.h 和 Mouse.h 库。
+ * 
+ * @file src/modules/stm32/usb.ts
+ * @module EmbedBlocks/Frontend/Modules/STM32
+ */
 
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';

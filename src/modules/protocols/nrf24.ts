@@ -1,6 +1,23 @@
+/**
+ * ============================================================
+ * NRF24L01 无线模块 (2.4GHz Radio Module)
+ * ============================================================
+ * 
+ * 提供 NRF24L01 2.4GHz 短距离无线通信积木 (RF24.h):
+ * - nrf24_init: 初始化 (CE/CSN 引脚)
+ * - nrf24_send/read: 发送/接收消息
+ * - nrf24_available: 检查是否有数据
+ * - nrf24_config: 配置信道和功率
+ * - nrf24_open_pipe: 打开通信管道
+ * 
+ * @file src/modules/protocols/nrf24.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

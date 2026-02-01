@@ -1,7 +1,23 @@
 /**
- * @file search_dictionary.ts
- * @description Comprehensive Bilingual Dictionary (English Keywords -> Chinese UI Text)
- * Used by GlobalSearchIndex to provide bilingual search support in Blockly.
+ * ============================================================
+ * 双语搜索字典 (Bilingual Search Dictionary)
+ * ============================================================
+ * 
+ * 提供英文关键词到中文 UI 文本的映射，用于 Blockly 双语搜索支持。
+ * 
+ * 分类:
+ * - 基础编程 (if/loop/function 等)
+ * - 硬件 I/O 和基础组件 (pin/led/relay 等)
+ * - 通信协议 (serial/wifi/mqtt/bluetooth 等)
+ * - 传感器 (temp/ultrasonic/gyro 等)
+ * - 电机和执行器 (motor/servo/stepper 等)
+ * - 显示器 (oled/lcd/neopixel 等)
+ * - 系统和 AI (timer/interrupt/tinyml 等)
+ * 
+ * 被 GlobalSearchIndex 使用，实现中英文混合搜索。
+ * 
+ * @file src/config/search_dictionary.ts
+ * @module EmbedBlocks/Config/Search
  */
 
 export const BILINGUAL_MAP: Record<string, string[]> = {

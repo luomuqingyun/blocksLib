@@ -1,7 +1,21 @@
+/**
+ * ============================================================
+ * 数据日志模块 (Data Logging Module)
+ * ============================================================
+ * 
+ * 提供数据记录和可视化积木:
+ * - log_to_serial_csv: 输出 CSV 格式行
+ * - log_plotter_print: 串口绘图器输出
+ * 
+ * @file src/modules/core/logging.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

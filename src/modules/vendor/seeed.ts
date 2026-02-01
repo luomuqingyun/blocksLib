@@ -1,6 +1,22 @@
+/**
+ * ============================================================
+ * Seeed Studio Grove 模块 (Grove Ecosystem)
+ * ============================================================
+ * 
+ * 提供 Grove 生态系统积木:
+ * - 链接 LED: ChainableLED 初始化/设置颜色
+ * - 4 位数码管: TM1637 初始化/显示数字
+ * 
+ * 使用 ChainableLED.h 和 TM1637.h 库。
+ * 
+ * @file src/modules/vendor/seeed.ts
+ * @module EmbedBlocks/Frontend/Modules/Vendor
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 芯片信息模块 (Chip Information - Cross-Platform)
+ * ============================================================
+ * 
+ * 提供跨平台芯片信息获取积木:
+ * - board_info_string: 获取 MAC/UID/架构名称
+ * - board_info_number: 获取 CPU 频率/Flash 大小/堆空间
+ * 
+ * 自动适配 ESP32 / STM32 / AVR 架构。
+ * 使用条件编译 (#if defined) 生成平台特定代码。
+ * 
+ * @file src/modules/hardware/chip_info.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
 
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,3 +1,35 @@
+/**
+ * ============================================================
+ * 变量扫描与下拉菜单生成 (Variable Scanner & Dropdown Generator)
+ * ============================================================
+ * 
+ * 扫描 Blockly 工作区中的变量定义，为下拉菜单提供数据源。
+ * 支持上下文感知的变量可见性（函数作用域内可见参数和局部变量）。
+ * 
+ * 扫描的变量类型:
+ * - globals: 全局变量
+ * - arrays: 数组
+ * - structs: 结构体实例
+ * - enums: 枚举类型
+ * - macros: 宏常量
+ * - functions: 函数定义
+ * - functionScopes: 函数作用域（参数和局部变量）
+ * 
+ * 下拉菜单生成函数:
+ * - getFunctionDropdownOptions(): 函数列表
+ * - getVariableGetDropdownOptions(): 可读变量列表（上下文感知）
+ * - getVariableSetDropdownOptions(): 可写变量列表（上下文感知）
+ * - getArrayDropdownOptions(): 数组列表
+ * - getStructDropdownOptions(): 结构体列表
+ * - getEnumDropdownOptions(): 枚举列表
+ * - getEnumItemDropdownOptions(): 枚举成员列表
+ * - getMacroDropdownOptions(): 宏常量列表
+ * - getStructMemberDropdownOptions(): 结构体成员列表
+ * 
+ * @file src/utils/variable_scanner.ts
+ * @module EmbedBlocks/Frontend/Utils
+ */
+
 import * as Blockly from 'blockly';
 import {
     scanVariablesCategorized,

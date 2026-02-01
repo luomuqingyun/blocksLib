@@ -1,3 +1,18 @@
+/**
+ * ============================================================
+ * 项目操作 Hook (Project Operations Hook)
+ * ============================================================
+ * 
+ * 封装项目文件系统操作:
+ * - 新建/打开/保存/另存为项目
+ * - 导入导出 Blockly JSON
+ * - 项目元数据管理
+ * - 备份恢复提示
+ * 
+ * @file src/hooks/project/useProjectOps.ts
+ * @module EmbedBlocks/Frontend/Hooks/Project
+ */
+
 import { useCallback } from 'react';
 import { BoardRegistry } from '../../registries/BoardRegistry';
 import { BlocklyWrapperHandle } from '../../components/BlocklyWrapper';

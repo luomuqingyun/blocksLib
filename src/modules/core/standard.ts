@@ -1,8 +1,24 @@
+/**
+ * ============================================================
+ * 标准积木生成器 (Standard Block Generators)
+ * ============================================================
+ * 
+ * 为 Blockly 内置的标准积木注册 Arduino/C++ 代码生成器:
+ * - 逻辑: controls_if, logic_compare, logic_operation, logic_negate, logic_boolean
+ * - 循环: controls_repeat_ext, controls_whileUntil, controls_for
+ * - 数学: math_number, math_arithmetic, math_single, math_random, math_bitwise
+ * - 文本: text, text_print
+ * 
+ * @file src/modules/core/standard.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerGeneratorOnly, cleanName } from '../../generators/arduino-base';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * PS2 游戏手柄模块 (PS2 Controller)
+ * ============================================================
+ * 
+ * 提供 PS2 无线/有线手柄积木:
+ * - ps2_init: 初始化 (CLK/CMD/ATT/DAT)
+ * - ps2_button: 读取按钮状态
+ * - ps2_analog: 读取摇杆模拟值
+ * 
+ * 使用 PS2X_lib.h 库。
+ * 
+ * @file src/modules/vendor/ps2.ts
+ * @module EmbedBlocks/Frontend/Modules/Vendor
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,7 +1,25 @@
+/**
+ * ============================================================
+ * AccelStepper 高级步进电机模块
+ * ============================================================
+ * 
+ * 提供 AccelStepper 库积木:
+ * - stepper_accel_init: 初始化 (类型/引脚)
+ * - stepper_accel_setup: 设置速度/加速度
+ * - stepper_accel_run: 运行步进
+ * - stepper_accel_move: 移动到位置
+ * 
+ * 使用 AccelStepper.h 库，支持非阻塞运动。
+ * 
+ * @file src/modules/hardware/stepper_adv.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

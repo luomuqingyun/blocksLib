@@ -48,7 +48,11 @@ export interface VariantData {
 
 class VariantGenerator {
   /**
-   * Generates a local PlatformIO board and variant patch inside the project directory
+   * 生成本地 PlatformIO 板卡和变体补丁
+   * @param projectPath 项目目录路径
+   * @param boardData 芯片变体数据
+   * @param pioPlatformPath PlatformIO 平台路径 (可选，用于继承父级板卡配置)
+   * @param arduinoCorePath Arduino Core STM32 路径 (可选，用于复制官方 variant 文件)
    */
   async generatePatch(
     projectPath: string,
@@ -61,11 +65,11 @@ class VariantGenerator {
     const variantName = `eb_custom_variant`;
     const specificVariantDir = path.join(variantsDir, variantName);
 
-    // 1. Create Directories
+    // 1. 创建必要的目录结构
     if (!fs.existsSync(boardsDir)) fs.mkdirSync(boardsDir, { recursive: true });
     if (!fs.existsSync(specificVariantDir)) fs.mkdirSync(specificVariantDir, { recursive: true });
 
-    // 2. Smart Inheritance: Load parent board's build config if provided
+    // 2. 智能继承: 加载父级板卡的编译配置 (如提供)
     let parentConfig: any = null;
     if (boardData.parentBoardId && pioPlatformPath) {
       const boardJsonPath = path.join(pioPlatformPath, 'boards', `${boardData.parentBoardId}.json`);
@@ -80,10 +84,10 @@ class VariantGenerator {
       }
     }
 
-    // 3. Generate boards/eb_custom_board.json (Always generated, potentially inheriting)
+    // 3. 生成 boards/eb_custom_board.json (始终生成，可能继承父级配置)
     await this.generateBoardJson(boardsDir, boardData, variantName, parentConfig, pioPlatformPath);
 
-    // 4. Smart Merge: Try to copy existing official files if arduinoCorePath is provided
+    // 4. 智能合并: 尝试复制官方 STM32duino 文件 (如提供 arduinoCorePath)
     let copiedOfficial = false;
     if (arduinoCorePath && fs.existsSync(arduinoCorePath)) {
       copiedOfficial = await this.copyExistingVariant(specificVariantDir, boardData, arduinoCorePath, parentConfig);
@@ -91,26 +95,27 @@ class VariantGenerator {
 
     if (!copiedOfficial) {
       console.log(`[VariantGenerator] No official variant found for ${boardData.name}, generating fallback files...`);
-      // Fallback: Generate variants/eb_custom_variant/PeripheralPins.c
+      // 回退方案: 自动生成 variants/eb_custom_variant/PeripheralPins.c
       await this.generatePeripheralPinsC(specificVariantDir, boardData);
-      // Fallback: Generate variants/eb_custom_variant/variant_generic.h
+      // 回退方案: 自动生成 variants/eb_custom_variant/variant_generic.h
       await this.generateVariantH(specificVariantDir, boardData);
-      // Fallback: Generate variants/eb_custom_variant/variant_generic.cpp
+      // 回退方案: 自动生成 variants/eb_custom_variant/variant_generic.cpp
       await this.generateVariantCpp(specificVariantDir, boardData);
     } else {
       console.log(`[VariantGenerator] Successfully reused official variant files for ${boardData.name}`);
     }
 
-    // 5. Generate variants/eb_custom_variant/ldscript.ld (Always customized for RAM/Flash accuracy)
+    // 5. 生成 variants/eb_custom_variant/ldscript.ld (始终自定义以确保 RAM/Flash 准确)
     await this.generateLdScript(specificVariantDir, boardData);
 
-    // 6. Generate variant_EB_CUSTOM_BOARD.h - PlatformIO expects this file based on board name
-    // It should just include the actual variant header (variant_generic.h or similar)
+    // 6. 生成 variant_EB_CUSTOM_BOARD.h - PlatformIO 根据板卡名称期望此文件存在
+    // 该文件仅包含实际的变体头文件 (variant_generic.h 或类似)
     await this.generateVariantWrapperHeader(specificVariantDir, boardData);
   }
 
   /**
-   * Attempts to find and copy official files from Arduino_Core_STM32/variants
+   * 尝试从 Arduino_Core_STM32/variants 查找并复制官方文件
+   * @returns 是否成功复制了官方文件
    */
   private async copyExistingVariant(destDir: string, data: VariantData, corePath: string, parentConfig?: any): Promise<boolean> {
     try {
@@ -209,19 +214,19 @@ class VariantGenerator {
     if (!flashBytes) flashBytes = 64 * 1024;
     if (!ramBytes) ramBytes = 20 * 1024;
 
-    // Determine product_line early for extra_flags
-    // Product line format: STM32F103xB (HAL device selector)
+    // 提前确定 product_line 用于 extra_flags
+    // 产品线格式: STM32F103xB (HAL 设备选择器)
     const productLineMacro = data.productLine || this.inferProductLine(data.mcu);
 
-    // Generate Arduino board macro for variant_generic.cpp conditional compilation
-    // Format: ARDUINO_GENERIC_F103C8TX (series + package + flash + suffix 'X')
+    // 生成 Arduino 板卡宏用于 variant_generic.cpp 条件编译
+    // 格式: ARDUINO_GENERIC_F103C8TX (系列 + 封装 + Flash + 后缀 'X')
     const arduinoBoardMacro = this.generateArduinoBoardMacro(data.mcu);
 
     // [核心逻辑] 继承与重定向
     const build = parentConfig?.build ? { ...parentConfig.build } : {
       core: "stm32",
       cpu: "cortex-m0",
-      // extra_flags must include both product_line and Arduino board macros
+      // extra_flags 必须同时包含 product_line 和 Arduino 板卡宏
       extra_flags: `-D${productLineMacro} -D${arduinoBoardMacro}`,
       f_cpu: "72000000L",
       mcu: data.mcu.toLowerCase(),
@@ -307,8 +312,8 @@ WEAK const PinMap PinMap_UART_TX[] = {
     }
     content += `  {NC,    NP,    0}\n};\n#endif\n\n`;
 
-    // Note: This is a simplified version. Full AF data would require more parsing.
-    // For now, focusing on the infrastructure. 
+    // 注意: 这是简化版本。完整的 AF 数据需要更多解析工作。
+    // 目前主要关注基础设施的实现。 
 
     fs.writeFileSync(path.join(variantDir, 'PeripheralPins.c'), content);
   }
@@ -354,7 +359,7 @@ WEAK const PinMap PinMap_UART_TX[] = {
   }
 
   private async generateLdScript(variantDir: string, data: VariantData) {
-    // Parse specs for RAM/Flash
+    // 解析规格字符串获取 RAM/Flash 大小
     let flashKb = 64;
     let ramKb = 20;
     const specMatch = data.specs.match(/(\d+)k Flash \/ (\d+)k RAM/);
@@ -504,9 +509,9 @@ SECTIONS
   }
 
   /**
-   * Generate variant_EB_CUSTOM_BOARD.h - a wrapper header that PlatformIO expects
-   * PlatformIO looks for a header file named variant_<BOARD_NAME>.h 
-   * This wrapper just includes the actual variant header (variant_generic.h)
+   * 生成 variant_EB_CUSTOM_BOARD.h - PlatformIO 期望的包装头文件
+   * PlatformIO 会查找名为 variant_<BOARD_NAME>.h 的头文件
+   * 此包装器只是包含实际的 variant 头文件 (variant_generic.h)
    */
   private async generateVariantWrapperHeader(variantDir: string, data: VariantData) {
     const content = `/*
@@ -525,16 +530,16 @@ SECTIONS
   }
 
   /**
-   * Infer product_line from MCU name for STM32 HAL device selection
-   * MCU format: STM32F103C8 -> product_line: STM32F103xB
-   * The flash size code (8, B, C, E, G) needs to be replaced with 'x' + expected HAL suffix
+   * 从 MCU 名称推断 product_line 用于 STM32 HAL 设备选择
+   * MCU 格式: STM32F103C8 -> product_line: STM32F103xB
+   * Flash 大小代码 (8, B, C, E, G) 需要替换为 'x' + 预期的 HAL 后缀
    */
   private inferProductLine(mcu: string): string {
     const upper = mcu.toUpperCase();
-    // Match pattern: STM32 + series(F/G/L/H/W/C/U) + line(2-3 digits) + package(letter) + flash(digit or letter)
+    // 匹配模式: STM32 + 系列(F/G/L/H/W/C/U) + 产品线(2-3位数字) + 封装(字母) + Flash(数字或字母)
     const match = upper.match(/^(STM32[A-Z]\d{2,3})([A-Z])([A-Z0-9])$/);
     if (!match) {
-      // Fallback: just return MCU as is
+      // 回退: 直接返回 MCU 名称
       return upper;
     }
 
@@ -542,10 +547,10 @@ SECTIONS
     const pkgCode = match[2]; // e.g., C (package code)
     const flashCode = match[3]; // e.g., 8 (flash size code)
 
-    // STM32 HAL uses product_line format: STM32F103xB
-    // The 'x' is a wildcard for package, and the last letter is a flash range indicator
-    // Flash code mapping (approximate):
-    // 4/6/8 -> x8 (small), B/C -> xB (medium), D/E -> xE, F/G -> xG (high density)
+    // STM32 HAL 使用 product_line 格式: STM32F103xB
+    // 'x' 是封装的通配符，最后一个字母是 Flash 范围指示符
+    // Flash 代码映射 (近似值):
+    // 4/6/8 -> x8 (小容量), B/C -> xB (中容量), D/E -> xE, F/G -> xG (高密度)
     let flashSuffix = flashCode;
     if (['4', '6', '8'].includes(flashCode)) {
       flashSuffix = '8';
@@ -561,16 +566,16 @@ SECTIONS
   }
 
   /**
-   * Generate Arduino board macro for variant conditional compilation
-   * MCU format: STM32F103C8 -> ARDUINO_GENERIC_F103C8TX
-   * This macro is required for variant_generic.cpp to compile the digitalPin array
+   * 生成 Arduino 板卡宏用于 variant 条件编译
+   * MCU 格式: STM32F103C8 -> ARDUINO_GENERIC_F103C8TX
+   * variant_generic.cpp 编译 digitalPin 数组时需要此宏
    */
   private generateArduinoBoardMacro(mcu: string): string {
     const upper = mcu.toUpperCase();
-    // Match pattern: STM32 + series(F/G/L/H/W/C/U) + line(2-3 digits) + package(letter) + flash(digit or letter)
+    // 匹配模式: STM32 + 系列(F/G/L/H/W/C/U) + 产品线(2-3位数字) + 封装(字母) + Flash(数字或字母)
     const match = upper.match(/^STM32([A-Z])(\d{2,3})([A-Z])([A-Z0-9])$/);
     if (!match) {
-      // Fallback format
+      // 回退格式
       return `ARDUINO_GENERIC_${upper.replace('STM32', '')}TX`;
     }
 
@@ -579,7 +584,7 @@ SECTIONS
     const pkg = match[3];    // e.g., C
     const flash = match[4];  // e.g., 8
 
-    // Standard format: ARDUINO_GENERIC_F103C8TX
+    // 标准格式: ARDUINO_GENERIC_F103C8TX
     return `ARDUINO_GENERIC_${series}${line}${pkg}${flash}TX`;
   }
 }

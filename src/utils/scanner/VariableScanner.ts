@@ -1,6 +1,28 @@
-import * as Blockly from 'blockly';
+/**
+ * ============================================================
+ * 变量扫描器核心 (Variable Scanner Core)
+ * ============================================================
+ * 
+ * 扫描 Blockly 工作区中的所有变量定义，构建带作用域层级的变量索引。
+ * 
+ * 扫描的 Block 类型:
+ * - arduino_var_declare: 全局/局部变量
+ * - c_macro_define: 宏常量
+ * - c_array_define: 数组定义
+ * - c_struct_define/c_struct_var_declare: 结构体
+ * - c_enum_define/c_enum_var_declare: 枚举
+ * - arduino_functions_def_flexible: 函数定义（含参数）
+ * 
+ * 作用域管理:
+ * - globals: 全局变量（在函数外部定义）
+ * - functionScopes: 函数作用域（参数和局部变量）
+ * - 使用 findParentFunctionBlock 判断当前 Block 的父函数
+ * 
+ * @file src/utils/scanner/VariableScanner.ts
+ * @module EmbedBlocks/Frontend/Utils/Scanner
+ */
 
-// 类型定义：变量的作用域信息
+import * as Blockly from 'blockly';
 export interface ScopeInfo {
     params: Set<string>;
     locals: Set<string>;

@@ -1,6 +1,20 @@
+/**
+ * ============================================================
+ * 显示与灯光模块 (Displays & Lights Module)
+ * ============================================================
+ * 
+ * 提供常用显示设备积木:
+ * - LCD I2C (LiquidCrystal_I2C): 初始化、打印、清屏、背光
+ * - NeoPixel (Adafruit_NeoPixel): 初始化、设置颜色、填充、彩虹效果
+ * 
+ * @file src/modules/hardware/displays.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

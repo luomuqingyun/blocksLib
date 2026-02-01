@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 移位寄存器模块 (74HC595/74HC165 Shift Register)
+ * ============================================================
+ * 
+ * 提供移位寄存器积木:
+ * - shift_out_74hc595: 串行输出 (扩展输出)
+ * - shift_in_74hc165: 串行输入 (扩展输入)
+ * 
+ * 使用 shiftOut()/shiftIn() 函数。
+ * 可用于扩展 GPIO 或驱动 LED 等。
+ * 
+ * @file src/modules/hardware/shift_register.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

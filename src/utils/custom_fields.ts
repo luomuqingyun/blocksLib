@@ -1,3 +1,21 @@
+/**
+ * ============================================================
+ * 自定义 Blockly 字段 (Custom Blockly Fields)
+ * ============================================================
+ * 
+ * 提供增强的下拉菜单字段，解决 Blockly 原生字段的局限性。
+ * 
+ * 包含字段:
+ * - FieldDropdownPermissive: 宽松模式，允许保留不在选项列表中的值
+ *   适用于变量定义等需要保留历史值的场景
+ * 
+ * - FieldDropdownSmart: 智能模式，自动替换无效占位符
+ *   适用于 Get/Set 积木、函数调用等需要自动选择有效值的场景
+ * 
+ * @file src/utils/custom_fields.ts
+ * @module EmbedBlocks/Frontend/Utils
+ */
+
 // @ts-nocheck
 import * as Blockly from 'blockly';
 
@@ -42,11 +60,11 @@ export class FieldDropdownSmart extends Blockly.FieldDropdown {
 
         // 2. 定义无效占位符列表
         const invalidPlaceholders = [
-            'no_func', 'myFunc', 
+            'no_func', 'myFunc',
             'no_var', 'myVar',
             'no_arr', 'myArr',
             'no_struct', 'mySt',
-            'no_enum', 
+            'no_enum',
             'no_item', // 枚举子项占位符
             'no_const',
             'no_member',
@@ -55,7 +73,7 @@ export class FieldDropdownSmart extends Blockly.FieldDropdown {
 
         // 3. 如果当前值是占位符，返回 null -> Blockly 会自动重置为列表第一项
         if (invalidPlaceholders.includes(newValue)) {
-            return null; 
+            return null;
         }
 
         // 4. 如果是其他未知值（可能是已删除的变量），保留它（表现得像 Permissive）
@@ -75,10 +93,10 @@ try {
     if (!Blockly.fieldRegistry.registry['field_dropdown_permissive']) {
         Blockly.fieldRegistry.register('field_dropdown_permissive', FieldDropdownPermissive);
     }
-} catch (e) {}
+} catch (e) { }
 
 try {
     if (!Blockly.fieldRegistry.registry['field_dropdown_smart']) {
         Blockly.fieldRegistry.register('field_dropdown_smart', FieldDropdownSmart);
     }
-} catch (e) {}
+} catch (e) { }

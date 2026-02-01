@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 音频输入模块 (Microphone Input / Sound Detection)
+ * ============================================================
+ * 
+ * 提供麦克风/声音传感器积木:
+ * - audio_read_volume: 读取音量 (峰值检测)
+ * - audio_is_loud: 检测是否响亮 (阈值)
+ * 
+ * 使用 analogRead 采样，适用于声音检测模块。
+ * 
+ * @file src/modules/hardware/audio_input.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

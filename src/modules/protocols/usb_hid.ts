@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * USB HID 模块 (USB Human Interface Device)
+ * ============================================================
+ * 
+ * 提供 USB 键盘和鼠标 HID 设备积木:
+ * - USB 键盘: 初始化、打字、按键
+ * - USB 鼠标: 初始化、移动、点击
+ * 
+ * 适用于支持原生 USB 的板卡 (如 ESP32-S2/S3)。
+ * 使用 Keyboard.h / Mouse.h 库。
+ * 
+ * @file src/modules/protocols/usb_hid.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,3 +1,24 @@
+/**
+ * ============================================================
+ * 工具箱动态构建器 (Toolbox Constructor)
+ * ============================================================
+ * 
+ * 根据工作区中已定义的变量，动态生成工具箱内容。
+ * 用于 Blockly 的 registerToolboxCategoryCallback。
+ * 
+ * 构建函数:
+ * - constructVariablesToolbox(): 变量分类（变量声明、宏、数组的 Get/Set）
+ * - constructTypesToolbox(): 类型分类（结构体、枚举的定义和使用）
+ * - constructToolsToolbox(): 工具分类（指针操作、sizeof、类型转换）
+ * 
+ * 特点:
+ * - 只有在工作区中定义了相应类型后，相关的 Get/Set 积木才会出现
+ * - 支持带有 Shadow Block 的输入预设
+ * 
+ * @file src/utils/toolbox/ToolboxConstructor.ts
+ * @module EmbedBlocks/Frontend/Utils/Toolbox
+ */
+
 import * as Blockly from 'blockly';
 import { scanVariablesCategorized } from '../scanner/VariableScanner';
 

@@ -1,7 +1,25 @@
+/**
+ * ============================================================
+ * Nextion 触摸屏模块 (HMI Display)
+ * ============================================================
+ * 
+ * 提供 Nextion 串口 HMI 显示屏积木:
+ * - nextion_init: 初始化 (RX/TX/波特率)
+ * - nextion_set_text: 设置文本控件
+ * - nextion_set_val: 设置数值控件
+ * - nextion_page: 切换页面
+ * 
+ * 使用 Serial2 通信。
+ * 
+ * @file src/modules/hardware/nextion.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

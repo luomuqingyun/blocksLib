@@ -1,9 +1,27 @@
+/**
+ * ============================================================
+ * 积木块验证器 (Block Validator)
+ * ============================================================
+ * 
+ * 综合验证协调器，按优先级顺序执行多个验证规则:
+ * - 硬件规则 (引脚冲突检测)
+ * - 全局规则 (单例入口检测)
+ * - 上下文规则 (参数定义、结构体、枚举)
+ * - 核心规则 (必需输入、孤立输出)
+ * 
+ * 第一个返回警告的规则会终止该 Block 的后续验证。
+ * 
+ * @file src/utils/block_validation.ts
+ * @module EmbedBlocks/Frontend/Utils/Validation
+ */
+
 import * as Blockly from 'blockly';
 import { checkMissingInputs, checkOrphanOutput } from './validation/rules/coreRules';
 import { checkArduinoParamDef, checkCStructDefine, checkCEnumDefine } from './validation/rules/contextRules';
 import { checkGlobalScope, checkSingletonEntry } from './validation/rules/globalRules';
 import { checkPinConflict } from './validation/rules/hardwareRules';
 import { ValidationRule } from './validation/types';
+
 
 // Registry of rules to run sequentially
 // The first rule to return a warning will stop the validation for that block

@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 以太网模块 (W5500 Ethernet Shield)
+ * ============================================================
+ * 
+ * 提供 W5500 有线网络积木:
+ * - ethernet_w5500_init: 初始化 (MAC/CS 引脚)
+ * - ethernet_w5500_get_ip: 获取本地 IP 地址
+ * 
+ * 使用 Ethernet.h 库。支持 DHCP。
+ * 
+ * @file src/modules/hardware/ethernet_w5500.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,3 +1,20 @@
+/**
+ * ============================================================
+ * 基础 I/O 模块 (Base I/O Module)
+ * ============================================================
+ * 
+ * 定义 Arduino 基础输入输出积木:
+ * - 数字读写 (digitalWrite, digitalRead, pinMode)
+ * - 模拟读写 (analogRead, analogWrite/PWM)
+ * - DAC 输出 (dac_write)
+ * - 移位寄存器 (shiftOut, shiftIn)
+ * 
+ * 引脚选项根据当前板卡动态生成 (带定时器提示)。
+ * 
+ * @file src/modules/hardware/io.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import * as Blockly from 'blockly';
@@ -5,6 +22,7 @@ import { BoardRegistry } from '../../registries/BoardRegistry';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
 import { FieldSlider } from '@blockly/field-slider';
+
 
 const init = () => {
 

@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * IO 扩展器模块 (PCF8574 I2C GPIO Expander)
+ * ============================================================
+ * 
+ * 提供 PCF8574 I2C GPIO 扩展积木:
+ * - pcf8574_init: 初始化 (地址/SDA/SCL)
+ * - pcf8574_pin_mode: 设置引脚模式
+ * - pcf8574_write/read: 读写引脚
+ * 
+ * 使用 PCF8574.h 库。可扩展 8 个 GPIO。
+ * 
+ * @file src/modules/hardware/io_expander.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

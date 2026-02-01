@@ -1,7 +1,26 @@
+/**
+ * ============================================================
+ * 数据处理模块 (Data Processing Module)
+ * ============================================================
+ * 
+ * 提供 JSON 数据处理相关积木:
+ * - json_parse: 解析 JSON 字符串
+ * - json_get_key: 获取 JSON 键值
+ * - json_create_doc: 创建/清空 JSON 文档
+ * - json_set_key: 设置 JSON 键值
+ * - json_serialize: 序列化为字符串
+ * 
+ * 使用 ArduinoJson 库实现高效 JSON 处理。
+ * 
+ * @file src/modules/core/data.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

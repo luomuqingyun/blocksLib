@@ -1,13 +1,27 @@
-import { Board } from '../types/board';
-
 /**
- * BoardRepository: 硬件板卡数据仓库
+ * ============================================================
+ * 硬件板卡数据仓库 (Board Repository)
+ * ============================================================
  * 
- * 功能:
- * 1. 自动发现并加载 `src/data/boards/` 下的所有 JSON 定义。
- * 2. 提供标准版卡 (Arduino/ESP32) 和 高级板卡 (STM32) 的分类检索。
- * 3. 实现懒加载机制和基于分类内容的排序逻辑。
+ * 管理所有支持的开发板配置数据，提供自动发现和分类检索功能。
+ * 
+ * 核心功能:
+ * - 自动发现 src/data/boards/ 目录下的所有 JSON 定义
+ * - 支持标准板卡 (Arduino/ESP32) 和高级板卡 (STM32) 分类
+ * - 实现懒加载和缓存机制
+ * - 自动注入 family 和 build 配置
+ * - 智能排序 (常用型号置顶)
+ * 
+ * 数据目录结构:
+ * - /src/data/boards/standard/ - Arduino/ESP32 等标准板卡
+ * - /src/data/boards/stm32/ - STM32 系列板卡 (按系列分组)
+ * - /src/data/boards/custom/ - 用户自定义板卡
+ * 
+ * @file src/data/BoardRepository.ts
+ * @module EmbedBlocks/Data/Boards
  */
+
+import { Board } from '../types/board';
 
 // 利用 Vite 的 import.meta.glob 自动扫描目录下的所有 JSON 文件
 // eager: true 表示立即同步加载，以便在页面渲染前数据可用

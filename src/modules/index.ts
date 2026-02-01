@@ -1,4 +1,25 @@
+/**
+ * ============================================================
+ * 模块注册入口 (Module Registry Entry Point)
+ * ============================================================
+ * 
+ * 积木块模块的统一注册和初始化入口。
+ * 
+ * 模块类型:
+ * - Core: 变量、逻辑、循环、时间、系统等核心语言积木
+ * - Hardware: ESP32、传感器、显示、电机等硬件模块
+ * - Protocols: 串口、网络、蓝牙、MQTT 等通信协议
+ * - Vendor: Seeed、DFRobot 等厂商特定模块
+ * - Robots: mBot、Otto 等机器人套件
+ * 
+ * 支持自动发现 extensions/ 目录下的内部扩展。
+ * 
+ * @file src/modules/index.ts
+ * @module EmbedBlocks/Frontend/Modules
+ */
+
 // Core Modules
+
 export * from './core/variables';
 export * from './core/logic_advanced';
 export * from './core/loops_advanced';

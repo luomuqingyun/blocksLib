@@ -1,15 +1,44 @@
+/**
+ * ============================================================
+ * 文件系统上下文 (FileSystem Context)
+ * ============================================================
+ * 
+ * 管理项目文件和工作区状态:
+ * - 项目元数据 (名称、板卡、构建配置)
+ * - Blockly 工作区引用
+ * - 生成的代码
+ * - 脏状态追踪
+ * - 自动备份机制
+ * 
+ * 核心操作:
+ * - createNewProject(): 创建新项目
+ * - openProject(): 打开项目
+ * - saveProject(): 保存项目
+ * - closeProject(): 关闭项目
+ * 
+ * 依赖的 Hooks:
+ * - useProjectOps: 项目操作逻辑
+ * - useAutoBackup: 自动备份逻辑
+ * - useSavePrompt: 保存提示逻辑
+ * 
+ * @file src/contexts/FileSystemContext.tsx
+ * @module EmbedBlocks/Frontend/Contexts/FileSystem
+ */
+
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { BlocklyWrapperHandle } from '../components/BlocklyWrapper';
 import { BoardRegistry } from '../registries/BoardRegistry';
 import { useUI } from './UIContext';
 import { ProjectBuildConfig } from '../types/board';
 
-// Import refactored hooks
+// 引入拆分的业务逻辑 Hooks
 import { useProjectOps, ProjectState } from '../hooks/project/useProjectOps';
 import { useAutoBackup } from '../hooks/project/useAutoBackup';
 import { useSavePrompt } from '../hooks/useSavePrompt';
 
+/** 项目元数据接口 */
 interface ProjectMetadata {
+
     version: string;
     name: string;
     boardId: string;

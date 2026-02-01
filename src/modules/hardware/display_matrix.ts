@@ -1,6 +1,24 @@
+/**
+ * ============================================================
+ * LED 点阵显示模块 (MAX7219 8x8 LED Matrix)
+ * ============================================================
+ * 
+ * 提供 MAX7219 LED 点阵积木:
+ * - display_matrix_init: 初始化 (DIN/CLK/CS)
+ * - display_matrix_set_led: 设置单个 LED
+ * - display_matrix_row/col: 设置整行/列
+ * - display_matrix_clear/brightness: 清屏/亮度
+ * 
+ * 使用 LedControl.h 库。
+ * 
+ * @file src/modules/hardware/display_matrix.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

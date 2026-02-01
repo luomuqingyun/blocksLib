@@ -1,6 +1,21 @@
+/**
+ * ============================================================
+ * 特殊传感器模块 (Capacitive/Pulse/Light Sensors)
+ * ============================================================
+ * 
+ * 提供特殊传感器积木:
+ * - 电容触摸: CapacitiveSensor 库 (AVR)
+ * - 脉搏传感器: 简单模拟读取
+ * - TSL2561: 光照度传感器 (Lux)
+ * 
+ * @file src/modules/hardware/special_sensors.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

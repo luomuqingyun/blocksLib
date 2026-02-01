@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * OTA 无线更新模块 (Over-The-Air Update)
+ * ============================================================
+ * 
+ * 提供 ESP32 无线固件更新积木:
+ * - ota_setup: 初始化 OTA (设备名称)
+ * - ota_handle: 处理 OTA 请求 (放在 loop 中)
+ * 
+ * 使用 ArduinoOTA.h 库。
+ * 
+ * @file src/modules/hardware/ota.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

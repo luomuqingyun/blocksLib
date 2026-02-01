@@ -1,8 +1,25 @@
+/**
+ * ============================================================
+ * 高级逻辑模块 (Advanced Logic Module)
+ * ============================================================
+ * 
+ * 提供 switch-case 控制流积木:
+ * - controls_switch: 主积木，支持多个 case 和 default
+ * - controls_switch_case: 子积木，作为 case 条目
+ * - controls_switch_default: 子积木，作为 default 分支
+ * 
+ * 通过 Mutator 支持动态添加/移除 case 分支。
+ * 
+ * @file src/modules/core/logic_advanced.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-nocheck
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

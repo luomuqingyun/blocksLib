@@ -1,21 +1,47 @@
+/**
+ * ============================================================
+ * 终端组件 (Xterm Terminal Component)
+ * ============================================================
+ * 
+ * 基于 xterm.js 的终端模拟器组件。
+ * 用于串口监视器的数据显示和编译日志输出。
+ * 
+ * 功能:
+ * - 实时显示串口数据或编译日志
+ * - 支持自动滚动和手动清屏
+ * - 响应式自动调整尺寸 (FitAddon)
+ * - 支持终端风格选区复制
+ * 
+ * 通过 ref 暴露 XtermHandle 接口供父组件控制:
+ * - write(): 写入数据
+ * - writeln(): 写入数据并换行
+ * - clear(): 清空终端
+ * - fit(): 强制重绘
+ * 
+ * @file src/components/XtermComponent.tsx
+ * @module EmbedBlocks/Frontend/Components/XtermComponent
+ */
+
 import React, { useEffect, useRef, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 
+/** 暴露给父组件的控制句柄 */
 export interface XtermHandle {
     write: (data: string) => void;
     writeln: (data: string) => void;
     clear: () => void;
     fit: () => void;
-    // onSelectionChange?: (callback: (selection: string) => void) => void; // Removed as per instruction
 }
 
+/** 组件属性 */
 interface XtermComponentProps {
     className?: string;
     onSelectionChange?: (selection: string) => void;
     onArrowClick?: (lineText: string) => void;
 }
+
 
 export const XtermComponent = forwardRef<XtermHandle, XtermComponentProps>(({ className, onSelectionChange, onArrowClick }, ref) => {
     const terminalRef = useRef<HTMLDivElement>(null);

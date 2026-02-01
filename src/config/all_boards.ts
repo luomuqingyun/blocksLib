@@ -1,12 +1,28 @@
+/**
+ * ============================================================
+ * 板卡家族聚合配置 (Board Family Aggregation)
+ * ============================================================
+ * 
+ * 聚合所有支持的开发板家族 (Arduino/STM32/ESP32/Custom)。
+ * 
+ * 特性:
+ * - 自动发现 config/custom/ 目录下的自定义板卡
+ * - 支持单板定义和系列定义两种格式
+ * - 芯片实验室 (Chip Lab) 用于内部开发和测试
+ * 
+ * @file src/config/all_boards.ts
+ * @module EmbedBlocks/Config/Boards
+ */
+
 import { BoardFamily, BoardSeries, Board } from '../types/board';
 import { STM32_FAMILY } from './stm32_boards';
 import { ARDUINO_FAMILY } from './arduino_boards';
 import { ESP32_FAMILY } from './esp32_boards';
 
-// ------------------------------------------------------------------
-// 自动发现芯片实验室 (Auto-discovery for Custom Boards)
-// 扫描 src/config/custom/ 下的所有 .ts 和 */index.ts
-// ------------------------------------------------------------------
+/**
+ * 自动发现芯片实验室 (Auto-discovery for Custom Boards)
+ * 扫描 src/config/custom/ 下的所有 .ts 文件和子目录的 index.ts
+ */
 const customModules = import.meta.glob(['./custom/*.ts', './custom/*/index.ts'], { eager: true });
 const customBoards: Board[] = [];
 const customSeries: BoardSeries[] = [];

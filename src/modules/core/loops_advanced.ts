@@ -1,8 +1,24 @@
+/**
+ * ============================================================
+ * 高级循环模块 (Advanced Loops Module)
+ * ============================================================
+ * 
+ * 提供高级循环控制积木:
+ * - c_do_while: do...while 循环
+ * - c_for_custom: 自定义 for 循环
+ * - controls_flow_break: break 跳出
+ * - controls_flow_continue: continue 继续
+ * 
+ * @file src/modules/core/loops_advanced.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

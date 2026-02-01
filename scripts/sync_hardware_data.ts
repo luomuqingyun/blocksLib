@@ -1,3 +1,28 @@
+/**
+ * ============================================================
+ * 硬件数据同步脚本 (Hardware Data Sync Script)
+ * ============================================================
+ * 
+ * 从 PlatformIO CLI 获取最新的 STM32 板卡列表，并重新生成兼容性映射。
+ * 
+ * 工作流程 (2 步):
+ * 1. [Fetch] 从 PlatformIO 获取最新的 STM32 板卡数据:
+ *    - 执行 `pio boards ststm32 --json-output`
+ *    - 保存到 scripts/pio_stm32_full.json
+ * 
+ * 2. [Generate] 重新生成兼容性映射:
+ *    - 执行 6_generate_compatibility_map.ts 脚本
+ *    - 更新 stm32_compatibility.json
+ * 
+ * 前置条件:
+ * - 需要安装 PlatformIO CLI 并添加到系统 PATH
+ * 
+ * 使用方法: npx tsx scripts/sync_hardware_data.ts
+ * 
+ * @file scripts/sync_hardware_data.ts
+ * @module EmbedBlocks/Scripts/SyncHardwareData
+ */
+
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';

@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 二维码模块 (QR Code Generation)
+ * ============================================================
+ * 
+ * 提供二维码生成积木:
+ * - qr_create: 创建二维码数据
+ * - qr_draw_oled: 在 OLED 上绘制二维码
+ * 
+ * 使用 qrcode.h 库。
+ * 
+ * @file src/modules/hardware/qrcode.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

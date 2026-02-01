@@ -1,7 +1,22 @@
+/**
+ * ============================================================
+ * DAC 模数转换模块 (Digital to Analog Converter)
+ * ============================================================
+ * 
+ * 提供 ESP32 DAC 模拟输出积木:
+ * - dac_write: 写入 DAC 值 (0-255)
+ * 
+ * ESP32 有两个 DAC 通道: GPIO25 (DAC1) 和 GPIO26 (DAC2)。
+ * 
+ * @file src/modules/hardware/dac.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

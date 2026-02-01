@@ -1,7 +1,22 @@
+/**
+ * ============================================================
+ * 信号处理模块 (Signal Processing Module)
+ * ============================================================
+ * 
+ * 提供信号滤波和处理积木:
+ * - filter_kalman_init: 卡尔曼滤波器初始化
+ * - filter_kalman_update: 卡尔曼滤波器更新
+ * - filter_lowpass: 低通滤波 (Alpha-Beta)
+ * 
+ * @file src/modules/core/signals.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, cleanName } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

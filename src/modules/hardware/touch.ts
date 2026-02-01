@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 电容触摸模块 (Capacitive Touch Module)
+ * ============================================================
+ * 
+ * 提供 ESP32 电容触摸积木:
+ * - touch_read: 读取触摸引脚值
+ * - touch_is_touched: 判断是否被触摸 (阈值比较)
+ * 
+ * ESP32 内置触摸引脚 (T0-T9)。
+ * 
+ * @file src/modules/hardware/touch.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

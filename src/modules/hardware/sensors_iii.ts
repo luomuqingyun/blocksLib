@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * 高级传感器 III 模块 (VL53L0X / MPU6050 / GPS)
+ * ============================================================
+ * 
+ * 提供专业传感器积木:
+ * - VL53L0X: ToF 激光测距 (I2C)
+ * - MPU6050: 六轴加速度陀螺仪
+ * - GPS: TinyGPS++ 定位
+ * 
+ * 使用 Adafruit 库。
+ * 
+ * @file src/modules/hardware/sensors_iii.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

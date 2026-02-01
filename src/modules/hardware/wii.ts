@@ -1,6 +1,24 @@
+/**
+ * ============================================================
+ * Wii Nunchuck 控制器模块 (Wii Controller Input)
+ * ============================================================
+ * 
+ * 提供 Wii Nunchuck I2C 控制器积木:
+ * - wii_init: 初始化
+ * - wii_update: 更新数据
+ * - wii_read_axis: 读取摇杆/加速度
+ * - wii_button: 读取按钮 (C/Z)
+ * 
+ * 使用 Wiichuck.h 库。
+ * 
+ * @file src/modules/hardware/wii.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

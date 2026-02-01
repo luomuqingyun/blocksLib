@@ -1,6 +1,30 @@
 /**
- * Logger utility for selective debug output.
- * Only logs to console when in Development mode (import.meta.env.DEV).
+ * ============================================================
+ * 日志工具类 (Logger Utility)
+ * ============================================================
+ * 
+ * 提供分级日志输出功能，支持开发/生产模式区分。
+ * 
+ * 日志级别:
+ * - debug(): 仅在开发模式下输出
+ * - info(): 始终输出，但可被过滤
+ * - warn(): 始终输出警告信息
+ * - error(): 始终输出错误信息
+ * 
+ * 使用方式:
+ * ```typescript
+ * const logger = new Logger('MyModule');
+ * logger.debug('This only shows in DEV mode');
+ * logger.info('General information');
+ * ```
+ * 
+ * @file src/utils/Logger.ts
+ * @module EmbedBlocks/Frontend/Utils
+ */
+
+/**
+ * 日志工具类
+ * 可选择性地输出调试信息，仅在开发模式 (import.meta.env.DEV) 下显示 debug 日志
  */
 export class Logger {
     private tag: string;

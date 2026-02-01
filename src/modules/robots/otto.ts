@@ -1,6 +1,24 @@
+/**
+ * ============================================================
+ * Otto DIY 机器人模块 (Otto Robot)
+ * ============================================================
+ * 
+ * 提供 Otto 双足机器人积木:
+ * - otto_init/home: 初始化/归位
+ * - otto_move: 运动 (前进/后退/转向)
+ * - otto_dance: 舞蹈动作
+ * - otto_sound/gesture/mouth: 声音/表情
+ * 
+ * 使用 Otto.h 库。
+ * 
+ * @file src/modules/robots/otto.ts
+ * @module EmbedBlocks/Frontend/Modules/Robots
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

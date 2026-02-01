@@ -1,3 +1,20 @@
+/**
+ * ============================================================
+ * 应用设置模态框 (Settings Modal)
+ * ============================================================
+ * 
+ * 应用全局设置界面，包含四个标签页:
+ * - 通用 (General): 语言、工作目录、历史记录
+ * - 串口 (Serial): 默认波特率、行尾符等串口参数
+ * - 工具箱 (Toolbox): 积木分类显示/隐藏
+ * - 高级 (Advanced): PlatformIO 路径等高级配置
+ * 
+ * 支持 JSON 模式直接编辑配置文件。
+ * 
+ * @file src/components/SettingsModal.tsx
+ * @module EmbedBlocks/Frontend/Components/SettingsModal
+ */
+
 import React from 'react';
 import {
     X, Monitor, Settings,
@@ -6,7 +23,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { CodeEditor } from './CodeEditor';
 
-// Import refactored parts
+// 引入拆分的设置逻辑和分区组件
 import { useSettingsLogic } from './settings/hooks/useSettingsLogic';
 import { GeneralSettings } from './settings/sections/GeneralSettings';
 import { SerialSettings } from './settings/sections/SerialSettings';
@@ -15,8 +32,9 @@ import { ToolboxSettings } from './settings/sections/ToolboxSettings';
 import { LayoutGrid } from 'lucide-react';
 import { BaseModal } from './BaseModal';
 
-
+/** 设置模态框属性 */
 interface SettingsModalProps {
+
     isOpen: boolean;
     onClose: () => void;
     selectedBoard?: string;

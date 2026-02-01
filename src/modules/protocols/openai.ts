@@ -1,7 +1,24 @@
+/**
+ * ============================================================
+ * OpenAI 模块 (ChatGPT API)
+ * ============================================================
+ * 
+ * 提供 OpenAI ChatGPT API 积木:
+ * - openai_init: 初始化 (API Key)
+ * - openai_ask: 发送提示词并获取回复
+ * 
+ * 使用 HTTPClient 进行 REST API 调用。
+ * 注意: API 调用是阻塞的，可能需要数秒。
+ * 
+ * @file src/modules/protocols/openai.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

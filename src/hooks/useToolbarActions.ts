@@ -1,9 +1,20 @@
-// ------------------------------------------------------------------
-// useToolbarActions Hook
-// ------------------------------------------------------------------
-// 聚合工具栏所需的多个 Context 操作，减少组件对 Context 的直接依赖。
-// 将 TopBar 从 4 个 Context 14 个方法的直接调用简化为单一 Hook 调用。
-// ------------------------------------------------------------------
+/**
+ * ============================================================
+ * 工具栏操作聚合 Hook (Toolbar Actions Hook)
+ * ============================================================
+ * 
+ * 聚合工具栏所需的多个 Context 操作，减少组件对 Context 的直接依赖。
+ * 将 TopBar 从 4 个 Context 14 个方法的直接调用简化为单一 Hook 调用。
+ * 
+ * 聚合的 Context:
+ * - SerialContext: 串口相关状态和操作
+ * - FileSystemContext: 项目相关状态和操作  
+ * - UIContext: UI 模态框控制
+ * - BuildContext: 编译构建操作
+ * 
+ * @file src/hooks/useToolbarActions.ts
+ * @module EmbedBlocks/Frontend/Hooks
+ */
 
 import { useCallback } from 'react';
 import { useSerial } from '../contexts/SerialContext';

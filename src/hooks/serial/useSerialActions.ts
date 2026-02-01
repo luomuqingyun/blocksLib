@@ -1,5 +1,21 @@
+/**
+ * ============================================================
+ * 串口操作 Hook (Serial Actions Hook)
+ * ============================================================
+ * 
+ * 封装串口核心操作:
+ * - toggleSerial(): 连接/断开串口
+ * - sendSerialData(): 发送数据（支持文本/Hex）
+ * - toggleDTR/RTS(): 切换控制信号
+ * - 发送历史记录管理
+ * 
+ * @file src/hooks/serial/useSerialActions.ts
+ * @module EmbedBlocks/Frontend/Hooks/Serial
+ */
+
 import { useCallback } from 'react';
 import { SerialDataEvent } from './useSerialMonitor';
+
 
 interface SerialActionsProps {
     isConnected: boolean;

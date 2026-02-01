@@ -1,6 +1,23 @@
+/**
+ * ============================================================
+ * 实时时钟模块 (Real Time Clock Module)
+ * ============================================================
+ * 
+ * 提供 RTC DS3231/DS1307 时钟模块积木 (RTClib):
+ * - rtc_init: 初始化 RTC (自动校准)
+ * - rtc_set_time: 手动设置日期时间
+ * - rtc_get_element: 获取年/月/日/时/分/秒
+ * - rtc_get_date_string: 获取日期字符串
+ * - rtc_get_time_string: 获取时间字符串
+ * 
+ * @file src/modules/hardware/rtc.ts
+ * @module EmbedBlocks/Frontend/Modules/Hardware
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

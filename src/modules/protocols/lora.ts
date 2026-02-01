@@ -1,6 +1,23 @@
+/**
+ * ============================================================
+ * LoRa 无线电模块 (LoRa Radio Module)
+ * ============================================================
+ * 
+ * 提供 LoRa 远距离无线通信积木 (LoRa.h):
+ * - lora_init: 初始化 (频率, CS/RST/IRQ 引脚)
+ * - lora_config: 配置功率/扩频因子/同步字
+ * - lora_packet_begin/end: 发送数据包
+ * - lora_parse_packet/read: 接收数据
+ * - lora_packet_rssi/snr: 信号质量
+ * 
+ * @file src/modules/protocols/lora.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, reservePin } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

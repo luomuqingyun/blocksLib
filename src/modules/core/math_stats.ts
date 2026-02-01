@@ -1,7 +1,21 @@
+/**
+ * ============================================================
+ * 统计模块 (Statistics Module)
+ * ============================================================
+ * 
+ * 提供统计计算积木:
+ * - stats_average: 计算列表平均值
+ * - stats_min_max: 获取最小/最大值
+ * 
+ * @file src/modules/core/math_stats.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,7 +1,25 @@
+/**
+ * ============================================================
+ * ESP-NOW 模块 (ESP-NOW P2P Communication)
+ * ============================================================
+ * 
+ * 提供 ESP-NOW 点对点通信积木:
+ * - esp_now_init: 初始化 ESP-NOW
+ * - esp_now_add_peer: 添加对等节点 (MAC 地址)
+ * - esp_now_send: 发送数据
+ * - esp_now_on_recv: 接收数据回调
+ * 
+ * ESP32 专用，无需 WiFi 路由器的低延迟通信。
+ * 
+ * @file src/modules/protocols/esp_now.ts
+ * @module EmbedBlocks/Frontend/Modules/Protocols
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

@@ -1,7 +1,23 @@
+/**
+ * ============================================================
+ * 字典模块 (Dictionary / Map Module)
+ * ============================================================
+ * 
+ * 提供键值对字典 (std::map) 积木:
+ * - dict_create: 初始化字典
+ * - dict_set: 设置键值
+ * - dict_get: 获取值
+ * - dict_exists: 检查键是否存在
+ * 
+ * @file src/modules/core/dictionary.ts
+ * @module EmbedBlocks/Frontend/Modules/Core
+ */
+
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 import { BlockModule } from '../../registries/ModuleRegistry';
+
 
 const init = () => {
 

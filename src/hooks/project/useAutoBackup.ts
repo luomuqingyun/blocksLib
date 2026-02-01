@@ -1,3 +1,17 @@
+/**
+ * ============================================================
+ * 自动备份 Hook (Auto Backup Hook)
+ * ============================================================
+ * 
+ * 管理项目的自动备份机制:
+ * - 脏状态变化后延迟 3 秒触发备份
+ * - 窗口关闭/刷新前强制备份
+ * - 生成 .swp 临时文件，防止意外丢失
+ * 
+ * @file src/hooks/project/useAutoBackup.ts
+ * @module EmbedBlocks/Frontend/Hooks/Project
+ */
+
 import { useEffect } from 'react';
 import { BlocklyWrapperHandle } from '../../components/BlocklyWrapper';
 

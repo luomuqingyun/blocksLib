@@ -1,6 +1,26 @@
+/**
+ * ============================================================
+ * UI 状态上下文 (UI Context)
+ * ============================================================
+ * 
+ * 管理应用的 UI 状态:
+ * - 布局: 右侧面板宽度、活动标签页
+ * - 模态框: 设置、扩展、新建项目、另存为、项目设置
+ * - 帮助系统: 帮助弹窗内容
+ * - 关于弹窗
+ * - 通知系统: Toast 消息
+ * 
+ * 这个 Context 不包含业务逻辑，只管理 UI 状态。
+ * 
+ * @file src/contexts/UIContext.tsx
+ * @module EmbedBlocks/Frontend/Contexts/UI
+ */
+
 import React, { createContext, useContext, useState } from 'react';
 
+/** UI 上下文类型定义 */
 interface UIContextType {
+
     // Layout
     rightPanelWidth: number;
     setRightPanelWidth: (width: number) => void;
