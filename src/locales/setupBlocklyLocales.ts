@@ -134,10 +134,15 @@ const CustomMsgs = {
         LABEL_PULSETIME: "━━ PULSE/TIME ━━",
         LABEL_RESET: "━━ RESET ━━",
         LABEL_DISPLAYS: "--- DISPLAYS ---",
+        LABEL_I2C: "━━ I2C ━━",
+        LABEL_SPI: "━━ SPI ━━",
         LABEL_ETHERNET: "--- ETHERNET ---",
         LABEL_MULTITASKING: "━━ MULTITASKING ━━",
         LABEL_GAMEENGINE: "--- GAME ENGINE ---",
         LABEL_OTTO: "━━ OTTO DIY ━━",
+        LABEL_STM32_CAN: "━━ CAN ━━",
+        LABEL_STM32_USB: "━━ USB HID ━━",
+        LABEL_STM32_NET: "━━ Ethernet ━━",
         LABEL_MBOT: "━━ MBOT ━━",
         LABEL_DFROBOT: "━━ DFROBOT ━━",
         LABEL_SEEEDGROVE: "━━ SEEED GROVE ━━",
@@ -253,6 +258,25 @@ const CustomMsgs = {
         ARD_SERIAL_AVAILABLE_CHECK_TOOLTIP: "Check if data is available to read.",
         ARD_SERIAL_WRITE_TOOLTIP: "Write a raw byte to Serial.",
         ARD_SERIAL_WRITE: "Serial Write (Byte)",
+
+        // I2C Blocks
+        ARD_I2C_INIT: "I2C Init (Wire.begin)",
+        ARD_I2C_WRITE: "I2C Write Device Addr",
+        ARD_I2C_READ: "I2C Read Device Addr",
+        ARD_I2C_SCAN: "I2C Scanner (Serial Print)",
+        ARD_I2C_CONFIG: "I2C Config Speed",
+        ARD_I2C_ADDR: "Device Addr",
+        ARD_I2C_DATA: "Data (Byte)",
+
+        // SPI Blocks
+        ARD_SPI_INIT: "SPI Init (SPI.begin)",
+        ARD_SPI_TRANS: "SPI Transfer (Send & Read)",
+        ARD_SPI_WRITE: "SPI Send (Write Only)",
+        ARD_SPI_CONFIG: "SPI Config",
+        ARD_SPI_ORDER: "Bit Order",
+        ARD_SPI_MODE: "Mode",
+        ARD_SPI_DIV: "Clock Div",
+        ARD_SPI_DATA: "Data (Byte)",
 
         // Servo Blocks
         ARD_SERVO_ATTACH: "Servo Attach",
@@ -1518,6 +1542,25 @@ const CustomMsgs = {
         ARD_SERIAL_AVAILABLE_CHECK_TOOLTIP: "检查串口接收缓冲区是否有数据可读。",
         ARD_SERIAL_WRITE_TOOLTIP: "将一个原始字节写入串口。",
         ARD_SERIAL_WRITE: "串口写入 (字节)",
+
+        // I2C Blocks
+        ARD_I2C_INIT: "I2C 初始化 (Wire.begin)",
+        ARD_I2C_WRITE: "I2C 写入设备地址",
+        ARD_I2C_READ: "I2C 读取设备地址",
+        ARD_I2C_SCAN: "I2C 扫描器 (串口打印)",
+        ARD_I2C_CONFIG: "I2C 配置速度",
+        ARD_I2C_ADDR: "设备地址",
+        ARD_I2C_DATA: "数据 (字节)",
+
+        // SPI Blocks
+        ARD_SPI_INIT: "SPI 初始化 (SPI.begin)",
+        ARD_SPI_TRANS: "SPI 传输 (收发)",
+        ARD_SPI_WRITE: "SPI 发送 (只写)",
+        ARD_SPI_CONFIG: "SPI 配置",
+        ARD_SPI_ORDER: "位序",
+        ARD_SPI_MODE: "模式",
+        ARD_SPI_DIV: "分频",
+        ARD_SPI_DATA: "数据 (字节)",
 
         // Servo Blocks
         ARD_SERVO_ATTACH: "连接舵机",

@@ -53,11 +53,22 @@ export const useProjectOps = (props: ProjectOpsProps) => {
             const boardConfig = BoardRegistry.get(boardId);
             const result = await window.electronAPI.createProject(parentDir, name, boardId, boardConfig?.build);
             if (result.success && result.path) {
-                const emptyState = '{"blocks":{ "languageVersion": 0, "blocks": [] }}';
+                // [FIX] Include default Entry Root block so new projects generate code immediately
+                const defaultBlocklyState = JSON.stringify({
+                    blocks: {
+                        languageVersion: 0,
+                        blocks: [{
+                            type: "arduino_entry_root",
+                            id: "default_entry_root",
+                            x: 50,
+                            y: 50
+                        }]
+                    }
+                });
                 if (blocklyRef.current) {
-                    blocklyRef.current.loadXml(emptyState);
+                    blocklyRef.current.loadXml(defaultBlocklyState);
                 } else {
-                    setPendingXml(emptyState);
+                    setPendingXml(defaultBlocklyState);
                 }
 
                 setPath(result.path);

@@ -86,6 +86,8 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
   const editorRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<any>(null);
   const validationTimer = useRef<NodeJS.Timeout | null>(null);
+  const initialXmlLoadedRef = useRef(false); // Track if initialXml has been loaded
+  const hasInjectedRef = useRef(false); // Prevent duplicate workspace injection
   const { showNotification, activeTab } = useUI();
   const { i18n } = useTranslation();
 
@@ -143,6 +145,8 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
     if (props.selectedBoard) {
       const board = BoardRegistry.get(props.selectedBoard);
       if (board && board.family) {
+        // Sync current board to registry for block access
+        BoardRegistry.setCurrentBoard(board.id);
         arduinoGenerator.setFamily(board.family);
         if (workspaceRef.current && isReadyForEdits) {
           const code = arduinoGenerator.workspaceToCode(workspaceRef.current);
@@ -216,7 +220,8 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
       setPromptState({ isOpen: true, message, defaultValue, callback });
     });
 
-    if (!editorRef.current || workspaceRef.current || !isLocaleLoaded) return;
+    if (!editorRef.current || workspaceRef.current || !isLocaleLoaded || hasInjectedRef.current) return;
+    hasInjectedRef.current = true; // Mark as injected to prevent re-injection
 
     console.log('[BlocklyWrapper] Injecting workspace (should only happen once per project)');
     workspaceRef.current = Blockly.inject(editorRef.current, {
@@ -248,10 +253,31 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
     ensureDefaultBlocks();
 
     if (props.initialXml) {
+      console.log('[BlocklyWrapper] Has initialXml, loading workspace state...');
       loadWorkspaceState(props.initialXml);
+      initialXmlLoadedRef.current = true; // Mark as loaded during initial injection
     } else {
+      console.log('[BlocklyWrapper] No initialXml (new project), setting ready and triggering code gen...');
       setIsReadyForEdits(true);
       if (props.onXmlLoaded) props.onXmlLoaded();
+      // [FIX] For new projects without initialXml, trigger initial code generation
+      // The useEffect at line 142-155 may have already run before isReadyForEdits became true
+      setTimeout(() => {
+        console.log('[BlocklyWrapper] setTimeout fired, workspaceRef.current:', !!workspaceRef.current);
+        if (workspaceRef.current) {
+          try {
+            console.log('[BlocklyWrapper] Generating initial code...');
+            const code = arduinoGenerator.workspaceToCode(workspaceRef.current);
+            console.log('[BlocklyWrapper] Generated code length:', code?.length, 'code:', code?.substring(0, 100));
+            onCodeChangeRef.current(code);
+            console.log('[BlocklyWrapper] Code sent to onCodeChangeRef');
+          } catch (e) {
+            console.error("[BlocklyWrapper] Initial code generation failed:", e);
+          }
+        } else {
+          console.warn('[BlocklyWrapper] workspaceRef.current is null in setTimeout!');
+        }
+      }, 100);
     }
 
     const onWorkspaceChange = (event: any) => {
@@ -259,9 +285,14 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
       if (event.workspaceId !== workspaceRef.current.id) return;
       if (event.type === Blockly.Events.FINISHED_LOADING) return;
       try {
+        console.log('[BlocklyWrapper] Generating code for workspace...');
         const code = arduinoGenerator.workspaceToCode(workspaceRef.current);
+        console.log('[BlocklyWrapper] Generated code length:', code?.length);
+        if (!code) console.warn('[BlocklyWrapper] Generated code is empty!');
         onCodeChangeRef.current(code);
-      } catch (e) { console.error("Generation Error", e); }
+      } catch (e) {
+        console.error("[BlocklyWrapper] Generation Error:", e);
+      }
     };
     workspaceRef.current.addChangeListener(onWorkspaceChange);
 
@@ -358,6 +389,38 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
     }
   }, [toolboxConfiguration]);
 
+  // [FIX] Handle delayed initialXml updates
+  // This fixes the timing issue where pendingXml is set AFTER AppContent remounts
+  // The initial workspace injection (line ~252) only runs once, so late updates need this
+  useEffect(() => {
+    // Only process if:
+    // 1. Workspace is ready
+    // 2. We have initialXml
+    // 3. We're ready for edits (injection complete)
+    // 4. We haven't loaded this initialXml yet
+    if (workspaceRef.current && props.initialXml && isReadyForEdits && !initialXmlLoadedRef.current) {
+      console.log('[BlocklyWrapper] Late initialXml detected, loading now...', props.initialXml?.substring(0, 100));
+      loadWorkspaceState(props.initialXml);
+      initialXmlLoadedRef.current = true;
+
+      // Trigger code generation after loading
+      setTimeout(() => {
+        if (workspaceRef.current) {
+          try {
+            const code = arduinoGenerator.workspaceToCode(workspaceRef.current);
+            onCodeChangeRef.current(code);
+          } catch (e) {
+            console.error("[BlocklyWrapper] Late code generation failed:", e);
+          }
+        }
+      }, 200);
+    }
+  }, [props.initialXml, isReadyForEdits, loadWorkspaceState]);
+
+  // Reset the flag when currentFilePath changes (new project/open different project)
+  useEffect(() => {
+    initialXmlLoadedRef.current = false;
+  }, [props.currentFilePath]);
 
 
   const handlePromptConfirm = (value: string) => {

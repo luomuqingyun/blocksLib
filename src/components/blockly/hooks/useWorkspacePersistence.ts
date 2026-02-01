@@ -64,14 +64,26 @@ export const useWorkspacePersistence = (
     }, [workspaceRef, setIsReadyForEdits, onXmlLoaded]);
 
     const loadWorkspaceState = useCallback((stateStr: string) => {
-        if (!workspaceRef.current || !stateStr) return;
+        console.log('[loadWorkspaceState] Called with stateStr length:', stateStr?.length);
+        console.log('[loadWorkspaceState] stateStr preview:', stateStr?.substring(0, 200));
+        if (!workspaceRef.current || !stateStr) {
+            console.warn('[loadWorkspaceState] Early return - workspaceRef:', !!workspaceRef.current, 'stateStr:', !!stateStr);
+            return;
+        }
         try {
             if (stateStr.trim().startsWith('<xml')) {
+                console.log('[loadWorkspaceState] Loading XML format');
                 workspaceRef.current.clear();
                 const xmlDom = Blockly.utils.xml.textToDom(stateStr);
                 Blockly.Xml.domToWorkspace(xmlDom, workspaceRef.current);
             } else {
+                console.log('[loadWorkspaceState] Loading JSON format');
                 const state = JSON.parse(stateStr);
+                console.log('[loadWorkspaceState] Parsed state keys:', Object.keys(state));
+                console.log('[loadWorkspaceState] state.blocks type:', typeof state.blocks);
+                console.log('[loadWorkspaceState] state.blocks.blocks type:', typeof state.blocks?.blocks);
+                console.log('[loadWorkspaceState] Blocks count:', state.blocks?.blocks?.length);
+
                 let savedViewState = state.viewState;
 
                 if (currentFilePath) {
@@ -90,20 +102,32 @@ export const useWorkspacePersistence = (
                     delete state.viewState;
                 }
                 let stateToLoad = state;
-                if (state && Array.isArray(state.blocks)) stateToLoad = { blocks: state };
+                if (state && Array.isArray(state.blocks)) {
+                    console.log('[loadWorkspaceState] Wrapping state.blocks in { blocks: state }');
+                    stateToLoad = { blocks: state };
+                }
+                console.log('[loadWorkspaceState] Final stateToLoad keys:', Object.keys(stateToLoad));
 
                 workspaceRef.current.clear();
+                console.log('[loadWorkspaceState] Workspace cleared, loading state...');
                 Blockly.serialization.workspaces.load(stateToLoad, workspaceRef.current);
+                console.log('[loadWorkspaceState] State loaded, blocks count:', workspaceRef.current.getAllBlocks().length);
                 if (pendingViewState.current) {
                     Blockly.svgResize(workspaceRef.current);
                     attemptViewRestore();
+                } else {
+                    // [FIX] When no viewState to restore, we must still set isReadyForEdits
+                    // Otherwise code generation never triggers!
+                    console.log('[loadWorkspaceState] No viewState, setting isReadyForEdits=true directly');
+                    setIsReadyForEdits(true);
+                    if (onXmlLoaded) onXmlLoaded();
                 }
             }
             ensureDefaultBlocks();
         } catch (e) {
             console.error("[WorkspacePersistence] Failed to load state", e);
         }
-    }, [workspaceRef, currentFilePath, attemptViewRestore, ensureDefaultBlocks]);
+    }, [workspaceRef, currentFilePath, attemptViewRestore, ensureDefaultBlocks, setIsReadyForEdits, onXmlLoaded]);
 
     const saveWorkspaceState = useCallback(() => {
         if (!workspaceRef.current) return '';

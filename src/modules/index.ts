@@ -65,6 +65,8 @@ import { MotorsModule } from './hardware/motors';
 import { AdvancedMotorsModule } from './hardware/motors_adv';
 import { AccelStepperModule } from './hardware/stepper_adv';
 import { SharpIRModule } from './hardware/sharp_ir';
+import { ChipInfoModule } from './hardware/chip_info'; // New
+
 import { DS18B20Module } from './hardware/ds18b20';
 import { ActuatorsModule } from './hardware/actuators';
 import { SpeechModule } from './hardware/speech'; // New
@@ -96,6 +98,12 @@ import { NRF24Module } from './protocols/nrf24';
 import { LoRaModule } from './protocols/lora';
 import { RFIDModule } from './hardware/rfid';
 import { SpecialSensorsModule } from './hardware/special_sensors';
+
+import { I2CModule } from './protocols/i2c';
+import { SPIModule } from './protocols/spi';
+import { STM32CANModule } from './stm32/can';
+import { STM32USBModule } from './stm32/usb';
+import { STM32NetworkModule } from './stm32/network';
 
 import { SerialModule } from './protocols/serial';
 import { SerialEnhancedModule } from './protocols/serial_enhanced';
@@ -149,7 +157,12 @@ export const initAllModules = () => {
     // 2. Register Hardware Modules
     ModuleRegistry.register(ESP32Module);
     ModuleRegistry.register(ServoModule);
-    ModuleRegistry.register(IOModule);
+    ModuleRegistry.register(IOModule);       // 基础 I/O (带引脚提示)
+    ModuleRegistry.register(I2CModule);      // I2C
+    ModuleRegistry.register(SPIModule);      // SPI
+    ModuleRegistry.register(STM32CANModule); // STM32 CAN
+    ModuleRegistry.register(STM32USBModule); // STM32 USB
+    ModuleRegistry.register(STM32NetworkModule); // STM32 Network
     ModuleRegistry.register(SensorsModule);
     ModuleRegistry.register(AdvancedSensorsModule);
     ModuleRegistry.register(SensorsIIIModule); // New
@@ -160,6 +173,7 @@ export const initAllModules = () => {
     ModuleRegistry.register(NeoPixelModule);
     ModuleRegistry.register(DisplayMatrixModule);
     ModuleRegistry.register(OLEDModule);
+    ModuleRegistry.register(ChipInfoModule); // 芯片信息 (MAC/Freq/Flash)
     ModuleRegistry.register(MotorsModule);
     ModuleRegistry.register(AdvancedMotorsModule);
     ModuleRegistry.register(AccelStepperModule);

@@ -2,17 +2,17 @@
   "id": "esp32cam",
   "name": "AI Thinker ESP32-CAM",
   "mcu": "ESP32",
+  "package": "BOARD_DIP_16",
+  "pinCount": 16,
   "specs": "4MB Flash / 512KB RAM / 4MB PSRAM",
+  "description": "经典的 ESP32 摄像头开发板 (OV2640)，集成 PSRAM 和 SD 卡槽，适合低成本 AIoT 视觉项目。",
+  "page_url": "https://wiki.ai-thinker.com/esp32-cam",
   "capabilities": [
     "wifi",
     "bluetooth",
     "camera",
     "sd-card"
   ],
-  "description": "经典的 ESP32 摄像头开发板 (OV2640)，集成 PSRAM 和 SD 卡槽，适合低成本 AIoT 视觉项目。",
-  "page_url": "https://docs.ai-thinker.com/esp32-cam",
-  "package": "BOARD_DIP_16",
-  "pinCount": 16,
   "pinMap": [
     {
       "name": "16",

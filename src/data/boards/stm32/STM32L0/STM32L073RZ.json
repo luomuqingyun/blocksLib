@@ -1,14 +1,23 @@
 {
-  "id": "nucleo_l073rz",
+  "id": "generic_stm32l073rz",
   "name": "STM32L073RZ",
   "platform": "ststm32",
   "mcu": "STM32L073RZ",
-  "variant": "L072R(B-Z)T_L073R(B-Z)T_L083R(B-Z)T",
+  "variant": "L072R(B-Z)(H-I)_L073RBH_L073RZ(H-I)_L083R(B-Z)H",
   "pinCount": 64,
-  "package": "LQFP64",
-  "fcpu": 32000000,
+  "package": "TFBGA64",
+  "fcpu": 0,
   "specs": "192k Flash / 20k RAM",
   "description": "STM32L073RZ - STM32L0 series board",
+  "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32l073rz.html",
+  "has_ldscript": true,
+  "capabilities": {
+    "can": false,
+    "usb": false,
+    "ethernet": false,
+    "flash": true,
+    "sdio": false
+  },
   "defaults": {
     "serial": {
       "tx": "PA0",
@@ -144,8 +153,7 @@
       },
       "SPI2": {
         "MOSI": [
-          "PB15",
-          "PC3"
+          "PB15"
         ],
         "MISO": [
           "PB14",
@@ -285,7 +293,6 @@
           "PC0",
           "PC1",
           "PC2",
-          "PC3",
           "PC4",
           "PC5"
         ]
@@ -302,508 +309,759 @@
   },
   "pinMap": [
     {
-      "name": "VLCD",
-      "position": "1"
+      "name": "PC14",
+      "position": "A1",
+      "functions": []
     },
     {
       "name": "PC13",
-      "position": "2"
-    },
-    {
-      "name": "PC14",
-      "position": "3"
-    },
-    {
-      "name": "PC15",
-      "position": "4"
-    },
-    {
-      "name": "PH0",
-      "position": "5"
-    },
-    {
-      "name": "PH1",
-      "position": "6"
-    },
-    {
-      "name": "NRST",
-      "position": "7"
-    },
-    {
-      "name": "PC0",
-      "position": "8"
-    },
-    {
-      "name": "PC1",
-      "position": "9"
-    },
-    {
-      "name": "PC2",
-      "position": "10"
-    },
-    {
-      "name": "PC3",
-      "position": "11"
-    },
-    {
-      "name": "VSSA",
-      "position": "12"
-    },
-    {
-      "name": "VDDA",
-      "position": "13"
-    },
-    {
-      "name": "PA0",
-      "position": "14"
-    },
-    {
-      "name": "PA1",
-      "position": "15"
-    },
-    {
-      "name": "PA2",
-      "position": "16"
-    },
-    {
-      "name": "PA3",
-      "position": "17"
-    },
-    {
-      "name": "VSS",
-      "position": "18"
-    },
-    {
-      "name": "VDD",
-      "position": "19"
-    },
-    {
-      "name": "PA4",
-      "position": "20"
-    },
-    {
-      "name": "PA5",
-      "position": "21"
-    },
-    {
-      "name": "PA6",
-      "position": "22"
-    },
-    {
-      "name": "PA7",
-      "position": "23"
-    },
-    {
-      "name": "PC4",
-      "position": "24"
-    },
-    {
-      "name": "PC5",
-      "position": "25"
-    },
-    {
-      "name": "PB0",
-      "position": "26"
-    },
-    {
-      "name": "PB1",
-      "position": "27"
-    },
-    {
-      "name": "PB2",
-      "position": "28"
-    },
-    {
-      "name": "PB10",
-      "position": "29"
-    },
-    {
-      "name": "PB11",
-      "position": "30"
-    },
-    {
-      "name": "VSS",
-      "position": "31"
-    },
-    {
-      "name": "VDD",
-      "position": "32"
-    },
-    {
-      "name": "PB12",
-      "position": "33"
-    },
-    {
-      "name": "PB13",
-      "position": "34"
-    },
-    {
-      "name": "PB14",
-      "position": "35"
-    },
-    {
-      "name": "PB15",
-      "position": "36"
-    },
-    {
-      "name": "PC6",
-      "position": "37"
-    },
-    {
-      "name": "PC7",
-      "position": "38"
-    },
-    {
-      "name": "PC8",
-      "position": "39"
-    },
-    {
-      "name": "PC9",
-      "position": "40"
-    },
-    {
-      "name": "PA8",
-      "position": "41"
-    },
-    {
-      "name": "PA9",
-      "position": "42"
-    },
-    {
-      "name": "PA10",
-      "position": "43"
-    },
-    {
-      "name": "PA11",
-      "position": "44"
-    },
-    {
-      "name": "PA12",
-      "position": "45"
-    },
-    {
-      "name": "PA13",
-      "position": "46"
-    },
-    {
-      "name": "VSS",
-      "position": "47"
-    },
-    {
-      "name": "VDD_USB",
-      "position": "48"
-    },
-    {
-      "name": "PA14",
-      "position": "49"
-    },
-    {
-      "name": "PA15",
-      "position": "50"
-    },
-    {
-      "name": "PC10",
-      "position": "51"
-    },
-    {
-      "name": "PC11",
-      "position": "52"
-    },
-    {
-      "name": "PC12",
-      "position": "53"
-    },
-    {
-      "name": "PD2",
-      "position": "54"
-    },
-    {
-      "name": "PB3",
-      "position": "55"
-    },
-    {
-      "name": "PB4",
-      "position": "56"
-    },
-    {
-      "name": "PB5",
-      "position": "57"
-    },
-    {
-      "name": "PB6",
-      "position": "58"
-    },
-    {
-      "name": "PB7",
-      "position": "59"
-    },
-    {
-      "name": "BOOT0",
-      "position": "60"
-    },
-    {
-      "name": "PB8",
-      "position": "61"
+      "position": "A2",
+      "functions": []
     },
     {
       "name": "PB9",
-      "position": "62"
+      "position": "A3",
+      "functions": [
+        "I2C1_SDA",
+        "SPI2_SSEL"
+      ]
+    },
+    {
+      "name": "PB4",
+      "position": "A4",
+      "functions": [
+        "I2C3_SDA",
+        "SPI1_MISO",
+        "TIM22_CH1",
+        "TIM3_CH1",
+        "USART1_CTS",
+        "USART5_RX"
+      ]
+    },
+    {
+      "name": "PB3",
+      "position": "A5",
+      "functions": [
+        "SPI1_SCLK",
+        "TIM2_CH2",
+        "USART1_RTS",
+        "USART5_TX"
+      ]
+    },
+    {
+      "name": "PA15",
+      "position": "A6",
+      "functions": [
+        "SPI1_SSEL",
+        "TIM2_CH1",
+        "USART2_RX",
+        "USART4_RTS"
+      ]
+    },
+    {
+      "name": "PA14",
+      "position": "A7",
+      "functions": [
+        "LPUART1_TX",
+        "USART2_TX"
+      ]
+    },
+    {
+      "name": "PA13",
+      "position": "A8",
+      "functions": [
+        "LPUART1_RX",
+        "USB_DM"
+      ]
+    },
+    {
+      "name": "PC15",
+      "position": "B1",
+      "functions": []
+    },
+    {
+      "name": "VLCD",
+      "position": "B2",
+      "functions": []
+    },
+    {
+      "name": "PB8",
+      "position": "B3",
+      "functions": [
+        "I2C1_SCL"
+      ]
+    },
+    {
+      "name": "BOOT0",
+      "position": "B4",
+      "functions": []
+    },
+    {
+      "name": "PD2",
+      "position": "B5",
+      "functions": [
+        "LPUART1_RTS",
+        "USART5_RX"
+      ]
+    },
+    {
+      "name": "PC11",
+      "position": "B6",
+      "functions": [
+        "LPUART1_RX",
+        "USART4_RX"
+      ]
+    },
+    {
+      "name": "PC10",
+      "position": "B7",
+      "functions": [
+        "LPUART1_TX",
+        "USART4_TX"
+      ]
+    },
+    {
+      "name": "PA12",
+      "position": "B8",
+      "functions": [
+        "SPI1_MOSI",
+        "USART1_RTS",
+        "USB_DM"
+      ]
+    },
+    {
+      "name": "PH0",
+      "position": "C1",
+      "functions": []
     },
     {
       "name": "VSS",
-      "position": "63"
+      "position": "C2",
+      "functions": []
+    },
+    {
+      "name": "PB7",
+      "position": "C3",
+      "functions": [
+        "I2C1_SDA",
+        "USART1_RX",
+        "USART4_CTS"
+      ]
+    },
+    {
+      "name": "PB5",
+      "position": "C4",
+      "functions": [
+        "SPI1_MOSI",
+        "TIM22_CH2",
+        "TIM3_CH2",
+        "USART5_RTS"
+      ]
+    },
+    {
+      "name": "PC12",
+      "position": "C5",
+      "functions": [
+        "USART5_TX"
+      ]
+    },
+    {
+      "name": "PA10",
+      "position": "C6",
+      "functions": [
+        "I2C1_SDA",
+        "USART1_RX"
+      ]
+    },
+    {
+      "name": "PA9",
+      "position": "C7",
+      "functions": [
+        "I2C1_SCL",
+        "USART1_TX"
+      ]
+    },
+    {
+      "name": "PA11",
+      "position": "C8",
+      "functions": [
+        "SPI1_MISO",
+        "USART1_CTS",
+        "USB_DM"
+      ]
+    },
+    {
+      "name": "PH1",
+      "position": "D1",
+      "functions": []
     },
     {
       "name": "VDD",
-      "position": "64"
+      "position": "D2",
+      "functions": []
+    },
+    {
+      "name": "PB6",
+      "position": "D3",
+      "functions": [
+        "I2C1_SCL",
+        "USART1_TX"
+      ]
+    },
+    {
+      "name": "VSS",
+      "position": "D4",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D5",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D6",
+      "functions": []
+    },
+    {
+      "name": "PA8",
+      "position": "D7",
+      "functions": [
+        "I2C3_SCL"
+      ]
+    },
+    {
+      "name": "PC9",
+      "position": "D8",
+      "functions": [
+        "I2C3_SDA",
+        "TIM3_CH4",
+        "USB_DM"
+      ]
+    },
+    {
+      "name": "NRST",
+      "position": "E1",
+      "functions": []
+    },
+    {
+      "name": "PC1",
+      "position": "E2",
+      "functions": [
+        "ADC1_IN",
+        "I2C3_SDA",
+        "LPUART1_TX"
+      ]
+    },
+    {
+      "name": "PC0",
+      "position": "E3",
+      "functions": [
+        "ADC1_IN",
+        "I2C3_SCL",
+        "LPUART1_RX"
+      ]
+    },
+    {
+      "name": "VDD",
+      "position": "E4",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "E5",
+      "functions": []
+    },
+    {
+      "name": "VDD_USB",
+      "position": "E6",
+      "functions": []
+    },
+    {
+      "name": "PC7",
+      "position": "E7",
+      "functions": [
+        "TIM22_CH2",
+        "TIM3_CH2"
+      ]
+    },
+    {
+      "name": "PC8",
+      "position": "E8",
+      "functions": [
+        "TIM3_CH3"
+      ]
+    },
+    {
+      "name": "VSSA",
+      "position": "F1",
+      "functions": []
+    },
+    {
+      "name": "PC2",
+      "position": "F2",
+      "functions": [
+        "ADC1_IN",
+        "SPI2_MISO"
+      ]
+    },
+    {
+      "name": "PA2",
+      "position": "F3",
+      "functions": [
+        "ADC1_IN",
+        "LPUART1_TX",
+        "TIM21_CH1",
+        "TIM2_CH3",
+        "USART2_TX"
+      ]
+    },
+    {
+      "name": "PA5",
+      "position": "F4",
+      "functions": [
+        "ADC1_IN",
+        "DAC1_OUT",
+        "SPI1_SCLK",
+        "TIM2_CH1"
+      ]
+    },
+    {
+      "name": "PB0",
+      "position": "F5",
+      "functions": [
+        "ADC1_IN",
+        "TIM3_CH3"
+      ]
+    },
+    {
+      "name": "PC6",
+      "position": "F6",
+      "functions": [
+        "TIM22_CH1",
+        "TIM3_CH1"
+      ]
+    },
+    {
+      "name": "PB15",
+      "position": "F7",
+      "functions": [
+        "SPI2_MOSI"
+      ]
+    },
+    {
+      "name": "PB14",
+      "position": "F8",
+      "functions": [
+        "I2C2_SDA",
+        "LPUART1_RTS",
+        "SPI2_MISO",
+        "TIM21_CH2"
+      ]
+    },
+    {
+      "name": "VREF+",
+      "position": "G1",
+      "functions": []
+    },
+    {
+      "name": "PA0",
+      "position": "G2",
+      "functions": [
+        "ADC1_IN",
+        "TIM2_CH1",
+        "USART2_CTS",
+        "USART4_TX"
+      ]
+    },
+    {
+      "name": "PA3",
+      "position": "G3",
+      "functions": [
+        "ADC1_IN",
+        "LPUART1_RX",
+        "TIM21_CH2",
+        "TIM2_CH4",
+        "USART2_RX"
+      ]
+    },
+    {
+      "name": "PA6",
+      "position": "G4",
+      "functions": [
+        "ADC1_IN",
+        "LPUART1_CTS",
+        "SPI1_MISO",
+        "TIM22_CH1",
+        "TIM3_CH1"
+      ]
+    },
+    {
+      "name": "PB1",
+      "position": "G5",
+      "functions": [
+        "ADC1_IN",
+        "LPUART1_RTS",
+        "TIM3_CH4"
+      ]
+    },
+    {
+      "name": "PB2",
+      "position": "G6",
+      "functions": []
+    },
+    {
+      "name": "PB10",
+      "position": "G7",
+      "functions": [
+        "I2C2_SCL",
+        "LPUART1_RX",
+        "LPUART1_TX",
+        "SPI2_SCLK",
+        "TIM2_CH3"
+      ]
+    },
+    {
+      "name": "PB13",
+      "position": "G8",
+      "functions": [
+        "I2C2_SCL",
+        "LPUART1_CTS",
+        "SPI2_SCLK",
+        "TIM21_CH1"
+      ]
+    },
+    {
+      "name": "VDDA",
+      "position": "H1",
+      "functions": []
+    },
+    {
+      "name": "PA1",
+      "position": "H2",
+      "functions": [
+        "ADC1_IN",
+        "TIM2_CH2",
+        "USART2_RTS",
+        "USART4_RX"
+      ]
+    },
+    {
+      "name": "PA4",
+      "position": "H3",
+      "functions": [
+        "ADC1_IN",
+        "DAC1_OUT",
+        "SPI1_SSEL"
+      ]
+    },
+    {
+      "name": "PA7",
+      "position": "H4",
+      "functions": [
+        "ADC1_IN",
+        "SPI1_MOSI",
+        "TIM22_CH2",
+        "TIM3_CH2"
+      ]
+    },
+    {
+      "name": "PC4",
+      "position": "H5",
+      "functions": [
+        "ADC1_IN",
+        "LPUART1_TX"
+      ]
+    },
+    {
+      "name": "PC5",
+      "position": "H6",
+      "functions": [
+        "ADC1_IN",
+        "LPUART1_RX"
+      ]
+    },
+    {
+      "name": "PB11",
+      "position": "H7",
+      "functions": [
+        "I2C2_SDA",
+        "LPUART1_RX",
+        "LPUART1_TX",
+        "TIM2_CH4"
+      ]
+    },
+    {
+      "name": "PB12",
+      "position": "H8",
+      "functions": [
+        "LPUART1_RTS",
+        "SPI2_SSEL"
+      ]
     }
   ],
   "pin_options": {
     "digital": [
       [
-        "PA0",
+        "D0 (PA0)",
         "PA0"
       ],
       [
-        "PA1",
+        "D1 (PA1)",
         "PA1"
       ],
       [
-        "PA10",
-        "PA10"
-      ],
-      [
-        "PA11",
-        "PA11"
-      ],
-      [
-        "PA12",
-        "PA12"
-      ],
-      [
-        "PA13",
-        "PA13"
-      ],
-      [
-        "PA14",
-        "PA14"
-      ],
-      [
-        "PA15",
-        "PA15"
-      ],
-      [
-        "PA2",
+        "D2 (PA2)",
         "PA2"
       ],
       [
-        "PA3",
+        "D3 (PA3)",
         "PA3"
       ],
       [
-        "PA4",
+        "D4 (PA4)",
         "PA4"
       ],
       [
-        "PA5",
+        "D5 (PA5)",
         "PA5"
       ],
       [
-        "PA6",
+        "D6 (PA6)",
         "PA6"
       ],
       [
-        "PA7",
+        "D7 (PA7)",
         "PA7"
       ],
       [
-        "PA8",
+        "D8 (PA8)",
         "PA8"
       ],
       [
-        "PA9",
+        "D9 (PA9)",
         "PA9"
       ],
       [
-        "PB0",
+        "D10 (PA10)",
+        "PA10"
+      ],
+      [
+        "D11 (PA11)",
+        "PA11"
+      ],
+      [
+        "D12 (PA12)",
+        "PA12"
+      ],
+      [
+        "D13 (PA13)",
+        "PA13"
+      ],
+      [
+        "D14 (PA14)",
+        "PA14"
+      ],
+      [
+        "D15 (PA15)",
+        "PA15"
+      ],
+      [
+        "D16 (PB0)",
         "PB0"
       ],
       [
-        "PB1",
+        "D17 (PB1)",
         "PB1"
       ],
       [
-        "PB10",
-        "PB10"
+        "D18 (PB2)",
+        "PB2"
       ],
       [
-        "PB11",
-        "PB11"
-      ],
-      [
-        "PB12",
-        "PB12"
-      ],
-      [
-        "PB13",
-        "PB13"
-      ],
-      [
-        "PB14",
-        "PB14"
-      ],
-      [
-        "PB15",
-        "PB15"
-      ],
-      [
-        "PB3",
+        "D19 (PB3)",
         "PB3"
       ],
       [
-        "PB4",
+        "D20 (PB4)",
         "PB4"
       ],
       [
-        "PB5",
+        "D21 (PB5)",
         "PB5"
       ],
       [
-        "PB6",
+        "D22 (PB6)",
         "PB6"
       ],
       [
-        "PB7",
+        "D23 (PB7)",
         "PB7"
       ],
       [
-        "PB8",
+        "D24 (PB8)",
         "PB8"
       ],
       [
-        "PB9",
+        "D25 (PB9)",
         "PB9"
       ],
       [
-        "PC0",
+        "D26 (PB10)",
+        "PB10"
+      ],
+      [
+        "D27 (PB11)",
+        "PB11"
+      ],
+      [
+        "D28 (PB12)",
+        "PB12"
+      ],
+      [
+        "D29 (PB13)",
+        "PB13"
+      ],
+      [
+        "D30 (PB14)",
+        "PB14"
+      ],
+      [
+        "D31 (PB15)",
+        "PB15"
+      ],
+      [
+        "D32 (PC0)",
         "PC0"
       ],
       [
-        "PC1",
+        "D33 (PC1)",
         "PC1"
       ],
       [
-        "PC10",
-        "PC10"
-      ],
-      [
-        "PC11",
-        "PC11"
-      ],
-      [
-        "PC12",
-        "PC12"
-      ],
-      [
-        "PC2",
+        "D34 (PC2)",
         "PC2"
       ],
       [
-        "PC3",
-        "PC3"
-      ],
-      [
-        "PC4",
+        "D35 (PC4)",
         "PC4"
       ],
       [
-        "PC5",
+        "D36 (PC5)",
         "PC5"
       ],
       [
-        "PC6",
+        "D37 (PC6)",
         "PC6"
       ],
       [
-        "PC7",
+        "D38 (PC7)",
         "PC7"
       ],
       [
-        "PC8",
+        "D39 (PC8)",
         "PC8"
       ],
       [
-        "PC9",
+        "D40 (PC9)",
         "PC9"
       ],
       [
-        "PD2",
+        "D41 (PC10)",
+        "PC10"
+      ],
+      [
+        "D42 (PC11)",
+        "PC11"
+      ],
+      [
+        "D43 (PC12)",
+        "PC12"
+      ],
+      [
+        "D44 (PC13)",
+        "PC13"
+      ],
+      [
+        "D45 (PC14)",
+        "PC14"
+      ],
+      [
+        "D46 (PC15)",
+        "PC15"
+      ],
+      [
+        "D47 (PD2)",
         "PD2"
+      ],
+      [
+        "D48 (PH0)",
+        "PH0"
+      ],
+      [
+        "D49 (PH1)",
+        "PH1"
       ]
     ],
     "analog": [
       [
-        "PA0",
+        "A0 (PA0)",
         "PA0"
       ],
       [
-        "PA1",
+        "A1 (PA1)",
         "PA1"
       ],
       [
-        "PA2",
+        "A2 (PA2)",
         "PA2"
       ],
       [
-        "PA3",
+        "A3 (PA3)",
         "PA3"
       ],
       [
-        "PA4",
+        "A4 (PA4)",
         "PA4"
       ],
       [
-        "PA5",
+        "A5 (PA5)",
         "PA5"
       ],
       [
-        "PA6",
+        "A6 (PA6)",
         "PA6"
       ],
       [
-        "PA7",
+        "A7 (PA7)",
         "PA7"
       ],
       [
-        "PB0",
+        "A8 (PB0)",
         "PB0"
       ],
       [
-        "PB1",
+        "A9 (PB1)",
         "PB1"
       ],
       [
-        "PC0",
+        "A10 (PC0)",
         "PC0"
       ],
       [
-        "PC1",
+        "A11 (PC1)",
         "PC1"
       ],
       [
-        "PC2",
+        "A12 (PC2)",
         "PC2"
       ],
       [
-        "PC3",
-        "PC3"
-      ],
-      [
-        "PC4",
+        "A13 (PC4)",
         "PC4"
       ],
       [
-        "PC5",
+        "A14 (PC5)",
         "PC5"
       ]
     ],
@@ -893,7 +1151,137 @@
         "PC9"
       ]
     ],
-    "i2c": [],
-    "spi": []
+    "i2c": [
+      [
+        "PA10",
+        "PA10"
+      ],
+      [
+        "PA8",
+        "PA8"
+      ],
+      [
+        "PA9",
+        "PA9"
+      ],
+      [
+        "PB10",
+        "PB10"
+      ],
+      [
+        "PB11",
+        "PB11"
+      ],
+      [
+        "PB13",
+        "PB13"
+      ],
+      [
+        "PB14",
+        "PB14"
+      ],
+      [
+        "PB4",
+        "PB4"
+      ],
+      [
+        "PB6",
+        "PB6"
+      ],
+      [
+        "PB7",
+        "PB7"
+      ],
+      [
+        "PB8",
+        "PB8"
+      ],
+      [
+        "PB9",
+        "PB9"
+      ],
+      [
+        "PC0",
+        "PC0"
+      ],
+      [
+        "PC1",
+        "PC1"
+      ],
+      [
+        "PC9",
+        "PC9"
+      ]
+    ],
+    "spi": [
+      [
+        "PA11",
+        "PA11"
+      ],
+      [
+        "PA12",
+        "PA12"
+      ],
+      [
+        "PA15",
+        "PA15"
+      ],
+      [
+        "PA4",
+        "PA4"
+      ],
+      [
+        "PA5",
+        "PA5"
+      ],
+      [
+        "PA6",
+        "PA6"
+      ],
+      [
+        "PA7",
+        "PA7"
+      ],
+      [
+        "PB10",
+        "PB10"
+      ],
+      [
+        "PB12",
+        "PB12"
+      ],
+      [
+        "PB13",
+        "PB13"
+      ],
+      [
+        "PB14",
+        "PB14"
+      ],
+      [
+        "PB15",
+        "PB15"
+      ],
+      [
+        "PB3",
+        "PB3"
+      ],
+      [
+        "PB4",
+        "PB4"
+      ],
+      [
+        "PB5",
+        "PB5"
+      ],
+      [
+        "PB9",
+        "PB9"
+      ],
+      [
+        "PC2",
+        "PC2"
+      ]
+    ]
   }
 }

@@ -13,10 +13,15 @@
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
+import { fileURLToPath } from 'url';
+import { EMBASSY_STM32_DATA_PATH } from './data_sources';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const CACHE_DIR = path.join(__dirname, 'out_scripts');
 const CACHE_FILE = path.join(CACHE_DIR, 'stm32_layouts_cache.json');
-const BOARD_DATA_FILE = path.join(CACHE_DIR, 'stm32_board_data.json');
+const BOARD_DATA_FILE = path.join(__dirname, 'stm32_board_data.json');
 
 interface PinMapping {
     name: string;
@@ -80,18 +85,23 @@ function getPotentialBaseNames(mcu: string): string[] {
     const base = mcu.toUpperCase();
     const names = [base];
 
-    // 启发式尝试: 针对 STM32 的命名规则去掉后缀 (如 T6, U6)
+    // 启发式尝试: 针对 STM32 的命名规则逐渐去掉后缀 (如 T6, RGT, RGT6)
+    // 例如: STM32F415RGT (12) -> STM32F415RG (11), STM32F415R (10)
     if (base.length > 10) {
+        names.push(base.substring(0, base.length - 1));
         names.push(base.substring(0, base.length - 2));
     }
-    if (base.length > 11) {
+    if (base.length > 12) {
         names.push(base.substring(0, base.length - 3));
     }
 
     return Array.from(new Set(names));
 }
 
-const LOCAL_REPO_PATH = 'G:/Project/Easy_Embedded/STM32_DATA/STM32_open_pin_data/data/chips';
+// [Local Data Optimization]
+// 指向本地克隆的 embassy-rs/stm32-data-generated 仓库中的 chips 目录
+// 这样可以实现秒级全量处理，无视 GitHub API 速率限制
+const LOCAL_REPO_PATH = path.join(EMBASSY_STM32_DATA_PATH, 'data/chips');
 
 /**
  * 尝试从远程仓库或本地路径获取特定 MCU 的数据
@@ -110,15 +120,18 @@ async function fetchMcuData(mcu: string): Promise<any> {
         }
     }
 
-    // 2. 回退到 GitHub 远程抓取
-    for (const name of names) {
-        // 使用 embassy-rs 官方生成的原始数据 (这是目前社区最准确的 STM32 芯片数据库)
-        const url = `https://raw.githubusercontent.com/embassy-rs/stm32-data-generated/main/data/chips/${name}.json`;
-        try {
-            return await fetchJson(url);
-        } catch (err: any) {
-            if (err.message === '404') continue;
-            throw err;
+    // 2. 回退到 GitHub 远程抓取 (仅当本地仓库配置不存在时才使用，避免海量 404 导致的延迟)
+    if (!fs.existsSync(LOCAL_REPO_PATH)) {
+        for (const name of names) {
+            // 使用 embassy-rs 官方生成的原始数据 (这是目前社区最准确的 STM32 芯片数据库)
+            const url = `https://raw.githubusercontent.com/embassy-rs/stm32-data-generated/main/data/chips/${name}.json`;
+            try {
+                return await fetchJson(url);
+            } catch (err: any) {
+                if (err.message === '404') continue;
+                console.warn(`    远程获取 ${name} 失败: ${err.message}`);
+                throw err;
+            }
         }
     }
     throw new Error('All potential names returned 404 (Local & Remote)');
@@ -130,7 +143,7 @@ async function fetchMcuData(mcu: string): Promise<any> {
 async function main() {
     // 检查基础数据文件是否存在
     if (!fs.existsSync(BOARD_DATA_FILE)) {
-        console.error('错误: 找不到板卡基本数据文件。请先运行 1_scan_boards_basic.ts。');
+        console.error('错误: 找不到板卡基本数据文件。请先运行 1_scan_boards_basic.ts 或 1b_discover_bare_chips.ts。');
         process.exit(1);
     }
 
@@ -156,10 +169,17 @@ async function main() {
     const missingMcus = Array.from(mcus).filter(mcu => !cache[mcu]);
     console.log(`共有 ${missingMcus.length} 个 MCU 的布局数据需要抓取。`);
 
-    // 3. 开始遍历抓取
+    // 3. 开始遍历抓取 (增加并发限制和总量限制进行初步测试)
+    let fetchCount = 0;
+    const FETCH_LIMIT = 6000; // 这里的限制是为了防止单次执行过久，建议分批运行或在确认稳定后调大
+
     for (const mcu of missingMcus) {
+        if (fetchCount >= FETCH_LIMIT) {
+            console.log(`已达到本次运行的抓取上限 (${FETCH_LIMIT})，请再次运行脚本继续抓取。`);
+            break;
+        }
         try {
-            console.log(`正在抓取 ${mcu}...`);
+            console.log(`正在抓取 ${mcu}... (${fetchCount + 1}/${FETCH_LIMIT})`);
             const data = await fetchMcuData(mcu);
 
             // 处理该芯片支持的所有封装
@@ -192,11 +212,15 @@ async function main() {
 
             // 每次抓取成功都保存一次，确保断电/中断不丢失进度
             fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
-
-            // 延迟 100ms，避免过快请求被 GitHub API 限制
-            await new Promise(r => setTimeout(r, 100));
+            fetchCount++;
+            // 只有远程请求才需要延迟，避免 API 限制；本地请求无需延迟
+            if (!LOCAL_REPO_PATH || !fs.existsSync(LOCAL_REPO_PATH)) {
+                await new Promise(r => setTimeout(r, 100));
+            }
         } catch (err: any) {
             console.warn(`抓取并处理 ${mcu} 时失败: ${err.message}`);
+            // 失败也算一次尝试，计入计数器
+            fetchCount++;
         }
     }
 

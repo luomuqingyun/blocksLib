@@ -18,6 +18,11 @@
         "guide": "Guide",
         "viewGuide": "View Publishing Guide"
     },
+    "board": {
+        "noDescription": "No description available",
+        "select": "Select Board",
+        "preview": "Preview"
+    },
     "extensions": {
         "title": "Extensions",
         "marketplace": "Extension Marketplace",

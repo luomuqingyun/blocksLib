@@ -23,6 +23,14 @@ export interface BoardPins {
     serial: PinDefinition[];
 }
 
+export interface RawPinOptions {
+    digital: (string | string[])[];
+    analog: (string | string[])[];
+    pwm: (string | string[])[];
+    i2c?: any[];
+    spi?: any[];
+}
+
 export interface BoardBuildConfig {
     envName: string;       // [env:name]
     platform: string;      // platform = ...
@@ -74,11 +82,14 @@ export interface Board {
     ram: string;
     fqbn: string;
     pins: BoardPins;
+    pin_options?: RawPinOptions;
+    pinout?: any; // Hardware resource mapping (TIM, UART, etc.)
     capabilities?: {
         wifi?: boolean;
         bluetooth?: boolean;
         ethernet?: boolean;
         can?: boolean;
+        usb?: boolean;
         analogOut?: boolean; // DAC
         rtos?: boolean;
     };

@@ -1,12 +1,46 @@
+/**
+ * ============================================================
+ * EmbedBlocks Electron 预加载脚本 (Preload Script)
+ * ============================================================
+ * 
+ * 预加载脚本是 Electron 安全架构的核心部分。
+ * 它运行在渲染进程的"隔离世界"中，可以访问 Node.js API，
+ * 但通过 contextBridge 只向渲染进程暴露安全的、经过筛选的 API。
+ * 
+ * 本文件定义了 window.electronAPI 对象，前端代码通过它与主进程通信。
+ * 
+ * 暴露的 API 分类:
+ * - 系统环境: PlatformIO 检查
+ * - 构建上传: 编译、烧录项目
+ * - 串口监视: 串口通信操作
+ * - 文件操作: 对话框、文件读写
+ * - 项目操作: 项目 CRUD 和备份
+ * - 配置管理: 用户设置读写
+ * - 扩展系统: 插件加载和管理
+ * - 插件市场: 远程插件下载安装
+ * - 菜单事件: 接收原生菜单点击
+ * 
+ * 安全说明:
+ * - nodeIntegration: false (渲染进程无法直接访问 Node)
+ * - contextIsolation: true (渲染进程使用隔离的上下文)
+ * - 所有敏感操作都通过 IPC 在主进程执行
+ * 
+ * @file electron/preload.ts
+ * @module EmbedBlocks/Electron/Preload
+ */
+
 import { contextBridge, ipcRenderer } from 'electron';
 import { PlatformIOTemplate } from './shared/types';
 
-// We could import types, but for preload simplicity and to avoid module issues in some electron setups
-// without strict compilation path mapping, we will keep explicit typed functions here 
-// that match the interface we expect.
-
+/**
+ * 向渲染进程暴露的 Electron API 集合
+ * 前端通过 window.electronAPI.xxx() 调用这些方法
+ */
 contextBridge.exposeInMainWorld('electronAPI', {
-  // --- 系统环境 (System) ---
+  // =========================================================
+  // 系统环境检测 (System Environment)
+  // =========================================================
+  /** 检查 PlatformIO 是否已安装并可用 */
   checkSystem: () => ipcRenderer.invoke('pio:check'),
 
   // 构建与上传 (Build & Upload)

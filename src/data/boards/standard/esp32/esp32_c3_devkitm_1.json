@@ -2,13 +2,15 @@
   "id": "esp32-c3-devkitm-1",
   "name": "Espressif ESP32-C3-DevKitM-1",
   "mcu": "ESP32C3",
+  "package": "BOARD_DIP_30",
+  "pinCount": 30,
   "specs": "4096k Flash / 320k RAM",
+  "description": "ESP32-C3-DevKitM-1 是一款基于 ESP32-C3-MINI-1 模组的入门级开发板。该板集成了完整的 Wi-Fi 和低功耗蓝牙功能。",
+  "page_url": "https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/hw-reference/esp32c3/user-guide-devkitm-1.html",
   "capabilities": [
     "wifi",
     "bluetooth"
   ],
-  "package": "BOARD_DIP_30",
-  "pinCount": 30,
   "pinMap": [
     {
       "name": "3V3",
@@ -131,7 +133,6 @@
       "position": "30"
     }
   ],
-  "description": "ESP32C3开发板通用配置，搭载 RISC-V 32 位单核处理器，支持 2.4 GHz Wi-Fi 和 Bluetooth 5 (LE)，为物联网产品提供行业领先的射频性能、完善的安全机制和丰富的内存资源。",
   "pin_options": {
     "digital": [
       [

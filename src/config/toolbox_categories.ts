@@ -138,7 +138,20 @@ export const SERIAL_CONTENTS = [
     { kind: 'sep', gap: 20 },
     { kind: 'block', type: 'arduino_serial_available_check' },
     { kind: 'block', type: 'arduino_serial_read_string' },
-    { kind: 'block', type: 'arduino_serial_read_char' }
+    { kind: 'block', type: 'arduino_serial_read_char' },
+    { kind: 'sep', gap: 30 },
+    { kind: 'label', text: 'I2C' },
+    { kind: 'block', type: 'arduino_i2c_init' },
+    { kind: 'block', type: 'arduino_i2c_config' },
+    { kind: 'block', type: 'arduino_i2c_write' },
+    { kind: 'block', type: 'arduino_i2c_read' },
+    { kind: 'block', type: 'arduino_i2c_scan' },
+    { kind: 'sep', gap: 30 },
+    { kind: 'label', text: 'SPI' },
+    { kind: 'block', type: 'arduino_spi_init' },
+    { kind: 'block', type: 'arduino_spi_config' },
+    { kind: 'block', type: 'arduino_spi_write' },
+    { kind: 'block', type: 'arduino_spi_transfer' }
 ];
 
 export const SERVO_CONTENTS = [
@@ -163,9 +176,53 @@ export const ESP_UTILS_CONTENTS = [
     { kind: 'block', type: 'esp32_touch_read' }
 ];
 
+export const STM32_CAN_CONTENTS = [
+    { kind: 'label', text: '%{BKY_LABEL_STM32_CAN}' },
+    { kind: 'block', type: 'stm32_can_init' },
+    { kind: 'block', type: 'stm32_can_send' },
+    { kind: 'block', type: 'stm32_can_read' },
+    { kind: 'block', type: 'stm32_can_available' }
+];
+
+export const STM32_USB_CONTENTS = [
+    { kind: 'label', text: '%{BKY_LABEL_STM32_USB}' },
+    { kind: 'block', type: 'stm32_usb_kb_init' },
+    { kind: 'block', type: 'stm32_usb_kb_print' },
+    { kind: 'block', type: 'stm32_usb_mouse_init' },
+    { kind: 'block', type: 'stm32_usb_mouse_move' }
+];
+
+export const STM32_NET_CONTENTS = [
+    { kind: 'label', text: '%{BKY_LABEL_STM32_NET}' },
+    { kind: 'block', type: 'stm32_ethernet_init' },
+    { kind: 'block', type: 'stm32_ethernet_ip' }
+];
+
+export const STM32_FLASH_CONTENTS = [
+    { kind: 'label', text: '%{BKY_LABEL_FLASH_EEPROM}' },
+    { kind: 'block', type: 'storage_eeprom_write' },
+    { kind: 'block', type: 'storage_eeprom_read' },
+    { kind: 'block', type: 'storage_eeprom_commit' }
+];
+
+export const STM32_SD_CONTENTS = [
+    { kind: 'label', text: 'SDIO' },
+    { kind: 'block', type: 'storage_sd_init' },
+    { kind: 'block', type: 'storage_sd_write' },
+    { kind: 'block', type: 'storage_sd_read' },
+    { kind: 'block', type: 'storage_sd_exists' }
+];
+
 export const STM32_CONTENTS = [
-    // Placeholder for future STM32 specific blocks
-    // e.g. { kind: 'block', type: 'stm32_specific_feature' }
+    ...STM32_CAN_CONTENTS,
+    { kind: 'sep', gap: 30 },
+    ...STM32_USB_CONTENTS,
+    { kind: 'sep', gap: 30 },
+    ...STM32_NET_CONTENTS,
+    { kind: 'sep', gap: 30 },
+    ...STM32_FLASH_CONTENTS,
+    { kind: 'sep', gap: 30 },
+    ...STM32_SD_CONTENTS
 ];
 
 export const ACTUATOR_CONTENTS = [

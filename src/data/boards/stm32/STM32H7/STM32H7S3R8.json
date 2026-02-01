@@ -1,0 +1,372 @@
+{
+  "id": "generic_stm32h7s3r8",
+  "name": "STM32H7S3R8",
+  "platform": "ststm32",
+  "mcu": "STM32H7S3R8",
+  "variant": "generic",
+  "pinCount": 68,
+  "package": "VFQFPN68",
+  "fcpu": 0,
+  "specs": "Unknown specs (from variants)",
+  "description": "STM32H7S3R8 - STM32H7 series board",
+  "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32h7s3.html",
+  "has_ldscript": false,
+  "capabilities": {
+    "can": false,
+    "usb": false,
+    "ethernet": false,
+    "flash": true,
+    "sdio": false
+  },
+  "defaults": {},
+  "pinout": {},
+  "pinMap": [
+    {
+      "name": "VBAT",
+      "position": "1",
+      "functions": []
+    },
+    {
+      "name": "PC13",
+      "position": "2",
+      "functions": []
+    },
+    {
+      "name": "PC14",
+      "position": "3",
+      "functions": []
+    },
+    {
+      "name": "PC15",
+      "position": "4",
+      "functions": []
+    },
+    {
+      "name": "PH0",
+      "position": "5",
+      "functions": []
+    },
+    {
+      "name": "PH1",
+      "position": "6",
+      "functions": []
+    },
+    {
+      "name": "NRST",
+      "position": "7",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "8",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "9",
+      "functions": []
+    },
+    {
+      "name": "VSSA",
+      "position": "10",
+      "functions": []
+    },
+    {
+      "name": "VREFP",
+      "position": "11",
+      "functions": []
+    },
+    {
+      "name": "VDDA",
+      "position": "12",
+      "functions": []
+    },
+    {
+      "name": "PA0",
+      "position": "13",
+      "functions": []
+    },
+    {
+      "name": "PA1",
+      "position": "14",
+      "functions": []
+    },
+    {
+      "name": "PA2",
+      "position": "15",
+      "functions": []
+    },
+    {
+      "name": "PA3",
+      "position": "16",
+      "functions": []
+    },
+    {
+      "name": "PA4",
+      "position": "17",
+      "functions": []
+    },
+    {
+      "name": "PA5",
+      "position": "18",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "19",
+      "functions": []
+    },
+    {
+      "name": "PA6",
+      "position": "20",
+      "functions": []
+    },
+    {
+      "name": "PA7",
+      "position": "21",
+      "functions": []
+    },
+    {
+      "name": "PB0",
+      "position": "22",
+      "functions": []
+    },
+    {
+      "name": "PB1",
+      "position": "23",
+      "functions": []
+    },
+    {
+      "name": "PB2",
+      "position": "24",
+      "functions": []
+    },
+    {
+      "name": "PP2",
+      "position": "25",
+      "functions": []
+    },
+    {
+      "name": "PP3",
+      "position": "26",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "27",
+      "functions": []
+    },
+    {
+      "name": "VDDXSPI1",
+      "position": "28",
+      "functions": []
+    },
+    {
+      "name": "PO4",
+      "position": "29",
+      "functions": []
+    },
+    {
+      "name": "PP0",
+      "position": "30",
+      "functions": []
+    },
+    {
+      "name": "PP1",
+      "position": "31",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "32",
+      "functions": []
+    },
+    {
+      "name": "VDDXSPI1",
+      "position": "33",
+      "functions": []
+    },
+    {
+      "name": "PO0",
+      "position": "34",
+      "functions": []
+    },
+    {
+      "name": "PB10",
+      "position": "35",
+      "functions": []
+    },
+    {
+      "name": "PB11",
+      "position": "36",
+      "functions": []
+    },
+    {
+      "name": "PB12",
+      "position": "37",
+      "functions": []
+    },
+    {
+      "name": "PB14",
+      "position": "38",
+      "functions": []
+    },
+    {
+      "name": "PB15",
+      "position": "39",
+      "functions": []
+    },
+    {
+      "name": "VCAP2",
+      "position": "40",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "41",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "42",
+      "functions": []
+    },
+    {
+      "name": "PA8",
+      "position": "43",
+      "functions": []
+    },
+    {
+      "name": "PA9",
+      "position": "44",
+      "functions": []
+    },
+    {
+      "name": "PA10",
+      "position": "45",
+      "functions": []
+    },
+    {
+      "name": "PA11",
+      "position": "46",
+      "functions": []
+    },
+    {
+      "name": "PA12",
+      "position": "47",
+      "functions": []
+    },
+    {
+      "name": "PA13",
+      "position": "48",
+      "functions": []
+    },
+    {
+      "name": "PA14",
+      "position": "49",
+      "functions": []
+    },
+    {
+      "name": "PA15",
+      "position": "50",
+      "functions": []
+    },
+    {
+      "name": "VCAP3",
+      "position": "51",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "52",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "53",
+      "functions": []
+    },
+    {
+      "name": "VDD33USB",
+      "position": "54",
+      "functions": []
+    },
+    {
+      "name": "PM12",
+      "position": "55",
+      "functions": []
+    },
+    {
+      "name": "PM11",
+      "position": "56",
+      "functions": []
+    },
+    {
+      "name": "PM14",
+      "position": "57",
+      "functions": []
+    },
+    {
+      "name": "PM13",
+      "position": "58",
+      "functions": []
+    },
+    {
+      "name": "BOOT0",
+      "position": "59",
+      "functions": []
+    },
+    {
+      "name": "PB3",
+      "position": "60",
+      "functions": []
+    },
+    {
+      "name": "PB4",
+      "position": "61",
+      "functions": []
+    },
+    {
+      "name": "PB5",
+      "position": "62",
+      "functions": []
+    },
+    {
+      "name": "VCAP4",
+      "position": "63",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "64",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "65",
+      "functions": []
+    },
+    {
+      "name": "PB7",
+      "position": "66",
+      "functions": []
+    },
+    {
+      "name": "PB8",
+      "position": "67",
+      "functions": []
+    },
+    {
+      "name": "PB9",
+      "position": "68",
+      "functions": []
+    }
+  ],
+  "pin_options": {
+    "digital": [],
+    "analog": [],
+    "pwm": [],
+    "i2c": [],
+    "spi": []
+  }
+}

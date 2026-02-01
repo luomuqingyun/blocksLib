@@ -22,6 +22,7 @@ for (const key in Order) {
 }
 
 arduinoGenerator.init = function (workspace: any) {
+  console.log('[ArduinoGenerator] init called for workspace');
   this.definitions_ = Object.create(null);
   this.functions_ = Object.create(null);
   this.pins_ = Object.create(null);
@@ -43,18 +44,49 @@ arduinoGenerator.init = function (workspace: any) {
 };
 
 /**
- * Set the current board family for the generator.
- * @param family - 'arduino', 'esp32', 'stm32', etc.
+ * 设置当前开发板系列
+ * @param family - 'arduino', 'esp32', 'stm32' 等
  */
 arduinoGenerator.setFamily = function (family: string) {
-  this.family_ = family.toLowerCase();
+  this.family_ = family;
+  console.log('[ArduinoGenerator] Set family to:', family);
 };
 
 /**
- * Get the current board family.
+ * 获取当前开发板系列
  */
 arduinoGenerator.getFamily = function () {
-  return this.family_ || 'arduino';
+  return this.family_;
+};
+
+// ---------------------------------------------------------------------------
+// 代理方法到 CodeBuilder (Proxy Methods)
+// ---------------------------------------------------------------------------
+// 以下方法将请求转发给 CodeBuilder 实例，实现对 Include, Macro, Setup 等代码片段的
+// 统一管理和去重。这是解决 "生成器崩溃" 问题的关键修复。
+
+arduinoGenerator.addInclude = function (key: string, code: string) {
+  builder.addInclude(key, code);
+};
+
+arduinoGenerator.addMacro = function (key: string, code: string) {
+  builder.addMacro(key, code);
+};
+
+arduinoGenerator.addType = function (key: string, code: string) {
+  builder.addType(key, code);
+};
+
+arduinoGenerator.addVariable = function (key: string, code: string) {
+  builder.addVariable(key, code);
+};
+
+arduinoGenerator.addFunction = function (key: string, code: string) {
+  builder.addFunction(key, code);
+};
+
+arduinoGenerator.addPrototype = function (key: string, code: string) {
+  builder.addPrototype(key, code);
 };
 
 arduinoGenerator.addSetup = function (key: string, code: string) {
@@ -65,79 +97,23 @@ arduinoGenerator.addLoop = function (key: string, code: string) {
   builder.addLoop(key, code);
 };
 
-/**
- * Add an include statement with platform awareness.
- * @param key Unique identifier
- * @param code The #include code or a logical library name
- */
-arduinoGenerator.addInclude = function (key: string, code: string) {
-  let finalCode = code;
-
-  // Smart Library Mapping
-  if (code === '#include <Servo.h>' || key === 'servo_lib') {
-    if (this.family_ === 'esp32') {
-      finalCode = '#include <ESP32Servo.h>';
-    } else if (this.family_ === 'stm32') {
-      finalCode = '#include <Servo.h>';
-    }
-  } else if (code === '#include <WiFi.h>' || key === 'wifi_lib') {
-    if (this.family_ === 'esp8266') {
-      finalCode = '#include <ESP8266WiFi.h>';
-    }
-  }
-
-  builder.addInclude(key, finalCode);
-};
-
-/**
- * Add a macro definition (uses 'macro_' prefix to ensure correct order).
- * @param key Unique identifier (will be prefixed if needed)
- * @param code The macro code
- */
-arduinoGenerator.addMacro = function (key: string, code: string) {
-  builder.addMacro(key, code);
-};
-
-/**
- * Add a type definition (uses 'struct_def_' prefix to ensure correct order).
- * @param key Unique identifier (will be prefixed if needed)
- * @param code The struct/enum code
- */
-arduinoGenerator.addType = function (key: string, code: string) {
-  builder.addType(key, code);
-};
-
-/**
- * Add a function definition.
- * @param key Unique identifier (will be prefixed if needed)
- * @param code The function code
- */
-arduinoGenerator.addFunction = function (key: string, code: string) {
-  builder.addFunction(key, code);
-};
-
-/**
- * Add a global variable definition.
- * @param key Unique identifier
- * @param code The variable declaration code
- */
-arduinoGenerator.addVariable = function (key: string, code: string) {
-  builder.addVariable(key, code);
-};
-
-arduinoGenerator.quote_ = function (string: string) {
-  string = string.replace(/\\/g, '\\\\')
+arduinoGenerator.quote_ = function (str: string) {
+  str = str.replace(/\\/g, '\\\\')
     .replace(/\n/g, '\\\n')
     .replace(/"/g, '\\"');
-  return '"' + string + '"';
+  return '"' + str + '"';
 };
 
-// ----------------------------------------------------------------
-// 完成代码生成 (Finish Code Generation)
-// 拼接 Header, Includes, Defines, Variables, Setup, Loop
-// 生成最终的 .ino/.cpp 文件内容
-// ----------------------------------------------------------------
+
+// ... existing helper methods ...
+
+/**
+ * 完成代码生成 (Finish Code Generation)
+ * 拼接 Header, Includes, Defines, Variables, Setup, Loop
+ * 生成最终的 .ino/.cpp 文件内容
+ */
 arduinoGenerator.finish = function (code: string) {
+  console.log('[ArduinoGenerator] finish called. Code length:', code.length);
   // Handle pin modes auto-initialization
   for (const pin in this.pins_) {
     const mode = this.pins_[pin];
@@ -157,6 +133,7 @@ arduinoGenerator.finish = function (code: string) {
 
   // Generate final code using builder
   const finalCode = builder.build(this.userSetupCode_ || '', (this.userLoopCode_ || '') + code, this.INDENT);
+  console.log('[ArduinoGenerator] finalCode length:', finalCode.length);
 
   // Reset separate generation flags for next run
   this.userSetupCode_ = undefined;

@@ -1,0 +1,22 @@
+npm warn Unknown user config "electron_mirror". This will stop working in the next major version of npm.
+npm warn Unknown user config "electron_builder_binaries_mirror". This will stop working in the next major version of npm.
+[信息] 在 PIO 中找到 224 个支持 Arduino 的板卡。
+[信息] 使用变体目录: G:\Project\Easy_Embedded\STM32_DATA\Arduino_Core_STM32\variants
+C:\Users\wofy\Desktop\embedblocks-studio\scripts\6_generate_compatibility_map.ts:148
+                const bVariantLeaf = phys.variant.split('/').pop() || '';
+                                          ^
+
+
+TypeError: Cannot read properties of undefined (reading 'variant')
+    at <anonymous> (C:\Users\wofy\Desktop\embedblocks-studio\scripts\6_generate_compatibility_map.ts:148:43)
+    at Array.map (<anonymous>)
+    at <anonymous> (C:\Users\wofy\Desktop\embedblocks-studio\scripts\6_generate_compatibility_map.ts:141:39)
+    at Array.forEach (<anonymous>)
+    at <anonymous> (C:\Users\wofy\Desktop\embedblocks-studio\scripts\6_generate_compatibility_map.ts:116:33)
+    at Array.forEach (<anonymous>)
+    at main (C:\Users\wofy\Desktop\embedblocks-studio\scripts\6_generate_compatibility_map.ts:115:34)
+    at <anonymous> (C:\Users\wofy\Desktop\embedblocks-studio\scripts\6_generate_compatibility_map.ts:201:1)
+    at Object.<anonymous> (C:\Users\wofy\Desktop\embedblocks-studio\scripts\6_generate_compatibility_map.ts:201:6)
+    at Module._compile (node:internal/modules/cjs/loader:1734:14)
+
+Node.js v24.1.0

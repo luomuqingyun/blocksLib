@@ -1,26 +1,55 @@
+/**
+ * ============================================================
+ * EmbedBlocks Electron 主进程入口 (Main Process Entry Point)
+ * ============================================================
+ * 
+ * 本文件是 Electron 应用的主进程入口，负责:
+ * 1. 创建和管理应用窗口 (BrowserWindow)
+ * 2. 构建原生应用菜单 (多语言支持)
+ * 3. 注册所有 IPC 处理器 (进程间通信)
+ * 4. 管理 Web Serial API 权限 (串口设备访问)
+ * 5. 处理应用生命周期事件
+ * 6. 处理文件关联 (.ebproj 双击打开)
+ * 
+ * 架构说明:
+ * - 主进程 (Main Process): 运行 Node.js，可访问系统 API
+ * - 渲染进程 (Renderer Process): 运行 Vite/React 应用
+ * - 两者通过 IPC (Inter-Process Communication) 通信
+ * - preload.ts 作为桥梁，暴露安全的 API 给渲染进程
+ * 
+ * @file electron/main.ts
+ * @module EmbedBlocks/Electron/Main
+ */
+
 import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { configService } from './services/ConfigService';
 
-// Import New IPC Handlers
-import { registerProjectHandlers } from './ipc/ProjectHandlers';
-import { registerSerialHandlers, setupSerialEvents } from './ipc/SerialHandlers';
-import { registerConfigHandlers } from './ipc/ConfigHandlers';
-import { registerExtensionHandlers } from './ipc/ExtensionHandlers';
-import { registerBuildHandlers } from './ipc/BuildHandlers';
-import { registerMarketplaceHandlers } from './ipc/MarketplaceHandlers';
+// ============================================================
+// 导入 IPC 处理器模块 (Import IPC Handler Modules)
+// 每个模块负责一类 IPC 请求的处理
+// ============================================================
+import { registerProjectHandlers } from './ipc/ProjectHandlers';       // 项目操作: 新建/打开/保存
+import { registerSerialHandlers, setupSerialEvents } from './ipc/SerialHandlers';  // 串口通信
+import { registerConfigHandlers } from './ipc/ConfigHandlers';         // 配置管理
+import { registerExtensionHandlers } from './ipc/ExtensionHandlers';   // 扩展/插件管理
+import { registerBuildHandlers } from './ipc/BuildHandlers';           // 编译构建
+import { registerMarketplaceHandlers } from './ipc/MarketplaceHandlers'; // 插件市场
 
 // ============================================================
-// ============================================================
-// 1. 初始化 (Initialization)
+// 1. 全局状态 (Global State)
 // ============================================================
 
+/** 主窗口实例引用，用于其他模块访问 */
 let mainWindow: BrowserWindow | null = null;
+
+/** 获取主窗口实例的工厂函数，传递给需要访问窗口的 IPC 处理器 */
 const getMainWindow = () => mainWindow;
 
 // ============================================================
 // 2. 菜单逻辑 (Menu Logic)
+// 应用菜单支持中英文切换，根据用户设置或系统语言自动选择
 // ============================================================
 
 let locales: Record<string, any> = {};
@@ -152,6 +181,18 @@ function createWindow() {
             contextIsolation: true,
         },
         icon: path.join(__dirname, '../icon.ico')
+    });
+
+    // ============================================================
+    // Link Handling: Force external links to open in default browser
+    // ============================================================
+    mainWindow.webContents.setWindowOpenHandler((details) => {
+        const url = details.url;
+        if (url.startsWith('https:') || url.startsWith('http:')) {
+            shell.openExternal(url);
+            return { action: 'deny' }; // Prevent internal popup
+        }
+        return { action: 'allow' };
     });
 
     // ============================================================

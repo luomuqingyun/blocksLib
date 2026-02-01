@@ -2,15 +2,17 @@
   "id": "esp32dev",
   "name": "Espressif ESP32 Dev Module",
   "mcu": "ESP32",
+  "package": "BOARD_DIP_30",
+  "pinCount": 30,
   "specs": "4096k Flash / 320k RAM",
+  "description": "ESP32 Dev Module 是最通用的 ESP32 开发板，基于 ESP-WROOM-32 模组，支持 Wi-Fi 和蓝牙，引脚丰富，适合各种 IoT 应用。",
+  "page_url": "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/hw-reference/esp32/get-started-devkitc.html",
   "capabilities": [
     "wifi",
     "bluetooth",
     "ethernet",
     "can"
   ],
-  "package": "BOARD_DIP_30",
-  "pinCount": 30,
   "pinMap": [
     {
       "name": "EN",
@@ -133,7 +135,6 @@
       "position": "30"
     }
   ],
-  "description": "ESP32开发板通用配置，为双核Xtensa LX6 MCU，集成2.4GHzWi-Fi和蓝��双模通信，支持802.11 b/g/n协议与蓝牙v4.2 BR/EDR/BLE标准。",
   "pin_options": {
     "digital": [
       [

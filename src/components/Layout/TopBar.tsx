@@ -10,13 +10,17 @@
 // 使用 useToolbarActions Hook 聚合多个 Context，降低组件耦合度
 // ----------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------
+
 import React from 'react';
+import { Board } from '../../types/board';
 import {
     FilePlus, FolderOpen, Save, SaveAll, FileCode,
     Settings, RefreshCw, Play, Upload, Puzzle, FileInput, X, Sliders
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BoardRegistry } from '../../registries/BoardRegistry';
+import { boardRepository } from '../../data/BoardRepository';
 import { useBoards } from '../../hooks/useBoards';
 import { useToolbarActions } from '../../hooks/useToolbarActions';
 import { getI18nString } from '../../utils/i18n_utils';
@@ -131,19 +135,57 @@ export const TopBar: React.FC = () => {
                             // Implementation: If project active, filter options to same family.
                             title={project.projectMetadata ? "Only compatible boards shown" : "Select Board"}
                         >
-                            {project.projectMetadata
-                                ? boards
-                                    .filter(b => {
-                                        const current = BoardRegistry.get(build.selectedBoard);
-                                        return current && b.family === current.family;
-                                    })
-                                    .map(board => (
-                                        <option key={board.id} value={board.id}>{getI18nString(board.name, i18n.language)}</option>
-                                    ))
-                                : boards.map(board => (
-                                    <option key={board.id} value={board.id}>{getI18nString(board.name, i18n.language)}</option>
-                                ))
-                            }
+                            {(() => {
+                                const renderGroups = () => {
+                                    const standard = boardRepository.getStandardBoards();
+                                    const stm32 = boardRepository.getSTM32Boards().STM32;
+                                    const currentBoard = BoardRegistry.get(build.selectedBoard);
+
+                                    const filterBoard = (b: any) => {
+                                        if (!project.projectMetadata) return true;
+                                        return currentBoard && b.family === currentBoard.family;
+                                    };
+
+                                    const groups = [];
+
+                                    // 1. Standard Boards (Arduino, ESP32, etc.)
+                                    Object.entries(standard).forEach(([category, boards]) => {
+                                        const typedBoards = boards as unknown as Board[];
+                                        const filtered = typedBoards.filter(filterBoard);
+                                        if (filtered.length > 0) {
+                                            groups.push(
+                                                <optgroup key={category} label={category}>
+                                                    {filtered.map(b => (
+                                                        <option key={b.id} value={b.id}>
+                                                            {getI18nString(b.name, i18n.language)}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            );
+                                        }
+                                    });
+
+                                    // 2. STM32 Boards (Grouped by Series)
+                                    Object.entries(stm32).forEach(([series, boards]: [string, any[]]) => {
+                                        const filtered = boards.filter(filterBoard);
+                                        if (filtered.length > 0) {
+                                            groups.push(
+                                                <optgroup key={series} label={series}>
+                                                    {filtered.map(b => (
+                                                        <option key={b.id} value={b.id}>
+                                                            {getI18nString(b.name, i18n.language)}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            );
+                                        }
+                                    });
+
+                                    return groups;
+                                };
+
+                                return renderGroups();
+                            })()}
                         </select>
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>

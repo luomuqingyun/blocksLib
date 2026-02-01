@@ -3,6 +3,34 @@ import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
+import { BoardRegistry } from '../../registries/BoardRegistry';
+
+// ============================================================
+// 动态生成串口选项 (Generate Serial Options)
+// ============================================================
+// 详见 serial.ts 中的注释。此函数为高级串口模块提供相同的动态选择功能。
+const generateSerialOptions = (): [string, string][] => {
+    const board = BoardRegistry.getCurrentBoard();
+    const uartData = board?.pinout?.UART;
+    const options: [string, string][] = [["Serial (Default)", "Serial"]];
+
+    if (uartData) {
+        const sortedKeys = Object.keys(uartData).sort((a, b) => {
+            const numA = parseInt(a.match(/\d+/)![0] || "0");
+            const numB = parseInt(b.match(/\d+/)![0] || "0");
+            return numA - numB;
+        });
+
+        sortedKeys.forEach(key => {
+            const match = key.match(/U(?:S)?ART(\d+)/);
+            if (match) {
+                const num = match[1];
+                options.push([`Serial${num} (${key})`, `Serial${num}`]);
+            }
+        });
+    }
+    return options;
+};
 
 const init = () => {
     // -------------------------------------------------------------
@@ -13,6 +41,7 @@ const init = () => {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_SERIAL_SETUP)
+                .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID")
                 .appendField(Blockly.Msg.ARD_SERIAL_BAUD)
                 .appendField(new Blockly.FieldDropdown([
                     ["9600", "9600"],
@@ -26,11 +55,9 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_SERIAL_SETUP_TOOLTIP);
         }
     }, function (block: any) {
+        const serialId = block.getFieldValue('SERIAL_ID');
         const baud = block.getFieldValue('BAUD');
-        // We handle serial begin in a special way to avoid duplicates if multiple blocks use it,
-        // but this specific block allows explicit setup.
-        // We'll use a unique key for setup to ensure it's only added once if multiple setup blocks exist (unlikely but safe).
-        arduinoGenerator.addSetup('serial_begin', `Serial.begin(${baud});`);
+        arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(${baud});`);
         return '';
     });
 
@@ -44,6 +71,7 @@ const init = () => {
                 .setCheck(null)
                 .appendField(Blockly.Msg.ARD_SERIAL_PRINT);
             this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID")
                 .appendField(new Blockly.FieldCheckbox("TRUE"), "NEW_LINE")
                 .appendField(Blockly.Msg.ARD_SERIAL_NEWLINE);
             this.setPreviousStatement(true, null);
@@ -53,15 +81,16 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_SERIAL_PRINT_TOOLTIP);
         }
     }, function (block: any) {
+        const serialId = block.getFieldValue('SERIAL_ID');
         const content = arduinoGenerator.valueToCode(block, 'CONTENT', Order.NONE) || '""';
         const newLine = block.getFieldValue('NEW_LINE') === 'TRUE';
 
         // Auto-setup if not present (fallback)
-        if (!arduinoGenerator.setups_['serial_begin']) {
-            arduinoGenerator.addSetup('serial_begin', `Serial.begin(9600);`);
+        if (!arduinoGenerator.setups_[`serial_begin_${serialId}`]) {
+            arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(9600);`);
         }
 
-        return newLine ? `Serial.println(${content});\n` : `Serial.print(${content});\n`;
+        return newLine ? `${serialId}.println(${content});\n` : `${serialId}.print(${content});\n`;
     });
 
     // -------------------------------------------------------------
@@ -71,16 +100,18 @@ const init = () => {
     registerBlock('arduino_serial_available_check', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_SERIAL_AVAILABLE_CHECK);
+                .appendField(Blockly.Msg.ARD_SERIAL_AVAILABLE_CHECK)
+                .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID");
             this.setOutput(true, "Boolean");
             this.setColour(160);
             this.setTooltip(Blockly.Msg.ARD_SERIAL_AVAILABLE_CHECK_TOOLTIP);
         }
     }, function (block: any) {
-        if (!arduinoGenerator.setups_['serial_begin']) {
-            arduinoGenerator.addSetup('serial_begin', `Serial.begin(9600);`);
+        const serialId = block.getFieldValue('SERIAL_ID');
+        if (!arduinoGenerator.setups_[`serial_begin_${serialId}`]) {
+            arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(9600);`);
         }
-        return ['Serial.available() > 0', Order.ATOMIC];
+        return [`${serialId}.available() > 0`, Order.ATOMIC];
     });
 
     // -------------------------------------------------------------
@@ -90,16 +121,18 @@ const init = () => {
     registerBlock('arduino_serial_read_string', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_SERIAL_READ_STRING);
+                .appendField(Blockly.Msg.ARD_SERIAL_READ_STRING)
+                .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID");
             this.setOutput(true, "String");
             this.setColour(160);
             this.setTooltip(Blockly.Msg.ARD_SERIAL_READ_STRING_TOOLTIP);
         }
     }, function (block: any) {
-        if (!arduinoGenerator.setups_['serial_begin']) {
-            arduinoGenerator.addSetup('serial_begin', `Serial.begin(9600);`);
+        const serialId = block.getFieldValue('SERIAL_ID');
+        if (!arduinoGenerator.setups_[`serial_begin_${serialId}`]) {
+            arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(9600);`);
         }
-        return ['Serial.readString()', Order.ATOMIC];
+        return [`${serialId}.readString()`, Order.ATOMIC];
     });
 
     // -------------------------------------------------------------
@@ -109,16 +142,18 @@ const init = () => {
     registerBlock('arduino_serial_read_char', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_SERIAL_READ_CHAR);
+                .appendField(Blockly.Msg.ARD_SERIAL_READ_CHAR)
+                .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID");
             this.setOutput(true, "Number"); // Returns int (ASCII)
             this.setColour(160);
             this.setTooltip(Blockly.Msg.ARD_SERIAL_READ_CHAR_TOOLTIP);
         }
     }, function (block: any) {
-        if (!arduinoGenerator.setups_['serial_begin']) {
-            arduinoGenerator.addSetup('serial_begin', `Serial.begin(9600);`);
+        const serialId = block.getFieldValue('SERIAL_ID');
+        if (!arduinoGenerator.setups_[`serial_begin_${serialId}`]) {
+            arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(9600);`);
         }
-        return ['Serial.read()', Order.ATOMIC];
+        return [`${serialId}.read()`, Order.ATOMIC];
     });
 
     // -------------------------------------------------------------
@@ -130,17 +165,20 @@ const init = () => {
             this.appendValueInput("VAL")
                 .setCheck("Number")
                 .appendField(Blockly.Msg.ARD_SERIAL_WRITE);
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(160);
             this.setTooltip(Blockly.Msg.ARD_SERIAL_WRITE_TOOLTIP);
         }
     }, function (block: any) {
+        const serialId = block.getFieldValue('SERIAL_ID');
         const val = arduinoGenerator.valueToCode(block, 'VAL', Order.NONE) || '0';
-        if (!arduinoGenerator.setups_['serial_begin']) {
-            arduinoGenerator.addSetup('serial_begin', `Serial.begin(9600);`);
+        if (!arduinoGenerator.setups_[`serial_begin_${serialId}`]) {
+            arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(9600);`);
         }
-        return `Serial.write(${val});\n`;
+        return `${serialId}.write(${val});\n`;
     });
 };
 

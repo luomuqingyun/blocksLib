@@ -2,13 +2,13 @@
   "id": "leonardo",
   "name": "Arduino Leonardo",
   "mcu": "ATMEGA32U4",
-  "specs": "28k Flash / 2.5k RAM",
-  "capabilities": [],
   "package": "BOARD_UNO_R3",
   "pinCount": 30,
-  "pinMap": [],
+  "specs": "28k Flash / 2.5k RAM",
   "description": "Arduino Leonardo开发板",
-  "page_url": "https://docs.arduino.cc/hardware/leonardo/",
+  "page_url": "https://docs.arduino.cc/hardware/leonardo",
+  "capabilities": [],
+  "pinMap": [],
   "pin_options": {
     "digital": [
       [

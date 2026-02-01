@@ -208,8 +208,8 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                 )}
             </div>
 
-            {/* 信息展示区域 (文本) */}
-            <div className="p-4 space-y-3 bg-[#252526]">
+            {/* 信息展示区域 (文本) - 限制最大高度为 60% 并允许滚动 */}
+            <div className="p-4 space-y-3 bg-[#252526] max-h-[60%] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700">
                 <div>
                     <h3 className="text-lg font-bold text-slate-100">{name}</h3>
                     {/* 规格标签 (Flash/RAM 等) */}
@@ -223,7 +223,7 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
 
                 {/* 板卡详细描述 */}
                 {description && (
-                    <p className="text-sm text-slate-400 leading-relaxed line-clamp-3">
+                    <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-wrap">
                         {description}
                     </p>
                 )}
@@ -234,7 +234,7 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                         href={pageUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-400 transition-colors"
+                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-400 transition-colors pt-2"
                     >
                         <Link size={12} />
                         官方文档 (Documentation)

@@ -1,4 +1,20 @@
 /**
+ * ============================================================
+ * 共享类型定义 (Shared Types)
+ * ============================================================
+ * 
+ * 定义主进程和渲染进程之间共享的 TypeScript 类型。
+ * 这些类型确保 IPC 通信的类型安全。
+ * 
+ * 主要类型:
+ * - PlatformIOTemplate: PIO 编译配置，用于生成 platformio.ini
+ * - ProjectBuildConfig: 项目构建设置，持久化到项目文件
+ * 
+ * @file electron/shared/types.ts
+ * @module EmbedBlocks/Electron/Shared/Types
+ */
+
+/**
  * PlatformIO 板级配置模板接口
  * 定义了生成 platformio.ini 所需的各项参数
  * Shared between Backend (PioService) and Frontend (IPC)
@@ -14,7 +30,8 @@ export interface PlatformIOTemplate {
     upload_interface?: 'swd' | 'jtag'; // 调试接口 (可选)
     debug_tool?: string; // 调试工具 (可选)
     custom_ini_content?: string; // Raw content to append
-    [key: string]: string | undefined; // 允许其他自定义字段
+    local_patch?: boolean; // [NEW] Whether to use local board/variant patch
+    [key: string]: string | boolean | undefined; // 允许其他自定义字段
 }
 
 export interface ProjectBuildConfig {
@@ -41,5 +58,6 @@ export interface ProjectBuildConfig {
     debug_tool?: string;
 
     // Advanced
+    local_patch?: boolean;
     customIni?: string;
 }

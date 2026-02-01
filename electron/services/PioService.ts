@@ -1,3 +1,30 @@
+/**
+ * ============================================================
+ * PlatformIO 编译服务 (PIO Service)
+ * ============================================================
+ * 
+ * 负责调用 PlatformIO CLI 执行编译和上传操作。
+ * 支持两种运行模式:
+ * - SYSTEM: 使用系统安装的 PIO (命令行 'pio')
+ * - PORTABLE: 使用内嵌的便携版 PIO (bundled_pio)
+ * 
+ * 主要功能:
+ * - checkEnvironment: 检测 PIO 环境并确定运行模式
+ * - checkInternet: 检测网络连接状态
+ * - build: 编译项目 (pio run)
+ * - upload: 上传固件 (pio run -t upload)
+ * - runCommand: 核心编译命令执行
+ * 
+ * 工作流程:
+ * 1. 检测系统 PIO，有则使用
+ * 2. 否则检测便携版 PIO
+ * 3. 生成/更新 platformio.ini
+ * 4. 执行 pio run 并实时输出日志
+ * 
+ * @file electron/services/PioService.ts
+ * @module EmbedBlocks/Electron/Services/PioService
+ */
+
 import { app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';

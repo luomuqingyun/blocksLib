@@ -11,13 +11,23 @@ import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { fileURLToPath } from 'url';
+import { ARDUINO_CORE_STM32_PATH, resolveDataPath } from './data_sources';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 配置信息
 const PIO_HOME = path.join(os.homedir(), '.platformio');
 const STM32_BOARDS_DIR = path.join(PIO_HOME, 'platforms/ststm32/boards');
-const STM32_VARIANTS_DIR = path.join(PIO_HOME, 'packages/framework-arduinoststm32/variants');
-const INPUT_JSON = path.join(__dirname, 'unified_board_data.json');
+const PIO_VARIANTS_DIR = path.join(PIO_HOME, 'packages/framework-arduinoststm32/variants');
+
+// 优先使用本地克隆的官方仓库，如果不存在则回退到 PlatformIO 目录
+const STM32_VARIANTS_DIR = resolveDataPath(path.join(ARDUINO_CORE_STM32_PATH, 'variants'), PIO_VARIANTS_DIR);
+const INPUT_JSON = path.join(__dirname, 'stm32_board_data.json');
 const OUTPUT_JSON = path.join(__dirname, 'detailed_board_data.json');
+
+const variantCache = new Map<string, string | null>();
 
 // 外设功能接口
 interface PeripheralFunction {
@@ -37,7 +47,6 @@ const ENTRY_REGEX = /{\s*([A-Za-z0-9_]+)\s*,\s*([A-Za-z0-9_]+)\s*,/;
  * @param functionRole 功能角色 (如 TX, MOSI)
  */
 function parseGranularMap(content: string, mapType: string, functionRole: string): PeripheralFunction[] {
-    // 1. 查找特定的数组体: WEAK const PinMap PinMap_UART_TX[] = { ... };
     const arrayRegex = new RegExp(`PinMap_${mapType}\\[\\]\\s*=\\s*\\{([\\s\\S]*?)\\};`, 'm');
     const match = content.match(arrayRegex);
     if (!match) return [];
@@ -45,7 +54,6 @@ function parseGranularMap(content: string, mapType: string, functionRole: string
     const body = match[1];
     const results: PeripheralFunction[] = [];
 
-    // 2. 迭代每一行
     const lines = body.split('\n');
     for (const line of lines) {
         const m = line.match(ENTRY_REGEX);
@@ -54,7 +62,6 @@ function parseGranularMap(content: string, mapType: string, functionRole: string
             const instance = m[2];
 
             if (pin !== 'NC' && pin !== 'NP') {
-                // 格式化引脚名: PA_9 -> PA9, PA_9_ALT1 -> PA9
                 pin = pin.replace(/_ALT\d*/, '').replace('_', '');
                 results.push({ pin, instance, function: functionRole });
             }
@@ -126,6 +133,69 @@ function parseVariantDefaults(variantPath: string): any {
 }
 
 /**
+ * 解析 variant_generic.cpp 以获取 Arduino 引脚映射 (D0 -> PA0)
+ * @param variantPath 变体文件夹路径
+ */
+function parseVariantCpp(variantPath: string): any {
+    const cppFile = path.join(variantPath, 'variant_generic.cpp');
+    if (!fs.existsSync(cppFile)) return null;
+
+    const content = fs.readFileSync(cppFile, 'utf8');
+    const result: any = {
+        digital: [], // Index -> Physical Name (e.g. 0 -> PA_0)
+        analog: []   // Index (A0=0) -> Physical Index (e.g. 0 -> 0 (PA0))
+    };
+
+    // 解析 digitalPin[]
+    const digitalMatch = content.match(/const\s+PinName\s+digitalPin\[\]\s*=\s*\{([\s\S]*?)\};/);
+    if (digitalMatch) {
+        const lines = digitalMatch[1].split('\n')
+            .map(l => l.trim())
+            .filter(l => l && !l.startsWith('//'));
+
+        lines.forEach((line) => {
+            // 匹配 PA_0, 或 PA_0 | ...
+            const m = line.match(/^([A-Z0-9_]+)/);
+            if (m) {
+                // 清理引脚名: PA_0 -> PA0
+                let pin = m[1].replace(/_ALT\d*/, '').replace('_', '');
+                result.digital.push(pin);
+            } else if (line.includes('NC')) {
+                result.digital.push('NC'); // 保持索引对齐
+            }
+        });
+    }
+
+    // 解析 analogInputPin[]
+    // 通常是 uint32_t analogInputPin[] = { 0, 1, ... };
+    // 这里的数字是指向 digitalPin 数组的索引，或者是直接的通道号？
+    // 在 STM32Duino 中，analogInputPin 存储的是 index to digitalPin array? 
+    // 不，STM32Duino analogInputPin保存的是 `digitalPin` 数组的索引。
+    // 例如 analogInputPin[0] = 0; 说明 A0 对应 digitalPin[0]。
+
+    // 简单起见，且为了配合前端生成，我们主要关心 "Ax" 对应哪个物理引脚。
+    // 如果我们知道 A0 -> index 0 -> PA0，那么我们就可以生成 ["A0 (PA0)", "PA0"]
+
+    // 提取 analogInputPin 数组内容
+    const analogMatch = content.match(/const\s+uint32_t\s+analogInputPin\[\]\s*=\s*\{([\s\S]*?)\};/);
+    if (analogMatch) {
+        const body = analogMatch[1];
+        // 移除所有注释 (// ...)
+        const cleanBody = body.replace(/\/\/.*/g, '');
+        // 匹配所有数字
+        const indices = cleanBody.match(/\d+/g);
+        if (indices) {
+            indices.forEach((idxStr) => {
+                const idx = parseInt(idxStr, 10);
+                result.analog.push(idx);
+            });
+        }
+    }
+
+    return result;
+}
+
+/**
  * 递归查找目标文件夹名 (忽略大小写)
  * @param baseDir 搜索的起始目录
  * @param targetLeaf 目标文件夹的叶子名称
@@ -158,6 +228,8 @@ function findVariantRecursively(baseDir: string, targetLeaf: string): string | n
  * @returns 找到的变体文件夹路径或 null
  */
 function findVariantFuzzy(baseDir: string, mcuName: string): string | null {
+    if (variantCache.has(mcuName)) return variantCache.get(mcuName)!;
+
     const allVariants: string[] = [];
     const traverse = (dir: string) => {
         const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -175,7 +247,6 @@ function findVariantFuzzy(baseDir: string, mcuName: string): string | null {
 
     // 深度递归展开模式，支持嵌套括号和连字符，如 (A-B-C) 或 (8-B-C)
     function expand(part: string): string[] {
-        // 查找第一组括号内容
         const match = part.match(/([^(]*)\(([^)]+)\)(.*)/);
         if (!match) return [part];
 
@@ -183,16 +254,47 @@ function findVariantFuzzy(baseDir: string, mcuName: string): string | null {
         const rawOptions = match[2];
         const suffix = match[3];
 
-        const options = rawOptions.split('-');
-        // 启发式逻辑：如果只有单个选项如 (A)，通常表示可选的版本标签
-        if (options.length === 1 && options[0].length <= 2) {
-            options.push(''); // 添加空字符串表示可选
+        let options: string[] = [];
+        if (rawOptions.includes('-')) {
+            const parts = rawOptions.split('-');
+            if (parts.length >= 2) {
+                for (let i = 0; i < parts.length - 1; i++) {
+                    const start = parts[i];
+                    const end = parts[i + 1];
+                    if (start.length === 1 && end.length === 1) {
+                        const alphabet = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+                        const startIndex = alphabet.indexOf(start.toUpperCase());
+                        const endIndex = alphabet.indexOf(end.toUpperCase());
+                        // 启发式：STM32 的范围展开通常不超过 4 个步长 (如 4-6, 8-B, C-E)
+                        // 避免将 H-T (封装列表) 误认为范围
+                        if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex && (endIndex - startIndex) <= 4) {
+                            for (let j = startIndex; j <= endIndex; j++) {
+                                options.push(alphabet[j]);
+                            }
+                        } else {
+                            options.push(start);
+                            options.push(end);
+                        }
+                    } else {
+                        options.push(start);
+                        options.push(end);
+                    }
+                }
+            } else {
+                options = rawOptions.split('-');
+            }
+        } else {
+            options = rawOptions.split(/[-,/]/);
         }
 
         const results = new Set<string>();
         options.forEach(opt => {
-            const items = expand(prefix + opt + suffix);
-            items.forEach(i => results.add(i));
+            if (!opt) return;
+            const expandedSuffixes = expand(suffix);
+            expandedSuffixes.forEach(s => {
+                const variant = prefix + opt.trim() + s;
+                if (variant) results.add(variant);
+            });
         });
         return Array.from(results);
     }
@@ -214,12 +316,14 @@ function findVariantFuzzy(baseDir: string, mcuName: string): string | null {
                 // 双向前缀匹配检查
                 if (cleanVariant.length > 3 && (normMcu.startsWith(cleanVariant) || cleanVariant.startsWith(normMcu))) {
                     if (fs.existsSync(path.join(vPath, 'PeripheralPins.c'))) {
+                        variantCache.set(mcuName, vPath);
                         return vPath;
                     }
                 }
             }
         }
     }
+    variantCache.set(mcuName, null);
     return null;
 }
 
@@ -270,6 +374,13 @@ async function main() {
 
             // 3. 读取并解析 PeripheralPins.c
             const ppFile = path.join(variantPath, 'PeripheralPins.c');
+
+            if (boardId === 'vccgnd_f407zg_mini') {
+                console.log(`[DEBUG] Scanning ${boardId}`);
+                console.log(`[DEBUG] Manifest Variant: ${variantName}`);
+                console.log(`[DEBUG] Final path: ${ppFile}`);
+                console.log(`[DEBUG] File exists? ${fs.existsSync(ppFile)}`);
+            }
             if (!fs.existsSync(ppFile)) continue;
 
             const content = fs.readFileSync(ppFile, 'utf8');
@@ -293,6 +404,10 @@ async function main() {
             aggregatePeripherals(parseGranularMap(content, 'CAN_TD', 'TD'), 'CAN', peripherals);
 
             aggregatePeripherals(parseGranularMap(content, 'USB', 'DM'), 'USB', peripherals);
+            aggregatePeripherals(parseGranularMap(content, 'USB_OTG_FS', 'OTG_FS'), 'USB', peripherals);
+            aggregatePeripherals(parseGranularMap(content, 'USB_OTG_HS', 'OTG_HS'), 'USB', peripherals);
+
+            aggregatePeripherals(parseGranularMap(content, 'Ethernet', 'ETH'), 'ETH', peripherals);
 
             // 定时器 (PWM) 的特殊解析逻辑（需提取通道号）
             const timBodyRegex = /PinMap_TIM\[\]\s*=\s*\{([\s\S]*?)\};/m;
@@ -337,10 +452,25 @@ async function main() {
             // 检查是否有数据产出
             if (Object.keys(peripherals).length > 0) {
                 const defaults = parseVariantDefaults(variantPath);
+                const pinMapArray = parseVariantCpp(variantPath); // 新增解析
+                const hasLdScript = fs.existsSync(path.join(variantPath, 'ldscript.ld'));
+
+                // 从 boards_entry.txt 中提取 product_line
+                let productLine = '';
+                const boardsEntry = path.join(variantPath, 'boards_entry.txt');
+                if (fs.existsSync(boardsEntry)) {
+                    const content = fs.readFileSync(boardsEntry, 'utf8');
+                    const match = content.match(/\.build\.product_line=([A-Z0-9]+)/);
+                    if (match) productLine = match[1];
+                }
+
                 detailedData[boardId] = {
-                    variant: path.basename(variantPath), // 新增：记录变体名
+                    variant: path.basename(variantPath),
+                    product_line: productLine, // 新增：产品线代号
+                    has_ldscript: hasLdScript, // 记录是否带有官方链接脚本
                     peripherals,
-                    defaults: defaults || {}
+                    defaults: defaults || {},
+                    pinMapArray: pinMapArray || null // 保存映射数据
                 };
                 count++;
             }

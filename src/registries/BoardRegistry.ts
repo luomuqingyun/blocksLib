@@ -1,14 +1,14 @@
 import { BoardConfig } from '../types/board';
 // @ts-ignore
 import * as Blockly from 'blockly';
-import { ALL_BOARD_FAMILIES } from '../config/all_boards';
+import { boardRepository } from '../data/BoardRepository';
 import {
     LOGIC_CONTENTS, LOOPS_CONTENTS, MATH_CONTENTS, TEXT_CONTENTS, FUNCTIONS_CONTENTS,
     IO_CONTENTS, TIME_CONTENTS, SERIAL_CONTENTS, SERVO_CONTENTS,
     ACTUATOR_CONTENTS, RFID_CONTENTS, QR_CONTENTS, PS2_CONTENTS,
     SENSORS_CONTENTS, MOTORS_CONTENTS, DISPLAYS_CONTENTS,
     IOT_CONTENTS, PROTOCOLS_CONTENTS, AUDIO_CONTENTS, STORAGE_CONTENTS,
-    ESP32_CONTENTS, ESP_UTILS_CONTENTS, STM32_CONTENTS,
+    ESP32_CONTENTS, ESP_UTILS_CONTENTS, STM32_CONTENTS, STM32_CAN_CONTENTS, STM32_USB_CONTENTS, STM32_NET_CONTENTS,
     LISTS_CONTENTS, INPUTS_CONTENTS, EXPANSION_CONTENTS, HID_CONTENTS,
     AI_CONTENTS, DATA_SC_CONTENTS, DATA_FMT_CONTENTS, RTOS_CONTENTS, GAME_CONTENTS,
     SYSTEM_CONTENTS, STATS_CONTENTS, AUDIO_IN_CONTENTS,
@@ -27,24 +27,36 @@ import { CATEGORY_COLORS } from '../config/theme';
 class BoardRegistryService {
     private boards: Map<string, BoardConfig> = new Map();
     private toolboxCache: Map<string, any> = new Map();
+    private currentBoardId: string | null = null;
 
     constructor() {
         this.initializeBoards();
         this.toolboxCache.clear();
     }
 
+    /**
+     * 设置当前选中的开发板 ID
+     * @param id 开发板 ID
+     */
+    public setCurrentBoard(id: string) {
+        this.currentBoardId = id;
+    }
+
+    /**
+     * 获取当前选中的开发板配置
+     */
+    public getCurrentBoard(): BoardConfig | undefined {
+        if (!this.currentBoardId) return undefined;
+        return this.get(this.currentBoardId);
+    }
+
     private initializeBoards() {
-        // Flatten the hierarchical structure (logic moved from constants.ts)
-        ALL_BOARD_FAMILIES.forEach(family => {
-            family.series.forEach(series => {
-                series.boards.forEach(board => {
-                    const fullConfig: BoardConfig = {
-                        ...board,
-                        family: family.id
-                    };
-                    this.register(fullConfig);
-                });
-            });
+        // Load all boards from the unified repository which handles discovery and family injection
+        const allBoards = boardRepository.getAllBoards();
+        console.log(`[BoardRegistry] Loaded ${allBoards.length} boards from repository.`);
+
+        allBoards.forEach(board => {
+            this.register(board as unknown as BoardConfig);
         });
     }
 
@@ -177,9 +189,33 @@ class BoardRegistryService {
         let specificCategories: Array<{ kind: string; name?: string; colour?: string; contents?: any[]; custom?: string }> = [];
 
         if (boardConfig.family === 'stm32') {
-            if (STM32_CONTENTS && STM32_CONTENTS.length > 0) {
+            const stm32Cat: any[] = [];
+
+            // Check Capabilities
+            // Default behavior: if capabilities object is missing, nothing is shown to be safe,
+            // or we could show all for generic boards. Let's be semi-strict.
+            const hasCap = (key: string) => !!(boardConfig.capabilities && (boardConfig.capabilities as any)[key]);
+
+            if (hasCap('can')) {
+                stm32Cat.push(...STM32_CAN_CONTENTS);
+            }
+            if (hasCap('usb')) {
+                if (stm32Cat.length > 0) stm32Cat.push({ kind: 'sep', gap: 20 });
+                stm32Cat.push(...STM32_USB_CONTENTS);
+            }
+            if (hasCap('ethernet')) { // or 'network'
+                if (stm32Cat.length > 0) stm32Cat.push({ kind: 'sep', gap: 20 });
+                stm32Cat.push(...STM32_NET_CONTENTS);
+            }
+
+            // Fallback for generic boards with NO capabilities defined: Show ALL?
+            // Or better: update the generic board definitions to have capabilities.
+            // For now, if STM32 and NO specific sub-features enabled, show nothing?
+            // User requested "Dynamic loading", so strict is better.
+
+            if (stm32Cat.length > 0) {
                 specificCategories.push({ kind: 'sep' });
-                specificCategories.push({ kind: 'category', name: '%{BKY_CAT_STM32}', colour: CATEGORY_COLORS.STM32, contents: STM32_CONTENTS });
+                specificCategories.push({ kind: 'category', name: '%{BKY_CAT_STM32}', colour: CATEGORY_COLORS.STM32, contents: stm32Cat });
             }
         }
 

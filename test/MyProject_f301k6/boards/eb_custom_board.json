@@ -1,0 +1,25 @@
+{
+  "build": {
+    "core": "stm32",
+    "cpu": "cortex-m4",
+    "extra_flags": "-DSTM32F301x8 -DARDUINO_GENERIC_F301K6TX",
+    "f_cpu": "72000000L",
+    "mcu": "stm32f301k6",
+    "product_line": "STM32F301x8",
+    "variant": "eb_custom_variant",
+    "ldscript": "ldscript.ld"
+  },
+  "name": "EmbedBlocks Custom (STM32F301K6)",
+  "upload": {
+    "maximum_ram_size": 16384,
+    "maximum_size": 32768,
+    "protocol": "stlink"
+  },
+  "vendor": "ST",
+  "url": "https://www.st.com/en/microcontrollers-microprocessors.html",
+  "frameworks": [
+    "arduino",
+    "cmsis",
+    "stm32cube"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "build": {
+    "core": "stm32",
+    "cpu": "cortex-m4",
+    "extra_flags": "-DSTM32F405xx -DARDUINO_GENERIC_F405VGTX",
+    "f_cpu": "72000000L",
+    "mcu": "stm32f405vg",
+    "product_line": "STM32F405xx",
+    "variant": "eb_custom_variant",
+    "ldscript": "ldscript.ld"
+  },
+  "name": "EmbedBlocks Custom (STM32F405VG)",
+  "upload": {
+    "maximum_ram_size": 131072,
+    "maximum_size": 1048576,
+    "protocol": "stlink"
+  },
+  "vendor": "ST",
+  "url": "https://www.st.com/en/microcontrollers-microprocessors.html",
+  "frameworks": [
+    "arduino",
+    "cmsis",
+    "stm32cube"
+  ]
+}

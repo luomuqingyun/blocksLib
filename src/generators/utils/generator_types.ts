@@ -95,6 +95,13 @@ export interface ArduinoGeneratorExtensions {
     addFunction(key: string, code: string): void;
 
     /**
+     * 添加函数原型
+     * @param key - 原型名称
+     * @param code - 原型代码
+     */
+    addPrototype(key: string, code: string): void;
+
+    /**
      * 添加全局变量定义
      * @param key - 变量名称
      * @param code - 变量声明代码

@@ -282,7 +282,7 @@ export const ChipRenderer: React.FC<ChipRendererProps> = ({
                 const gW = (count * pinPitch + 6);
 
                 return (
-                    <g key={groupX}>
+                    <g key={`${groupX}-${groupY}`}>
                         {/* 1. 组级丝印外框 (Silk Screen Frame) - 增强群组协调感 */}
                         <rect
                             x={startX + (groupX - 8) * scale}

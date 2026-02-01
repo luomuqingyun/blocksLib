@@ -2,10 +2,12 @@
   "id": "megaatmega2560",
   "name": "Arduino Mega or Mega 2560 ATmega2560 (Mega 2560)",
   "mcu": "ATMEGA2560",
-  "specs": "248k Flash / 8k RAM",
-  "capabilities": [],
   "package": "BOARD_MEGA",
   "pinCount": 70,
+  "specs": "248k Flash / 8k RAM",
+  "description": "Arduino Mega 2560 是一款基于 ATmega2560 的微控制器板。它有 54 个数字输入/输出引脚（其中 15 个可用作 PWM 输出）、16 个模拟输入、4 个 UART（硬件串行端口）、1 个 16 MHz 晶体振荡器。",
+  "page_url": "https://docs.arduino.cc/hardware/mega-2560",
+  "capabilities": [],
   "pinMap": [
     {
       "name": "D0",
@@ -324,8 +326,6 @@
       "position": "79"
     }
   ],
-  "description": "Arduino MEGA 是一款基于ATmega2560的开源电子原型平台，包含数字I/O口54个（其中14个支持PWM输出），模拟输入口16个，16MHz晶振，USB接口，电源接口，ICSP接口等。",
-  "page_url": "https://arduino.me/s/board?aid=699",
   "pin_options": {
     "digital": [
       [

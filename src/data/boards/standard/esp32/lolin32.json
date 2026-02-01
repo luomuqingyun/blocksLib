@@ -2,15 +2,17 @@
   "id": "lolin32",
   "name": "WEMOS LOLIN32",
   "mcu": "ESP32",
+  "package": "BOARD_DIP_30",
+  "pinCount": 30,
   "specs": "4096k Flash / 320k RAM",
+  "description": "WEMOS LOLIN32 是一款经典的 ESP32 开发板，具有内置锂电池充电接口，引脚布局兼容面包板，非常适合电池供电的便携式项目。",
+  "page_url": "https://www.wemos.cc/en/latest/d32/d32.html",
   "capabilities": [
     "wifi",
     "bluetooth",
     "ethernet",
     "can"
   ],
-  "package": "BOARD_DIP_30",
-  "pinCount": 30,
   "pinMap": [
     {
       "name": "VP",

@@ -1,0 +1,67 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "name": "MyProject_f107rb",
+    "boardId": "generic_stm32f107rb",
+    "createdAt": 1769915802425,
+    "lastModified": 1769915939476,
+    "buildConfig": {
+      "envName": "STM32F107RB",
+      "platform": "ststm32",
+      "board": "generic_stm32f107rb",
+      "framework": "arduino"
+    }
+  },
+  "blocks": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "arduino_entry_root",
+          "id": "default_entry_root",
+          "x": 50,
+          "y": 50,
+          "inputs": {
+            "LOOP_STACK": {
+              "block": {
+                "type": "arduino_digital_write",
+                "id": "ZYch#MN^B6RUUf8ty+d6",
+                "fields": {
+                  "PIN": "PA0",
+                  "STATE": "HIGH"
+                },
+                "next": {
+                  "block": {
+                    "type": "arduino_analog_write",
+                    "id": "8et:8ep2pKWIWdMQ6tnw",
+                    "fields": {
+                      "PIN": "PA1"
+                    },
+                    "inputs": {
+                      "NUM": {
+                        "shadow": {
+                          "type": "math_number",
+                          "id": "8ZsC+[jeq/=#;}llrsYn",
+                          "fields": {
+                            "NUM": 255
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "viewState": {
+      "scrollX": 841.2674102783203,
+      "scrollY": 314.5,
+      "scale": 1,
+      "viewWidth": 1940,
+      "viewHeight": 852
+    }
+  }
+}

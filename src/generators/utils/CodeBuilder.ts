@@ -112,14 +112,25 @@ export class CodeBuilder {
             lines.push('');
         }
 
+        // Helper to indent lines safely
+        const smartIndent = (fragment: string) => {
+            if (!fragment) return '';
+            return fragment.split('\n').map(l => {
+                if (!l.trim()) return l; // Preserve empty lines
+                if (l.startsWith(indent)) return l; // Avoid double indentation
+                return indent + l;
+            }).join('\n');
+        };
+
         // 6. Setup
         lines.push('void setup() {');
         const setupBody: string[] = [];
         this.setups.forEach(code => setupBody.push(code));
-        if (userSetupCode.trim()) setupBody.push(userSetupCode.trim());
+        if (userSetupCode && userSetupCode.trim()) setupBody.push(userSetupCode);
 
-        setupBody.forEach(line => {
-            lines.push(line.split('\n').map(l => indent + l).join('\n'));
+        setupBody.forEach(fragment => {
+            const indented = smartIndent(fragment);
+            if (indented) lines.push(indented);
         });
         lines.push('}\n');
 
@@ -127,10 +138,11 @@ export class CodeBuilder {
         lines.push('void loop() {');
         const loopBody: string[] = [];
         this.loops.forEach(code => loopBody.push(code));
-        if (userLoopCode.trim()) loopBody.push(userLoopCode.trim());
+        if (userLoopCode && userLoopCode.trim()) loopBody.push(userLoopCode);
 
-        loopBody.forEach(line => {
-            lines.push(line.split('\n').map(l => indent + l).join('\n'));
+        loopBody.forEach(fragment => {
+            const indented = smartIndent(fragment);
+            if (indented) lines.push(indented);
         });
         lines.push('}\n');
 

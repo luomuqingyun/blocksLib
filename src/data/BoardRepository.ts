@@ -28,6 +28,9 @@ class BoardRepositoryImpl implements BoardRepository {
     private standardCache: Record<string, Board[]> | null = null;
     private stm32Cache: Record<string, any> | null = null;
 
+    constructor() {
+    }
+
     /**
      * 获取标准板卡数据并进行排序
      */
@@ -60,7 +63,22 @@ class BoardRepositoryImpl implements BoardRepository {
                 const catName = category.charAt(0).toUpperCase() + category.slice(1).replace('Esp', 'ESP');
 
                 if (!result[catName]) result[catName] = [];
-                const board = mod.default || mod;
+                const rawBoard = mod.default || mod;
+
+                // Inject family based on category (e.g. Arduino -> arduino, ESP32 -> esp32)
+                // Also ensure 'build' config exists to prevent crashes in FileSystemContext
+                const board = {
+                    ...rawBoard,
+                    family: category.toLowerCase(),
+                    page_url: rawBoard.page_url || `https://www.google.com/search?q=${rawBoard.name ? rawBoard.name.replace(/\s+/g, '+') : rawBoard.id}+${category}+board`,
+                    build: rawBoard.build || {
+                        envName: rawBoard.mcu || `${rawBoard.id}`,
+                        platform: rawBoard.platform || 'atmelavr', // Fallback
+                        board: rawBoard.id,
+                        framework: 'arduino'
+                    }
+                };
+
                 result[catName].push(board);
             });
         };
@@ -114,7 +132,30 @@ class BoardRepositoryImpl implements BoardRepository {
             const series = parts[5]; // 例如: STM32F4
 
             if (!stmRoot[series]) stmRoot[series] = [];
-            const board = mod.default || mod;
+            const rawBoard = mod.default || mod;
+
+            // Smart URL generation for ST
+            let pageUrl = rawBoard.page_url;
+            if (!pageUrl) {
+                const mcu = rawBoard.mcu || "";
+                // Use site search to ensure valid results (direct links are flaky)
+                pageUrl = `https://www.st.com/content/st_com/en/search.html#q=${mcu}`;
+            }
+
+            // 为板卡注入系列（Family）信息，并确保 build 配置存在
+            // 注意: 此处不再硬编码 'env:' 前缀，交给 templates.ts 的 sanitizeEnvName 统一处理
+            const board = {
+                ...rawBoard,
+                family: 'stm32',
+                page_url: pageUrl,
+                build: rawBoard.build || {
+                    envName: rawBoard.mcu || `${rawBoard.id}`, // 环境名优先使用 MCU 型号，阅读更友好
+                    platform: rawBoard.platform || 'ststm32',
+                    board: rawBoard.id,
+                    framework: 'arduino'
+                }
+            };
+
             stmRoot[series].push(board);
         });
 

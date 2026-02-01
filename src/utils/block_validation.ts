@@ -2,11 +2,13 @@ import * as Blockly from 'blockly';
 import { checkMissingInputs, checkOrphanOutput } from './validation/rules/coreRules';
 import { checkArduinoParamDef, checkCStructDefine, checkCEnumDefine } from './validation/rules/contextRules';
 import { checkGlobalScope, checkSingletonEntry } from './validation/rules/globalRules';
+import { checkPinConflict } from './validation/rules/hardwareRules';
 import { ValidationRule } from './validation/types';
 
 // Registry of rules to run sequentially
 // The first rule to return a warning will stop the validation for that block
 const VALIDATION_RULES: ValidationRule[] = [
+    checkPinConflict,
     checkSingletonEntry,
     checkArduinoParamDef,
     checkCStructDefine,

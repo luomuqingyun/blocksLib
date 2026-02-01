@@ -4,6 +4,8 @@
   "mcu": "ATMEGA328P",
   "package": "BOARD_DIP_24",
   "pinCount": 24,
+  "description": "Arduino Pro Mini 是基于 ATmega328 的微控制器板。它有 14 个数字输入/输出引脚（其中 6 个可用作 PWM 输出）、6 个模拟输入、一个板载谐振器、一个复位按钮和用于安装排针的孔。",
+  "page_url": "https://docs.arduino.cc/retired/boards/arduino-pro-mini",
   "pinMap": [
     {
       "name": "TX",

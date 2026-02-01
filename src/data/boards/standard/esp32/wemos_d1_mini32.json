@@ -2,15 +2,17 @@
   "id": "wemos_d1_mini32",
   "name": "WEMOS D1 MINI ESP32",
   "mcu": "ESP32",
+  "package": "BOARD_DIP_16",
+  "pinCount": 16,
   "specs": "4096k Flash / 320k RAM",
+  "description": "WEMOS D1 Mini ESP32 是一款超小型 ESP32 开发板，保持了 D1 Mini 的经典外形尺寸，完美兼容 D1 Mini 扩展板生态系统。",
+  "page_url": "https://www.wemos.cc/en/latest/d1/d1_mini_32.html",
   "capabilities": [
     "wifi",
     "bluetooth",
     "ethernet",
     "can"
   ],
-  "package": "BOARD_DIP_16",
-  "pinCount": 16,
   "pinMap": [
     {
       "name": "RST",

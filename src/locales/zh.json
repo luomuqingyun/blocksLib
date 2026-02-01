@@ -18,6 +18,11 @@
         "guide": "使用指南",
         "viewGuide": "查看发布指南"
     },
+    "board": {
+        "noDescription": "暂无描述信息",
+        "select": "选择开发板",
+        "preview": "预览"
+    },
     "extensions": {
         "title": "扩展中心",
         "marketplace": "插件市场",

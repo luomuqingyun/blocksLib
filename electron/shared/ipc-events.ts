@@ -1,11 +1,33 @@
-export type IpcChannels =
-    // System
-    | 'pio:check'
-    | 'build-project'
-    | 'upload-project'
-    | 'build-log'
+/**
+ * ============================================================
+ * IPC 通道与类型定义 (IPC Events & Types)
+ * ============================================================
+ * 
+ * 本文件定义了主进程与渲染进程之间通信的所有 IPC 通道名称和数据类型。
+ * 这是 Electron 应用 IPC 通信的"契约"，确保两端类型安全。
+ * 
+ * 通道分类:
+ * - System: PlatformIO 相关操作
+ * - Serial: 串口通信
+ * - File: 文件系统操作
+ * - Project: 项目 CRUD
+ * - Config: 配置读写
+ * - Extensions: 插件管理
+ * - Menu: 菜单事件
+ * 
+ * @file electron/shared/ipc-events.ts
+ * @module EmbedBlocks/Electron/Shared/IpcEvents
+ */
 
-    // Serial
+/** 所有可用的 IPC 通道名称联合类型 */
+export type IpcChannels =
+    // 系统相关 (System)
+    | 'pio:check'        // 检查 PlatformIO 环境
+    | 'build-project'    // 编译项目
+    | 'upload-project'   // 上传固件
+    | 'build-log'        // 构建日志推送
+
+    // 串口相关 (Serial)
     | 'serial:list'
     | 'serial:open'
     | 'serial:close'

@@ -36,3 +36,11 @@ out
 .pioenvs
 .piolibdeps
 ide/
+
+# Scripts intermediate files (regenerated on demand)
+scripts/stm32_board_data.json
+scripts/detailed_board_data.json
+scripts/pio_stm32_full.json
+scripts/stm32duino_support_registry.json
+scripts/out_scripts/*.json
+scripts/out_scripts/*.js

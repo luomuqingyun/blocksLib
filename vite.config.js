@@ -6,7 +6,7 @@ const monacoEditorPlugin = require('vite-plugin-monaco-editor').default;
 
 module.exports = defineConfig({
     server: {
-        port: 5100, // 避开 Windows 默认的 5153-5252 排除范围
+        port: 5173, // Vite 默认端口
         strictPort: false, // 允许自动尝试下一个可用端口
     },
     plugins: [

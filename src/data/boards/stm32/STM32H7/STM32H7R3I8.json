@@ -1,0 +1,1037 @@
+{
+  "id": "generic_stm32h7r3i8",
+  "name": "STM32H7R3I8",
+  "platform": "ststm32",
+  "mcu": "STM32H7R3I8",
+  "variant": "generic",
+  "pinCount": 201,
+  "package": "UFBGA176",
+  "fcpu": 0,
+  "specs": "Unknown specs (from variants)",
+  "description": "STM32H7R3I8 - STM32H7 series board",
+  "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32h7r3.html",
+  "has_ldscript": false,
+  "capabilities": {
+    "can": false,
+    "usb": false,
+    "ethernet": false,
+    "flash": true,
+    "sdio": false
+  },
+  "defaults": {},
+  "pinout": {},
+  "pinMap": [
+    {
+      "name": "VSS",
+      "position": "A1",
+      "functions": []
+    },
+    {
+      "name": "PM6",
+      "position": "A10",
+      "functions": []
+    },
+    {
+      "name": "PM8",
+      "position": "A11",
+      "functions": []
+    },
+    {
+      "name": "PM3",
+      "position": "A12",
+      "functions": []
+    },
+    {
+      "name": "PD4",
+      "position": "A13",
+      "functions": []
+    },
+    {
+      "name": "PE15",
+      "position": "A14",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "A15",
+      "functions": []
+    },
+    {
+      "name": "PB6",
+      "position": "A2",
+      "functions": []
+    },
+    {
+      "name": "PB5",
+      "position": "A3",
+      "functions": []
+    },
+    {
+      "name": "PF3",
+      "position": "A4",
+      "functions": []
+    },
+    {
+      "name": "PF1",
+      "position": "A5",
+      "functions": []
+    },
+    {
+      "name": "PD7",
+      "position": "A6",
+      "functions": []
+    },
+    {
+      "name": "PD5",
+      "position": "A7",
+      "functions": []
+    },
+    {
+      "name": "PM12",
+      "position": "A8",
+      "functions": []
+    },
+    {
+      "name": "PM14",
+      "position": "A9",
+      "functions": []
+    },
+    {
+      "name": "PB8",
+      "position": "B1",
+      "functions": []
+    },
+    {
+      "name": "PM5",
+      "position": "B10",
+      "functions": []
+    },
+    {
+      "name": "VDD50USB",
+      "position": "B11",
+      "functions": []
+    },
+    {
+      "name": "PM1",
+      "position": "B12",
+      "functions": []
+    },
+    {
+      "name": "PG0",
+      "position": "B13",
+      "functions": []
+    },
+    {
+      "name": "PE13",
+      "position": "B14",
+      "functions": []
+    },
+    {
+      "name": "PE11",
+      "position": "B15",
+      "functions": []
+    },
+    {
+      "name": "PE1",
+      "position": "B2",
+      "functions": []
+    },
+    {
+      "name": "PE2",
+      "position": "B3",
+      "functions": []
+    },
+    {
+      "name": "PB3",
+      "position": "B4",
+      "functions": []
+    },
+    {
+      "name": "PF4",
+      "position": "B5",
+      "functions": []
+    },
+    {
+      "name": "PF0",
+      "position": "B6",
+      "functions": []
+    },
+    {
+      "name": "PD6",
+      "position": "B7",
+      "functions": []
+    },
+    {
+      "name": "PM11",
+      "position": "B8",
+      "functions": []
+    },
+    {
+      "name": "PM9",
+      "position": "B9",
+      "functions": []
+    },
+    {
+      "name": "VBAT",
+      "position": "C1",
+      "functions": []
+    },
+    {
+      "name": "VSSUSB",
+      "position": "C10",
+      "functions": []
+    },
+    {
+      "name": "PM2",
+      "position": "C11",
+      "functions": []
+    },
+    {
+      "name": "PM0",
+      "position": "C12",
+      "functions": []
+    },
+    {
+      "name": "PE14",
+      "position": "C13",
+      "functions": []
+    },
+    {
+      "name": "PE12",
+      "position": "C14",
+      "functions": []
+    },
+    {
+      "name": "PD1",
+      "position": "C15",
+      "functions": []
+    },
+    {
+      "name": "PB9",
+      "position": "C2",
+      "functions": []
+    },
+    {
+      "name": "PB7",
+      "position": "C3",
+      "functions": []
+    },
+    {
+      "name": "PE0",
+      "position": "C4",
+      "functions": []
+    },
+    {
+      "name": "PB4",
+      "position": "C5",
+      "functions": []
+    },
+    {
+      "name": "PF2",
+      "position": "C6",
+      "functions": []
+    },
+    {
+      "name": "BOOT0",
+      "position": "C7",
+      "functions": []
+    },
+    {
+      "name": "PM13",
+      "position": "C8",
+      "functions": []
+    },
+    {
+      "name": "DVDD",
+      "position": "C9",
+      "functions": []
+    },
+    {
+      "name": "PC14",
+      "position": "D1",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "D10",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D11",
+      "functions": []
+    },
+    {
+      "name": "PD3",
+      "position": "D12",
+      "functions": []
+    },
+    {
+      "name": "PD2",
+      "position": "D13",
+      "functions": []
+    },
+    {
+      "name": "PD0",
+      "position": "D14",
+      "functions": []
+    },
+    {
+      "name": "PC12",
+      "position": "D15",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D2",
+      "functions": []
+    },
+    {
+      "name": "PC13",
+      "position": "D3",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "D4",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D5",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D6",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "D7",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D8",
+      "functions": []
+    },
+    {
+      "name": "VDD33USB",
+      "position": "D9",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "E1",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "E12",
+      "functions": []
+    },
+    {
+      "name": "PC11",
+      "position": "E13",
+      "functions": []
+    },
+    {
+      "name": "PC10",
+      "position": "E14",
+      "functions": []
+    },
+    {
+      "name": "PA15",
+      "position": "E15",
+      "functions": []
+    },
+    {
+      "name": "PC15",
+      "position": "E2",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "E3",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "E4",
+      "functions": []
+    },
+    {
+      "name": "PE5",
+      "position": "F1",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "F10",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "F12",
+      "functions": []
+    },
+    {
+      "name": "PA14",
+      "position": "F13",
+      "functions": []
+    },
+    {
+      "name": "PA12",
+      "position": "F14",
+      "functions": []
+    },
+    {
+      "name": "PA13",
+      "position": "F15",
+      "functions": []
+    },
+    {
+      "name": "PE3",
+      "position": "F2",
+      "functions": []
+    },
+    {
+      "name": "PE4",
+      "position": "F3",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "F4",
+      "functions": []
+    },
+    {
+      "name": "VCAP4",
+      "position": "F6",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "F7",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "F8",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "F9",
+      "functions": []
+    },
+    {
+      "name": "VSSSMPS",
+      "position": "G1",
+      "functions": []
+    },
+    {
+      "name": "VCAP3",
+      "position": "G10",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "G12",
+      "functions": []
+    },
+    {
+      "name": "PA10",
+      "position": "G13",
+      "functions": []
+    },
+    {
+      "name": "PA8",
+      "position": "G14",
+      "functions": []
+    },
+    {
+      "name": "PA11",
+      "position": "G15",
+      "functions": []
+    },
+    {
+      "name": "VLXSMPS",
+      "position": "G2",
+      "functions": []
+    },
+    {
+      "name": "PE6",
+      "position": "G3",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "G4",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "G6",
+      "functions": []
+    },
+    {
+      "name": "VDDLDO",
+      "position": "G7",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "G8",
+      "functions": []
+    },
+    {
+      "name": "VDDLDO",
+      "position": "G9",
+      "functions": []
+    },
+    {
+      "name": "VFBSMPS",
+      "position": "H1",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "H10",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "H12",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "H13",
+      "functions": []
+    },
+    {
+      "name": "PC9",
+      "position": "H14",
+      "functions": []
+    },
+    {
+      "name": "PA9",
+      "position": "H15",
+      "functions": []
+    },
+    {
+      "name": "VDDSMPS",
+      "position": "H2",
+      "functions": []
+    },
+    {
+      "name": "PF5",
+      "position": "H3",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "H4",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "H6",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "H7",
+      "functions": []
+    },
+    {
+      "name": "VDDLDO",
+      "position": "H8",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "H9",
+      "functions": []
+    },
+    {
+      "name": "PF6",
+      "position": "J1",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "J10",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "J12",
+      "functions": []
+    },
+    {
+      "name": "PC6",
+      "position": "J13",
+      "functions": []
+    },
+    {
+      "name": "PC7",
+      "position": "J14",
+      "functions": []
+    },
+    {
+      "name": "PC8",
+      "position": "J15",
+      "functions": []
+    },
+    {
+      "name": "PF8",
+      "position": "J2",
+      "functions": []
+    },
+    {
+      "name": "PF7",
+      "position": "J3",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "J4",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "J6",
+      "functions": []
+    },
+    {
+      "name": "VDDLDO",
+      "position": "J7",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "J8",
+      "functions": []
+    },
+    {
+      "name": "VDDLDO",
+      "position": "J9",
+      "functions": []
+    },
+    {
+      "name": "PF10",
+      "position": "K1",
+      "functions": []
+    },
+    {
+      "name": "VCAP2",
+      "position": "K10",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "K12",
+      "functions": []
+    },
+    {
+      "name": "PD14",
+      "position": "K13",
+      "functions": []
+    },
+    {
+      "name": "PD15",
+      "position": "K14",
+      "functions": []
+    },
+    {
+      "name": "PB15",
+      "position": "K15",
+      "functions": []
+    },
+    {
+      "name": "PF9",
+      "position": "K2",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "K3",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "K4",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "K6",
+      "functions": []
+    },
+    {
+      "name": "VCAP1",
+      "position": "K7",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "K8",
+      "functions": []
+    },
+    {
+      "name": "VDDXSPI1",
+      "position": "K9",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "L1",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "L12",
+      "functions": []
+    },
+    {
+      "name": "PB12",
+      "position": "L13",
+      "functions": []
+    },
+    {
+      "name": "PB14",
+      "position": "L14",
+      "functions": []
+    },
+    {
+      "name": "PB13",
+      "position": "L15",
+      "functions": []
+    },
+    {
+      "name": "PH0",
+      "position": "L2",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "L3",
+      "functions": []
+    },
+    {
+      "name": "VSSA",
+      "position": "L4",
+      "functions": []
+    },
+    {
+      "name": "PH1",
+      "position": "M1",
+      "functions": []
+    },
+    {
+      "name": "VDDXSPI1",
+      "position": "M10",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "M11",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "M12",
+      "functions": []
+    },
+    {
+      "name": "PD12",
+      "position": "M13",
+      "functions": []
+    },
+    {
+      "name": "PB10",
+      "position": "M14",
+      "functions": []
+    },
+    {
+      "name": "PB11",
+      "position": "M15",
+      "functions": []
+    },
+    {
+      "name": "NRST",
+      "position": "M2",
+      "functions": []
+    },
+    {
+      "name": "VREFP",
+      "position": "M3",
+      "functions": []
+    },
+    {
+      "name": "VDDA",
+      "position": "M4",
+      "functions": []
+    },
+    {
+      "name": "PA4",
+      "position": "M5",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "M6",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "M7",
+      "functions": []
+    },
+    {
+      "name": "VDDXSPI1",
+      "position": "M8",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "M9",
+      "functions": []
+    },
+    {
+      "name": "PC0",
+      "position": "N1",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "N10",
+      "functions": []
+    },
+    {
+      "name": "PP5",
+      "position": "N11",
+      "functions": []
+    },
+    {
+      "name": "PD8",
+      "position": "N12",
+      "functions": []
+    },
+    {
+      "name": "PD10",
+      "position": "N13",
+      "functions": []
+    },
+    {
+      "name": "PD11",
+      "position": "N14",
+      "functions": []
+    },
+    {
+      "name": "PD13",
+      "position": "N15",
+      "functions": []
+    },
+    {
+      "name": "PC3",
+      "position": "N2",
+      "functions": []
+    },
+    {
+      "name": "VREFM",
+      "position": "N3",
+      "functions": []
+    },
+    {
+      "name": "PA3",
+      "position": "N4",
+      "functions": []
+    },
+    {
+      "name": "PA7",
+      "position": "N5",
+      "functions": []
+    },
+    {
+      "name": "PB0",
+      "position": "N6",
+      "functions": []
+    },
+    {
+      "name": "PF12",
+      "position": "N7",
+      "functions": []
+    },
+    {
+      "name": "PE9",
+      "position": "N8",
+      "functions": []
+    },
+    {
+      "name": "PE10",
+      "position": "N9",
+      "functions": []
+    },
+    {
+      "name": "PC1",
+      "position": "P1",
+      "functions": []
+    },
+    {
+      "name": "PP2",
+      "position": "P10",
+      "functions": []
+    },
+    {
+      "name": "PO5",
+      "position": "P11",
+      "functions": []
+    },
+    {
+      "name": "PP6",
+      "position": "P12",
+      "functions": []
+    },
+    {
+      "name": "PP7",
+      "position": "P13",
+      "functions": []
+    },
+    {
+      "name": "PO0",
+      "position": "P14",
+      "functions": []
+    },
+    {
+      "name": "PD9",
+      "position": "P15",
+      "functions": []
+    },
+    {
+      "name": "PC2",
+      "position": "P2",
+      "functions": []
+    },
+    {
+      "name": "PA1",
+      "position": "P3",
+      "functions": []
+    },
+    {
+      "name": "PA5",
+      "position": "P4",
+      "functions": []
+    },
+    {
+      "name": "PC4",
+      "position": "P5",
+      "functions": []
+    },
+    {
+      "name": "PB2",
+      "position": "P6",
+      "functions": []
+    },
+    {
+      "name": "PF13",
+      "position": "P7",
+      "functions": []
+    },
+    {
+      "name": "PE7",
+      "position": "P8",
+      "functions": []
+    },
+    {
+      "name": "PO1",
+      "position": "P9",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "R1",
+      "functions": []
+    },
+    {
+      "name": "PP3",
+      "position": "R10",
+      "functions": []
+    },
+    {
+      "name": "PO4",
+      "position": "R11",
+      "functions": []
+    },
+    {
+      "name": "PP0",
+      "position": "R12",
+      "functions": []
+    },
+    {
+      "name": "PO2",
+      "position": "R13",
+      "functions": []
+    },
+    {
+      "name": "PP1",
+      "position": "R14",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "R15",
+      "functions": []
+    },
+    {
+      "name": "PA0",
+      "position": "R2",
+      "functions": []
+    },
+    {
+      "name": "PA2",
+      "position": "R3",
+      "functions": []
+    },
+    {
+      "name": "PA6",
+      "position": "R4",
+      "functions": []
+    },
+    {
+      "name": "PC5",
+      "position": "R5",
+      "functions": []
+    },
+    {
+      "name": "PB1",
+      "position": "R6",
+      "functions": []
+    },
+    {
+      "name": "PF11",
+      "position": "R7",
+      "functions": []
+    },
+    {
+      "name": "PE8",
+      "position": "R8",
+      "functions": []
+    },
+    {
+      "name": "PP4",
+      "position": "R9",
+      "functions": []
+    }
+  ],
+  "pin_options": {
+    "digital": [],
+    "analog": [],
+    "pwm": [],
+    "i2c": [],
+    "spi": []
+  }
+}
