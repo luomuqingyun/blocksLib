@@ -6,13 +6,6 @@
  * 提供网络通信相关积木:
  * - Ethernet: DHCP 初始化、获取 IP
  * - WiFi: 连接 AP、开启 SoftAP、状态检测
- * - NTP: 网络时间同步
- * - HTTP: GET/POST 请求
- * 
- * 根据板卡自动选择 ESP32 或 ESP8266 库。
- * 
- * @file src/modules/protocols/network.ts
- * @module EmbedBlocks/Frontend/Modules/Protocols
  */
 
 import * as Blockly from 'blockly';
@@ -22,10 +15,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
-    // =========================================================================
-    // Ethernet (Ethernet.h)
-    // =========================================================================
-
+    // 以太网 (Ethernet) DHCP 初始化
     registerBlock('net_ethernet_begin', {
         init: function () {
             this.appendDummyInput()
@@ -42,14 +32,18 @@ const init = () => {
     }, (block: any) => {
         const mac = arduinoGenerator.valueToCode(block, 'MAC', Order.ATOMIC) || '{0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED}';
 
+        // 包含 SPI 和 Ethernet 库
         arduinoGenerator.addInclude('spi_lib', '#include <SPI.h>');
         arduinoGenerator.addInclude('ethernet_lib', '#include <Ethernet.h>');
+        // 定义 MAC 地址变量
         arduinoGenerator.addVariable('mac_addr', `byte mac[] = ${mac};`);
-        arduinoGenerator.addSetup('ethernet_begin', 'if (Ethernet.begin(mac) == 0) {\n    // Failed to configure Ethernet using DHCP\n    while(true);\n  }');
+        // 在 setup 中尝试通过 DHCP 获取 IP，失败则死循环
+        arduinoGenerator.addSetup('ethernet_begin', 'if (Ethernet.begin(mac) == 0) {\n    // DHCP 获取失败\n    while(true);\n  }');
 
         return '';
     });
 
+    // 获取本地 IP 地址
     registerBlock('net_ethernet_local_ip', {
         init: function () {
             this.appendDummyInput()
@@ -60,14 +54,12 @@ const init = () => {
         }
     }, (block: any) => {
         const family = arduinoGenerator.getFamily();
+        // 根据控制器家族（ESP32 或普通 Arduino/Ethernet）返回 IP 地址字符串
         if (family === 'esp32') return [`WiFi.localIP().toString()`, Order.ATOMIC];
         return [`Ethernet.localIP().toString()`, Order.ATOMIC];
     });
 
-    // =========================================================================
-    // NTP Time (NTPClient)
-    // =========================================================================
-
+    // NTP 网络对时初始化
     registerBlock('net_ntp_init', {
         init: function () {
             this.appendDummyInput()
@@ -81,16 +73,17 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_NET_NTP_INIT_TOOLTIP);
         }
     }, (block: any) => {
-        const offset = arduinoGenerator.valueToCode(block, 'OFFSET', Order.ATOMIC) || '0';
+        const offset = arduinoGenerator.valueToCode(block, 'OFFSET', Order.ATOMIC) || '28800';
 
+        // 包含 UDP 和 NTPClient 库
         arduinoGenerator.addInclude('udp_lib', '#include <WiFiUdp.h>');
         arduinoGenerator.addInclude('ntp_lib', '#include <NTPClient.h>');
+        // 定义 UDP 连接和 NTP 客户端
         arduinoGenerator.addVariable('ntp_udp', `WiFiUDP ntpUDP;`);
         arduinoGenerator.addVariable('ntp_client', `NTPClient timeClient(ntpUDP, "pool.ntp.org");`);
+        // 在 setup 中开启服务并设置时区偏移（北京时间默认为 28800 秒）
         arduinoGenerator.addSetup('ntp_begin', `timeClient.begin();\n  timeClient.setTimeOffset(${offset});`);
-
-        // Update in loop ? Or manually update? Manual is safer for blocks
-        // automatic update every 60s is default
+        // 在 loop 中定期更新时间
         arduinoGenerator.addLoop('ntp_update', `timeClient.update();`);
 
         return '';
@@ -107,22 +100,7 @@ const init = () => {
         return ['timeClient.getFormattedTime()', Order.ATOMIC];
     });
 
-    registerBlock('net_ntp_get_epoch', {
-        init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_NET_NTP_GET_EPOCH);
-            this.setOutput(true, "Number");
-            this.setColour(210);
-        }
-    }, (block: any) => {
-        return ['timeClient.getEpochTime()', Order.ATOMIC];
-    });
-
-    // =========================================================================
-    // Wi-Fi Generic (WiFi.h / ESP8266WiFi.h)
-    // =========================================================================
-    // Note: ESP32/ESP8266 specific modules might exist, but this is a generic wrapper ideal for common code.
-
+    // WiFi 连接 (通用方式)
     registerBlock('net_wifi_connect_generic', {
         init: function () {
             this.appendDummyInput()
@@ -136,50 +114,20 @@ const init = () => {
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(210);
-            this.setTooltip(Blockly.Msg.ARD_NET_WIFI_CONNECT_TOOLTIP);
             this.setInputsInline(true);
         }
     }, (block: any) => {
         const ssid = arduinoGenerator.valueToCode(block, 'SSID', Order.ATOMIC) || '""';
         const pass = arduinoGenerator.valueToCode(block, 'PASS', Order.ATOMIC) || '""';
 
-        // This is generic; user needs to ensure board selected has WiFi support (ESP32/ESP8266/MKR1010)
-        // We include generic WiFi.h which works for most modern Arduino cores.
+        // 包含 ESP32 WiFi 库
         arduinoGenerator.addInclude('wifi_lib', '#include <WiFi.h>');
-
+        // 在 setup 中开始连接，直到连接成功才继续
         arduinoGenerator.addSetup('wifi_begin', `
   WiFi.begin(${ssid}, ${pass});
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
   }`);
-
-        return '';
-    });
-
-
-
-    registerBlock('net_wifi_softap', {
-        init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_NET_WIFI_SOFTAP);
-            this.appendValueInput("SSID")
-                .setCheck("String")
-                .appendField(Blockly.Msg.ARD_NET_WIFI_SSID);
-            this.appendValueInput("PASS")
-                .setCheck("String")
-                .appendField(Blockly.Msg.ARD_NET_WIFI_PASS);
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(210);
-            this.setTooltip(Blockly.Msg.ARD_NET_WIFI_SOFTAP_TOOLTIP);
-            this.setInputsInline(true);
-        }
-    }, (block: any) => {
-        const ssid = arduinoGenerator.valueToCode(block, 'SSID', Order.ATOMIC) || '"MyESP32"';
-        const pass = arduinoGenerator.valueToCode(block, 'PASS', Order.ATOMIC) || '"12345678"';
-
-        arduinoGenerator.addInclude('wifi_lib', '#include <WiFi.h>');
-        arduinoGenerator.addSetup('wifi_ap', `WiFi.softAP(${ssid}, ${pass});`);
 
         return '';
     });
@@ -190,97 +138,9 @@ const init = () => {
                 .appendField(Blockly.Msg.ARD_NET_WIFI_STATUS);
             this.setOutput(true, "Boolean");
             this.setColour(210);
-            this.setTooltip(Blockly.Msg.ARD_NET_WIFI_STATUS_TOOLTIP);
         }
     }, (block: any) => {
         return ['(WiFi.status() == WL_CONNECTED)', Order.ATOMIC];
-    });
-
-    registerBlock('net_http_get', {
-        init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_NET_HTTP_GET);
-            this.appendValueInput("URL")
-                .setCheck("String")
-                .appendField(Blockly.Msg.ARD_NET_HTTP_URL);
-            this.setOutput(true, "String");
-            this.setColour(210);
-            this.setTooltip(Blockly.Msg.ARD_NET_HTTP_GET_TOOLTIP);
-        }
-    }, (block: any) => {
-        const url = arduinoGenerator.valueToCode(block, 'URL', Order.ATOMIC) || '"http://example.com"';
-        const family = arduinoGenerator.getFamily();
-
-        if (family === 'esp32') {
-            arduinoGenerator.addInclude('http_client_lib', '#include <HTTPClient.h>\n#include <WiFi.h>');
-        } else if (family === 'arduino') {
-            // Assume ESP8266 or similar if user is using HTTP on "Arduino" family usually means ESP8266 in this context
-            // or we need a more generic library like ArduinoHttpClient
-            arduinoGenerator.addInclude('http_client_lib', '#include <ESP8266HTTPClient.h>\n#include <WiFiClient.h>');
-        }
-
-        const funcName = 'http_get_request';
-        arduinoGenerator.addFunction(funcName, `
-String ${funcName}(String url) {
-  WiFiClient client;
-  HTTPClient http;
-  http.begin(client, url);
-  int httpCode = http.GET();
-  String payload = "{}";
-  if (httpCode > 0) {
-    payload = http.getString();
-  }
-  http.end();
-  return payload;
-}`);
-        return [`${funcName}(${url})`, Order.ATOMIC];
-    });
-
-    registerBlock('net_http_post', {
-        init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_NET_HTTP_POST);
-            this.appendValueInput("URL")
-                .setCheck("String")
-                .appendField(Blockly.Msg.ARD_NET_HTTP_URL);
-            this.appendValueInput("DATA")
-                .setCheck("String")
-                .appendField(Blockly.Msg.ARD_NET_HTTP_DATA);
-            this.appendValueInput("TYPE")
-                .setCheck("String")
-                .appendField(Blockly.Msg.ARD_NET_HTTP_TYPE);
-            this.setOutput(true, "String");
-            this.setColour(210);
-            this.setTooltip(Blockly.Msg.ARD_NET_HTTP_POST_TOOLTIP);
-        }
-    }, (block: any) => {
-        const url = arduinoGenerator.valueToCode(block, 'URL', Order.ATOMIC) || '"http://example.com"';
-        const data = arduinoGenerator.valueToCode(block, 'DATA', Order.ATOMIC) || '""';
-        const type = arduinoGenerator.valueToCode(block, 'TYPE', Order.ATOMIC) || '"application/json"';
-        const family = arduinoGenerator.getFamily();
-
-        if (family === 'esp32') {
-            arduinoGenerator.addInclude('http_client_lib', '#include <HTTPClient.h>\n#include <WiFi.h>');
-        } else {
-            arduinoGenerator.addInclude('http_client_lib', '#include <ESP8266HTTPClient.h>\n#include <WiFiClient.h>');
-        }
-
-        const funcName = 'http_post_request';
-        arduinoGenerator.addFunction(funcName, `
-String ${funcName}(String url, String data, String contentType) {
-  WiFiClient client;
-  HTTPClient http;
-  http.begin(client, url);
-  http.addHeader("Content-Type", contentType);
-  int httpCode = http.POST(data);
-  String payload = "{}";
-  if (httpCode > 0) {
-    payload = http.getString();
-  }
-  http.end();
-  return payload;
-}`);
-        return [`${funcName}(${url}, ${data}, ${type})`, Order.ATOMIC];
     });
 
 };
@@ -288,6 +148,5 @@ String ${funcName}(String url, String data, String contentType) {
 export const NetworkModule: BlockModule = {
     id: 'protocols.network',
     name: 'Network (Ethernet/WiFi)',
-    category: 'Network',
     init
 };

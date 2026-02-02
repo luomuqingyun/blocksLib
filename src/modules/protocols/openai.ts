@@ -22,10 +22,11 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // OpenAI (ChatGPT) 初始化
     registerBlock('openai_init', {
         init: function () {
             this.appendDummyInput()
-                .appendField("OpenAI Init (ChatGPT)");
+                .appendField("OpenAI 初始化 (ChatGPT)");
             this.appendValueInput("KEY")
                 .setCheck("String")
                 .appendField("API Key");
@@ -37,26 +38,29 @@ const init = () => {
     }, (block: any) => {
         const key = arduinoGenerator.valueToCode(block, 'KEY', Order.ATOMIC) || '""';
 
+        // 包含网络通信和 JSON 解析库
         arduinoGenerator.addInclude('http_client', '#include <HTTPClient.h>');
         arduinoGenerator.addInclude('wifi_client_secure', '#include <WiFiClientSecure.h>');
         arduinoGenerator.addInclude('arduino_json', '#include <ArduinoJson.h>');
 
-        // We'll use a global function for the API call
+        // 将 API Key 设为全局常量
         arduinoGenerator.addVariable('openai_api_key', `const char* openai_api_key = ${key};`);
 
+        // 定义发送请求的核心函数
         arduinoGenerator.functions_['openai_func'] = `
 String askOpenAI(String prompt) {
   if(WiFi.status() != WL_CONNECTED) return "Error: No WiFi";
 
   WiFiClientSecure client;
-  client.setInsecure(); // Skip cert validation
+  client.setInsecure(); // 生产环境建议校验，此处为示例跳过证书验证
   HTTPClient http;
   
+  // 指定 OpenAI 聊天补全 API 地址
   http.begin(client, "https://api.openai.com/v1/chat/completions");
   http.addHeader("Content-Type", "application/json");
   http.addHeader("Authorization", String("Bearer ") + openai_api_key);
 
-  // JSON payload
+  // 构建 JSON 请求体
   DynamicJsonDocument doc(1024);
   doc["model"] = "gpt-3.5-turbo";
   JsonArray messages = doc.createNestedArray("messages");
@@ -67,6 +71,7 @@ String askOpenAI(String prompt) {
   String requestBody;
   serializeJson(doc, requestBody);
 
+  // 发送 POST 请求并解析回复
   int httpResponseCode = http.POST(requestBody);
   String response = "Error";
   
@@ -74,10 +79,9 @@ String askOpenAI(String prompt) {
     String payload = http.getString();
     DynamicJsonDocument respDoc(2048);
     deserializeJson(respDoc, payload);
+    // 从 JSON 响应路径中提取文本内容
     const char* text = respDoc["choices"][0]["message"]["content"];
     if(text) response = String(text);
-  } else {
-    // response = "Error code: " + httpResponseCode;
   }
   
   http.end();
@@ -86,20 +90,21 @@ String askOpenAI(String prompt) {
         return '';
     });
 
+    // 向 OpenAI 发提问
     registerBlock('openai_ask', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Ask OpenAI");
+                .appendField("向 OpenAI 提问");
             this.appendValueInput("PROMPT")
                 .setCheck("String")
-                .appendField("Prompt");
+                .appendField("提示词");
             this.setOutput(true, "String");
             this.setColour(160);
             this.setTooltip(Blockly.Msg.ARD_OPENAI_CHAT_TOOLTIP);
         }
     }, (block: any) => {
         const prompt = arduinoGenerator.valueToCode(block, 'PROMPT', Order.ATOMIC) || '"Hello"';
-        // Warning: This is a blocking HTTP call, can take 2-10 seconds
+        // 注意：这是一个阻塞式的 HTTP 调用，通常耗时 2-10 秒
         return [`askOpenAI(${prompt})`, Order.ATOMIC];
     });
 
@@ -108,6 +113,5 @@ String askOpenAI(String prompt) {
 export const OpenAIModule: BlockModule = {
     id: 'protocols.openai',
     name: 'OpenAI (ChatGPT)',
-    category: 'Cloud',
     init
 };

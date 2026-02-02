@@ -22,6 +22,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化条形码扫描器 (串口通信)
     registerBlock('barcode_init', {
         init: function () {
             this.appendDummyInput()
@@ -41,6 +42,7 @@ const init = () => {
         const rx = block.getFieldValue('RX');
         const tx = block.getFieldValue('TX');
 
+        // 在 setup 中初始化 Serial2 用于条形码扫描器通信，波特率通常为 9600
         arduinoGenerator.addSetup('barcode_serial', `Serial2.begin(9600, SERIAL_8N1, ${rx}, ${tx});`);
         return '';
     });
@@ -72,6 +74,5 @@ const init = () => {
 export const BarcodeModule: BlockModule = {
     id: 'hardware.barcode',
     name: 'Barcode Scanner',
-    category: 'Inputs',
     init
 };

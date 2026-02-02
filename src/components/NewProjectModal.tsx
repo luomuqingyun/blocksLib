@@ -1,12 +1,28 @@
-// ----------------------------------------------------------------------------
-// 新建项目模态框 (New Project Modal)
-// ----------------------------------------------------------------------------
-// 核心功能:
-// 1. 支持标准 (Standard) 和 高级 (Advanced) 两种板卡选择视角。
-// 2. 标准视角: 以品牌分类展示常用开发板 (如 Arduino, ESP32)。
-// 3. 高级视角: 以树形目录展示 STM32 全系列芯片及其详细引脚图预览。
-// 4. 集成 BoardRepository 实现数据的按需加载与缓存。
-// ----------------------------------------------------------------------------
+/**
+ * ============================================================
+ * 新建项目模态框 (New Project Modal Component)
+ * ============================================================
+ * 
+ * 创建新项目或保存已有项目的对话框。
+ * 
+ * 核心功能:
+ * - 标准视角: 以品牌分类展示常用开发板 (Arduino, ESP32 等)
+ * - 高级视角: 以树形目录展示 STM32 全系列芯片及引脚图预览
+ * - 项目命名和保存路径选择
+ * - 开发板/芯片选择与预览
+ * 
+ * 数据来源:
+ * - BoardRepository: 统一管理底层硬件定义文件 (JSON)
+ * - Vite Glob 静态分析的板卡词典
+ * 
+ * 界面特性:
+ * - 支持模态框拖拽移动
+ * - 支持 ESC 键关闭
+ * - 响应式布局
+ * 
+ * @file src/components/NewProjectModal.tsx
+ * @module EmbedBlocks/Frontend/Components/NewProjectModal
+ */
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, FolderPlus, Folder, AlertCircle, Download, ChevronRight, ChevronDown, Cpu, Box } from 'lucide-react';
@@ -202,11 +218,17 @@ export const NewProjectModal: React.FC = () => {
         </div>
     );
 
+    /**
+     * 渲染 STM32 树形结构
+     * 递归处理嵌套的目录/板卡数据结构
+     * 
+     * @param data 树节点数据 (可能是数组或对象)
+     * @param pathIdx 当前路径深度
+     */
     const renderSTM32Tree = (data: any, pathIdx = 0) => {
-        // Recursive tree renderer for STM32 structure
         if (!data) return null;
 
-        // Case 1: Array (Leaf List found under a Series, e.g. STM32F4 -> [boards...])
+        // 情况1: 数组 - 叶子节点列表 (如 STM32F4 -> [boards...])
         if (Array.isArray(data)) {
             return (
                 <div className="pl-2 border-l border-slate-700/50 space-y-1">
@@ -227,7 +249,7 @@ export const NewProjectModal: React.FC = () => {
             );
         }
 
-        // Case 2: Object (Directory/Group, e.g. STM32 -> STM32F4)
+        // 情况2: 对象 - 目录/分组 (如 STM32 -> STM32F4)
         if (typeof data === 'object') {
             return (
                 <div className="pl-2 border-l border-slate-700/50 space-y-1">
@@ -262,7 +284,7 @@ export const NewProjectModal: React.FC = () => {
                 style={{ left: pos.x, top: pos.y }}
                 className="absolute bg-[#1e1e1e] w-[800px] h-[600px] rounded-lg shadow-2xl border border-slate-700 flex flex-col overflow-hidden pointer-events-auto"
             >
-                {/* Header */}
+                {/* 标题栏 - 支持拖拽 */}
                 <div
                     className="flex justify-between items-center p-3 border-b border-slate-700 bg-[#252526] cursor-move select-none"
                     onMouseDown={(e) => { setIsDragging(true); setDragOffset({ x: e.clientX - pos.x, y: e.clientY - pos.y }); }}
@@ -276,15 +298,15 @@ export const NewProjectModal: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Main Content Area: Master-Detail Layout */}
+                {/* 主内容区域: 左右分栏布局 */}
                 <div className="flex-1 flex overflow-hidden">
 
-                    {/* Left: Input & List */}
+                    {/* 左侧: 输入框和列表 */}
                     <div className="w-[300px] flex flex-col border-r border-slate-700 bg-[#1e1e1e]">
 
-                        {/* Top Config Section */}
+                        {/* 项目配置区域 */}
                         <div className="p-4 space-y-4 border-b border-slate-700 select-text">
-                            {/* Project Name */}
+                            {/* 项目名称 */}
                             <div className="space-y-1">
                                 <label className="text-xs font-medium text-slate-400 uppercase">{t('app.projectName')}</label>
                                 <input
@@ -298,7 +320,7 @@ export const NewProjectModal: React.FC = () => {
                                 />
                             </div>
 
-                            {/* Location */}
+                            {/* 保存位置选择 */}
                             <div className="space-y-1">
                                 <label className="text-xs font-medium text-slate-400 uppercase">{t('app.location')}</label>
                                 <div className="flex gap-1">
@@ -313,7 +335,7 @@ export const NewProjectModal: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Tabs */}
+                        {/* 标签页切换 (Standard / STM32 Advanced) */}
                         {!isSaveAs && (
                             <div className="flex border-b border-slate-700">
                                 <button
@@ -331,7 +353,7 @@ export const NewProjectModal: React.FC = () => {
                             </div>
                         )}
 
-                        {/* List Area */}
+                        {/* 板卡列表区域 */}
                         {!isSaveAs ? (
                             <div className="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-slate-700">
                                 {activeTab === 'standard' ? renderStandardList() : renderSTM32Tree(stm32Data['STM32'] || stm32Data)}
@@ -345,9 +367,9 @@ export const NewProjectModal: React.FC = () => {
 
                     </div>
 
-                    {/* Right: Preview Panel */}
+                    {/* 右侧: 板卡预览面板 */}
                     <div className="flex-1 bg-[#1e1e1e] p-6 flex flex-col">
-                        <label className="text-xs font-medium text-slate-500 uppercase mb-3 block">Selection Preview</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase mb-3 block">选择预览</label>
                         {selectedBoardData ? (
                             <BoardPreview
                                 name={selectedBoardData.name || selectedBoardData.id}
@@ -366,27 +388,27 @@ export const NewProjectModal: React.FC = () => {
                             <div className="flex-1 flex flex-col items-center justify-center text-slate-600 border border-slate-700 border-dashed rounded-lg bg-[#252526]/50 select-none">
                                 {activeTab === 'advanced' ? (
                                     <>
-                                        {/* ST Logo Generic Placeholder */}
+                                        {/* ST Logo 通用占位符 */}
                                         <div className="w-24 h-24 bg-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-blue-900/20">
                                             <span className="text-white font-bold text-4xl italic tracking-tighter">ST</span>
                                         </div>
-                                        <h3 className="text-xl font-bold text-slate-200 mb-1">STM32 Series</h3>
-                                        <span className="text-sm">Select a chip to view details</span>
+                                        <h3 className="text-xl font-bold text-slate-200 mb-1">STM32 系列</h3>
+                                        <span className="text-sm">选择芯片以查看详情</span>
                                     </>
                                 ) : (
                                     <>
                                         <Cpu size={48} className="mb-2 opacity-50" />
-                                        <span className="text-sm">Select a board to view details</span>
+                                        <span className="text-sm">选择板卡以查看详情</span>
                                     </>
                                 )}
                             </div>
                         )}
 
-                        {/* Extension Import Link */}
+                        {/* 扩展导入链接 */}
                         {!isSaveAs && (
                             <div className="mt-4 flex justify-end">
                                 <button onClick={() => setIsExtensionsOpen(true)} className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
-                                    <Download size={12} /> Import more boards
+                                    <Download size={12} /> 导入更多板卡
                                 </button>
                             </div>
                         )}
@@ -394,7 +416,7 @@ export const NewProjectModal: React.FC = () => {
 
                 </div>
 
-                {/* Footer Buttons */}
+                {/* 底部按钮栏 */}
                 <div className="p-4 bg-[#252526] border-t border-slate-700 flex justify-end gap-3 items-center">
                     {errorMessage && <span className="text-red-400 text-xs mr-auto">{errorMessage}</span>}
 

@@ -21,14 +21,14 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
     // ------------------------------------------------------------------
-    // CAN Init
+    // CAN 初始化
     // ------------------------------------------------------------------
     registerBlock('stm32_can_init', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_CAN_INIT);
             this.appendDummyInput()
-                .appendField("Speed")
+                .appendField("速度")
                 .appendField(new Blockly.FieldDropdown([
                     ["125 kbps", "CAN_SPEED_125KBPS"],
                     ["250 kbps", "CAN_SPEED_250KBPS"],
@@ -38,17 +38,19 @@ const init = () => {
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(180);
-            this.setTooltip("Initialize STM32 CAN Bus");
+            this.setTooltip("初始化 STM32 CAN 总线");
         }
     }, function (block: any) {
         const speed = block.getFieldValue('SPEED');
+        // 包含硬件 CAN 库头文件
         arduinoGenerator.addInclude('HardwareCAN', '#include <HardwareCAN.h>');
+        // 在 setup 中初始化速度
         arduinoGenerator.addSetup('can_init', `CAN.begin(${speed});`);
         return '';
     });
 
     // ------------------------------------------------------------------
-    // CAN Send
+    // CAN 发送数据
     // ------------------------------------------------------------------
     registerBlock('stm32_can_send', {
         init: function () {
@@ -57,17 +59,17 @@ const init = () => {
                 .appendField(Blockly.Msg.ARD_CAN_SEND + " ID");
             this.appendValueInput("DATA")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_I2C_DATA); // Reuse I2C Data label
+                .appendField(Blockly.Msg.ARD_I2C_DATA); // 复用 I2C 数据标签
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(180);
-            this.setTooltip("Send a single byte via CAN");
+            this.setTooltip("通过 CAN 发送单个字节");
         }
     }, function (block: any) {
         const id = arduinoGenerator.valueToCode(block, 'ID', Order.NONE) || '0x100';
         const data = arduinoGenerator.valueToCode(block, 'DATA', Order.NONE) || '0';
 
-        // Simple helper for sending 1 byte. Real usage might need arrays.
+        // 发送单个字节的辅助函数。实际使用可能需要数组。
         const sendFunc = arduinoGenerator.addFunction('canSendByte', `
 void canSendByte(uint32_t id, uint8_t data) {
   CAN_message_t msg;
@@ -80,7 +82,7 @@ void canSendByte(uint32_t id, uint8_t data) {
     });
 
     // ------------------------------------------------------------------
-    // CAN Available
+    // CAN 检查数据可用性
     // ------------------------------------------------------------------
     registerBlock('stm32_can_available', {
         init: function () {
@@ -93,7 +95,7 @@ void canSendByte(uint32_t id, uint8_t data) {
     });
 
     // ------------------------------------------------------------------
-    // CAN Read
+    // CAN 读取数据
     // ------------------------------------------------------------------
     registerBlock('stm32_can_read', {
         init: function () {
@@ -102,6 +104,7 @@ void canSendByte(uint32_t id, uint8_t data) {
             this.setColour(180);
         }
     }, function () {
+        // 构建读取单个字节的辅助函数
         const readFunc = arduinoGenerator.addFunction('canReadByte', `
 uint8_t canReadByte() {
   CAN_message_t msg;
@@ -117,6 +120,5 @@ uint8_t canReadByte() {
 export const STM32CANModule: BlockModule = {
     id: 'stm32.can',
     name: 'STM32 CAN',
-    category: 'Communication', // or STM32
     init
 };

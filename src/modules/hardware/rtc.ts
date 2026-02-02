@@ -49,7 +49,7 @@ const init = () => {
         return '';
     });
 
-    // Set Time Manually
+    // 手动设置 RTC 时间
     registerBlock('rtc_set_time', {
         init: function () {
             this.appendDummyInput()
@@ -74,10 +74,11 @@ const init = () => {
         const min = arduinoGenerator.valueToCode(block, 'MIN', Order.ATOMIC) || '0';
         const sec = arduinoGenerator.valueToCode(block, 'SEC', Order.ATOMIC) || '0';
 
+        // 调用 adjust 函数校准内部时钟
         return `rtc.adjust(DateTime(${year}, ${month}, ${day}, ${hour}, ${min}, ${sec}));\n`;
     });
 
-    // Get Time Element
+    // 获取特定的时间分量 (年/月/日/时/分/秒)
     registerBlock('rtc_get_element', {
         init: function () {
             this.appendDummyInput()
@@ -96,9 +97,11 @@ const init = () => {
         }
     }, (block: any) => {
         const elem = block.getFieldValue('ELEMENT');
+        // rtc.now() 获取当前 DateTime 对象，然后调用对应方法
         return [`rtc.now().${elem}`, Order.ATOMIC];
     });
 
+    // 以 "DD/MM/YYYY" 格式获取日期字符串
     registerBlock('rtc_get_date_string', {
         init: function () {
             this.appendDummyInput()
@@ -108,7 +111,7 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_RTC_DATE_TOOLTIP);
         }
     }, (block: any) => {
-        // Requires a helper to format comfortably
+        // 使用辅助函数格式化字符串，减少重复生成代码量
         const funcName = 'rtc_get_date_str';
         arduinoGenerator.addFunction(funcName, `
 String ${funcName}() {
@@ -120,6 +123,7 @@ String ${funcName}() {
         return [`${funcName}()`, Order.ATOMIC];
     });
 
+    // 获取当前时间字符串 (格式为 HH:MM:SS)
     registerBlock('rtc_get_time_string', {
         init: function () {
             this.appendDummyInput()
@@ -130,10 +134,12 @@ String ${funcName}() {
         }
     }, (block: any) => {
         const funcName = 'rtc_get_time_str';
+        // 生成辅助函数，使用 sprintf 格式化时间
         arduinoGenerator.addFunction(funcName, `
 String ${funcName}() {
   DateTime now = rtc.now();
   char buf[10];
+  // 格式化为两位数字显示
   sprintf(buf, "%02d:%02d:%02d", now.hour(), now.minute(), now.second());
   return String(buf);
 }`);
@@ -142,9 +148,12 @@ String ${funcName}() {
 
 };
 
+/**
+ * 实时时钟 (RTC) 模块 (DS1307/DS3231)
+ * 通过 I2C 接口提供精确的日期和时间获取与设置功能。
+ */
 export const RTCModule: BlockModule = {
     id: 'hardware.rtc',
     name: 'Real Time Clock',
-    category: 'Time',
     init
 };

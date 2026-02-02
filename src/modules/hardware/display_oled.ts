@@ -19,28 +19,34 @@ import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino
 import { BlockModule } from '../../registries/ModuleRegistry';
 
 
+/**
+ * 模块初始化函数
+ * 注册与 OLED 显示屏（主要基于 SSD1306 驱动）相关的积木块。
+ * 核心逻辑：封装 Adafruit_SSD1306 和 Adafruit_GFX 库，实现文本和图形显示。
+ */
 const init = () => {
 
     // =========================================================================
-    // OLED SSD1306 (Adafruit_SSD1306 + Adafruit_GFX)
+    // OLED SSD1306 (I2C 接口)
     // =========================================================================
 
+    /** 初始化屏幕 */
     registerBlock('oled_init', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_OLED_INIT);
+                .appendField(Blockly.Msg.ARD_OLED_INIT); // 初始化 OLED
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_OLED_WIDTH)
-                .appendField(new Blockly.FieldNumber(128), "W");
+                .appendField(new Blockly.FieldNumber(128), "W"); // 宽度 (px)
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_OLED_HEIGHT)
-                .appendField(new Blockly.FieldNumber(64), "H");
+                .appendField(new Blockly.FieldNumber(64), "H"); // 高度 (px)
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_SENSOR_ADDRESS)
-                .appendField(new Blockly.FieldTextInput("0x3C"), "ADDR");
+                .appendField(new Blockly.FieldTextInput("0x3C"), "ADDR"); // I2C 地址，默认 0x3C
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(60);
+            this.setColour(60); // 显示类积木使用亮黄色/橙色调
             this.setTooltip(Blockly.Msg.ARD_OLED_INIT_TOOLTIP);
         }
     }, (block: any) => {
@@ -48,40 +54,44 @@ const init = () => {
         const h = block.getFieldValue('H');
         const addr = block.getFieldValue('ADDR');
 
+        // 注入驱动库头文件
         arduinoGenerator.addInclude('wire_lib', '#include <Wire.h>');
         arduinoGenerator.addInclude('gfx_lib', '#include <Adafruit_GFX.h>');
         arduinoGenerator.addInclude('ssd1306_lib', '#include <Adafruit_SSD1306.h>');
 
-        // Declaration: Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+        // 定义全局显示对象 'display'
         arduinoGenerator.addVariable('oled_obj', `Adafruit_SSD1306 display(${w}, ${h}, &Wire, -1);`);
 
+        // 在 setup() 中尝试启动 I2C 通信
         arduinoGenerator.addSetup('oled_init', `
+  // 如果启动失败，则进入死循环（防止后续非法显存操作）
   if(!display.begin(SSD1306_SWITCHCAPVCC, ${addr})) {
-    for(;;); // Don't proceed, loop forever
+    for(;;); 
   }
   display.clearDisplay();
-  display.setTextColor(SSD1306_WHITE);
+  display.setTextColor(SSD1306_WHITE); // 设置默认画笔颜色为白色
   display.display();`);
 
         return '';
     });
 
+    /** 打印文本 */
     registerBlock('oled_print', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_OLED_PRINT);
+                .appendField(Blockly.Msg.ARD_OLED_PRINT); // 显示文本
             this.appendValueInput("TEXT")
                 .setCheck("String")
-                .appendField(Blockly.Msg.ARD_DISPLAY_TEXT);
+                .appendField(Blockly.Msg.ARD_DISPLAY_TEXT); // 内容
             this.appendValueInput("X")
                 .setCheck("Number")
-                .appendField("X");
+                .appendField("X"); // 起始横坐标
             this.appendValueInput("Y")
                 .setCheck("Number")
-                .appendField("Y");
+                .appendField("Y"); // 起始纵坐标
             this.appendValueInput("SIZE")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_OLED_SIZE);
+                .appendField(Blockly.Msg.ARD_OLED_SIZE); // 字号
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(60);
@@ -94,6 +104,8 @@ const init = () => {
         const y = arduinoGenerator.valueToCode(block, 'Y', Order.ATOMIC) || '0';
         const size = arduinoGenerator.valueToCode(block, 'SIZE', Order.ATOMIC) || '1';
 
+        // 顺序设置属性并打印。
+        // 注意：最后的 display() 调用是关键，否则数据仅留在显存缓冲区。
         return `
 display.setTextSize(${size});
 display.setCursor(${x}, ${y});
@@ -102,10 +114,11 @@ display.display();
 `;
     });
 
+    /** 清空屏幕 */
     registerBlock('oled_clear', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_OLED_CLEAR);
+                .appendField(Blockly.Msg.ARD_OLED_CLEAR); // 清屏
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(60);
@@ -115,14 +128,15 @@ display.display();
         return `display.clearDisplay();\ndisplay.display();\n`;
     });
 
+    /** 绘制直线 */
     registerBlock('oled_draw_line', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_OLED_DRAW_LINE);
-            this.appendValueInput("X1").setCheck("Number").appendField("X1");
-            this.appendValueInput("Y1").setCheck("Number").appendField("Y1");
-            this.appendValueInput("X2").setCheck("Number").appendField("X2");
-            this.appendValueInput("Y2").setCheck("Number").appendField("Y2");
+                .appendField(Blockly.Msg.ARD_OLED_DRAW_LINE); // 绘制直线
+            this.appendValueInput("X1").setCheck("Number").appendField("起点 X1");
+            this.appendValueInput("Y1").setCheck("Number").appendField("起点 Y1");
+            this.appendValueInput("X2").setCheck("Number").appendField("终点 X2");
+            this.appendValueInput("Y2").setCheck("Number").appendField("终点 Y2");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(60);
@@ -137,16 +151,17 @@ display.display();
         return `display.drawLine(${x1}, ${y1}, ${x2}, ${y2}, SSD1306_WHITE);\n`;
     });
 
+    /** 绘制矩形 (支持填充) */
     registerBlock('oled_draw_rect', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_OLED_DRAW_RECT);
+                .appendField(Blockly.Msg.ARD_OLED_DRAW_RECT); // 绘制矩形
             this.appendValueInput("X").setCheck("Number").appendField("X");
             this.appendValueInput("Y").setCheck("Number").appendField("Y");
-            this.appendValueInput("W").setCheck("Number").appendField("W");
-            this.appendValueInput("H").setCheck("Number").appendField("H");
+            this.appendValueInput("W").setCheck("Number").appendField("宽度");
+            this.appendValueInput("H").setCheck("Number").appendField("高度");
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_OLED_FILL)
+                .appendField("填充?")
                 .appendField(new Blockly.FieldCheckbox("FALSE"), "FILL");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
@@ -160,21 +175,23 @@ display.display();
         const w = arduinoGenerator.valueToCode(block, 'W', Order.ATOMIC) || '10';
         const h = arduinoGenerator.valueToCode(block, 'H', Order.ATOMIC) || '10';
         const fill = block.getFieldValue('FILL') === 'TRUE';
+        // 根据复选框状态选择描边 (drawRect) 或填充 (fillRect)
         if (fill) {
             return `display.fillRect(${x}, ${y}, ${w}, ${h}, SSD1306_WHITE);\n`;
         }
         return `display.drawRect(${x}, ${y}, ${w}, ${h}, SSD1306_WHITE);\n`;
     });
 
+    /** 绘制圆 (支持填充) */
     registerBlock('oled_draw_circle', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_OLED_DRAW_CIRCLE);
-            this.appendValueInput("X").setCheck("Number").appendField("X");
-            this.appendValueInput("Y").setCheck("Number").appendField("Y");
-            this.appendValueInput("R").setCheck("Number").appendField(Blockly.Msg.ARD_OLED_RADIUS);
+                .appendField(Blockly.Msg.ARD_OLED_DRAW_CIRCLE); // 绘制圆形
+            this.appendValueInput("X").setCheck("Number").appendField("圆心 X");
+            this.appendValueInput("Y").setCheck("Number").appendField("圆心 Y");
+            this.appendValueInput("R").setCheck("Number").appendField(Blockly.Msg.ARD_OLED_RADIUS); // 半径
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_OLED_FILL)
+                .appendField("填充?")
                 .appendField(new Blockly.FieldCheckbox("FALSE"), "FILL");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
@@ -193,23 +210,28 @@ display.display();
         return `display.drawCircle(${x}, ${y}, ${r}, SSD1306_WHITE);\n`;
     });
 
+    /** 手动刷新屏幕 (Display) */
     registerBlock('oled_display', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_OLED_UPDATE);
+                .appendField(Blockly.Msg.ARD_OLED_UPDATE); // 立即更新 OLED 显示
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(60);
             this.setTooltip(Blockly.Msg.ARD_OLED_UPDATE_TOOLTIP);
         }
     }, (block: any) => {
+        // 这是将缓冲区中所有绘制的图形一次性刷新到物理屏幕的最有效方式。
         return `display.display();\n`;
     });
 };
 
+/**
+ * OLED 显示模块定义
+ * 基于 I2C 总线，适用于展示文字、交互菜单或简易传感器波形。
+ */
 export const OLEDModule: BlockModule = {
     id: 'hardware.display_oled',
     name: 'OLED Display',
-    category: 'OLED',
     init
 };

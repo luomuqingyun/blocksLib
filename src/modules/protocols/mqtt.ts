@@ -9,11 +9,6 @@
  * - mqtt_publish: 发布消息
  * - mqtt_subscribe: 订阅主题
  * - mqtt_callback: 接收消息回调
- * 
- * 使用 PubSubClient 库实现。
- * 
- * @file src/modules/protocols/mqtt.ts
- * @module EmbedBlocks/Frontend/Modules/Protocols
  */
 
 // @ts-ignore
@@ -24,6 +19,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // MQTT 设置（配置服务器地址和端口）
     registerBlock('mqtt_setup', {
         init: function () {
             this.appendDummyInput()
@@ -43,14 +39,19 @@ const init = () => {
         const server = arduinoGenerator.valueToCode(block, 'SERVER', Order.ATOMIC) || '"broker.hivemq.com"';
         const port = arduinoGenerator.valueToCode(block, 'PORT', Order.ATOMIC) || '1883';
 
+        // 包含 WiFi 和 MQTT 库 (PubSubClient)
         arduinoGenerator.addInclude('wifi_lib', '#include <WiFi.h>');
         arduinoGenerator.addInclude('pubsub_lib', '#include <PubSubClient.h>');
-        arduinoGenerator.addVariable('mqtt_client_obj', `WiFiClient espClient;\nPubSubClient client(espClient);`);
-        arduinoGenerator.addSetup('mqtt_set_server', `client.setServer(${server}, ${port});`);
+
+        // 定义 MQTT 客户端及其底层网络客户端
+        arduinoGenerator.addVariable('mqtt_client_obj', `WiFiClient espClient;\nPubSubClient mqttClient(espClient);`);
+        // 在 setup 中配置服务器信息
+        arduinoGenerator.addSetup('mqtt_set_server', `mqttClient.setServer(${server}, ${port});`);
 
         return '';
     });
 
+    // 连接到 MQTT Broker
     registerBlock('mqtt_connect', {
         init: function () {
             this.appendDummyInput()
@@ -66,12 +67,14 @@ const init = () => {
     }, (block: any) => {
         const id = arduinoGenerator.valueToCode(block, 'ID', Order.ATOMIC) || '"ESP32Client"';
 
+        // 阻塞直到连接成功
         return `
 if (!mqttClient.connected()) {
     while (!mqttClient.connected()) {
         if (mqttClient.connect(${id})) {
-            // connected
+            // 已成功连接
         } else {
+            // 连接失败，等待 5 秒重试
             delay(5000);
         }
     }
@@ -79,6 +82,7 @@ if (!mqttClient.connected()) {
 `;
     });
 
+    // 发布 MQTT 消息
     registerBlock('mqtt_publish', {
         init: function () {
             this.appendDummyInput()
@@ -97,9 +101,11 @@ if (!mqttClient.connected()) {
     }, (block: any) => {
         const topic = arduinoGenerator.valueToCode(block, 'TOPIC', Order.ATOMIC) || '"test"';
         const payload = arduinoGenerator.valueToCode(block, 'PAYLOAD', Order.ATOMIC) || '"hello"';
+        // 向指定主题发送有效载荷
         return `mqttClient.publish(${topic}, ${payload});\n`;
     });
 
+    // 订阅 MQTT 主题
     registerBlock('mqtt_subscribe', {
         init: function () {
             this.appendDummyInput()
@@ -130,6 +136,7 @@ if (!mqttClient.connected()) {
         return `mqttClient.loop();\n`;
     });
 
+    // 定义 MQTT 消息接收回调
     registerBlock('mqtt_callback_define', {
         init: function () {
             this.appendDummyInput()
@@ -143,6 +150,7 @@ if (!mqttClient.connected()) {
         const branch = arduinoGenerator.statementToCode(block, 'DO');
         const funcName = 'mqtt_callback';
 
+        // 生成回调函数：处理收到的主题和内容
         arduinoGenerator.functions_[funcName] = `
 void ${funcName}(char* topic, byte* payload, unsigned int length) {
   String message = "";
@@ -151,7 +159,7 @@ void ${funcName}(char* topic, byte* payload, unsigned int length) {
   }
   ${branch}
 }`;
-        // Register callback in setup
+        // 在 setup 中绑定回调函数
         arduinoGenerator.addSetup('mqtt_set_callback', `mqttClient.setCallback(${funcName});`);
         return '';
     });
@@ -181,6 +189,5 @@ void ${funcName}(char* topic, byte* payload, unsigned int length) {
 export const MQTTModule: BlockModule = {
     id: 'protocols.mqtt',
     name: 'MQTT',
-    category: 'Communication',
     init
 };

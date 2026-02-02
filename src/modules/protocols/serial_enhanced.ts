@@ -9,29 +9,19 @@
  * - serial_available_check: 检查数据可用
  * - serial_read_string/char: 读取数据
  * - serial_write: 写入原始字节
- * 
- * 支持多串口动态选择 (根据开发板自动生成选项)。
- * 
- * @file src/modules/protocols/serial_enhanced.ts
- * @module EmbedBlocks/Frontend/Modules/Protocols
  */
 
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino-base';
-
 import { BlockModule } from '../../registries/ModuleRegistry';
 import { BoardRegistry } from '../../registries/BoardRegistry';
 
 
-// ============================================================
-// 动态生成串口选项 (Generate Serial Options)
-// ============================================================
-// 详见 serial.ts 中的注释。此函数为高级串口模块提供相同的动态选择功能。
 const generateSerialOptions = (): [string, string][] => {
     const board = BoardRegistry.getCurrentBoard();
     const uartData = board?.pinout?.UART;
-    const options: [string, string][] = [["Serial (Default)", "Serial"]];
+    const options: [string, string][] = [["主串口 (Serial Default)", "Serial"]];
 
     if (uartData) {
         const sortedKeys = Object.keys(uartData).sort((a, b) => {
@@ -44,7 +34,7 @@ const generateSerialOptions = (): [string, string][] => {
             const match = key.match(/U(?:S)?ART(\d+)/);
             if (match) {
                 const num = match[1];
-                options.push([`Serial${num} (${key})`, `Serial${num}`]);
+                options.push([`硬件串口 ${num} (${key})`, `Serial${num}`]);
             }
         });
     }
@@ -52,10 +42,7 @@ const generateSerialOptions = (): [string, string][] => {
 };
 
 const init = () => {
-    // -------------------------------------------------------------
-    // 1. Serial Setup (串口初始化)
-    // 允许用户配置波特率，并隐式初始化 Serial.begin
-    // -------------------------------------------------------------
+    // 增强版串口初始化（可选手波特率）
     registerBlock('arduino_serial_setup', {
         init: function () {
             this.appendDummyInput()
@@ -76,14 +63,12 @@ const init = () => {
     }, function (block: any) {
         const serialId = block.getFieldValue('SERIAL_ID');
         const baud = block.getFieldValue('BAUD');
+        // 在 setup 中根据选定波特率初始化串口
         arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(${baud});`);
         return '';
     });
 
-    // -------------------------------------------------------------
-    // 2. Serial Print Consolidated (串口打印 - 整合版)
-    // 整合了 Print 和 Println，支持自动初始化 Serial
-    // -------------------------------------------------------------
+    // 串口打印内容
     registerBlock('arduino_serial_print', {
         init: function () {
             this.appendValueInput("CONTENT")
@@ -104,7 +89,7 @@ const init = () => {
         const content = arduinoGenerator.valueToCode(block, 'CONTENT', Order.NONE) || '""';
         const newLine = block.getFieldValue('NEW_LINE') === 'TRUE';
 
-        // Auto-setup if not present (fallback)
+        // 如果用户忘记放 setup 积木，则默认以 9600 波特率初始化
         if (!arduinoGenerator.setups_[`serial_begin_${serialId}`]) {
             arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(9600);`);
         }
@@ -112,10 +97,7 @@ const init = () => {
         return newLine ? `${serialId}.println(${content});\n` : `${serialId}.print(${content});\n`;
     });
 
-    // -------------------------------------------------------------
-    // 3. Serial Available (检查串口是否有数据)
-    // 对应 Serial.available() > 0
-    // -------------------------------------------------------------
+    // 检查串口缓冲区是否有数据
     registerBlock('arduino_serial_available_check', {
         init: function () {
             this.appendDummyInput()
@@ -130,13 +112,10 @@ const init = () => {
         if (!arduinoGenerator.setups_[`serial_begin_${serialId}`]) {
             arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(9600);`);
         }
+        // 返回 buffer 中字节数大于 0 的布尔结果
         return [`${serialId}.available() > 0`, Order.ATOMIC];
     });
 
-    // -------------------------------------------------------------
-    // 4. Serial Read String (读取字符串)
-    // 对应 Serial.readString()
-    // -------------------------------------------------------------
     registerBlock('arduino_serial_read_string', {
         init: function () {
             this.appendDummyInput()
@@ -154,16 +133,12 @@ const init = () => {
         return [`${serialId}.readString()`, Order.ATOMIC];
     });
 
-    // -------------------------------------------------------------
-    // 5. Serial Read Char (读取单个字符)
-    // 对应 Serial.read()，返回 ASCII 码 (int)
-    // -------------------------------------------------------------
     registerBlock('arduino_serial_read_char', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_SERIAL_READ_CHAR)
                 .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID");
-            this.setOutput(true, "Number"); // Returns int (ASCII)
+            this.setOutput(true, "Number");
             this.setColour(160);
             this.setTooltip(Blockly.Msg.ARD_SERIAL_READ_CHAR_TOOLTIP);
         }
@@ -175,10 +150,7 @@ const init = () => {
         return [`${serialId}.read()`, Order.ATOMIC];
     });
 
-    // -------------------------------------------------------------
-    // 6. Serial Write (写入原始字节)
-    // 对应 Serial.write()
-    // -------------------------------------------------------------
+    // 向串口写入原始字节 (Byte)
     registerBlock('arduino_serial_write', {
         init: function () {
             this.appendValueInput("VAL")
@@ -204,6 +176,5 @@ const init = () => {
 export const SerialEnhancedModule: BlockModule = {
     id: 'protocols.serial_enhanced',
     name: 'Serial Enhanced',
-    category: 'Serial',
     init
 };

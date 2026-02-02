@@ -20,41 +20,62 @@ import React, { createContext, useContext, useState } from 'react';
 
 /** UI 上下文类型定义 */
 interface UIContextType {
-
-    // Layout
+    // 布局相关状态 (Layout)
+    /** 右侧面面板的宽度 (像素) */
     rightPanelWidth: number;
     setRightPanelWidth: (width: number) => void;
+    /** 当前活动的下方面板标签页 ('build' 编译日志 或 'serial' 串口监视器) */
     activeTab: 'build' | 'serial';
     setActiveTab: (tab: 'build' | 'serial') => void;
+    /** 是否处于手动代码编辑模式 (绕过积木块) */
     isManualEditMode: boolean;
     setIsManualEditMode: (mode: boolean) => void;
 
-    // Modals
+    // 模态框开关状态 (Modals)
+    /** 系统设置弹窗是否打开 */
     isSettingsOpen: boolean;
     setIsSettingsOpen: (isOpen: boolean) => void;
+    /** 扩展程序弹窗是否打开 */
     isExtensionsOpen: boolean;
     setIsExtensionsOpen: (isOpen: boolean) => void;
+    /** 新建项目向导弹窗是否打开 */
     isNewProjectOpen: boolean;
     setIsNewProjectOpen: (isOpen: boolean) => void;
+    /** 另存为弹窗是否打开 */
     isSaveAsOpen: boolean;
     setIsSaveAsOpen: (isOpen: boolean) => void;
+    /** 项目特定设置弹窗是否打开 */
     isProjectSettingsOpen: boolean;
     setIsProjectSettingsOpen: (isOpen: boolean) => void;
+
+    // 帮助系统 (Help System)
+    /** 帮助侧边栏/弹窗是否打开 */
     isHelpOpen: boolean;
+    /** 当前帮助内容的标题 */
     helpTitle: string;
+    /** 当前帮助内容的 Markdown 或纯文本内容 */
     helpContent: string;
+    /** (可选) 关联的远程文档路径或本地标识 */
     helpPath: string;
+    /** 打开帮助窗口并加载指定内容 */
     openHelp: (title: string, content: string, path?: string) => void;
+    /** 关闭帮助窗口 */
     closeHelp: () => void;
 
-    // About
+    // 关于弹窗 (About Modal)
+    /** 关于软件弹窗是否打开 */
     isAboutOpen: boolean;
+    /** 关于页面的内容文本 */
     aboutContent: string;
+    /** 打开关于窗口 */
     openAbout: (content: string) => void;
+    /** 关闭关于窗口 */
     closeAbout: () => void;
 
-    // Notification
+    // 通知系统 (Notification System)
+    /** 当前显示的通知对象，为 null 时表示无通知 */
     notification: { message: string; type: 'info' | 'error' | 'success' } | null;
+    /** 触发显示一个新的通知消息 (Toast) */
     showNotification: (message: string, type?: 'info' | 'error' | 'success') => void;
 }
 
@@ -97,12 +118,13 @@ export const UIProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         setIsAboutOpen(false);
     };
 
-    // Notification System
+    // ========== 通知系统 (Notification System) ==========
     const [notification, setNotification] = useState<{ message: string; type: 'info' | 'error' | 'success' } | null>(null);
 
+    /** 显示通知并设定 3 秒后自动关闭 */
     const showNotification = (message: string, type: 'info' | 'error' | 'success' = 'info') => {
         setNotification({ message, type });
-        // Auto-dismiss after 3 seconds
+        // 3 秒后自动消失
         setTimeout(() => setNotification(null), 3000);
     };
 

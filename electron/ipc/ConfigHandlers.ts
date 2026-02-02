@@ -36,9 +36,18 @@ export function registerConfigHandlers(ipcMain: IpcMain, callbacks: { onMenuUpda
     // 设置配置 (语言切换时触发菜单更新)
     ipcMain.handle('config:set', (event, key: string, value: any) => {
         configService.set(key, value);
+
+        // 语言切换时更新菜单
         if (key === 'general.language' || key === 'language') {
             callbacks.onMenuUpdate();
         }
+
+        // 启用自动清理无效历史项目时，立即执行一次清理
+        if (key === 'general.autoCleanNoMatchRecent' && value === true) {
+            configService.validateRecentProjects();
+            callbacks.onMenuUpdate(); // 更新菜单中的最近项目列表
+        }
+
         return true;
     });
 

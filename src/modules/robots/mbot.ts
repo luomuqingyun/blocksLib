@@ -29,6 +29,7 @@ const init = () => {
     // We assume standard mCore board usage.
     // Includes: MeMCore.h usually covers all standard mBot specific classes.
 
+    // 控制 mBot 整体运动（前进、后退、左转、右转）
     registerBlock('mbot_motor_move', {
         init: function () {
             this.appendDummyInput()
@@ -47,26 +48,26 @@ const init = () => {
         const dir = block.getFieldValue('DIR');
         const speed = arduinoGenerator.valueToCode(block, 'SPEED', Order.ATOMIC) || '100';
 
+        // 包含 mCore 库，定义电机对象 (M1=9, M2=10)
         arduinoGenerator.addInclude('mcore_lib', '#include <MeMCore.h>');
         arduinoGenerator.addVariable('mbot_motors', 'MeDCMotor motor_9(9);\nMeDCMotor motor_10(10);\n');
 
-        // Clean room logic: mapping generic directions to motor control
-        // Motor 9 = Left, Motor 10 = Right (Standard mCore)
-        // 1=Fwd, 2=Bwd, 3=Left, 4=Right
+        // 方向映射逻辑：前进、后退、左转、右转
         let code = '';
-        if (dir === '1') { // FWD
+        if (dir === '1') { // 前进
             code = `motor_9.run(-${speed});\n  motor_10.run(${speed});\n`;
-        } else if (dir === '2') { // BWD
+        } else if (dir === '2') { // 后退
             code = `motor_9.run(${speed});\n  motor_10.run(-${speed});\n`;
-        } else if (dir === '3') { // LEFT
-            code = `motor_9.run(-${speed});\n  motor_10.run(-${speed});\n`; // Turn left (left motor rev, right fwd) - adjust as needed
-        } else if (dir === '4') { // RIGHT
+        } else if (dir === '3') { // 左转
+            code = `motor_9.run(-${speed});\n  motor_10.run(-${speed});\n`;
+        } else if (dir === '4') { // 右转
             code = `motor_9.run(${speed});\n  motor_10.run(${speed});\n`;
         }
 
         return code;
     });
 
+    // 停止电机运动
     registerBlock('mbot_motor_stop', {
         init: function () {
             this.appendDummyInput()
@@ -85,6 +86,7 @@ const init = () => {
     // mBot Sensors (Ultrasonic, Line Follower)
     // =========================================================================
 
+    // 读取超声波传感器距离（厘米）
     registerBlock('mbot_ultrasonic', {
         init: function () {
             this.appendDummyInput()
@@ -99,11 +101,13 @@ const init = () => {
     }, (block: any) => {
         const port = block.getFieldValue('PORT');
         arduinoGenerator.addInclude('mcore_lib', '#include <MeMCore.h>');
+        // 为选定端口创建传感器实例
         arduinoGenerator.addVariable(`ultrasonic_${port}`, `MeUltrasonicSensor ultrasonic_${port}(${port});`);
 
         return [`ultrasonic_${port}.distanceCm()`, Order.ATOMIC];
     });
 
+    // 读取巡线传感器状态
     registerBlock('mbot_line_follower', {
         init: function () {
             this.appendDummyInput()
@@ -118,6 +122,7 @@ const init = () => {
     }, (block: any) => {
         const port = block.getFieldValue('PORT');
         arduinoGenerator.addInclude('mcore_lib', '#include <MeMCore.h>');
+        // 为选定端口创建巡线传感器对象
         arduinoGenerator.addVariable(`line_${port}`, `MeLineFollower line_${port}(${port});`);
 
         return [`line_${port}.readSensors()`, Order.ATOMIC];
@@ -127,6 +132,7 @@ const init = () => {
     // mBot RGB LED & Extras
     // =========================================================================
 
+    // 控制板载 RGB LED 颜色
     registerBlock('mbot_rgb', {
         init: function () {
             this.appendDummyInput()
@@ -149,15 +155,14 @@ const init = () => {
         const g = arduinoGenerator.valueToCode(block, 'G', Order.ATOMIC) || '0';
         const b = arduinoGenerator.valueToCode(block, 'B', Order.ATOMIC) || '0';
 
-        // Requires MeRCGBLed object. Standard mBot has it on board (often Port 7 or specific onboard logic)
-        // Standard mCore def usually includes RGB on specific pins but library handles it.
-        // We declare an object for the onboard LEDs.
+        // 标准 mBot 板载 RGB LED 位于接口 7，包含 2 个灯珠
         arduinoGenerator.addInclude('mcore_lib', '#include <MeMCore.h>');
-        arduinoGenerator.addVariable('mbot_rgb_obj', `MeRGBLed rgbled_0(7, 2);`); // 7 is common port for onboard, 2 slots
+        arduinoGenerator.addVariable('mbot_rgb_obj', `MeRGBLed rgbled_0(7, 2);`);
 
         return `rgbled_0.setColor(${idx}, ${r}, ${g}, ${b});\nrgbled_0.show();\n`;
     });
 
+    // 直接控制单个电机转速
     registerBlock('mbot_motor', {
         init: function () {
             this.appendDummyInput()
@@ -175,7 +180,7 @@ const init = () => {
             this.setInputsInline(true);
         }
     }, (block: any) => {
-        const port = block.getFieldValue('PORT'); // 9 or 10
+        const port = block.getFieldValue('PORT'); // 9 或 10
         const speed = arduinoGenerator.valueToCode(block, 'SPEED', Order.ATOMIC) || '0';
 
         arduinoGenerator.addInclude('mcore_lib', '#include <MeMCore.h>');
@@ -189,6 +194,5 @@ const init = () => {
 export const mBotModule: BlockModule = {
     id: 'robots.mbot',
     name: 'mBot',
-    category: 'mBot / mCore',
     init
 };

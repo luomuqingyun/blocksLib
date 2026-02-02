@@ -29,22 +29,27 @@ export const TopBar: React.FC = () => {
     const { t, i18n } = useTranslation();
     const boards = useBoards();
 
-    // 使用聚合 Hook 替代 4 个独立 Context 调用
+    // 使用聚合 Hook 替代 4 个独立 Context 调用 (串口、项目、构建、UI)
     const { serial, project, build, ui } = useToolbarActions();
 
+    /**
+     * 处理上传逻辑
+     * 调用 build 模块的上传功能，并传入当前选中的串口端口
+     */
     const handleUpload = async () => {
         await build.uploadProject(serial.selectedPort);
     };
 
     return (
         <div className="h-12 bg-[#252526] border-b border-[#333] flex items-center px-3 gap-2 select-none shadow-sm z-10">
-            {/* Project Name Display */}
+            {/* 项目名称显示区域 */}
             <div className="flex items-center gap-2 mr-2">
                 <span className="text-blue-500 font-bold text-sm">EmbedBlocks</span>
                 {project.projectMetadata?.name && (
                     <>
                         <span className="text-slate-600">/</span>
                         <span className="text-slate-200 text-sm font-medium">{project.projectMetadata.name}</span>
+                        {/* 关闭当前项目按钮 */}
                         <button
                             onClick={project.closeProject}
                             className="ml-2 p-0.5 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded transition-colors"
@@ -58,7 +63,7 @@ export const TopBar: React.FC = () => {
 
             <div className="h-5 w-px bg-[#3e3e42] mx-1"></div>
 
-            {/* File Operations Group */}
+            {/* 文件操作组: 新建、打开、保存、另存为、导入 */}
             <div className="flex items-center gap-1">
                 <button onClick={project.newProject} className="p-1.5 hover:bg-[#37373d] rounded-md text-slate-400 hover:text-slate-100 transition-all" title={t('app.newProject')}><FilePlus size={18} /></button>
                 <button onClick={project.openProject} className="p-1.5 hover:bg-[#37373d] rounded-md text-slate-400 hover:text-slate-100 transition-all" title={t('app.openProject')}><FolderOpen size={18} /></button>
@@ -70,7 +75,7 @@ export const TopBar: React.FC = () => {
 
             <div className="h-5 w-px bg-[#3e3e42] mx-1"></div>
 
-            {/* Tools Group */}
+            {/* 工具组: 导出代码、扩展中心、项目设置、全局设置 */}
             <div className="flex items-center gap-1">
                 <button onClick={project.exportCode} className="p-1.5 hover:bg-[#37373d] rounded-md text-slate-400 hover:text-slate-100 transition-all" title={t('app.exportCode')}><FileCode size={18} /></button>
                 <div className="h-5 w-px bg-[#3e3e42] mx-1"></div>
@@ -81,9 +86,9 @@ export const TopBar: React.FC = () => {
 
             <div className="h-5 w-px bg-[#3e3e42] mx-1"></div>
 
-            {/* Hardware Settings Group */}
+            {/* 硬件配置组: 串口选择和开发板选择 */}
             <div className="flex items-center gap-3 flex-1 overflow-hidden">
-                {/* Port Selector */}
+                {/* 串口端口选择器 */}
                 <div className="flex items-center gap-2 min-w-[120px] max-w-[200px]">
                     <span className="text-xs text-slate-500 font-mono whitespace-nowrap hidden xl:inline">{t('app.port')}:</span>
                     <div className="relative flex-1">
@@ -100,16 +105,18 @@ export const TopBar: React.FC = () => {
                                 </option>
                             ))}
                         </select>
+                        {/* 自定义下拉箭头 */}
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </div>
                     </div>
+                    {/* 刷新端口列表按钮 */}
                     <button onClick={serial.refreshPorts} className="p-1.5 hover:bg-[#37373d] rounded text-slate-400 hover:text-slate-100" title={t('app.refreshPorts') || "Refresh Ports"}>
                         <RefreshCw size={14} />
                     </button>
                 </div>
 
-                {/* Board Selector */}
+                {/* 开发板选择器 */}
                 <div className="flex items-center gap-2 min-w-[120px] max-w-[200px]">
                     <span className="text-xs text-slate-500 font-mono whitespace-nowrap hidden xl:inline">{t('app.board')}:</span>
                     <div className="relative flex-1">
@@ -119,21 +126,19 @@ export const TopBar: React.FC = () => {
                             onChange={(e) => {
                                 const newBoardId = e.target.value;
                                 if (project.projectMetadata) {
-                                    // Smart Lock Check: Ensure new board is same family
+                                    // 智能锁定检查：确保新选中的开发板与当前项目属于同一家族
                                     const current = BoardRegistry.get(build.selectedBoard);
                                     const target = BoardRegistry.get(newBoardId);
                                     if (current && target && current.family !== target.family) {
-                                        alert(`Cannot switch family from ${current.family.toUpperCase()} to ${target.family.toUpperCase()} in an active project. Please create a new project.`);
+                                        alert(`在一个活跃的项目中无法将家族从 ${current.family.toUpperCase()} 切换为 ${target.family.toUpperCase()}。请新建一个项目。`);
                                         return;
                                     }
                                     project.updateProjectBoard(newBoardId);
                                 }
                                 build.setSelectedBoard(newBoardId);
                             }}
-                            // Smart Lock: Do NOT disable, just filter visible options (or validate onChange)
-                            // Better UX: Show all but filter *rendering* of options or group them?
-                            // Implementation: If project active, filter options to same family.
-                            title={project.projectMetadata ? "Only compatible boards shown" : "Select Board"}
+                            // 智能锁定：如果项目已激活，则通过 title 提示用户选项已被过。
+                            title={project.projectMetadata ? "仅显示兼容的开发板" : "选择开发板"}
                         >
                             {(() => {
                                 const renderGroups = () => {
@@ -141,6 +146,7 @@ export const TopBar: React.FC = () => {
                                     const stm32 = boardRepository.getSTM32Boards().STM32;
                                     const currentBoard = BoardRegistry.get(build.selectedBoard);
 
+                                    /** 过滤函数：如果项目已激活，只显示同家族的开发板 */
                                     const filterBoard = (b: any) => {
                                         if (!project.projectMetadata) return true;
                                         return currentBoard && b.family === currentBoard.family;
@@ -148,7 +154,7 @@ export const TopBar: React.FC = () => {
 
                                     const groups = [];
 
-                                    // 1. Standard Boards (Arduino, ESP32, etc.)
+                                    // 1. 标准开发板 (Arduino, ESP32 等)
                                     Object.entries(standard).forEach(([category, boards]) => {
                                         const typedBoards = boards as unknown as Board[];
                                         const filtered = typedBoards.filter(filterBoard);
@@ -165,7 +171,7 @@ export const TopBar: React.FC = () => {
                                         }
                                     });
 
-                                    // 2. STM32 Boards (Grouped by Series)
+                                    // 2. STM32 开发板 (按系列分组)
                                     Object.entries(stm32).forEach(([series, boards]: [string, any[]]) => {
                                         const filtered = boards.filter(filterBoard);
                                         if (filtered.length > 0) {
@@ -194,8 +200,9 @@ export const TopBar: React.FC = () => {
                 </div>
             </div>
 
-            {/* Action Buttons Group */}
+            {/* 操作按钮组: 编译和上传 */}
             <div className="flex items-center gap-1 ml-auto">
+                {/* 编译按钮 */}
                 <button
                     onClick={build.buildProject}
                     className="flex items-center gap-2 bg-[#0e639c] hover:bg-[#1177bb] text-white px-3 py-1.5 rounded-sm text-xs font-medium transition-colors"
@@ -204,6 +211,7 @@ export const TopBar: React.FC = () => {
                     <Play size={14} fill="currentColor" />
                     <span className="hidden lg:inline">{t('app.build')}</span>
                 </button>
+                {/* 上传按钮 */}
                 <button
                     onClick={handleUpload}
                     className="flex items-center gap-2 bg-[#0e639c] hover:bg-[#1177bb] text-white px-3 py-1.5 rounded-sm text-xs font-medium transition-colors ml-1"

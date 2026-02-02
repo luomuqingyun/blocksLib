@@ -23,8 +23,9 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 const init = () => {
 
     // ===================================
-    // BLE Keyboard
+    // BLE 蓝牙键盘
     // ===================================
+    // 初始化 BLE 键盘，设置设备名称
     registerBlock('ble_keyboard_init', {
         init: function () {
             this.appendDummyInput()
@@ -39,12 +40,16 @@ const init = () => {
         }
     }, (block: any) => {
         const name = arduinoGenerator.valueToCode(block, 'NAME', Order.ATOMIC) || '"ESP32 Keyboard"';
+        // 包含 BleKeyboard 库
         arduinoGenerator.addInclude('ble_kb_lib', '#include <BleKeyboard.h>');
+        // 定义蓝牙键盘对象并传入设备名称
         arduinoGenerator.addVariable('ble_kb_obj', `BleKeyboard bleKeyboard(${name});`);
+        // 在 setup 中开启蓝牙键盘服务
         arduinoGenerator.addSetup('ble_kb_begin', `bleKeyboard.begin();`);
         return '';
     });
 
+    // 通过蓝牙键盘发送字符串
     registerBlock('ble_keyboard_print', {
         init: function () {
             this.appendDummyInput()
@@ -59,10 +64,11 @@ const init = () => {
         }
     }, (block: any) => {
         const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '""';
-        // Check connection to avoid crash/lag
+        // 只有在已连接到主机时才发送数据，防止阻塞
         return `if(bleKeyboard.isConnected()) { bleKeyboard.print(${text}); }\n`;
     });
 
+    // 通过蓝牙键盘模拟按键按下
     registerBlock('ble_keyboard_press', {
         init: function () {
             this.appendDummyInput()
@@ -81,6 +87,7 @@ const init = () => {
         }
     }, (block: any) => {
         const key = block.getFieldValue('KEY');
+        // 在已连接状态下模拟按键
         return `
     if(bleKeyboard.isConnected()) {
         bleKeyboard.write(${key});
@@ -89,8 +96,9 @@ const init = () => {
 
 
     // ===================================
-    // BLE Mouse
+    // BLE 蓝牙鼠标
     // ===================================
+    // 初始化 BLE 鼠标，设置设备名称
     registerBlock('ble_mouse_init', {
         init: function () {
             this.appendDummyInput()
@@ -105,12 +113,16 @@ const init = () => {
         }
     }, (block: any) => {
         const name = arduinoGenerator.valueToCode(block, 'NAME', Order.ATOMIC) || '"ESP32 Mouse"';
+        // 包含 BleMouse 库
         arduinoGenerator.addInclude('ble_mouse_lib', '#include <BleMouse.h>');
+        // 定义蓝牙鼠标对象并传入设备名称
         arduinoGenerator.addVariable('ble_mouse_obj', `BleMouse bleMouse(${name});`);
+        // 在 setup 中开启蓝牙鼠标服务
         arduinoGenerator.addSetup('ble_mouse_begin', `bleMouse.begin();`);
         return '';
     });
 
+    // 通过蓝牙模拟鼠标移动
     registerBlock('ble_mouse_move', {
         init: function () {
             this.appendDummyInput()
@@ -129,9 +141,11 @@ const init = () => {
     }, (block: any) => {
         const x = arduinoGenerator.valueToCode(block, 'X', Order.ATOMIC) || '0';
         const y = arduinoGenerator.valueToCode(block, 'Y', Order.ATOMIC) || '0';
+        // 在已连接状态下模拟光标相对位移
         return `if(bleMouse.isConnected()) { bleMouse.move(${x}, ${y}); }\n`;
     });
 
+    // 通过蓝牙模拟鼠标点击
     registerBlock('ble_mouse_click', {
         init: function () {
             this.appendDummyInput()
@@ -147,6 +161,7 @@ const init = () => {
         }
     }, (block: any) => {
         const btn = block.getFieldValue('BTN');
+        // 在已连接状态下模拟按键点击
         return `if(bleMouse.isConnected()) { bleMouse.click(${btn}); }\n`;
     });
 
@@ -155,6 +170,5 @@ const init = () => {
 export const BleHidModule: BlockModule = {
     id: 'protocols.ble_hid',
     name: 'Bluetooth HID',
-    category: 'Communication', // Or 'Human Input'
     init
 };

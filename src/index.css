@@ -18,6 +18,33 @@
   background: #64748b; 
 }
 
+/* 自动隐藏滚动条 - 只在悬停/滚动时显示 */
+.auto-hide-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.auto-hide-scrollbar:hover {
+  scrollbar-color: #475569 transparent;
+}
+.auto-hide-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.auto-hide-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.auto-hide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+.auto-hide-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+.auto-hide-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;

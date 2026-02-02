@@ -18,17 +18,25 @@ import { XtermComponent, XtermHandle } from '../XtermComponent';
 
 // --- 组件属性类型 ---
 export interface SerialMonitorProps {
+    /** 控制面板是否可见 */
     isVisible: boolean;
 }
 
 export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) => {
     const { t } = useTranslation();
+    // Xterm 终端组件引用
     const xtermRef = useRef<XtermHandle>(null);
+    // 历史记录索引 (-1 表示当前输入，非历史项)
     const [historyIndex, setHistoryIndex] = React.useState(-1);
+    // 输入错误提示 (Hex 格式错误等)
     const [inputError, setInputError] = React.useState<string | null>(null);
+    // 终端选区内容 (用于复制)
     const [selection, setSelection] = React.useState('');
+    // 是否在行首 (用于决定是否打印方向箭头)
     const isStartOfLineRef = useRef(true);
+    // 上次数据类型 (rx/tx)，用于检测方向变化
     const lastTypeRef = useRef<'rx' | 'tx' | null>(null);
+    // 文本解码器 (根据编码设置动态创建)
     const decoderRef = useRef<TextDecoder>(new TextDecoder('utf-8'));
 
     const {
@@ -54,33 +62,33 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
         addClearListener, removeClearListener
     } = useSerial();
 
-    // Update decoder when encoding changes
+    // ========== Effect: 编码设置变化时重建解码器 ==========
     useEffect(() => {
         try {
             decoderRef.current = new TextDecoder(encoding || 'utf-8');
         } catch (e) {
             console.error('Failed to create TextDecoder:', e);
-            decoderRef.current = new TextDecoder('utf-8');
+            decoderRef.current = new TextDecoder('utf-8'); // 回退到 UTF-8
         }
     }, [encoding]);
 
-    // Clear error when Hex Send mode changes
+    // ========== Effect: Hex 发送模式切换时清除错误 ==========
     useEffect(() => {
         setInputError(null);
         if (hexSend) {
-            setLineEnding('none');
+            setLineEnding('none'); // Hex 模式禁用行尾符
         }
     }, [hexSend, setLineEnding]);
 
-    // Handle Xterm Resizing
+    // ========== Effect: 面板可见时调整终端尺寸 ==========
     useEffect(() => {
         if (isVisible && xtermRef.current) {
-            // Small delay to allow layout to settle
+            // 等待布局稳定后再调整
             setTimeout(() => xtermRef.current?.fit(), 100);
         }
     }, [isVisible]);
 
-    // Clear Listener
+    // ========== Effect: 清空事件监听 ==========
     useEffect(() => {
         const handleClear = () => {
             xtermRef.current?.clear();
@@ -89,16 +97,21 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
         return () => removeClearListener(handleClear);
     }, [addClearListener, removeClearListener]);
 
-    // Data Listener
+    // ========== Effect: 串口数据监听和显示 ==========
     useEffect(() => {
+        /**
+         * 串口数据处理函数
+         * 支持 Hex 和文本两种显示模式
+         */
         const handleData = (event: SerialDataEvent) => {
-            // Performance: Removed console.log for high-speed serial data
+            // 性能优化: 移除高速串口数据的 console.log
             if (!xtermRef.current) {
                 return;
             }
 
-            // Hex Formatting (Display Logic)
+            // ========== Hex 显示模式 ==========
             if (hexDisplay) {
+                // 将数据转换为字节数组
                 let bytes: Uint8Array;
                 if (typeof event.data === 'string') {
                     bytes = new TextEncoder().encode(event.data);
@@ -106,17 +119,20 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                     bytes = event.data;
                 }
 
+                // 格式化为 Hex 字符串 (XX XX XX)
                 const hexParts: string[] = [];
                 bytes.forEach(b => hexParts.push(b.toString(16).padStart(2, '0').toUpperCase()));
+                // TX 蓝色，RX 绿色
                 const colorCode = event.type === 'tx' ? '\x1b[34m' : '\x1b[32m';
 
-                // Force newline if switching direction in hex (optional, but cleaner)
+                // 方向变化时强制换行 (显示更清晰)
                 if (lastTypeRef.current && lastTypeRef.current !== event.type && !isStartOfLineRef.current) {
                     xtermRef.current.write('\r\n');
                     isStartOfLineRef.current = true;
                 }
                 lastTypeRef.current = event.type;
 
+                // 行首打印方向箭头
                 if (isStartOfLineRef.current) {
                     const arrow = event.type === 'tx' ? '← ' : '→ ';
                     xtermRef.current.write(colorCode + arrow + '\x1b[0m');
@@ -127,36 +143,36 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                 return;
             }
 
-            // Text Mode
+            // ========== 文本显示模式 ==========
+            // 解码二进制数据为文本
             let text = '';
             if (typeof event.data === 'string') {
                 text = event.data;
             } else {
                 try {
-                    // Use streaming decode
+                    // 使用流式解码 (支持多字节字符分块到达)
                     text = decoderRef.current.decode(event.data, { stream: true });
                 } catch (e) {
                     console.error('Decode error:', e);
-                    // Fallback
+                    // 回退到 UTF-8
                     text = new TextDecoder('utf-8').decode(event.data);
                 }
             }
-            // console.log('[SerialMonitorPanel] Text mode, text length:', text.length, 'content:', text.substring(0, 50));
 
-            // Check if direction changed
+            // 检查方向是否变化
             if (lastTypeRef.current && lastTypeRef.current !== event.type && !isStartOfLineRef.current) {
-                // Direction changed mid-line -> Force newline to get new arrow
+                // 方向变化且不在行首 -> 强制换行以打印新箭头
                 xtermRef.current.write('\r\n');
                 isStartOfLineRef.current = true;
             }
             lastTypeRef.current = event.type;
 
-            // Colors
-            // RX: Arrow Green (32), Text Bright Green (92)
-            // TX: Arrow Blue (34), Text Magenta (95)
-            const arrowColor = event.type === 'tx' ? '\x1b[1;34m' : '\x1b[1;32m'; // Bold arrows
+            // 颜色定义:
+            // RX: 箭头绿色 (32), 文本亮绿 (92)
+            // TX: 箭头蓝色 (34), 文本品红 (95)
+            const arrowColor = event.type === 'tx' ? '\x1b[1;34m' : '\x1b[1;32m'; // 粗体箭头
             const textColor = event.type === 'tx' ? '\x1b[95m' : '\x1b[92m';
-            // Block arrows for better visibility "Like a block/one" (These are the Clickable Targets)
+            // 结实的方块箭头 (更显眠)
             const arrow = event.type === 'tx' ? '◄ ' : '► ';
 
             // We split by newlines to inject badges and arrows
@@ -200,18 +216,28 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
     }, [addSerialListener, removeSerialListener, hexDisplay]);
 
 
+    /**
+     * 发送数据到串口
+     * @param override 可选的覆盖数据 (历史重发等)
+     */
     const handleSend = async (override?: string) => {
         const result = await sendSerialData(override);
         if (result === 'success') {
             setInputError(null);
         } else if (hexSend) {
+            // 根据错误类型显示不同提示
             if (result === 'error_format') setInputError(t('dialog.errorFormat'));
             else if (result === 'error_range') setInputError(t('dialog.errorRange'));
             else setInputError(t('dialog.invalidHex'));
         }
     };
 
-    // Handle Input keys (History + Enter)
+    /**
+     * 输入框键盘事件处理
+     * 支持:
+     * - Enter/Shift+Enter: 发送数据
+     * - Shift+↑/↓: 历史记录导航
+     */
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             if (enterSends && !e.shiftKey) {
@@ -264,9 +290,9 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
 
     return (
         <div className={`flex-1 flex-row overflow-hidden ${isVisible ? 'flex' : 'hidden'}`}>
-            {/* Left Sidebar: Settings */}
+            {/* 左侧边栏: 设置面板 */}
             <div className="w-64 flex flex-col border-r border-[#333] bg-[#252526]">
-                {/* Scrollable Settings Area */}
+                {/* 可滚动设置区域 */}
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar">
                     <div className="p-2 bg-[#252526] font-bold text-xs text-slate-400 uppercase tracking-wider flex justify-between items-center">
                         <span>{t('serial.settings')}</span>
@@ -278,7 +304,7 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                             <RotateCcw size={12} />
                         </button>
                     </div>
-                    {/* Port Selection */}
+                    {/* 端口选择 */}
                     <div className="flex items-center justify-between gap-2">
                         <label className="text-xs text-slate-400 whitespace-nowrap">{t('serial.port')}</label>
                         <div className="flex gap-2 flex-1 min-w-0">
@@ -302,7 +328,7 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                         </div>
                     </div>
 
-                    {/* Baud Rate */}
+                    {/* 波特率选择 */}
                     <div className="flex items-center justify-between gap-2">
                         <label className="text-xs text-slate-400 whitespace-nowrap">{t('serial.baudRate')}</label>
                         <select
@@ -317,7 +343,7 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                         </select>
                     </div>
 
-                    {/* Data Bits */}
+                    {/* 数据位选择 */}
                     <div className="flex items-center justify-between gap-2">
                         <label className="text-xs text-slate-400 whitespace-nowrap">{t('serial.dataBits')}</label>
                         <select className="bg-[#333] text-slate-200 text-xs rounded px-2 py-1 outline-none border border-slate-600 w-32" value={dataBits} onChange={e => setDataBits(Number(e.target.value) as any)} disabled={isConnected}>
@@ -328,7 +354,7 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                         </select>
                     </div>
 
-                    {/* Stop Bits */}
+                    {/* 停止位选择 */}
                     <div className="flex items-center justify-between gap-2">
                         <label className="text-xs text-slate-400 whitespace-nowrap">{t('serial.stopBits')}</label>
                         <select className="bg-[#333] text-slate-200 text-xs rounded px-2 py-1 outline-none border border-slate-600 w-32" value={stopBits} onChange={e => setStopBits(Number(e.target.value) as any)} disabled={isConnected}>
@@ -338,7 +364,7 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                         </select>
                     </div>
 
-                    {/* Parity */}
+                    {/* 校验位选择 */}
                     <div className="flex items-center justify-between gap-2">
                         <label className="text-xs text-slate-400 whitespace-nowrap">{t('serial.parity')}</label>
                         <select className="bg-[#333] text-slate-200 text-xs rounded px-2 py-1 outline-none border border-slate-600 w-32" value={parity} onChange={e => setParity(e.target.value as any)} disabled={isConnected}>
@@ -350,7 +376,7 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                         </select>
                     </div>
 
-                    {/* Line Ending */}
+                    {/* 行尾符选择 */}
                     <div className="flex items-center justify-between gap-2">
                         <label className="text-xs text-slate-400 whitespace-nowrap">{t('serial.lineEnding')}</label>
                         <select
@@ -368,7 +394,7 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
 
                     <div className="h-px bg-[#444] my-1"></div>
 
-                    {/* Toggles & Signals Compact Grid */}
+                    {/* 开关选项网格布局 (Hex显示/发送, DTR, RTS) */}
                     <div className="flex flex-col gap-2 pt-1">
                         {/* 2x2 Grid for Booleans */}
                         <div className="grid grid-cols-2 gap-2">
@@ -394,7 +420,7 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
 
 
 
-                {/* Fixed Bottom Area: Start/Stop Button */}
+                {/* 底部固定区域: 清空和连接按钮 */}
                 <div className="p-4 border-t border-[#333] bg-[#252526]">
                     <button
                         onClick={clearSerial}
@@ -412,9 +438,9 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                 </div>
             </div>
 
-            {/* Right Content: Terminal & Input */}
+            {/* 右侧内容区: 终端和输入框 */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-black relative">
-                {/* Xterm Terminal */}
+                {/* Xterm 终端显示区 */}
                 <div className="flex-1 relative overflow-hidden">
                     <XtermComponent
                         ref={xtermRef}
@@ -423,9 +449,11 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                     />
                 </div>
 
-                {/* Input Area */}
+                {/* 输入区域 */}
                 <div className="p-2 bg-[#252526] border-t border-[#333] flex gap-2">
+                    {/* 文本输入框容器 */}
                     <div className="flex-1 relative">
+                        {/* 发送数据输入框 */}
                         <textarea
                             className={`w-full h-full bg-[#1e1e1e] text-slate-200 p-2 pr-8 rounded border outline-none
                                 focus:border-blue-500 transition-colors font-mono text-xs resize-none leading-tight custom-scrollbar
@@ -436,23 +464,27 @@ export const SerialMonitorPanel: React.FC<SerialMonitorProps> = ({ isVisible }) 
                             spellCheck={inputSpellCheck}
                             onChange={(e) => {
                                 setSerialInput(e.target.value);
-                                if (inputError) setInputError(null);
-                                setHistoryIndex(-1);
+                                if (inputError) setInputError(null); // 输入时清除错误
+                                setHistoryIndex(-1); // 重置历史索引
                             }}
                             onKeyDown={handleKeyDown}
                         />
+                        {/* 错误提示气泡 */}
                         {inputError && (
                             <div className="absolute left-0 bottom-full mb-1 bg-red-900/90 text-red-200 text-[10px] px-2 py-1 rounded shadow-lg border border-red-700 animate-in fade-in slide-in-from-bottom-1 z-10 whitespace-nowrap">
                                 {inputError}
+                                {/* 气泡箭头 */}
                                 <div className="absolute left-4 -bottom-1 w-2 h-2 bg-red-900/90 border-r border-b border-red-700 rotate-45 transform"></div>
                             </div>
                         )}
+                        {/* 行尾符指示器 */}
                         {lineEnding !== 'none' && (
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500 select-none pointer-events-none font-mono font-bold bg-[#252526] px-1 rounded">
                                 {lineEnding === 'lf' ? '\\n' : lineEnding === 'cr' ? '\\r' : '\\r\\n'}
                             </div>
                         )}
                     </div>
+                    {/* 发送按钮 */}
                     <button
                         onClick={() => handleSend()}
                         disabled={!isConnected || (!serialInput && lineEnding === 'none')}

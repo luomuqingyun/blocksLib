@@ -23,6 +23,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化 ESP-NOW
     registerBlock('esp_now_init', {
         init: function () {
             this.appendDummyInput()
@@ -33,17 +34,21 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_ESPNOW_INIT_TOOLTIP);
         }
     }, (block: any) => {
+        // 包含 ESP-NOW 和 WiFi 库
         arduinoGenerator.addInclude('esp_now_lib', '#include <esp_now.h>');
         arduinoGenerator.addInclude('wifi_lib', '#include <WiFi.h>');
+        // 定义广播地址（默认为全 FF）
         arduinoGenerator.addVariable('esp_now_peer', `uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};`);
+        // 在 setup 中初始化 ESP-NOW，失败则返回
         arduinoGenerator.addSetup('esp_now_init', `
   if (esp_now_init() != ESP_OK) {
-    // Serial.println("Error initializing ESP-NOW");
+    // 初始化失败
     return;
   }`);
         return '';
     });
 
+    // 添加对等节点 (MAC 地址)
     registerBlock('esp_now_add_peer', {
         init: function () {
             this.appendDummyInput()
@@ -59,7 +64,7 @@ const init = () => {
     }, (block: any) => {
         const macStr = arduinoGenerator.valueToCode(block, 'MAC', Order.ATOMIC) || '"FF:FF:FF:FF:FF:FF"';
 
-        // Helper function in definitions to convert string MAC to bytes and add peer
+        // 定义数据结构示例（虽然此处仅定义，未直接在 send 中强制使用）
         arduinoGenerator.addVariable('esp_now_data_struct', `
 typedef struct struct_message {
   char text[32];
@@ -68,15 +73,13 @@ typedef struct struct_message {
 struct_message myData;
 struct_message incomingData;
 `);
+        // 定义解析 MAC 地址并添加节点的自定义函数
         arduinoGenerator.functions_['esp_now_peer_add'] = `
 void addPeer(String macStr) {
   esp_now_peer_info_t peerInfo;
   memset(&peerInfo, 0, sizeof(peerInfo));
-  // Simple parsing (naive) - assumed logic or user provides byte array?
-  // For simplicity blocks usually take string. Detailed C++ parsing needed here or simplified logic.
-  // Using broadcast for simplicity in this artifact or implementing a raw helper
   
-  // Real implementation needs sscanf
+  // 使用 sscanf 将字符串 MAC 地址解析为字节数组
   unsigned int mac[6];
   sscanf(macStr.c_str(), "%x:%x:%x:%x:%x:%x", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
   for(int i=0; i<6; i++) peerInfo.peer_addr[i] = (uint8_t)mac[i];
@@ -85,12 +88,13 @@ void addPeer(String macStr) {
   peerInfo.encrypt = false;
   
   if (esp_now_add_peer(&peerInfo) != ESP_OK){
-    // Serial.println("Failed to add peer");
+    // 添加节点失败
   }
 }`;
         return `addPeer(${macStr});\n`;
     });
 
+    // 发送 ESP-NOW 数据
     registerBlock('esp_now_send', {
         init: function () {
             this.appendDummyInput()
@@ -105,9 +109,11 @@ void addPeer(String macStr) {
         }
     }, (block: any) => {
         const data = arduinoGenerator.valueToCode(block, 'DATA', Order.ATOMIC) || '""';
+        // 向所有已添加的对等节点（填 0 代表 broadcast）发送原始字节数据
         return `esp_now_send(0, (uint8_t*)${data}.c_str(), ${data}.length());\n`;
     });
 
+    // 接收 ESP-NOW 数据回调
     registerBlock('esp_now_on_recv', {
         init: function () {
             this.appendDummyInput()
@@ -123,9 +129,10 @@ void addPeer(String macStr) {
         const branch = arduinoGenerator.statementToCode(block, 'DO');
 
         const funcName = 'OnDataRecv';
+        // 定义接收到的数据变量
         arduinoGenerator.addVariable('esp_now_cb_var', `String receivedData = "";`);
 
-        // Definition of callback
+        // 定义回调函数内部实现
         arduinoGenerator.functions_[funcName] = `
 void ${funcName}(const uint8_t * mac, const uint8_t *incomingData, int len) {
   char buf[len + 1];
@@ -134,6 +141,7 @@ void ${funcName}(const uint8_t * mac, const uint8_t *incomingData, int len) {
   receivedData = String(buf);
 ${branch}
 }`;
+        // 在 setup 中注册接收监听回调
         arduinoGenerator.addSetup('esp_now_req_cb', `esp_now_register_recv_cb(${funcName});`);
         return '';
     });
@@ -143,6 +151,5 @@ ${branch}
 export const EspNowModule: BlockModule = {
     id: 'protocols.esp_now',
     name: 'ESP-NOW',
-    category: 'Communication',
     init
 };

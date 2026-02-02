@@ -22,6 +22,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // ESP32 WiFi 连接
     registerBlock('esp32_wifi_connect', {
         init: function () {
             this.appendDummyInput()
@@ -42,8 +43,10 @@ const init = () => {
         const ssid = arduinoGenerator.valueToCode(block, 'SSID', Order.ATOMIC) || '""';
         const password = arduinoGenerator.valueToCode(block, 'PASSWORD', Order.ATOMIC) || '""';
 
+        // 包含乐鑫官方 WiFi 库
         arduinoGenerator.addInclude('wifi_include', '#include <WiFi.h>');
 
+        // 生成阻塞式连接代码，直到连接成功才继续执行
         return `
 WiFi.begin(${ssid}, ${password});
 while (WiFi.status() != WL_CONNECTED) {
@@ -52,6 +55,7 @@ while (WiFi.status() != WL_CONNECTED) {
 `;
     });
 
+    // ESP32 进入深度睡眠
     registerBlock('esp32_deep_sleep', {
         init: function () {
             this.appendDummyInput()
@@ -66,6 +70,7 @@ while (WiFi.status() != WL_CONNECTED) {
         }
     }, (block: any) => {
         const time = arduinoGenerator.valueToCode(block, 'TIME', Order.ATOMIC) || '1000000';
+        // 调用底层 API 进入深度睡眠，唤醒后程序将从 setup 重新开始
         return `esp_deep_sleep(${time}); \n`;
     });
 
@@ -81,6 +86,7 @@ while (WiFi.status() != WL_CONNECTED) {
         return [`hallRead()`, Order.ATOMIC];
     });
 
+    // 读取 ESP32 特有的电容式触摸引脚
     registerBlock('esp32_touch_read', {
         init: function () {
             this.appendDummyInput()
@@ -105,14 +111,18 @@ while (WiFi.status() != WL_CONNECTED) {
         }
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
+        // 使用 ESP32 SDK 内置的 touchRead 函数读取原始值
         return [`touchRead(${pin})`, Order.ATOMIC];
     });
 
 };
 
+/**
+ * ESP32 硬件特性模块
+ * 封装了 ESP32 芯片特有的硬件功能，如霍尔传感器读取、内置电容触摸检测等。
+ */
 export const ESP32Module: BlockModule = {
     id: 'hardware.esp32',
     name: 'ESP32 Hardware',
-    category: 'ESP32',
     init
 };

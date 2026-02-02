@@ -20,6 +20,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 写入 DAC 模拟值
     registerBlock('dac_write', {
         init: function () {
             this.appendDummyInput()
@@ -42,6 +43,7 @@ const init = () => {
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
         const val = arduinoGenerator.valueToCode(block, 'VAL', Order.ATOMIC) || '0';
+        // 使用 ESP32 特有的 dacWrite 函数输出真实的模拟电压 (0-255)
         return `dacWrite(${pin}, ${val});\n`;
     });
 
@@ -50,6 +52,5 @@ const init = () => {
 export const DACModule: BlockModule = {
     id: 'hardware.dac',
     name: 'DAC (Analog Out)',
-    category: 'IO',
     init
 };

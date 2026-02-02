@@ -22,6 +22,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化 PCF8574 IO 扩展器 (I2C 接口)
     registerBlock('pcf8574_init', {
         init: function () {
             this.appendDummyInput()
@@ -49,20 +50,19 @@ const init = () => {
         const sda = block.getFieldValue('SDA');
         const scl = block.getFieldValue('SCL');
 
-        // We assume Wire is initialized or we init it. 
-        // PCF8574 library usually takes address in constructor.
-
+        // 包含 PCF8574 驱动库
         arduinoGenerator.addInclude('pcf8574_lib', '#include <PCF8574.h>');
-        arduinoGenerator.addVariable('pcf8574_obj', `PCF8574 pcf8574(${addr});`);
+        // 定义全局 PCF8574 扩展器对象
+        arduinoGenerator.addVariable('pcf8574_obj', `PCF8574 ${name}(${addr});`);
 
-        // PCF8574 lib often needs begin(). 
-        // If we want custom pins for I2C on ESP32, we normally call Wire.begin(sda, scl) before.
+        // 在 setup 中强制初始化 I2C 总线引脚并启动扩展器
         arduinoGenerator.addSetup(`wire_begin_${sda}_${scl}`, `Wire.begin(${sda}, ${scl});`);
         arduinoGenerator.addSetup(`pcf8574_begin_${name}`, `${name}.begin();`);
 
         return '';
     });
 
+    // 设置 PCF8574 扩展引脚的模式（输入或输出）
     registerBlock('pcf8574_pin_mode', {
         init: function () {
             this.appendDummyInput()
@@ -84,9 +84,11 @@ const init = () => {
         const name = block.getFieldValue('NAME');
         const pin = arduinoGenerator.valueToCode(block, 'PIN', Order.ATOMIC) || '0';
         const mode = block.getFieldValue('MODE');
+        // 调用 PCF8574 对象的 pinMode 方法
         return `${name}.pinMode(${pin}, ${mode});\n`;
     });
 
+    // 向 PCF8574 扩展引脚写入数字信号（高/低电平）
     registerBlock('pcf8574_write', {
         init: function () {
             this.appendDummyInput()
@@ -111,6 +113,7 @@ const init = () => {
         return `${name}.digitalWrite(${pin}, ${val});\n`;
     });
 
+    // 从 PCF8574 扩展引脚读取数字信号状态
     registerBlock('pcf8574_read', {
         init: function () {
             this.appendDummyInput()
@@ -132,9 +135,12 @@ const init = () => {
 
 };
 
+/**
+ * IO 扩展模块 (PCF8574)
+ * 通过 I2C 总线扩展 8 个数字 I/O 引脚，适用于引脚资源紧张的场景。
+ */
 export const IOExpanderModule: BlockModule = {
     id: 'hardware.io_expander',
     name: 'IO Expander (PCF8574)',
-    category: 'Inputs', // Or a new category "Expanders"? Inputs fits for now locally.
     init
 };

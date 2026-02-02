@@ -1,3 +1,8 @@
+/**
+ * ============================================================
+ * TinyML (嵌入式机器学习) 积木定义
+ * ============================================================
+ */
 import * as Blockly from 'blockly';
 
 export const defineBlocks = () => {
@@ -8,7 +13,7 @@ export const defineBlocks = () => {
                 .appendField(Blockly.Msg.ARD_TINYML_KNN_INIT);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(280); // Purple/AI color
+            this.setColour(280);
             this.setTooltip(Blockly.Msg.ARD_TINYML_KNN_INIT_TOOLTIP);
         }
     };

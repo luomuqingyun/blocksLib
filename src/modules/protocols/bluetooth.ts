@@ -23,6 +23,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化蓝牙串口并设置设备名称
     registerBlock('bt_serial_init', {
         init: function () {
             this.appendDummyInput()
@@ -38,13 +39,17 @@ const init = () => {
     }, (block: any) => {
         const name = arduinoGenerator.valueToCode(block, 'NAME', Order.ATOMIC) || '"ESP32_BT"';
 
+        // 包含 BluetoothSerial 库
         arduinoGenerator.addInclude('bt_lib', '#include <BluetoothSerial.h>');
+        // 定义蓝牙串口对象
         arduinoGenerator.addVariable('bt_obj', `BluetoothSerial SerialBT;`);
+        // 在 setup 中根据给定名称开启服务
         arduinoGenerator.addSetup('bt_begin', `SerialBT.begin(${name});`);
 
         return '';
     });
 
+    // 检查蓝牙串口是否有可用数据
     registerBlock('bt_serial_available', {
         init: function () {
             this.appendDummyInput()
@@ -56,6 +61,7 @@ const init = () => {
         return ['SerialBT.available()', Order.ATOMIC];
     });
 
+    // 从蓝牙串口读取字符串
     registerBlock('bt_serial_read', {
         init: function () {
             this.appendDummyInput()
@@ -67,6 +73,7 @@ const init = () => {
         return ['SerialBT.readString()', Order.ATOMIC];
     });
 
+    // 通过蓝牙串口发送数据（带换行符）
     registerBlock('bt_serial_print', {
         init: function () {
             this.appendDummyInput()
@@ -87,6 +94,5 @@ const init = () => {
 export const BluetoothModule: BlockModule = {
     id: 'protocols.bluetooth',
     name: 'Bluetooth Serial',
-    category: 'Communication',
     init
 };

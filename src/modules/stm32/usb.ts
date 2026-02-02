@@ -19,7 +19,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
     // ------------------------------------------------------------------
-    // USB Keyboard Init
+    // USB 键盘初始化
     // ------------------------------------------------------------------
     registerBlock('stm32_usb_kb_init', {
         init: function () {
@@ -28,16 +28,17 @@ const init = () => {
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(200);
-            this.setTooltip("Initialize USB HID Keyboard");
+            this.setTooltip("初始化 USB HID 键盘模式");
         }
     }, function () {
+        // 包含键盘库并初始化
         arduinoGenerator.addInclude('Keyboard', '#include <Keyboard.h>');
         arduinoGenerator.addSetup('kb_begin', 'Keyboard.begin();');
         return '';
     });
 
     // ------------------------------------------------------------------
-    // USB Keyboard Print
+    // USB 键盘输入文本
     // ------------------------------------------------------------------
     registerBlock('stm32_usb_kb_print', {
         init: function () {
@@ -54,7 +55,7 @@ const init = () => {
     });
 
     // ------------------------------------------------------------------
-    // USB Mouse Init
+    // USB 鼠标初始化
     // ------------------------------------------------------------------
     registerBlock('stm32_usb_mouse_init', {
         init: function () {
@@ -63,16 +64,17 @@ const init = () => {
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(200);
-            this.setTooltip("Initialize USB HID Mouse");
+            this.setTooltip("初始化 USB HID 鼠标模式");
         }
     }, function () {
+        // 包含鼠标库并初始化
         arduinoGenerator.addInclude('Mouse', '#include <Mouse.h>');
         arduinoGenerator.addSetup('mouse_begin', 'Mouse.begin();');
         return '';
     });
 
     // ------------------------------------------------------------------
-    // USB Mouse Move
+    // USB 鼠标移动
     // ------------------------------------------------------------------
     registerBlock('stm32_usb_mouse_move', {
         init: function () {
@@ -89,6 +91,7 @@ const init = () => {
     }, function (block: any) {
         const x = arduinoGenerator.valueToCode(block, 'X', Order.NONE) || '0';
         const y = arduinoGenerator.valueToCode(block, 'Y', Order.NONE) || '0';
+        // 调用 Mouse.move 控制光标移动
         return `Mouse.move(${x}, ${y}, 0);\n`;
     });
 };
@@ -96,6 +99,5 @@ const init = () => {
 export const STM32USBModule: BlockModule = {
     id: 'stm32.usb',
     name: 'STM32 USB',
-    category: 'Communication',
     init
 };

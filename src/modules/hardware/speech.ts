@@ -21,13 +21,14 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化语音合成模块 (ESP8266SAM)
     registerBlock('speech_init', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_SPEECH_INIT);
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_SPEECH_PIN)
-                .appendField(new Blockly.FieldTextInput("25"), "PIN");
+                .appendField(new Blockly.FieldTextInput("25"), "PIN"); // 输出引脚
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(300);
@@ -36,30 +37,31 @@ const init = () => {
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
 
+        // 包含 Talkie 语音库（此处实际使用了 SAM 逻辑，Talkie 仅作为备份或引脚参考）
         arduinoGenerator.addInclude('talkie_lib', '#include <Talkie.h>');
         arduinoGenerator.addVariable('talkie_obj', `Talkie voice;`);
-        // Note: SAM usually outputs to I2S or DAC. 
-        // For simplicity we configure a standard AudioOutput object.
-        // This is a complex lib, often usage is: ESP8266SAM *sam = new ESP8266SAM;
 
+        // 使用 ESP8266SAM 库进行软件语音合成，输出到没有外部 DAC 的 I2S 接口
         arduinoGenerator.addVariable('speech_audio_out', `AudioOutputI2SNoDAC *out = NULL;`);
         arduinoGenerator.addVariable('speech_sam', `ESP8266SAM *sam = NULL;`);
 
+        // 在 setup 中配置输出通道和合成器
         arduinoGenerator.addSetup('speech_setup', `
   out = new AudioOutputI2SNoDAC();
   sam = new ESP8266SAM;
-`); // Pin assignment is often implicit in I2SNoDAC (RX pin on ESP8266, 25 on ESP32 sometimes, or standard I2S)
+`);
 
         return '';
     });
 
+    // 调用语音合成库说出指定文本
     registerBlock('speech_say', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_SPEECH_SAY);
+                .appendField(Blockly.Msg.ARD_SPEECH_SAY); // 朗读
             this.appendValueInput("TEXT")
                 .setCheck("String")
-                .appendField(Blockly.Msg.ARD_DISPLAY_TEXT);
+                .appendField(Blockly.Msg.ARD_DISPLAY_TEXT); // 文本
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(300);
@@ -67,16 +69,18 @@ const init = () => {
         }
     }, (block: any) => {
         const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '"Hello"';
-        // cast text to char*
-        // SAM.Say(out, text);
+        // 将产生的 String 类型文本转换为 C 风格字符串并传递给 SAM 实例执行语音合成
         return `sam->Say(out, ${text}.c_str());\n`;
     });
 
 };
 
+/**
+ * 语音合成模块 (TTS)
+ * 使用 ESP8266SAM 库实现简单的英语语音合成（SAM: Software Automatic Mouth），支持通过 I2S 或模拟 DAC 输出音频。
+ */
 export const SpeechModule: BlockModule = {
     id: 'hardware.speech',
     name: 'Speech Synthesis',
-    category: 'Actuators',
     init
 };

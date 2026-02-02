@@ -1,11 +1,33 @@
+/**
+ * ============================================================
+ * 通用设置区域组件 (General Settings Section Component)
+ * ============================================================
+ * 
+ * 设置模态框中的通用设置标签页内容。
+ * 
+ * 功能:
+ * - 语言选择 (系统/英语/中文)
+ * - 工作目录选择
+ * - 项目历史记录限制
+ * - 自动清理无效历史记录
+ * 
+ * @file src/components/settings/sections/GeneralSettings.tsx
+ * @module EmbedBlocks/Frontend/Components/Settings
+ */
+
 import React from 'react';
 import { Globe, Folder, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+/** 通用设置组件属性 */
 interface GeneralSettingsProps {
+    /** 当前配置对象 */
     config: any;
+    /** 保存配置回调 */
     handleSave: (key: string, value: any) => void;
+    /** 选择工作目录回调 */
     handleSelectWorkDir: () => void;
+    /** 设置配置的回调 */
     setConfig: React.Dispatch<React.SetStateAction<any>>;
 }
 
@@ -19,7 +41,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
 
     return (
         <div className="space-y-8">
-            {/* Language */}
+            {/* 语言设置 */}
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
                     <Globe size={16} /> {t('settings.language')}
@@ -36,7 +58,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 <p className="text-xs text-slate-500">{t('settings.langDesc')}</p>
             </div>
 
-            {/* Work Directory */}
+            {/* 工作目录设置 */}
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
                     <Folder size={16} /> {t('settings.workDir')}
@@ -58,7 +80,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 <p className="text-xs text-slate-500">{t('settings.workDirDesc')}</p>
             </div>
 
-            {/* Project History Limit */}
+            {/* 项目历史记录限制 */}
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-300">
                     {t('settings.projectHistoryLimit')}
@@ -87,7 +109,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 <p className="text-xs text-slate-500">{t('settings.projectHistoryLimitDesc')}</p>
             </div>
 
-            {/* Auto-clean No Match Recent Projects Toggle */}
+            {/* 自动清理无效历史项目开关 */}
             <div className="flex items-center justify-between">
                 <div>
                     <label className="text-sm font-medium text-slate-300 block">{t('settings.autoCleanNoMatchRecent', 'Auto-clean No Match History Projects')}</label>

@@ -28,19 +28,20 @@ const init = () => {
     // =========================================================================
     // Clean room strategy: Generic Blynk setup assuming WiFi usage (most common).
 
+    // Blynk WiFi 连接初始化
     registerBlock('blynk_setup_wifi', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Blynk Setup (WiFi)");
+                .appendField("Blynk 初始化 (WiFi)");
             this.appendValueInput("AUTH")
                 .setCheck("String")
-                .appendField("Auth Token");
+                .appendField("授权令牌 (Auth)");
             this.appendValueInput("SSID")
                 .setCheck("String")
-                .appendField("SSID");
+                .appendField("WiFi SSID");
             this.appendValueInput("PASS")
                 .setCheck("String")
-                .appendField("Password");
+                .appendField("WiFi 密码");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(200);
@@ -51,27 +52,31 @@ const init = () => {
         const ssid = arduinoGenerator.valueToCode(block, 'SSID', Order.ATOMIC) || '""';
         const pass = arduinoGenerator.valueToCode(block, 'PASS', Order.ATOMIC) || '""';
 
+        // 包含 ESP32 的 Blynk 库
         arduinoGenerator.addInclude('blynk_lib', '#include <BlynkSimpleEsp32.h>');
+        // 定义认证和网络凭据变量
         arduinoGenerator.addVariable('blynk_auth', `char auth[] = ${auth};`);
-        arduinoGenerator.addVariable('blynk_wifi', `char blynk_ssid[] = ${ssid};
-char blynk_pass[] = ${pass};`);
+        arduinoGenerator.addVariable('blynk_wifi', `char blynk_ssid[] = ${ssid};\nchar blynk_pass[] = ${pass};`);
 
-        arduinoGenerator.addSetup('blynk_begin', `Blynk.begin(auth, ssid, pass);`);
+        // 在 setup 中开启连接
+        arduinoGenerator.addSetup('blynk_begin', `Blynk.begin(auth, blynk_ssid, blynk_pass);`);
+        // 在 loop 中持续运行 Blynk 任务
         arduinoGenerator.addLoop('blynk_run', 'Blynk.run();');
 
         return '';
     });
 
+    // 向虚拟引脚写入数据
     registerBlock('blynk_write', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Blynk Write Virtual");
+                .appendField("Blynk 写入虚拟引脚");
             this.appendDummyInput()
-                .appendField("Pin V")
+                .appendField("引脚 V")
                 .appendField(new Blockly.FieldTextInput("1"), "PIN");
             this.appendValueInput("VAL")
                 .setCheck("Number")
-                .appendField("Value");
+                .appendField("数值");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(200);
@@ -84,13 +89,14 @@ char blynk_pass[] = ${pass};`);
         return `Blynk.virtualWrite(V${pin}, ${val});\n`;
     });
 
+    // 发送推送通知
     registerBlock('blynk_notify', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Blynk Notify");
+                .appendField("Blynk 推送通知");
             this.appendValueInput("MSG")
                 .setCheck("String")
-                .appendField("Message");
+                .appendField("消息");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(200);
@@ -102,19 +108,20 @@ char blynk_pass[] = ${pass};`);
         return `Blynk.notify(${msg});\n`;
     });
 
+    // 发送邮件通知
     registerBlock('blynk_email', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Blynk Email");
+                .appendField("Blynk 发送邮件");
             this.appendValueInput("ADDR")
                 .setCheck("String")
-                .appendField("To");
+                .appendField("收件人");
             this.appendValueInput("SUBJ")
                 .setCheck("String")
-                .appendField("Subject");
+                .appendField("主题");
             this.appendValueInput("BODY")
                 .setCheck("String")
-                .appendField("Body");
+                .appendField("正文");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(200);
@@ -128,10 +135,11 @@ char blynk_pass[] = ${pass};`);
         return `Blynk.email(${addr}, ${subj}, ${body});\n`;
     });
 
+    // 检查与 Blynk 云端的连接状态
     registerBlock('blynk_connected', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Blynk Connected?");
+                .appendField("Blynk 已连接？");
             this.setOutput(true, "Boolean");
             this.setColour(200);
             this.setTooltip(Blockly.Msg.ARD_BLYNK_CONN_TOOLTIP);
@@ -150,6 +158,5 @@ char blynk_pass[] = ${pass};`);
 export const BlynkModule: BlockModule = {
     id: 'protocols.blynk',
     name: 'Blynk IoT',
-    category: 'Blynk',
     init
 };

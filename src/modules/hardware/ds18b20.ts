@@ -27,6 +27,7 @@ const init = () => {
     // DS18B20 (OneWire + DallasTemperature)
     // =========================================================================
 
+    // 初始化 DS18B20 传感器
     registerBlock('ds18b20_init', {
         init: function () {
             this.appendDummyInput()
@@ -43,16 +44,20 @@ const init = () => {
         const pin = block.getFieldValue('PIN');
         reservePin(block, pin, 'INPUT');
 
+        // 包含单总线 (OneWire) 和 DallasTemperature 驱动库
         arduinoGenerator.addInclude('onewire_lib', '#include <OneWire.h>');
         arduinoGenerator.addInclude('ds18b20_lib', '#include <DallasTemperature.h>');
+        // 为特定引脚定义独立的通信对象
         arduinoGenerator.addVariable(`onewire_${pin}`, `OneWire oneWire_${pin}(${pin});`);
-        arduinoGenerator.addVariable(`ds18b20_${pin}`, `DallasTemperature sensor_${pin}(&oneWire_${pin});`);
+        arduinoGenerator.addVariable(`ds18b20_${pin}`, `DallasTemperature sensors_${pin}(&oneWire_${pin});`);
 
+        // 在 setup 中启动传感器
         arduinoGenerator.addSetup(`ds18b20_init_${pin}`, `sensors_${pin}.begin();`);
 
         return '';
     });
 
+    // 向总线上的所有 DS18B20 传感器发送温度转换请求
     registerBlock('ds18b20_request', {
         init: function () {
             this.appendDummyInput()
@@ -67,9 +72,11 @@ const init = () => {
         }
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
+        // requestTemperatures 是非阻塞的指令，告诉传感器开始测量温度
         return `sensors_${pin}.requestTemperatures();\n`;
     });
 
+    // 读取指定索引的 DS18B20 传感器的摄氏温度值
     registerBlock('ds18b20_read', {
         init: function () {
             this.appendDummyInput()
@@ -88,9 +95,11 @@ const init = () => {
         const pin = block.getFieldValue('PIN');
         const idx = block.getFieldValue('IDX');
 
+        // 通过索引获取温度，单总线上可以挂载多个传感器
         return [`sensors_${pin}.getTempCByIndex(${idx})`, Order.ATOMIC];
     });
 
+    // 设置 DS18B20 的测量分辨率 (9-12位)
     registerBlock('ds18b20_set_resolution', {
         init: function () {
             this.appendDummyInput()
@@ -109,9 +118,11 @@ const init = () => {
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
         const res = block.getFieldValue('RES');
+        // 分辨率越高精度越高，但转换时间也越长
         return `sensors_${pin}.setResolution(${res});\n`;
     });
 
+    // 获取当前 OneWire 总线上检测到的 DS18B20 传感器数量
     registerBlock('ds18b20_get_device_count', {
         init: function () {
             this.appendDummyInput()
@@ -129,9 +140,12 @@ const init = () => {
     });
 };
 
+/**
+ * DS18B20 温度传感器模块
+ * 支持单引脚 (OneWire) 挂载多个传感器。
+ */
 export const DS18B20Module: BlockModule = {
     id: 'hardware.ds18b20',
     name: 'DS18B20 Temp',
-    category: 'DS18B20',
     init
 };

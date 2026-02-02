@@ -50,30 +50,35 @@ import { useToolbox } from './hooks/useToolbox';
  * 包含 Blockly 编辑器和右侧面板的工作区布局
  */
 function AppContent() {
-
+  // 获取串口连接状态
   const { isConnected } = useSerial();
+  // 获取文件系统相关状态和操作
   const { blocklyRef, code, setCode, pendingXml, clearPendingXml, markWorkspaceDirty, currentFilePath } = useFileSystem();
+  // 获取当前选择的开发板
   const { selectedBoard } = useBuild();
+  // 获取 UI 相关状态
   const {
     rightPanelWidth, setRightPanelWidth,
     isManualEditMode,
     activeTab, setActiveTab
   } = useUI();
 
-  // Custom hook for toolbox management
+  // 用于工具箱管理的自定义钩子
   const toolboxConfig = useToolbox(selectedBoard);
 
-  // Auto-open Serial Monitor when connected
+  // 连接成功后自动打开串口监视器
   useEffect(() => {
     if (isConnected) {
       setActiveTab('serial');
     }
   }, [isConnected, setActiveTab]);
 
+  // 处理 Blockly 代码变更的函数
   const handleBlocklyCodeChange = (newCode: string) => {
     if (!isManualEditMode) {
       if (newCode !== code) {
         setCode(newCode);
+        // 如果不是正在加载 XML，则标记工作区为已修改（脏）状态
         if (!pendingXml) {
           markWorkspaceDirty();
         }
@@ -81,6 +86,7 @@ function AppContent() {
     }
   };
 
+  // 处理视口变更（缩放、滚动位置）并保存到本地存储
   const handleViewportChange = (vs: { scrollX: number, scrollY: number, scale: number }) => {
     if (currentFilePath) {
       try {
@@ -89,12 +95,12 @@ function AppContent() {
         console.log('[App] Saving view state to localStorage:', key, vs);
         localStorage.setItem(key, JSON.stringify({ ...vs, timestamp: Date.now() }));
       } catch (e) {
-        // Silently ignore storage errors
+        // 静默忽略存储错误
       }
     }
   };
 
-  // Trigger Blockly resize when activeTab changes (ResizeObserver handles panel width)
+  // 当 activeTab 改变时触发 Blockly 调整大小（ResizeObserver 负责处理面板宽度）
   useEffect(() => {
     if (blocklyRef.current) {
       blocklyRef.current.resize();
@@ -135,14 +141,14 @@ function AppContent() {
   );
 }
 
-// Separate component for listeners to use hooks
+// 独立的监听器组件，用于使用各种 Hook
 import { ProjectSettingsModal } from './components/Modals/ProjectSettingsModal';
 import { HelpModal } from './components/Modals/HelpModal';
 import { AboutOverlay } from './components/Modals/AboutOverlay';
 import { useAppController } from './hooks/useAppController';
 
 const GlobalListeners = () => {
-  // Use the controller hook to handle all menu actions
+  // 使用控制器钩子处理所有菜单操作
   useAppController();
 
   const { selectedBoard } = useBuild();
@@ -173,6 +179,7 @@ function AppInner() {
   const { setIsNewProjectOpen, setIsSettingsOpen, setIsExtensionsOpen } = useUI();
   const [recentProjects, setRecentProjects] = useState<string[]>([]);
 
+  // 刷新最近项目列表
   const refreshRecent = async () => {
     if (window.electronAPI) {
       const config = await window.electronAPI.getConfig();
@@ -182,9 +189,9 @@ function AppInner() {
 
   useEffect(() => {
     refreshRecent();
-  }, [currentFilePath]); // Also refresh when closing project (returning to welcome)
+  }, [currentFilePath]); // 在关闭项目（返回欢迎界面）时也进行刷新
 
-  // Initialize the extension system once at the top level
+  // 在顶层初始化一次扩展系统
   useEffect(() => {
     ExtensionRegistry.ensureInitialized().catch(err => {
       console.error('[AppInner] Failed to initialize ExtensionRegistry:', err);
@@ -213,6 +220,7 @@ function AppInner() {
   );
 }
 
+// App 根组件，负责提供所有全局 Context Provider
 function App() {
   return (
     <UIProvider>

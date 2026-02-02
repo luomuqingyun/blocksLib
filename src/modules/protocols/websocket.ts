@@ -23,6 +23,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化 WebSocket 服务器 (默认 81 端口)
     registerBlock('ws_server_init', {
         init: function () {
             this.appendDummyInput()
@@ -38,23 +39,27 @@ const init = () => {
     }, (block: any) => {
         const port = arduinoGenerator.valueToCode(block, 'PORT', Order.ATOMIC) || '81';
 
+        // 包含 WebSockets 库
         arduinoGenerator.addInclude('ws_lib', '#include <WebSocketsServer.h>');
+        // 定义全局 webSocket 对象
         arduinoGenerator.addVariable('ws_obj', `WebSocketsServer webSocket = WebSocketsServer(${port});`);
 
+        // 在 setup 中开启服务器
         arduinoGenerator.addSetup('ws_begin', `webSocket.begin();`);
 
-        // Loop hook needs to be careful not to conflict
+        // 在 loop 中处理 WebSocket 连接和数据，确保实时性
         arduinoGenerator.addLoop('ws_loop', `webSocket.loop();`);
 
         return '';
     });
 
+    // WebSocket 事件监听积木
     registerBlock('ws_on_event', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_WS_ON_EVENT);
             this.appendStatementInput("DO")
-                .appendField("Do");
+                .appendField("执行");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(210);
@@ -64,10 +69,12 @@ const init = () => {
         const branch = arduinoGenerator.statementToCode(block, 'DO');
 
         const funcName = 'webSocketEvent';
+        // 定义 WebSocket 事件回调函数：包含连接 ID、事件类型、数据载荷及长度
         arduinoGenerator.functions_[funcName] = `
 void ${funcName}(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
 ${branch}
 }`;
+        // 在 setup 中绑定事件回调
         arduinoGenerator.addSetup('ws_event', `webSocket.onEvent(${funcName});`);
         return '';
     });
@@ -94,6 +101,7 @@ ${branch}
         return `if(type == ${type}) {\n${branch}\n}\n`;
     });
 
+    // 向所有连接的 WebSocket 客户端广播文本消息
     registerBlock('ws_send_all', {
         init: function () {
             this.appendDummyInput()
@@ -108,6 +116,7 @@ ${branch}
         }
     }, (block: any) => {
         const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '""';
+        // 使用广播功能发送数据
         return `webSocket.broadcastTXT(${text});\n`;
     });
 
@@ -116,6 +125,5 @@ ${branch}
 export const WebSocketModule: BlockModule = {
     id: 'protocols.websocket',
     name: 'WebSocket Server',
-    category: 'Communication',
     init
 };

@@ -28,28 +28,33 @@ export const ProjectSettingsModal: React.FC = () => {
     const [config, setConfig] = useState<ProjectBuildConfig>({});
 
     // 更新配置字段 (将 'default' 值转为 undefined 以使用开发板默认值)
+    /**
+     * 更新配置字段
+     * 将 'default' 值转为 undefined，以便使用开发板的默认配置，且不会写入文件
+     */
     const updateField = (field: keyof ProjectBuildConfig, value: any) => {
-        // Sanitize "default" values to undefined so they don't override board defaults or get written to file
+        // 清理 "default" 值，避免覆盖开发板默认值或被写入配置文件
         const cleanValue = value === 'default' ? undefined : value;
         setConfig(prev => ({ ...prev, [field]: cleanValue }));
     };
 
     // Define allowed protocols per family
+    // 定义各芯片家族支持的上传协议
     const PROTOCOL_OPTIONS: Record<string, { value: string; label: string }[]> = {
         'stm32': [
             { value: 'stlink', label: 'ST-Link' },
-            { value: 'serial', label: 'Serial (UART / Bootloader)' },
+            { value: 'serial', label: '串口 (UART / Bootloader)' },
             { value: 'jlink', label: 'J-Link' },
             { value: 'cmsis-dap', label: 'CMSIS-DAP' },
             { value: 'blackmagic', label: 'Black Magic Probe' },
             { value: 'dfu', label: 'DFU' }
         ],
         'esp32': [
-            { value: 'esptool', label: 'esptool (Serial)' },
+            { value: 'esptool', label: 'esptool (串口)' },
             { value: 'esp-prog', label: 'ESP-Prog' },
             { value: 'esp-bridge', label: 'ESP-Bridge' },
             { value: 'esp-builtin', label: 'ESP-Builtin' },
-            { value: 'espota', label: 'ESPOTA (Over-the-Air)' },
+            { value: 'espota', label: 'ESPOTA (空中更新)' },
             { value: 'jlink', label: 'J-Link' },
             { value: 'cmsis-dap', label: 'CMSIS-DAP' },
             { value: 'iot-bus-jtag', label: 'IoT-Bus JTAG' },
@@ -62,19 +67,20 @@ export const ProjectSettingsModal: React.FC = () => {
             { value: 'dfu', label: 'DFU' }
         ],
         'arduino': [
-            { value: 'serial', label: 'Serial (Default)' },
+            { value: 'serial', label: '串口 (默认)' },
             { value: 'usbasp', label: 'USBasp' },
             { value: 'avrisp', label: 'AVR ISP' },
             { value: 'arduinoasisp', label: 'Arduino as ISP' },
             { value: 'usbtinyisp', label: 'USBtinyISP' }
         ],
         'default': [
-            { value: 'serial', label: 'Serial' },
+            { value: 'serial', label: '串口' },
             { value: 'stlink', label: 'ST-Link' },
             { value: 'jlink', label: 'J-Link' }
         ]
     };
 
+    /** 获取当前项目的芯片家族 */
     const getBoardFamily = () => {
         if (!projectMetadata?.boardId) return 'default';
         const boardDef = BoardRegistry.get(projectMetadata.boardId);
@@ -84,21 +90,21 @@ export const ProjectSettingsModal: React.FC = () => {
     const family = getBoardFamily();
     const options = PROTOCOL_OPTIONS[family] || PROTOCOL_OPTIONS['default'];
 
-    // Initialize default if undefined
+    // ========== Effect: 如果未指定协议，则初始化为开发板默认协议 ==========
     useEffect(() => {
         if (projectMetadata?.boardId) {
             const boardDef = BoardRegistry.get(projectMetadata.boardId);
             const currentProtocol = config.upload_protocol;
 
-            // If protocol is undefined or 'default', set it to board default immediately
+            // 如果协议未定义或为 'default'，立即设置为开发板默认协议
             if (!currentProtocol || currentProtocol === 'default') {
-                const defaultProtocol = boardDef?.build?.upload_protocol || 'serial'; // Fallback to serial
+                const defaultProtocol = boardDef?.build?.upload_protocol || 'serial'; // 回退到串口
                 updateField('upload_protocol', defaultProtocol);
             }
         }
     }, [projectMetadata?.boardId, config.upload_protocol]);
 
-    // Load config on open
+    // ========== Effect: 打开时加载项目配置 ==========
     useEffect(() => {
         if (isProjectSettingsOpen && projectMetadata) {
             setConfig(projectMetadata.buildConfig || {});
@@ -107,6 +113,7 @@ export const ProjectSettingsModal: React.FC = () => {
 
     if (!isProjectSettingsOpen) return null;
 
+    /** 保存并关闭 */
     const handleSave = () => {
         updateProjectConfig(config);
         setIsProjectSettingsOpen(false);
@@ -114,12 +121,16 @@ export const ProjectSettingsModal: React.FC = () => {
 
 
 
-    // Helper for array fields (lib_deps, build_flags) from text area
+    /**
+     * 处理文本域输入的数组字段 (如 lib_deps, build_flags)
+     * 按行分割并过滤空行
+     */
     const handleArrayInput = (field: 'lib_deps' | 'extraBuildFlags', text: string) => {
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         updateField(field, lines);
     };
 
+    /** 将数组字段转换为文本显示在文本域中 */
     const getArrayText = (field: 'lib_deps' | 'extraBuildFlags') => {
         return (config[field] || []).join('\n');
     };
@@ -127,26 +138,26 @@ export const ProjectSettingsModal: React.FC = () => {
     return (
         <BaseModal isOpen={isProjectSettingsOpen} onClose={() => setIsProjectSettingsOpen(false)}>
             <div className="bg-[#1e1e1e] w-[700px] h-[500px] rounded-lg shadow-2xl border border-[#333] flex flex-col overflow-hidden">
-                {/* Header */}
+                {/* 顶部标题栏 */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[#333] bg-[#252526]">
                     <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                        {t('settings.projectSettings', 'Project Settings')}
+                        {t('settings.projectSettings', '项目设置')}
                     </h2>
                     <button onClick={() => setIsProjectSettingsOpen(false)} className="text-slate-400 hover:text-white transition-colors">
                         <X size={18} />
                     </button>
                 </div>
 
-                {/* Body */}
+                {/* 主体大区 */}
                 <div className="flex-1 flex overflow-hidden">
-                    {/* Sidebar Tabs */}
+                    {/* 左侧侧边栏标签页 */}
                     <div className="w-40 bg-[#252526] border-r border-[#333] flex flex-col py-2">
                         {[
-                            { id: 'general', label: t('settings.configuration.general', 'General') },
-                            { id: 'compiler', label: t('settings.configuration.compiler', 'Compiler') },
-                            { id: 'libs', label: t('settings.configuration.libs', 'Libraries') },
-                            { id: 'upload', label: t('settings.configuration.upload', 'Upload & Monitor') },
-                            { id: 'advanced', label: t('settings.configuration.advanced', 'Advanced') }
+                            { id: 'general', label: t('settings.configuration.general', '常规') },
+                            { id: 'compiler', label: t('settings.configuration.compiler', '编译') },
+                            { id: 'libs', label: t('settings.configuration.libs', '依赖库') },
+                            { id: 'upload', label: t('settings.configuration.upload', '上传与监视') },
+                            { id: 'advanced', label: t('settings.configuration.advanced', '高级') }
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -158,9 +169,9 @@ export const ProjectSettingsModal: React.FC = () => {
                         ))}
                     </div>
 
-                    {/* Content Area */}
+                    {/* 右侧内容区域 */}
                     <div className="flex-1 p-6 overflow-y-auto bg-[#1e1e1e]">
-                        {/* GENERAL TAB */}
+                        {/* 常规标签页 */}
                         {activeTab === 'general' && (
                             <div className="space-y-4">
                                 <div className="space-y-1">
@@ -175,7 +186,7 @@ export const ProjectSettingsModal: React.FC = () => {
                             </div>
                         )}
 
-                        {/* COMPILER TAB */}
+                        {/* 编译标签页 */}
                         {activeTab === 'compiler' && (
                             <div className="space-y-5">
                                 <div className="space-y-1">
@@ -208,7 +219,7 @@ export const ProjectSettingsModal: React.FC = () => {
                             </div>
                         )}
 
-                        {/* LIBRARIES TAB */}
+                        {/* 依赖库标签页 */}
                         {activeTab === 'libs' && (
                             <div className="space-y-2 h-full flex flex-col">
                                 <label className="text-xs text-slate-400 font-mono block">
@@ -224,11 +235,11 @@ export const ProjectSettingsModal: React.FC = () => {
                             </div>
                         )}
 
-                        {/* UPLOAD TAB */}
+                        {/* 上传标签页 */}
                         {activeTab === 'upload' && (
                             <div className="space-y-5">
-                                {/* Upload Port Override */}
-                                {/* Show for Serial-based protocols */}
+                                {/* 上传端口覆盖 */}
+                                {/* 仅当使用串口协议时显示 */}
                                 {(config.upload_protocol === 'serial' || config.upload_protocol === 'esptool' || config.upload_protocol === 'default' || !config.upload_protocol) && (
                                     <div className="space-y-1 p-3 bg-[#2d2d2d]/30 border border-[#333] rounded">
                                         <label className="text-xs text-slate-300 font-bold block flex items-center gap-2">
@@ -314,7 +325,7 @@ export const ProjectSettingsModal: React.FC = () => {
                             </div>
                         )}
 
-                        {/* ADVANCED TAB */}
+                        {/* 高级标签页 */}
                         {activeTab === 'advanced' && (
                             <div className="space-y-4 h-full flex flex-col">
                                 <div className="flex-1 flex flex-col gap-1">
@@ -340,7 +351,7 @@ export const ProjectSettingsModal: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Footer */}
+                {/* 底部操作栏 */}
                 <div className="px-4 py-3 bg-[#252526] border-t border-[#333] flex justify-end gap-2">
                     <button
                         onClick={() => setIsProjectSettingsOpen(false)}

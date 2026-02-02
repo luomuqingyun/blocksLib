@@ -32,15 +32,22 @@ interface DirtyStateResult {
 /**
  * 管理项目脏状态和自动备份
  */
+/**
+ * 管理项目脏状态、版本控制和自动备份的核心 Hook
+ */
 export function useDirtyState(config: DirtyStateConfig): DirtyStateResult {
     const { currentFilePath, blocklyRef, getCode, getProjectMetadata } = config;
 
+    // isDirty: 标记项目是否有未保存的更改
     const [isDirty, setIsDirty] = useState<boolean>(false);
+
+    // workspaceVersion: 追踪工作区的更改次数
+    // 每次积木变动或配置修改都会递增此值，从而触发 useEffect 进行备份
     const [workspaceVersion, setWorkspaceVersion] = useState<number>(0);
 
     /**
-     * 标记工作区为脏状态并递增版本号
-     * 版本号变化会触发自动备份
+     * 标记工作区为“脏”并触发新的版本
+     * 此方法通常在积木块变动监听器（Blockly Listener）中被调用
      */
     const markWorkspaceDirty = useCallback(() => {
         setIsDirty(true);
@@ -50,8 +57,11 @@ export function useDirtyState(config: DirtyStateConfig): DirtyStateResult {
     // ============================================================
     // 自动备份机制 (Auto-Backup Mechanism)
     // ============================================================
-
+    // 实现原理：
+    // 每当工作区版本 (workspaceVersion) 发生变化且处于 dirty 状态时，
+    // 会设置一个极短时间的计时器。如果短时间内没有新的变动，则向主进程发送备份请求。
     useEffect(() => {
+        // 如果没有修改、没有项目路径或环境不支持 IPC，则跳过
         if (!isDirty || !currentFilePath || !window.electronAPI) return;
 
         const timer = setTimeout(async () => {
@@ -61,27 +71,32 @@ export function useDirtyState(config: DirtyStateConfig): DirtyStateResult {
             const metadata = getProjectMetadata();
             console.log(`[useDirtyState] Triggering Auto-Backup (Ver: ${workspaceVersion})`);
 
+            // 执行异步备份：保存 XML 结构、源码以及配置元数据
             await window.electronAPI.backupProject(currentFilePath, {
                 blocklyState: state,
                 code: getCode(),
                 boardId: metadata?.boardId || '',
                 buildConfig: metadata?.buildConfig
             });
-        }, 50); // 高频备份确保数据安全
+        }, 50); // 使用 50ms 超短抖动时间，由于备份操作通常是向硬盘写入 .swp 文件，这样可以确保数据极速同步
 
+        // 清理函数：如果 50ms 内发生了新的输入，取消上一次备份排队
         return () => clearTimeout(timer);
     }, [isDirty, workspaceVersion, currentFilePath, blocklyRef, getCode, getProjectMetadata]);
 
     // ============================================================
     // 窗口关闭前强制备份 (Force Backup on Window Exit)
     // ============================================================
-
+    // 核心逻辑：
+    // 当用户由于意外点击关闭按钮或刷新浏览器导致组件卸载时，
+    // 强制同步保存一次当前的 XML 状态到备份文件，防止最后一秒的劳动成果丢失。
     useEffect(() => {
         const handleBeforeUnload = () => {
             if (isDirty && currentFilePath && window.electronAPI && blocklyRef.current) {
                 const state = blocklyRef.current.getXml();
                 if (state) {
                     const metadata = getProjectMetadata();
+                    // 注意：此处是同步触发 IPC 消息发送，保证在进程销毁前送达
                     window.electronAPI.backupProject(currentFilePath, {
                         blocklyState: state,
                         code: getCode(),

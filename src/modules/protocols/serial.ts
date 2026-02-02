@@ -22,26 +22,32 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 import { BoardRegistry } from '../../registries/BoardRegistry';
 
 
-// ============================================================
-// 动态生成串口选项 (Generate Serial Options)
-// ============================================================
-// 根据当前选定开发板的 Pinout 定义，动态列出可用的硬件串口。
-// 1. "Serial (Default)" (默认):
-//    - 生成代码: Serial.begin(...)
-//    - 含义: 逻辑主串口。在 USB CDC 模式下可能指向虚拟串口，在普通模式下通常指 Serial1 (PA9/PA10)。
-//    - 场景: 推荐用于打印调试日志 (Print)，具有最佳的可移植性。
-// 2. "SerialX (USARTx)" (指定硬件串口):
-//    - 生成代码: SerialX.begin(...)
-//    - 含义: 强制绑定到特定的硬件外设 (如 USART1, USART2)。
-//    - 场景: 推荐用于连接外部模块 (蓝牙、GPS、舵机驱动等)，避免因 USB 设置改变导致引脚变动。
+/**
+ * 动态生成串口选项 (Generate Serial Options)
+ * ============================================================
+ * 根据当前选定开发板的 Pinout (引脚映射) 定义，动态列出所有可用的硬件串口。
+ * 
+ * 1. "Serial (Default)" (默认):
+ *    - 生成代码: Serial.begin(...)
+ *    - 含义: 逻辑主串口。在 USB CDC 模式下可能指向虚拟串口，在普通模式下通常指 Serial1。
+ *    - 场景: 推荐用于通过电脑 USB 进行打印调试日志。
+ * 
+ * 2. "SerialX (USARTx)" (指定硬件串口):
+ *    - 生成代码: SerialX.begin(...)
+ *    - 含义: 强制绑定到物理引脚上的特定硬件外设 (如 UART2)。
+ *    - 场景: 推荐用于连接外部通信模块（如 GPS、蓝牙、ESP-NOW 网关等）。
+ */
+/**
+ * 动态生成串口选项 (Generate Serial Options)
+ * 从当前开发板配置中提取所有可用的 UART 硬件外设。
+ */
 const generateSerialOptions = (): [string, string][] => {
     const board = BoardRegistry.getCurrentBoard();
     const uartData = board?.pinout?.UART;
-    const options: [string, string][] = [["Serial (Default)", "Serial"]];
+    const options: [string, string][] = [["主串口 (Serial Default)", "Serial"]];
 
     if (uartData) {
-        // 对串口号进行数值排序 (Sort keys numerically)
-        // 确保顺序为 Serial1 < Serial2 < Serial3 ... 而不是按字母序 (UART4 < USART1)
+        // 进行数值排序，确保 Serial1, Serial2 顺序正确
         const sortedKeys = Object.keys(uartData).sort((a, b) => {
             const numA = parseInt(a.match(/\d+/)![0] || "0");
             const numB = parseInt(b.match(/\d+/)![0] || "0");
@@ -52,38 +58,48 @@ const generateSerialOptions = (): [string, string][] => {
             const match = key.match(/U(?:S)?ART(\d+)/);
             if (match) {
                 const num = match[1];
-                options.push([`Serial${num} (${key})`, `Serial${num}`]);
+                options.push([`硬件串口 ${num} (${key})`, `Serial${num}`]);
             }
         });
     }
     return options;
 };
 
+/**
+ * 模块初始化函数
+ * 注册基础串口通信相关的积木块。
+ */
 const init = () => {
+
+    /** 串口打印 */
     registerBlock('arduino_serial_print', {
         init: function () {
             this.appendValueInput("CONTENT")
-                .appendField(Blockly.Msg.ARD_SERIAL_PRINT)
-                .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID")
-                .appendField(new Blockly.FieldCheckbox("TRUE"), "NEW_LINE")
+                .appendField(Blockly.Msg.ARD_SERIAL_PRINT) // 串口
+                .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID") // 动态下拉菜单
+                .appendField(new Blockly.FieldCheckbox("TRUE"), "NEW_LINE") // 换行复选框
                 .appendField(Blockly.Msg.ARD_SERIAL_NEWLINE);
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setColour(160);
+            this.setColour(160); // 通信协议类积木通常使用青蓝色
         }
     }, function (block: any) {
         const serialId = block.getFieldValue('SERIAL_ID');
         const content = arduinoGenerator.valueToCode(block, 'CONTENT', Order.NONE) || '""';
         const newLine = block.getFieldValue('NEW_LINE') === 'TRUE';
 
+        // 自动注入初始化代码，默认波特率为 115200。
+        // 代码生成器会自动通过键值 serial_begin_${serialId} 去重，确保每个串口只初始化一次。
         arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(115200);`);
+
         return newLine ? `${serialId}.println(${content});\n` : `${serialId}.print(${content});\n`;
     });
 
+    /** 检查是否有数据可读 */
     registerBlock('arduino_serial_available', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_SERIAL_AVAILABLE)
+                .appendField(Blockly.Msg.ARD_SERIAL_AVAILABLE) // 串口有数据可读?
                 .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID");
             this.setOutput(true, "Boolean");
             this.setColour(160);
@@ -94,10 +110,11 @@ const init = () => {
         return [`${serialId}.available()`, Order.ATOMIC];
     });
 
+    /** 读取全文字符串 */
     registerBlock('arduino_serial_read_string', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_SERIAL_READ_STRING)
+                .appendField(Blockly.Msg.ARD_SERIAL_READ_STRING) // 串口读取整个字符串
                 .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID");
             this.setOutput(true, "String");
             this.setColour(160);
@@ -106,13 +123,15 @@ const init = () => {
     }, function (block: any) {
         const serialId = block.getFieldValue('SERIAL_ID');
         arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(115200);`);
+        // 注意：readString() 是阻塞式的，直到超时或没有新数据，返回值是 String 对象。
         return [`${serialId}.readString()`, Order.ATOMIC];
     });
 
+    /** 读取单个字节 (ASCII 码) */
     registerBlock('arduino_serial_read_char', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_SERIAL_READ_CHAR)
+                .appendField(Blockly.Msg.ARD_SERIAL_READ_CHAR) // 串口读取单个字符
                 .appendField(new Blockly.FieldDropdown(generateSerialOptions), "SERIAL_ID");
             this.setOutput(true, "Number");
             this.setColour(160);
@@ -121,13 +140,17 @@ const init = () => {
     }, function (block: any) {
         const serialId = block.getFieldValue('SERIAL_ID');
         arduinoGenerator.addSetup(`serial_begin_${serialId}`, `${serialId}.begin(115200);`);
+        // 读取缓冲区中的第一个字节，如果没有数据则返回 -1。
         return [`${serialId}.read()`, Order.ATOMIC];
     });
 };
 
+/**
+ * 基础串口模块定义
+ * 提供了对硬件 UART 全双工异步通信的核心支持。
+ */
 export const SerialModule: BlockModule = {
     id: 'protocols.serial',
     name: 'Serial Basic',
-    category: 'Serial',
     init
 };

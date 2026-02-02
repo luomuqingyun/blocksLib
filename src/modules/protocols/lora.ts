@@ -25,6 +25,7 @@ const init = () => {
     // LoRa (LoRa.h)
     // =========================================================================
 
+    // 初始化 LoRa 模块
     registerBlock('lora_init', {
         init: function () {
             this.appendDummyInput()
@@ -56,15 +57,18 @@ const init = () => {
         reservePin(block, rst, 'OUTPUT');
         reservePin(block, irq, 'INPUT');
 
+        // 包含 SPI 和 LoRa 库
         arduinoGenerator.addInclude('spi_lib', '#include <SPI.h>');
         arduinoGenerator.addInclude('lora_lib', '#include <LoRa.h>');
 
+        // 在 setup 中配置引脚交互并根据频率开启 LoRa
         arduinoGenerator.addSetup('lora_pins', `LoRa.setPins(${cs}, ${rst}, ${irq});`);
-        arduinoGenerator.addSetup('lora_begin', `if (!LoRa.begin(${freq})) { while (1); }`);
+        arduinoGenerator.addSetup('lora_begin', `if (!LoRa.begin(${freq})) {\n    // 初始化失败，死循环\n    while (1);\n  }`);
 
         return '';
     });
 
+    // 配置 LoRa 参数 (功率, 扩频因子, 同步字)
     registerBlock('lora_config', {
         init: function () {
             this.appendDummyInput()
@@ -88,9 +92,11 @@ const init = () => {
         const sf = block.getFieldValue('SF');
         const sync = block.getFieldValue('SYNC');
 
+        // 设置发射功率、扩频因子和同步字
         return `LoRa.setTxPower(${pwr});\nLoRa.setSpreadingFactor(${sf});\nLoRa.setSyncWord(${sync});\n`;
     });
 
+    // 开始封包
     registerBlock('lora_packet_begin', {
         init: function () {
             this.appendDummyInput()
@@ -104,13 +110,14 @@ const init = () => {
         return `LoRa.beginPacket();\n`;
     });
 
+    // 在数据包中写入数据
     registerBlock('lora_print', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_LORA_PRINT);
             this.appendValueInput("DATA")
                 .setCheck("String")
-                .appendField("Data");
+                .appendField("数据");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(190);
@@ -121,6 +128,7 @@ const init = () => {
         return `LoRa.print(${data});\n`;
     });
 
+    // 结束封包并发送
     registerBlock('lora_packet_end', {
         init: function () {
             this.appendDummyInput()
@@ -194,6 +202,7 @@ const init = () => {
         return [`LoRa.packetSnr()`, Order.ATOMIC];
     });
 
+    // 读取 LoRa 接收到的完整字符串
     registerBlock('lora_read_string', {
         init: function () {
             this.appendDummyInput()
@@ -204,6 +213,7 @@ const init = () => {
         }
     }, (block: any) => {
         const funcName = 'lora_read_string_fn';
+        // 定义读取字符串的辅助函数，通过循环 LoRa.read 拼接
         arduinoGenerator.functions_[funcName] = `
 String ${funcName}() {
   String received = "";
@@ -220,6 +230,5 @@ String ${funcName}() {
 export const LoRaModule: BlockModule = {
     id: 'protocols.lora',
     name: 'LoRa Radio',
-    category: 'LoRa',
     init
 };

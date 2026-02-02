@@ -22,6 +22,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化 Web 服务器 (默认 80 端口)
     registerBlock('web_server_init', {
         init: function () {
             this.appendDummyInput()
@@ -32,12 +33,15 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_WEB_SERVER_INIT_TOOLTIP);
         }
     }, (block: any) => {
+        // 包含 WiFi 和 WebServer 库
         arduinoGenerator.addInclude('wifi_lib', '#include <WiFi.h>');
         arduinoGenerator.addInclude('web_server_lib', '#include <WebServer.h>');
+        // 定义全局 server 对象，监听 80 端口
         arduinoGenerator.addVariable('web_server_obj', `WebServer server(80);`);
         return '';
     });
 
+    // 注册 Web 路由处理
     registerBlock('web_server_on', {
         init: function () {
             this.appendDummyInput()
@@ -56,16 +60,19 @@ const init = () => {
         const path = arduinoGenerator.valueToCode(block, 'PATH', Order.ATOMIC) || '"/"';
         const branch = arduinoGenerator.statementToCode(block, 'DO');
 
-        // We need to create a unique function for this handler
+        // 为该路由路径创建一个唯一的处理函数名
         const funcName = `handle_path_${path.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
+        // 定义回调处理函数
         arduinoGenerator.functions_[funcName] = `
 void ${funcName}() {
 ${branch}
 }`;
+        // 绑定路径到对应的回调函数
         return `server.on(${path}, ${funcName});\n`;
     });
 
+    // 发送 Web 响应
     registerBlock('web_server_send', {
         init: function () {
             this.appendDummyInput()
@@ -90,6 +97,7 @@ ${branch}
         const type = arduinoGenerator.valueToCode(block, 'TYPE', Order.ATOMIC) || '"text/plain"';
         const content = arduinoGenerator.valueToCode(block, 'CONTENT', Order.ATOMIC) || '"Hello"';
 
+        // 发送带 HTTP 状态码、内容类型和内容的响应
         return `server.send(${code}, ${type}, ${content});\n`;
     });
 
@@ -106,6 +114,7 @@ ${branch}
         return `server.begin();\n`;
     });
 
+    // 处理客户端请求 (需放在 loop 中)
     registerBlock('web_server_handle_client', {
         init: function () {
             this.appendDummyInput()
@@ -116,6 +125,7 @@ ${branch}
             this.setTooltip(Blockly.Msg.ARD_WEB_SERVER_HANDLE_TOOLTIP);
         }
     }, (block: any) => {
+        // 核心运行逻辑：处理异步的网络请求
         return `server.handleClient();\n`;
     });
 
@@ -124,6 +134,5 @@ ${branch}
 export const WebServerModule: BlockModule = {
     id: 'protocols.web_server',
     name: 'Web Server',
-    category: 'Communication',
     init
 };

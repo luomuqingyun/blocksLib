@@ -1,3 +1,8 @@
+/**
+ * ============================================================
+ * TinyML 代码生成器 (Generator)
+ * ============================================================
+ */
 import { arduinoGenerator, Order } from '../../../generators/arduino-base';
 
 export const defineGenerators = () => {
@@ -13,11 +18,9 @@ KNNPoint knn_data[50];
 int knn_count = 0;
 
 int knn_classify(float f0, float f1, float f2, int k) {
-  float distances[50];
   int best_label = -1;
   float min_dist = 99999.0;
   
-  // Simple 1-NN implementation for now (K=1)
   for(int i=0; i<knn_count; i++) {
      float d = sqrt( pow(f0 - knn_data[i].features[0], 2) + 
                      pow(f1 - knn_data[i].features[1], 2) + 

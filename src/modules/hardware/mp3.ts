@@ -23,16 +23,17 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化 MP3 播放器 (DFPlayer Mini)
     registerBlock('mp3_init', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MP3_INIT);
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MP3_RX)
-                .appendField(new Blockly.FieldTextInput("16"), "RX");
+                .appendField(new Blockly.FieldTextInput("16"), "RX"); // 接 DFPlayer 的 TX 引脚
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MP3_TX)
-                .appendField(new Blockly.FieldTextInput("17"), "TX");
+                .appendField(new Blockly.FieldTextInput("17"), "TX"); // 接 DFPlayer 的 RX 引脚
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(250);
@@ -45,45 +46,34 @@ const init = () => {
         reservePin(block, rx, 'INPUT');
         reservePin(block, tx, 'OUTPUT');
 
-        // Using HardwareSerial 2 logic if pins match, but for generality on ESP32 we often use Serial2
-        // However, DFPlayer lib often takes a stream.
-        // Let's use standard DFRobotDFPlayerMini lib
-
+        // 包含 DFRobot 官方 DFPlayer 库
         arduinoGenerator.addInclude('mp3_lib', '#include <DFRobotDFPlayerMini.h>');
 
-        // We will use Serial2 for ESP32 best performance if possible, or a named HardwareSerial
-        // For simplicity in blocks, we'll map to Serial2 or create a SoftSerial if really needed,
-        // but ESP32 has 3 UARTs.
-
+        // 定义全局播放器对象
         arduinoGenerator.addVariable('mp3_obj', `DFRobotDFPlayerMini myDFPlayer;`);
-        // We assume usage of Serial2 for pins 16/17 (Standard ESP32 UART2)
-        // If user picks other pins, they should be mapped.
-        // For robustness, we will try to use HardwareSerial if pins 16/17, else SoftwareSerial?
-        // ESP32 doesn't recommend SoftSerial. HardwareSerial can be remapped.
-
+        // 使用 ESP32 的硬件串口 2 (Serial2) 进行通信
         arduinoGenerator.addVariable('mp3_serial', `HardwareSerial myMP3Serial(2);`);
 
+        // 在 setup 中初始化串口并尝试与播放器建立通信
         arduinoGenerator.addSetup('mp3_init', `
   myMP3Serial.begin(9600, SERIAL_8N1, ${rx}, ${tx});
   
   if (!myDFPlayer.begin(myMP3Serial)) {
-    // Serial.println(F("Unable to begin:"));
-    // Serial.println(F("1.Please recheck the connection!"));
-    // Serial.println(F("2.Please insert the SD card!"));
-    // while(true);
+    // 若初始化失败，可以在此处添加 LED 或 串口日志提示
   }
-  myDFPlayer.volume(20);  //Set volume value. From 0 to 30
+  myDFPlayer.volume(20);  // 初始化默认音量 (范围 0-30)
 `);
         return '';
     });
 
+    // 播放指定编号的曲目 (曲目存储在 TF 卡根目录下)
     registerBlock('mp3_play', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MP3_PLAY);
             this.appendValueInput("TRACK")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_MP3_TRACK);
+                .appendField(Blockly.Msg.ARD_MP3_TRACK); // 曲目编号
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(250);
@@ -95,16 +85,17 @@ const init = () => {
         return `myDFPlayer.play(${track});\n`;
     });
 
+    // 控制播放状态 (上一曲、下一曲、暂停、继续、停止)
     registerBlock('mp3_control', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MP3_CONTROL)
                 .appendField(new Blockly.FieldDropdown([
-                    ["Next", "next"],
-                    ["Previous", "previous"],
-                    ["Pause", "pause"],
-                    ["Start", "start"],
-                    ["Stop", "stop"]
+                    ["下一曲", "next"],
+                    ["上一曲", "previous"],
+                    ["暂停", "pause"],
+                    ["播放", "start"],
+                    ["停止", "stop"]
                 ]), "ACTION");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
@@ -116,6 +107,7 @@ const init = () => {
         return `myDFPlayer.${action}();\n`;
     });
 
+    // 设置播放音量 (音量等级 0-30)
     registerBlock('mp3_volume', {
         init: function () {
             this.appendDummyInput()
@@ -136,9 +128,12 @@ const init = () => {
 
 };
 
+/**
+ * MP3 播放器模块
+ * 适配 DFPlayer Mini 串口 MP3 模块，支持 TF 卡播放及基本的播放控制功能。
+ */
 export const MP3Module: BlockModule = {
     id: 'hardware.mp3',
     name: 'MP3 Player',
-    category: 'Sensors', // Actuators really
     init
 };

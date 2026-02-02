@@ -25,6 +25,7 @@ const init = () => {
     // =========================================================================
     // VL53L0X Time of Flight (Adafruit_VL53L0X.h)
     // =========================================================================
+    // 初始化 VL53L0X 激距传感器 (ToF)
     registerBlock('sensor_vl53l0x_init', {
         init: function () {
             this.appendDummyInput()
@@ -35,12 +36,16 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_VL530X_TOOLTIP);
         }
     }, (block: any) => {
+        // 包含 Adafruit VL53L0X 库
         arduinoGenerator.addInclude('vl53l0x_lib', '#include "Adafruit_VL53L0X.h"');
+        // 实例化激光测距对象
         arduinoGenerator.addVariable('vl53l0x_obj', `Adafruit_VL53L0X lox = Adafruit_VL53L0X();`);
+        // 在 setup 中测试传感器是否正常启动
         arduinoGenerator.addSetup('vl53l0x_init', `if (!lox.begin()) { while(1); }`);
         return '';
     });
 
+    // 读取 VL53L0X 测量得到的距离 (mm)
     registerBlock('sensor_vl53l0x_read', {
         init: function () {
             this.appendDummyInput()
@@ -50,16 +55,16 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_VL530X_TOOLTIP);
         }
     }, (block: any) => {
-        // We wrap in a helper function to handle the struct
+        // 使用辅助函数包装复杂的结构体读取逻辑
         const funcName = 'readVL53L0X';
         arduinoGenerator.addFunction(funcName, `
 int ${funcName}() {
   VL53L0X_RangingMeasurementData_t measure;
   lox.rangingTest(&measure, false); 
-  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+  if (measure.RangeStatus != 4) {  // Phase failure 代表超出范围或读取错误
     return measure.RangeMilliMeter;
   } else {
-    return -1; // Out of range
+    return -1; // -1 表示测量无效
   }
 }`);
         return [`${funcName}()`, Order.ATOMIC];
@@ -69,6 +74,7 @@ int ${funcName}() {
     // =========================================================================
     // MPU6050 (Adafruit_MPU6050.h)
     // =========================================================================
+    // 初始化 MPU6050 六轴传感器 (加速度 + 陀螺仪)
     registerBlock('sensor_mpu6050_init', {
         init: function () {
             this.appendDummyInput()
@@ -79,30 +85,36 @@ int ${funcName}() {
             this.setTooltip(Blockly.Msg.ARD_MPU6050_TOOLTIP);
         }
     }, (block: any) => {
+        // 包含 I2C 和 Adafruit 传感器相关库
         arduinoGenerator.addInclude('wire_lib', '#include <Wire.h>');
         arduinoGenerator.addInclude('mpu6050_lib', '#include <Adafruit_MPU6050.h>');
         arduinoGenerator.addInclude('sensor_lib', '#include <Adafruit_Sensor.h>');
+
+        // 定义全局 MPU 对象
         arduinoGenerator.addVariable('mpu_obj', `Adafruit_MPU6050 mpu;`);
-        arduinoGenerator.addSetup('mpu_init', `if (!mpu.begin()) { while (1); } // Halt if failed
-          mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-          mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-          mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+
+        // 在 setup 中进行初始化配置
+        arduinoGenerator.addSetup('mpu_init', `if (!mpu.begin()) { while (1); } // 初始化失败则停止运行（可替换为串口报错）
+          mpu.setAccelerometerRange(MPU6050_RANGE_8_G);  // 设置加速度范围为 +/- 8G
+          mpu.setGyroRange(MPU6050_RANGE_500_DEG);     // 设置陀螺仪范围为 500 deg/s
+          mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);  // 设置数字过滤带宽
         `);
         return '';
     });
 
+    // 读取 MPU6050 的传感器数值
     registerBlock('sensor_mpu6050_read', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MPU6050_READ)
                 .appendField(new Blockly.FieldDropdown([
-                    ["Accel X", "a.acceleration.x"],
-                    ["Accel Y", "a.acceleration.y"],
-                    ["Accel Z", "a.acceleration.z"],
-                    ["Gyro X", "g.gyro.x"],
-                    ["Gyro Y", "g.gyro.y"],
-                    ["Gyro Z", "g.gyro.z"],
-                    ["Temperature", "temp.temperature"]
+                    ["加速度 X", "a.acceleration.x"],
+                    ["加速度 Y", "a.acceleration.y"],
+                    ["加速度 Z", "a.acceleration.z"],
+                    ["角速度 X", "g.gyro.x"],
+                    ["角速度 Y", "g.gyro.y"],
+                    ["角速度 Z", "g.gyro.z"],
+                    ["温度", "temp.temperature"]
                 ]), "VAL");
             this.setOutput(true, "Number");
             this.setColour(180);
@@ -111,16 +123,11 @@ int ${funcName}() {
     }, (block: any) => {
         const val = block.getFieldValue('VAL');
 
-        // This requires an update function or we read all every time?
-        // Adafruit lib reads into event objects.
-        const funcName = 'readMPU6050_' + val.replace(/\./g, '_');
-
-        // This approach is a bit tricky because we need to define 'sensors_event_t a, g, temp;'
-        // Best to have a function that returns the specific value updating if needed?
-        // Let's assume we read fresh every time for simplicity, though slightly inefficient.
+        // 为了简化积木逻辑，定义一个通用的读取辅助函数
         arduinoGenerator.addFunction('mpu_read_helper', `
 float getMPUValue(int type) {
   sensors_event_t a, g, temp;
+  // 调用 getEvent 一次性获取加速度、陀螺仪和温度数据
   mpu.getEvent(&a, &g, &temp);
   switch(type) {
       case 0: return a.acceleration.x;
@@ -134,6 +141,7 @@ float getMPUValue(int type) {
   return 0;
 }`);
 
+        // 根据下拉菜单选择的分量确定 typeId
         let typeId = 0;
         if (val.includes("acceleration.y")) typeId = 1;
         if (val.includes("acceleration.z")) typeId = 2;
@@ -148,6 +156,8 @@ float getMPUValue(int type) {
     // =========================================================================
     // GPS (TinyGPS++)
     // =========================================================================
+
+    // 初始化 GPS 模块 (TinyGPS++)
     registerBlock('sensor_gps_init', {
         init: function () {
             this.appendDummyInput()
@@ -167,27 +177,31 @@ float getMPUValue(int type) {
         const rx = block.getFieldValue('RX');
         const tx = block.getFieldValue('TX');
 
+        // 包含 TinyGPS++ 解析库
         arduinoGenerator.addInclude('gps_lib', '#include <TinyGPS++.h>');
+        // 定义全局 GPS 解析对象
         arduinoGenerator.addVariable('gps_obj', `TinyGPSPlus gps;`);
 
+        // 使用 ESP32 的串口 2 与 GPS 通信
         arduinoGenerator.addSetup('gps_serial', `Serial2.begin(9600, SERIAL_8N1, ${rx}, ${tx});`);
 
-        // We need to feed the GPS object in Loop
+        // 在主循环循环中不断喂入串口原始数据进行解析 (GPS 数据解析是流式的)
         arduinoGenerator.addLoop('gps_feed', `while (Serial2.available() > 0) gps.encode(Serial2.read());`);
 
         return '';
     });
 
+    // 读取解析后的 GPS 信息（经纬度、高度、星数、速度等）
     registerBlock('sensor_gps_read', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_GPS_READ)
                 .appendField(new Blockly.FieldDropdown([
-                    ["Latitude", "location.lat()"],
-                    ["Longitude", "location.lng()"],
-                    ["Altitude (m)", "altitude.meters()"],
-                    ["Satellites", "satellites.value()"],
-                    ["Speed (kmph)", "speed.kmph()"]
+                    ["纬度", "location.lat()"],
+                    ["经度", "location.lng()"],
+                    ["海拔 (m)", "altitude.meters()"],
+                    ["卫星数", "satellites.value()"],
+                    ["速度 (km/h)", "speed.kmph()"]
                 ]), "VAL");
             this.setOutput(true, "Number");
             this.setColour(180);
@@ -195,15 +209,19 @@ float getMPUValue(int type) {
         }
     }, (block: any) => {
         const val = block.getFieldValue('VAL');
+        // 直接从全局 gps 对象获取解析好的数值
         return [`gps.${val}`, Order.ATOMIC];
     });
 
 
 };
 
+/**
+ * 高级传感器 III 模块
+ * 封装了 MPU6050 六轴运动传感器及基于 TinyGPS++ 库的串行 GPS 解析功能。
+ */
 export const SensorsIIIModule: BlockModule = {
     id: 'hardware.sensors_iii',
     name: 'Advanced Sensors III',
-    category: 'Adv Sensors',
     init
 };

@@ -21,6 +21,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 读取麦克风音量 (峰值检测)
     registerBlock('audio_read_volume', {
         init: function () {
             this.appendDummyInput()
@@ -41,8 +42,7 @@ const init = () => {
 
         reservePin(block, pin, 'INPUT');
 
-        // Helper function for peak detection to avoid blocking main loop too strangely
-        // But here we do a blocking sample for 'window' ms.
+        // 定义获取音量的辅助函数：通过指定窗口时间内的峰峰值 (Peak-to-Peak) 来估算音量
         const funcName = 'getAudioVolume';
         arduinoGenerator.functions_[funcName] = `
 int ${funcName}(int pin, int windowMS) {
@@ -50,7 +50,7 @@ int ${funcName}(int pin, int windowMS) {
    unsigned int signalMax = 0;
    unsigned int signalMin = 1024;
    
-   // Collect data for windowMS
+   // 在 windowMS 时间内持续采样，记录最大值和最小值
    while (millis() - startMillis < windowMS) {
       int sample = analogRead(pin);
       if (sample < 1024) {
@@ -59,7 +59,7 @@ int ${funcName}(int pin, int windowMS) {
       }
    }
    int peakToPeak = signalMax - signalMin;
-   // Map roughly to 0-100. Typical mic p2p might be 0-512 depending on gain
+   // 将峰峰值映射到 0-100 的音量范围（通常典型麦克风峰峰值为 512 左右）
    int vol = map(peakToPeak, 0, 512, 0, 100);
    if(vol > 100) vol = 100;
    return vol;
@@ -67,6 +67,7 @@ int ${funcName}(int pin, int windowMS) {
         return [`${funcName}(${pin}, ${window})`, Order.ATOMIC];
     });
 
+    // 检测声音是否超过阈值 (响度检测)
     registerBlock('audio_is_loud', {
         init: function () {
             this.appendDummyInput()
@@ -83,7 +84,7 @@ int ${funcName}(int pin, int windowMS) {
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
         const thresh = arduinoGenerator.valueToCode(block, 'THRESH', Order.ATOMIC) || '30';
-        // Reuse func
+        // 复用获取音量的函数进行判断
         return [`(getAudioVolume(${pin}, 30) > ${thresh})`, Order.ATOMIC];
     });
 
@@ -92,6 +93,5 @@ int ${funcName}(int pin, int windowMS) {
 export const AudioInputModule: BlockModule = {
     id: 'hardware.audio_input',
     name: 'Audio Input (Mic)',
-    category: 'Sensors',
     init
 };

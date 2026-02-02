@@ -21,6 +21,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+  // ESP32 摄像头初始化 (AI-Thinker 引脚配置)
   registerBlock('camera_init', {
     init: function () {
       this.appendDummyInput()
@@ -31,10 +32,13 @@ const init = () => {
       this.setTooltip(Blockly.Msg.ARD_CAMERA_INIT_TOOLTIP);
     }
   }, (block: any) => {
+    // 包含 esp_camera 核心头文件
     arduinoGenerator.addInclude('camera_lib', '#include "esp_camera.h"');
+    // 定义摄像头配置结构体
     arduinoGenerator.addVariable('camera_config', `camera_config_t config;`);
+    // 定义适用于大多数 ESP32-CAM (如安信可 AI-Thinker) 的引脚映射宏
     arduinoGenerator.addVariable('camera_pin_config', `
-// Camera Pins (AI Thinker Model)
+// 摄像头引脚定义 (安信可 AI-Thinker 模型)
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
 #define XCLK_GPIO_NUM      0
@@ -53,6 +57,7 @@ const init = () => {
 #define PCLK_GPIO_NUM     22
 `);
 
+    // 定义详细的初始化函数：处理时钟、引脚分配、分辨率及 PSRAM 检测
     arduinoGenerator.functions_['camera_config_func'] = `
 void initCamera() {
   camera_config_t config;
@@ -77,6 +82,7 @@ void initCamera() {
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
   
+  // 如果找到 PSRAM，则支持更高分辨率和更高质量
   if(psramFound()){
     config.frame_size = FRAMESIZE_UXGA;
     config.jpeg_quality = 10;
@@ -87,18 +93,19 @@ void initCamera() {
     config.fb_count = 1;
   }
   
-  // camera init
+  // 核心初始化调用，若失败则通常会停留在 while 循环或打印错误
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
-    // Serial.printf("Camera init failed with error 0x%x", err);
     return;
   }
 }`;
 
+    // 在 setup 中调用初始化
     arduinoGenerator.addSetup('camera_setup', `initCamera();`);
     return '';
   });
 
+  // 执行拍照动作
   registerBlock('camera_take_photo', {
     init: function () {
       this.appendDummyInput()
@@ -109,24 +116,21 @@ void initCamera() {
       this.setTooltip(Blockly.Msg.ARD_CAMERA_CAP_TOOLTIP);
     }
   }, (block: any) => {
+    // 获取帧缓冲区快照并立即释放（示例性逻辑，后续可对接 SD 卡或网络发送）
     return `
     camera_fb_t * fb = esp_camera_fb_get();
     if(!fb) {
-      // Serial.println("Camera capture failed");
+      // 捕获失败处理逻辑
     } else {
-      // Process fb->buf, fb->len here if needed
-      esp_camera_fb_return(fb); 
+      // 成功获取图像数据 fb->buf，大小为 fb->len
+      esp_camera_fb_return(fb); // 获取后必须释放缓冲区
     }
 \n`;
-    // This block is a bit "empty" without logic to save or send.
-    // Usually combined with SD Save or HTTP Send.
-    // For now, it just exercises the driver.
   });
 };
 
 export const CameraModule: BlockModule = {
   id: 'hardware.camera',
   name: 'ESP32 Camera',
-  category: 'Sensors',
   init
 };

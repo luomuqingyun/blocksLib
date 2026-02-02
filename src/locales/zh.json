@@ -210,7 +210,7 @@
         "confirmClearHistory": "确定要清除所有历史记录吗？",
         "historyCleared": "历史记录已清除",
         "autoCleanNoMatchRecent": "自动清理无效历史项目",
-        "autoCleanNoMatchRecentDesc": "启动时自动移除无效的项目历史记录",
+        "autoCleanNoMatchRecentDesc": "启用时立即清理，并在每次启动时自动移除无效的项目历史记录",
         "clearProjectHistory": "清空项目历史",
         "confirmClearProjectHistory": "确定要清空所有项目历史记录吗？",
         "toolbox": "工具箱",

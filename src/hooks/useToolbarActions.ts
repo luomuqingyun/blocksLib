@@ -92,28 +92,45 @@ export interface ToolbarActionsResult {
  * <button onClick={build.buildProject}>Build</button>
  */
 export function useToolbarActions(): ToolbarActionsResult {
-    // 获取各 Context
+    // 1. 从各 Context 中解构所需的状态和方法
+
+    // 串口 Context: 管理串口列表、选中端口及刷新逻辑
     const { ports, selectedPort, setSelectedPort, refreshPorts } = useSerial();
+
+    // 文件系统 Context: 管理项目生命周期 (新建、打开、保存、导出、元数据)
     const {
         newProject, openProject, saveProject, saveProjectAs,
         exportCode, importBlocklyJson, projectMetadata,
         closeProject, updateProjectBoard
     } = useFileSystem();
+
+    // UI Context: 控制各类设置与扩展模态框的显示
     const { setIsSettingsOpen, setIsExtensionsOpen, setIsProjectSettingsOpen } = useUI();
+
+    // 编译构建 Context: 管理目标板卡、执行编译及上传任务
     const { selectedBoard, setSelectedBoard, buildProject, uploadProject } = useBuild();
 
-    // UI 操作包装
+    // 2. UI 操作包装 (使用 useCallback 确保引用稳定)
+
+    /** 打开全局设置模态框 */
     const openSettings = useCallback(() => setIsSettingsOpen(true), [setIsSettingsOpen]);
+
+    /** 打开组件/扩展市场模态框 */
     const openExtensions = useCallback(() => setIsExtensionsOpen(true), [setIsExtensionsOpen]);
+
+    /** 打开当前项目的特定配置（如编译参数、板卡选项） */
     const openProjectSettings = useCallback(() => setIsProjectSettingsOpen(true), [setIsProjectSettingsOpen]);
 
+    // 3. 聚合并导出包含所有模块的单一对象
     return {
+        // 串口模块
         serial: {
             ports,
             selectedPort,
             setSelectedPort,
             refreshPorts,
         },
+        // 项目管理模块
         project: {
             projectMetadata,
             newProject,
@@ -125,12 +142,14 @@ export function useToolbarActions(): ToolbarActionsResult {
             importBlocklyJson,
             updateProjectBoard,
         },
+        // 编译上传模块
         build: {
             selectedBoard,
             setSelectedBoard,
             buildProject,
             uploadProject,
         },
+        // UI 交互模块
         ui: {
             openSettings,
             openExtensions,

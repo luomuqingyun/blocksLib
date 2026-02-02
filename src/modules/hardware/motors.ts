@@ -21,6 +21,7 @@ const init = () => {
     // =========================================================================
     // DC Motor (Generic L298N style or 2-pin control)
     // =========================================================================
+    // 运行直流电机 (支持前进、后退、停止)
     registerBlock('motor_dc_run', {
         init: function () {
             this.appendDummyInput()
@@ -52,14 +53,18 @@ const init = () => {
         reservePin(block, pinA, 'OUTPUT');
         reservePin(block, pinB, 'OUTPUT');
 
+        // 在 setup 中将引脚设为输出模式
         arduinoGenerator.addSetup(`motor_setup_${pinA}_${pinB}`, `pinMode(${pinA}, OUTPUT);\npinMode(${pinB}, OUTPUT);`);
 
         let code = '';
         if (dir === 'FWD') {
+            // 前进：A 推 PWM 信号（速控），B 接低电平
             code = `analogWrite(${pinA}, ${speed});\ndigitalWrite(${pinB}, LOW);\n`;
         } else if (dir === 'BWD') {
-            code = `digitalWrite(${pinA}, LOW);\nanalogWrite(${pinB}, ${speed});\n`;
+            // 后退：A 接低电平，B 推 PWM 信号（速控）
+            code = `digitalWrite(${pinA}, LOW);\nalogWrite(${pinB}, ${speed});\n`;
         } else {
+            // 停止：双端拉低
             code = `digitalWrite(${pinA}, LOW);\ndigitalWrite(${pinB}, LOW);\n`;
         }
 
@@ -69,13 +74,14 @@ const init = () => {
     // =========================================================================
     // Stepper Motor (Stepper.h)
     // =========================================================================
+    // 配置标准步进电机 (基于 Arduino 官方 Stepper 库)
     registerBlock('motor_stepper_config', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MOTOR_STEPPER_CONFIG);
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MOTOR_STEPS_REV)
-                .appendField(new Blockly.FieldNumber(2048), "STEPS");
+                .appendField(new Blockly.FieldNumber(2048), "STEPS"); // 每转步数 (例如 28BYJ-48 为 2048)
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MOTOR_PIN1)
                 .appendField(new Blockly.FieldTextInput("8"), "PIN1");
@@ -100,22 +106,25 @@ const init = () => {
         const p3 = block.getFieldValue('PIN3');
         const p4 = block.getFieldValue('PIN4');
 
+        // 包含步进电机核心库
         arduinoGenerator.addInclude('stepper_lib', '#include <Stepper.h>');
-        arduinoGenerator.addVariable('stepper_def', `Stepper myStepper(${steps}, ${p1}, ${p3}, ${p2}, ${p4});`); // Note: Stepper lib often requires 1-3-2-4 order for 4-pin steppers
+        // 实例化 Stepper 对象。注意：Stepper 库在 4 线模式下通常推荐使用 1-3-2-4 的引脚顺序
+        arduinoGenerator.addVariable('stepper_def', `Stepper myStepper(${steps}, ${p1}, ${p3}, ${p2}, ${p4});`);
 
         return '';
     });
 
+    // 驱动步进电机移动
     registerBlock('motor_stepper_step', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MOTOR_STEPPER_MOVE);
             this.appendValueInput("STEPS")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_MOTOR_STEPS);
+                .appendField(Blockly.Msg.ARD_MOTOR_STEPS); // 步数 (正数为一个方向，负数为另一个方向)
             this.appendValueInput("SPEED")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_MOTOR_SPEED_RPM);
+                .appendField(Blockly.Msg.ARD_MOTOR_SPEED_RPM); // 速度 (RPM: 每分钟转数)
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(200);
@@ -126,14 +135,18 @@ const init = () => {
         const steps = arduinoGenerator.valueToCode(block, 'STEPS', Order.ATOMIC) || '0';
         const speed = arduinoGenerator.valueToCode(block, 'SPEED', Order.ATOMIC) || '10';
 
+        // 设置速度并执行步进。注意：step() 是阻塞执行的
         return `myStepper.setSpeed(${speed});\nmyStepper.step(${steps});\n`;
     });
 
 };
 
+/**
+ * 基础电机控制模块
+ * 提供直流电机 (PWM) 和标准 4 线步进电机的控制功能。
+ */
 export const MotorsModule: BlockModule = {
     id: 'hardware.motors',
     name: 'Motors',
-    category: 'Motors',
     init
 };

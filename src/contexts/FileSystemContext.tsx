@@ -209,36 +209,49 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         });
     }, [checkDirtyAndRun]);
 
+    /** 
+     * 导出生成的 Arduino 源代码 (.ino) 
+     * 弹出另存为对话框，并将代码内容写入文件
+     */
     const exportCode = useCallback(async () => {
         if (!window.electronAPI) return;
         try {
             const path = await window.electronAPI.saveCodeDialog();
             if (path) await window.electronAPI.saveFileContent(code, path);
         } catch (e) {
-            console.error(e);
+            console.error("导出代码失败:", e);
         }
     }, [code]);
 
+    /** 
+     * 导入 Blockly JSON 数据 
+     * 将外部 JSON 文件内容加载到当前工作区，并自动保存
+     */
     const importBlocklyJson = useCallback(async () => {
         if (!window.electronAPI) return;
-        if (currentFilePath && !confirm("Importing will replace current blocks. Continue?")) return;
+        // 如果当前已有开启的项目，提示用户导入将覆盖现有内容
+        if (currentFilePath && !confirm("导入将替换当前的积木块。是否继续？")) return;
 
         const result = await window.electronAPI.openFileDialog({
-            title: 'Import Blockly JSON',
+            title: '导入 Blockly JSON',
             filters: [{ name: 'JSON Files', extensions: ['json'] }]
         });
 
         if (result && result.content) {
             try {
+                // 调用 Blockly 包装器的方法加载内容
                 blocklyRef.current?.loadXml(result.content);
+                // 标记工作区为已修改状态
                 markWorkspaceDirty();
+                // 延迟触发保存
                 setTimeout(() => saveProject(), 100);
             } catch (e) {
-                alert("Invalid JSON format");
+                alert("无效的 JSON 格式");
             }
         }
     }, [saveProject, currentFilePath, markWorkspaceDirty]);
 
+    /** 手动触发设置工作目录 */
     const handleSetWorkDir = useCallback(async () => {
         if (!window.electronAPI) return;
         const path = await window.electronAPI.selectWorkDir();
@@ -248,35 +261,35 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const value = {
         code, setCode,
         currentFilePath: currentFilePath || undefined,
-        projectMetadata,
-        updateProjectConfig,
-        updateProjectBoard,
-        workDir,
-        blocklyRef,
-        isDirty,
+        projectMetadata,        // 项目元数据 (如开发板和编译配置)
+        updateProjectConfig,    // 更新编译配置
+        updateProjectBoard,     // 更新选中的开发板
+        workDir,                // 当前工作目录
+        blocklyRef,             // Blockly 包装器引用
+        isDirty,                // 工作区是否有未保存的更改
         setIsDirty,
-        markWorkspaceDirty,
+        markWorkspaceDirty,      // 标记为脏数据
         newProject: () => setIsNewProjectOpen(true),
-        createNewProject,
-        openProject,
-        saveProject,
+        createNewProject,        // 创建新项目逻辑
+        openProject,             // 打开项目
+        saveProject,             // 保存项目
         saveProjectAs: async () => {
             if (!currentFilePath) setIsNewProjectOpen(true);
             else setIsSaveAsOpen(true);
         },
-        performSaveAs,
-        exportCode,
-        handleSetWorkDir,
-        importBlocklyJson,
-        openProjectByPath,
-        closeProject,
-        pendingXml,
+        performSaveAs,           // 执行另存为操作
+        exportCode,              // 导出代码
+        handleSetWorkDir,        // 设置工作路径
+        importBlocklyJson,       // 导入积木 JSON
+        openProjectByPath,       // 根据路径打开项目
+        closeProject,            // 关闭当前项目
+        pendingXml,              // 待加载的 XML/JSON 数据
         clearPendingXml: () => setPendingXml(null),
-        savePrompt,
-        checkDirtyAndRun,
-        handleSaveConfirm,
-        handleDontSave,
-        handleCancelPrompt
+        savePrompt,              // 保存提示框状态
+        checkDirtyAndRun,        // 检查脏数据并执行操作 (用于安全关闭项目)
+        handleSaveConfirm,       // 确认保存的回调
+        handleDontSave,          // 不保存的回调
+        handleCancelPrompt       // 取消关闭操作
     };
 
     return (

@@ -25,6 +25,7 @@ const init = () => {
     // NRF24L01 (RF24.h)
     // =========================================================================
 
+    // 初始化 NRF24L01 模块
     registerBlock('nrf24_init', {
         init: function () {
             this.appendDummyInput()
@@ -47,11 +48,14 @@ const init = () => {
         reservePin(block, ce, 'OUTPUT');
         reservePin(block, csn, 'OUTPUT');
 
+        // 包含 SPI 和 RF24 库
         arduinoGenerator.addInclude('spi_lib', '#include <SPI.h>');
         arduinoGenerator.addInclude('rf24_lib', '#include <RF24.h>');
+        // 定义 radio 对象和默认地址
         arduinoGenerator.addVariable('rf24_obj', `RF24 radio(${ce}, ${csn});`);
-        arduinoGenerator.addVariable('rf24_addr', `const byte address[6] = "00001";`); // Simplified fixed address for block demo
+        arduinoGenerator.addVariable('rf24_addr', `const byte address[6] = "00001";`); // 演示用固定地址
 
+        // 在 setup 中初始化 radio 并开启监听
         arduinoGenerator.addSetup('rf24_init', `
   radio.begin();
   radio.openWritingPipe(address);
@@ -62,6 +66,7 @@ const init = () => {
         return '';
     });
 
+    // 发送 NRF24 消息
     registerBlock('nrf24_send', {
         init: function () {
             this.appendDummyInput()
@@ -78,7 +83,7 @@ const init = () => {
     }, (block: any) => {
         const msg = arduinoGenerator.valueToCode(block, 'MSG', Order.ATOMIC) || '"Hello"';
 
-        // Logic: Stop listening -> Write -> Start listening
+        // 发送逻辑：停止监听 -> 写入数据 -> 重新开启监听
         return `
 radio.stopListening();
 const char text[] = ${msg};
@@ -99,6 +104,7 @@ radio.startListening();
         return ['radio.available()', Order.ATOMIC];
     });
 
+    // 读取 NRF24 接收到的字符串
     registerBlock('nrf24_read', {
         init: function () {
             this.appendDummyInput()
@@ -108,7 +114,7 @@ radio.startListening();
             this.setTooltip(Blockly.Msg.ARD_NRF24_READ_TOOLTIP);
         }
     }, (block: any) => {
-        // Setup helper function for reading
+        // 定义读取字符串的辅助函数
         const funcName = 'nrf24_read_str';
         arduinoGenerator.functions_[funcName] = `
 String ${funcName}() {
@@ -121,6 +127,7 @@ String ${funcName}() {
         return [`${funcName}()`, Order.ATOMIC];
     });
 
+    // 配置 NRF24 信道和功率等级
     registerBlock('nrf24_config', {
         init: function () {
             this.appendDummyInput()
@@ -144,6 +151,7 @@ String ${funcName}() {
     }, (block: any) => {
         const chan = block.getFieldValue('CHAN');
         const level = block.getFieldValue('LEVEL');
+        // 设置通信信道和功率
         return `radio.setChannel(${chan});\nradio.setPALevel(${level});\n`;
     });
 
@@ -191,6 +199,5 @@ if ("${type}" == "Writing") {
 export const NRF24Module: BlockModule = {
     id: 'protocols.nrf24',
     name: 'NRF24L01 Radio',
-    category: 'NRF24',
     init
 };

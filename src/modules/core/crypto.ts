@@ -19,20 +19,30 @@ import { arduinoGenerator, Order, registerBlock } from '../../generators/arduino
 import { BlockModule } from '../../registries/ModuleRegistry';
 
 
+/**
+ * 模块初始化函数
+ * 注册加解密与编码相关的积木定义及其代码生成器。
+ */
 const init = () => {
 
+    // =========================================================================
+    // MD5 哈希计算 (MD5 Hashing)
+    // 使用 ESP32/ESP8266 内置的 MD5Builder 库生成 32 位十六进制摘要。
+    // =========================================================================
     registerBlock('crypto_md5', {
         init: function () {
-            this.appendDummyInput().appendField(Blockly.Msg.ARD_CRYPTO_MD5);
-            this.appendValueInput("TEXT").setCheck("String").appendField(Blockly.Msg.ARD_TEXT_TEXT);
+            this.appendDummyInput().appendField(Blockly.Msg.ARD_CRYPTO_MD5); // MD5 哈希
+            this.appendValueInput("TEXT").setCheck("String").appendField(Blockly.Msg.ARD_TEXT_TEXT); // 文本
             this.setOutput(true, "String");
-            this.setColour(230); // Math/Logic
+            this.setColour(230); // 蓝色系，属于数学/逻辑类扩展
         }
     }, (block: any) => {
         const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '""';
 
+        // 引入 Arduino 核心提供的 MD5Builder
         arduinoGenerator.addInclude('md5_lib', '#include <MD5Builder.h>');
 
+        // 注入私有辅助函数以简化积木调用逻辑
         const funcName = 'calculateMD5';
         arduinoGenerator.functions_[funcName] = `
 String ${funcName}(String text) {
@@ -45,9 +55,13 @@ String ${funcName}(String text) {
         return [`${funcName}(${text})`, Order.ATOMIC];
     });
 
+    // =========================================================================
+    // SHA256 哈希计算 (SHA256 Hashing)
+    // 使用工业级的 mbedTLS 库（ESP32 硬件加速支持）执行哈希运算。
+    // =========================================================================
     registerBlock('crypto_sha256', {
         init: function () {
-            this.appendDummyInput().appendField(Blockly.Msg.ARD_CRYPTO_SHA256);
+            this.appendDummyInput().appendField(Blockly.Msg.ARD_CRYPTO_SHA256); // SHA256 哈希
             this.appendValueInput("TEXT").setCheck("String").appendField(Blockly.Msg.ARD_TEXT_TEXT);
             this.setOutput(true, "String");
             this.setColour(230);
@@ -55,8 +69,10 @@ String ${funcName}(String text) {
     }, (block: any) => {
         const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '""';
 
+        // 引入嵌入式标准的 mbedTLS 库头文件
         arduinoGenerator.addInclude('mbedtls_sha256', '#include "mbedtls/md.h"');
 
+        // 生成 SHA256 辅助函数，将计算结果（32位二进制）转换为 HEX 字符串
         const funcName = 'calculateSHA256';
         arduinoGenerator.functions_[funcName] = `
 String ${funcName}(String text) {
@@ -81,25 +97,30 @@ String ${funcName}(String text) {
         return [`${funcName}(${text})`, Order.ATOMIC];
     });
 
+    // =========================================================================
+    // Base64 编码 (Base64 Encoding)
+    // 将二进制或普通文本转换为可打印的 Base64 字符串。
+    // =========================================================================
     registerBlock('crypto_base64_encode', {
         init: function () {
-            this.appendDummyInput().appendField(Blockly.Msg.ARD_CRYPTO_BASE64_ENC);
+            this.appendDummyInput().appendField(Blockly.Msg.ARD_CRYPTO_BASE64_ENC); // Base64 编码
             this.appendValueInput("TEXT").setCheck("String").appendField(Blockly.Msg.ARD_TEXT_TEXT);
             this.setOutput(true, "String");
             this.setColour(230);
         }
     }, (block: any) => {
         const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '""';
+        // 依赖 Arduino 核心自带的 base64.h (常用于 ESP 板卡)
         arduinoGenerator.addInclude('base64_lib', '#include <base64.h>');
-        // Note: Arduino has multiple base64 libs. ESP32 core often has 'base64' included or available.
-        // If generic 'base64.h' isn't there, we might need a custom implementation or include correct header path.
-        // ESP32 usually has <base64.h> exposing `encode()` and `decode()`.
         return [`base64::encode(${text})`, Order.ATOMIC];
     });
 
+    // =========================================================================
+    // Base64 解码 (Base64 Decoding)
+    // =========================================================================
     registerBlock('crypto_base64_decode', {
         init: function () {
-            this.appendDummyInput().appendField(Blockly.Msg.ARD_CRYPTO_BASE64_DEC);
+            this.appendDummyInput().appendField(Blockly.Msg.ARD_CRYPTO_BASE64_DEC); // Base64 解码
             this.appendValueInput("TEXT").setCheck("String").appendField(Blockly.Msg.ARD_TEXT_TEXT);
             this.setOutput(true, "String");
             this.setColour(230);
@@ -112,9 +133,12 @@ String ${funcName}(String text) {
 
 };
 
+/**
+ * 加密模块定义
+ * 为物联网应用提供基础的安全哈希与编码支持。
+ */
 export const CryptoModule: BlockModule = {
     id: 'core.crypto',
     name: 'Cryptography',
-    category: 'Security', // New category
     init
 };

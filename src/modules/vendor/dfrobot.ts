@@ -27,6 +27,7 @@ const init = () => {
     // DFPlayer Mini (DFRobotDFPlayerMini.h)
     // =========================================================================
 
+    // 初始化 DFPlayer Mini
     registerBlock('dfrobot_player_init', {
         init: function () {
             this.appendDummyInput()
@@ -46,12 +47,15 @@ const init = () => {
         const rx = block.getFieldValue('RX');
         const tx = block.getFieldValue('TX');
 
+        // 包含 SoftwareSerial 和 DFRobotDFPlayerMini 库
         arduinoGenerator.addInclude('softserial_lib', '#include <SoftwareSerial.h>');
         arduinoGenerator.addInclude('dfplayer_lib', '#include <DFRobotDFPlayerMini.h>');
 
+        // 定义串口和播放器对象
         arduinoGenerator.addVariable('dfplayer_serial', `SoftwareSerial mySoftwareSerial(${rx}, ${tx});`);
         arduinoGenerator.addVariable('dfplayer_obj', `DFRobotDFPlayerMini myDFPlayer;`);
 
+        // 在 Setup 中初始化播放器
         arduinoGenerator.addSetup('dfplayer_init', `
   mySoftwareSerial.begin(9600);
   if (!myDFPlayer.begin(mySoftwareSerial)) {
@@ -62,6 +66,7 @@ const init = () => {
         return '';
     });
 
+    // 播放指定编号的曲目
     registerBlock('dfrobot_player_play', {
         init: function () {
             this.appendDummyInput()
@@ -80,6 +85,7 @@ const init = () => {
         return `myDFPlayer.play(${track});\n`;
     });
 
+    // 设置播放音量
     registerBlock('dfrobot_player_volume', {
         init: function () {
             this.appendDummyInput()
@@ -98,6 +104,7 @@ const init = () => {
         return `myDFPlayer.volume(${vol});\n`;
     });
 
+    // 播放控制（下一首、上一首、暂停等）
     registerBlock('dfrobot_player_control', {
         init: function () {
             this.appendDummyInput()
@@ -123,6 +130,7 @@ const init = () => {
         return `myDFPlayer.${action}();\n`;
     });
 
+    // 循环播放指定编号的曲目
     registerBlock('dfrobot_player_loop', {
         init: function () {
             this.appendDummyInput()
@@ -141,6 +149,7 @@ const init = () => {
         return `myDFPlayer.loop(${track});\n`;
     });
 
+    // 设置均衡器模式
     registerBlock('dfrobot_player_eq', {
         init: function () {
             this.appendDummyInput()
@@ -169,6 +178,5 @@ const init = () => {
 export const DFRobotModule: BlockModule = {
     id: 'vendor.dfrobot',
     name: 'DFRobot',
-    category: 'DFRobot',
     init
 };

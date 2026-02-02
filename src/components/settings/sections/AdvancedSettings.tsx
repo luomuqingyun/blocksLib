@@ -1,9 +1,28 @@
+/**
+ * ============================================================
+ * 高级设置区域组件 (Advanced Settings Section Component)
+ * ============================================================
+ * 
+ * 设置模态框中的高级设置标签页内容。
+ * 
+ * 功能:
+ * - 恢复出厂默认设置
+ * - 可选清除历史记录
+ * - 打开配置文件夹
+ * 
+ * @file src/components/settings/sections/AdvancedSettings.tsx
+ * @module EmbedBlocks/Frontend/Components/Settings
+ */
+
 import React from 'react';
 import { RotateCcw, FolderOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+/** 高级设置组件属性 */
 interface AdvancedSettingsProps {
+    /** 当前配置对象 */
     config: any;
+    /** 保存配置回调 */
     handleSave: (key: string, value: any) => void;
 }
 
@@ -21,7 +40,7 @@ export const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({ config, hand
                     {t('settings.confirmRestoreFactory')}
                 </p>
 
-                {/* Clear History Checkbox in Advanced Restore */}
+                {/* 恢复时清除历史记录选项 */}
                 <div className="flex items-center gap-2 mb-3">
                     <input
                         type="checkbox"
@@ -35,14 +54,19 @@ export const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({ config, hand
                     </label>
                 </div>
 
+                {/* 恢复默认设置按钮 */}
                 <button
                     onClick={async () => {
+                        // 确认对话框
                         if (confirm(t('settings.confirmRestoreFactory'))) {
+                            // 如果串口连接中，先关闭
                             const status = await window.electronAPI.getSerialStatus();
                             if (status.connected) {
                                 await window.electronAPI.closeSerial();
                             }
+                            // 执行恢复默认设置
                             await window.electronAPI.restoreDefaults(undefined, config.advanced?.clearHistoryOnRestore || false);
+                            // 重新加载页面以应用新设置
                             window.location.reload();
                         }
                     }}
@@ -52,6 +76,7 @@ export const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({ config, hand
                 </button>
             </div>
 
+            {/* 打开配置文件夹卡片 */}
             <div className="p-4 bg-[#252526] border border-slate-700 rounded-lg">
                 <h3 className="text-sm font-bold text-slate-300 mb-2 flex items-center gap-2">
                     <FolderOpen size={16} />

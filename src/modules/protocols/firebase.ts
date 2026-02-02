@@ -22,43 +22,45 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // Firebase 数据库配置
     registerBlock('firebase_config', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Firebase Config");
+                .appendField("Firebase 配置");
             this.appendValueInput("URL")
                 .setCheck("String")
-                .appendField("URL");
+                .appendField("数据库 URL");
             this.appendValueInput("SECRET")
                 .setCheck("String")
-                .appendField("Secret");
+                .appendField("数据库密钥 (Secret)");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(25); // Deep orange/red
+            this.setColour(25); // 深橙色/红色
             this.setTooltip(Blockly.Msg.ARD_FIREBASE_INIT_TOOLTIP);
         }
     }, (block: any) => {
         const url = arduinoGenerator.valueToCode(block, 'URL', Order.ATOMIC) || '""';
         const secret = arduinoGenerator.valueToCode(block, 'SECRET', Order.ATOMIC) || '""';
 
-        arduinoGenerator.addInclude('firebase_lib', '#include <IOXhop_FirebaseESP32.h>'); // One common lib option
-        // Alternative: FirebaseESP32.h by Mobizt (Official-ish)
-        // using IOXhop syntax for simplicity: Firebase.begin(url, secret)
+        // 包含 Firebase ESP32 库
+        arduinoGenerator.addInclude('firebase_lib', '#include <IOXhop_FirebaseESP32.h>');
 
+        // 在 setup 中开启 Firebase 连接
         arduinoGenerator.addSetup('firebase_begin', `Firebase.begin(${url}, ${secret});`);
         return '';
     });
 
+    // 向 Firebase 写入整数值
     registerBlock('firebase_set_int', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Firebase Set Int");
+                .appendField("Firebase 写入整数");
             this.appendValueInput("PATH")
                 .setCheck("String")
-                .appendField("Path");
+                .appendField("路径");
             this.appendValueInput("VAL")
                 .setCheck("Number")
-                .appendField("Value");
+                .appendField("数值");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(25);
@@ -69,13 +71,14 @@ const init = () => {
         return `Firebase.setInt(${path}, ${val});\n`;
     });
 
+    // 从 Firebase 读取整数值
     registerBlock('firebase_get_int', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Firebase Get Int");
+                .appendField("Firebase 读取整数");
             this.appendValueInput("PATH")
                 .setCheck("String")
-                .appendField("Path");
+                .appendField("路径");
             this.setOutput(true, "Number");
             this.setColour(25);
         }
@@ -85,16 +88,17 @@ const init = () => {
     });
 
     // String variants
+    // 向 Firebase 写入字符串值
     registerBlock('firebase_set_string', {
         init: function () {
             this.appendDummyInput()
-                .appendField("Firebase Set String");
+                .appendField("Firebase 写入字符串");
             this.appendValueInput("PATH")
                 .setCheck("String")
-                .appendField("Path");
+                .appendField("路径");
             this.appendValueInput("VAL")
                 .setCheck("String")
-                .appendField("Value");
+                .appendField("字符串值");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(25);
@@ -109,6 +113,5 @@ const init = () => {
 export const FirebaseModule: BlockModule = {
     id: 'protocols.firebase',
     name: 'Firebase DB',
-    category: 'Cloud',
     init
 };

@@ -24,8 +24,17 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 import { FieldSlider } from '@blockly/field-slider';
 
 
+/**
+ * 模块初始化函数
+ * 注册 Arduino 核心 I/O 相关积木，包括数字/模拟读写、PWM 及移位输出。
+ */
 const init = () => {
 
+    /**
+     * 生成数字 I/O 引脚下拉选项。
+     * 优先从当前选中的开发板注册表 (BoardRegistry) 中获取引脚配置，
+     * 若未选中板卡则返回通用 Arduino Uno 风格的默认引脚。
+     */
     const generateDigitalOptions = (): [string, string][] => {
         const board = BoardRegistry.getCurrentBoard();
         const pins = board?.pin_options?.digital;
@@ -44,8 +53,11 @@ const init = () => {
         ];
     };
 
-    // 生成 PWM 引脚选项 (带硬件定时器提示)
-    // 自动查找当前板子的 pinout.TIM 数据，显示如 "PA0 (TIM2_CH1)"
+    /**
+     * 生成 PWM (模拟输出) 引脚选项。
+     * 除了获取引脚列表，还会根据板卡的硬件定义查找定时器/通道信息 (TIM Hint)，
+     * 帮助用户避开引脚冲突。例如显示为 "PA0 (TIM2_CH1)"。
+     */
     const generatePWMOptions = (): [string, string][] => {
         const board = BoardRegistry.getCurrentBoard();
         const pins = board?.pin_options?.pwm;
@@ -57,13 +69,12 @@ const init = () => {
                 const value = String(Array.isArray(p) ? p[1] : p);
 
                 // 硬件提示查找逻辑 (Hardware Hint Lookup)
-                // 遍历 pinout.TIM 结构，查找当前引脚所属的定时器和通道
                 let hint = "";
                 if (timData) {
                     for (const timerName in timData) {
                         const channels = timData[timerName];
                         for (const chName in channels) {
-                            if (channels[chName].includes(value)) { // Fix: Search by value, not name
+                            if (channels[chName].includes(value)) {
                                 hint = ` (${timerName}_${chName})`;
                                 break;
                             }
@@ -80,6 +91,7 @@ const init = () => {
         ];
     };
 
+    /** 生成模拟输入 (ADC) 引脚选项 */
     const generateAnalogOptions = (): [string, string][] => {
         const board = BoardRegistry.getCurrentBoard();
         const analogPins = board?.pin_options?.analog;
@@ -96,30 +108,36 @@ const init = () => {
         ];
     };
 
+    // =========================================================================
+    // 数字写 (Digital Write)
+    // =========================================================================
     registerBlock('arduino_digital_write', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_DIG_WRITE)
+                .appendField(Blockly.Msg.ARD_IO_DIG_WRITE) // 数字写
                 .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "PIN")
-                .appendField(Blockly.Msg.ARD_IO_TO)
+                .appendField(Blockly.Msg.ARD_IO_TO) // 为
                 .appendField(new Blockly.FieldDropdown([["HIGH", "HIGH"], ["LOW", "LOW"]]), "STATE");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(230); // 蓝色，代表基础硬件操作
             this.setTooltip(Blockly.Msg.ARD_IO_DIG_WRITE_TOOLTIP);
         }
     }, function (block: any) {
         const pin = block.getFieldValue('PIN');
         const state = block.getFieldValue('STATE');
-        // 数字写 -> 必须生成 pinMode(OUTPUT)
+        // 核心逻辑：reservePin 会在 setup() 中自动生成对应的 pinMode(pin, OUTPUT)
         reservePin(block, pin, 'OUTPUT');
         return `digitalWrite(${pin}, ${state});\n`;
     });
 
+    // =========================================================================
+    // 数字读 (Digital Read)
+    // =========================================================================
     registerBlock('arduino_digital_read', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_DIG_READ)
+                .appendField(Blockly.Msg.ARD_IO_DIG_READ) // 数字读
                 .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "PIN");
             this.setOutput(true, "Number");
             this.setColour(230);
@@ -127,17 +145,20 @@ const init = () => {
         }
     }, function (block: any) {
         const pin = block.getFieldValue('PIN');
-        // 数字读 -> 必须生成 pinMode(INPUT)
+        // 自动初始化引脚为 INPUT 模式
         reservePin(block, pin, 'INPUT');
         return [`digitalRead(${pin})`, Order.ATOMIC];
     });
 
+    // =========================================================================
+    // 模拟写/PWM (Analog Write)
+    // =========================================================================
     registerBlock('arduino_analog_write', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_ANA_WRITE)
+                .appendField(Blockly.Msg.ARD_IO_ANA_WRITE) // 模拟写
                 .appendField(new Blockly.FieldDropdown(generatePWMOptions), "PIN")
-                .appendField(Blockly.Msg.ARD_IO_VAL);
+                .appendField(Blockly.Msg.ARD_IO_VAL); // 值
             this.appendValueInput("NUM").setCheck("Number");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
@@ -148,25 +169,25 @@ const init = () => {
         const pin = block.getFieldValue('PIN');
         const value = arduinoGenerator.valueToCode(block, 'NUM', Order.ATOMIC) || '0';
 
-        // 恢复原有逻辑：注册为 OUTPUT
-        // 这样会在 setup() 中生成 pinMode(pin, OUTPUT)，与 Mixly 和官方示例保持一致
+        // 依然注册为 OUTPUT。对于大多数板卡，analogWrite 前需要 pinMode 为 OUTPUT。
         reservePin(block, pin, 'OUTPUT');
 
         return `analogWrite(${pin}, ${value});\n`;
     });
 
-    // ... analog_read stays the same ...
-
+    // =========================================================================
+    // 发声/频率输出 (Tone)
+    // =========================================================================
     registerBlock('arduino_tone', {
         init: function () {
             this.appendValueInput("FREQ")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_IO_TONE)
+                .appendField(Blockly.Msg.ARD_IO_TONE) // 播放声音
                 .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "PIN")
-                .appendField(Blockly.Msg.ARD_IO_FREQ);
+                .appendField(Blockly.Msg.ARD_IO_FREQ); // 频率
             this.appendValueInput("DURATION")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_IO_DUR);
+                .appendField(Blockly.Msg.ARD_IO_DUR); // 持续时间
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(230);
@@ -177,28 +198,32 @@ const init = () => {
         const freq = arduinoGenerator.valueToCode(block, 'FREQ', Order.NONE) || '1000';
         const dur = arduinoGenerator.valueToCode(block, 'DURATION', Order.NONE) || '0';
 
-        // Tone 一般也作为 OUTPUT 处理比较稳妥
         reservePin(block, pin, 'OUTPUT');
 
+        // 如果时长为 0，代表持续播放直到被 noTone() 停止
         if (dur === '0') return `tone(${pin}, ${freq});\n`;
         return `tone(${pin}, ${freq}, ${dur});\n`;
     });
 
+    // =========================================================================
+    // 移位输出 (ShiftOut)
+    // 用于扩展 IO，如控制 74HC595 移位寄存器。
+    // =========================================================================
     registerBlock('io_shiftout', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_SHIFTOUT || "ShiftOut");
+                .appendField(Blockly.Msg.ARD_IO_SHIFTOUT || "ShiftOut"); // 移位输出
             this.appendValueInput("DATA")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_IO_DATA_BYTE);
+                .appendField(Blockly.Msg.ARD_IO_DATA_BYTE); // 字节数据
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_DATA_PIN)
+                .appendField(Blockly.Msg.ARD_IO_DATA_PIN) // 数据引脚
                 .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "DPIN");
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_CLOCK_PIN)
+                .appendField(Blockly.Msg.ARD_IO_CLOCK_PIN) // 时钟引脚
                 .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "CPIN");
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_ORDER)
+                .appendField(Blockly.Msg.ARD_IO_ORDER) // 位序
                 .appendField(new Blockly.FieldDropdown([["MSBFIRST", "MSBFIRST"], ["LSBFIRST", "LSBFIRST"]]), "ORDER");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
@@ -214,47 +239,21 @@ const init = () => {
 
         reservePin(block, dpin, 'OUTPUT');
         reservePin(block, cpin, 'OUTPUT');
+
+        // 显式在 setup 中添加 pinMode 配置
         arduinoGenerator.addSetup(`pin_${dpin}_mode`, `pinMode(${dpin}, OUTPUT);`);
         arduinoGenerator.addSetup(`pin_${cpin}_mode`, `pinMode(${cpin}, OUTPUT);`);
 
         return `shiftOut(${dpin}, ${cpin}, ${order}, ${val});\n`;
     });
 
-    registerBlock('io_shiftin', {
-        init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_SHIFTIN || "ShiftIn");
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_DATA_PIN)
-                .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "DPIN");
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_CLOCK_PIN)
-                .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "CPIN");
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_ORDER)
-                .appendField(new Blockly.FieldDropdown([["MSBFIRST", "MSBFIRST"], ["LSBFIRST", "LSBFIRST"]]), "ORDER");
-            this.setOutput(true, "Number");
-            this.setColour(230);
-            this.setTooltip(Blockly.Msg.ARD_IO_SHIFTIN_TOOLTIP);
-            this.setInputsInline(true);
-        }
-    }, (block: any) => {
-        const dpin = block.getFieldValue('DPIN');
-        const cpin = block.getFieldValue('CPIN');
-        const order = block.getFieldValue('ORDER');
-
-        reservePin(block, dpin, 'INPUT');
-        reservePin(block, cpin, 'OUTPUT');
-        arduinoGenerator.addSetup(`pin_${dpin}_mode`, `pinMode(${dpin}, INPUT);`);
-        arduinoGenerator.addSetup(`pin_${cpin}_mode`, `pinMode(${cpin}, OUTPUT);`);
-
-        return [`shiftIn(${dpin}, ${cpin}, ${order})`, Order.ATOMIC];
-    });
-
+    // =========================================================================
+    // 模拟读 (Analog Read)
+    // =========================================================================
     registerBlock('arduino_analog_read', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_IO_ANA_READ)
+                .appendField(Blockly.Msg.ARD_IO_ANA_READ) // 模拟读
                 .appendField(new Blockly.FieldDropdown(generateAnalogOptions), "PIN");
             this.setOutput(true, "Number");
             this.setColour(230);
@@ -262,17 +261,21 @@ const init = () => {
         }
     }, function (block: any) {
         const pin = block.getFieldValue('PIN');
+        // reservePin 会处理某些板卡特定的 ADC 引脚配置
         reservePin(block, pin, 'ANALOG');
         return [`analogRead(${pin})`, Order.ATOMIC];
     });
 
+    // =========================================================================
+    // 核心映射函数 (Map)
+    // =========================================================================
     registerBlock('arduino_map', {
         init: function () {
-            this.appendValueInput("VAL").setCheck("Number").appendField(Blockly.Msg.ARD_MAP);
-            this.appendValueInput("F_LOW").setCheck("Number").appendField(Blockly.Msg.ARD_MAP_FROM);
-            this.appendValueInput("F_HIGH").setCheck("Number").appendField(Blockly.Msg.ARD_MAP_TO);
-            this.appendValueInput("T_LOW").setCheck("Number").appendField(Blockly.Msg.ARD_MAP_TO_NEW);
-            this.appendValueInput("T_HIGH").setCheck("Number").appendField(Blockly.Msg.ARD_MAP_TO);
+            this.appendValueInput("VAL").setCheck("Number").appendField(Blockly.Msg.ARD_MAP); // 映射
+            this.appendValueInput("F_LOW").setCheck("Number").appendField(Blockly.Msg.ARD_MAP_FROM); // 自范围低
+            this.appendValueInput("F_HIGH").setCheck("Number").appendField(Blockly.Msg.ARD_MAP_TO); // 至范围高
+            this.appendValueInput("T_LOW").setCheck("Number").appendField(Blockly.Msg.ARD_MAP_TO_NEW); // 映射到低
+            this.appendValueInput("T_HIGH").setCheck("Number").appendField(Blockly.Msg.ARD_MAP_TO); // 至范围高
             this.setInputsInline(true);
             this.setOutput(true, "Number");
             this.setColour(230);
@@ -288,9 +291,12 @@ const init = () => {
     });
 };
 
+/**
+ * 基础 I/O 模块定义
+ * 提供了操作微控制器底层引脚的所有核心功能。
+ */
 export const IOModule: BlockModule = {
     id: 'hardware.io',
     name: 'Basic I/O',
-    category: 'IO',
     init
 };

@@ -20,8 +20,14 @@ import { useTranslation } from 'react-i18next';
 import { useUI } from '../contexts/UIContext';
 import { useFileSystem } from '../contexts/FileSystemContext';
 
+/**
+ * 应用主控制器钩子
+ * 负责监听主进程通过 IPC 发送的菜单指令，并协调各个 Context 执行相应操作。
+ */
 export const useAppController = () => {
     const { t, i18n } = useTranslation();
+
+    // 从 UI 上下文中解构模态框和通知控制方法
     const {
         setIsNewProjectOpen,
         setIsExtensionsOpen,
@@ -33,6 +39,7 @@ export const useAppController = () => {
         showNotification
     } = useUI();
 
+    // 从文件系统上下文中解构核心操作
     const {
         newProject,
         openProject,
@@ -41,31 +48,33 @@ export const useAppController = () => {
         openProjectByPath,
         closeProject,
         checkDirtyAndRun,
-        // The prompt states are handled by the SavePromptModal component which listens to context
-        // We just need to trigger the actions here
     } = useFileSystem();
 
     useEffect(() => {
         if (!window.electronAPI) return;
 
+        // 注册菜单动作监听器
         const cleanup = window.electronAPI.onMenuAction(async (action: string, arg?: any) => {
             console.log(`[AppController] Menu Action: ${action}`, arg);
 
             switch (action) {
                 case 'new':
+                    // 新建项目前检查脏标记，提示保存
                     checkDirtyAndRun(() => setIsNewProjectOpen(true));
                     break;
                 case 'open':
+                    // 打开项目前检查脏标记
                     checkDirtyAndRun(() => openProject());
                     break;
                 case 'open-recent':
                     if (arg) {
+                        // 打开特定路径的最近项目
                         checkDirtyAndRun(async () => {
                             const result = await openProjectByPath(arg);
                             if (!result.success) {
                                 showNotification(result.error || 'Failed to open project', 'error');
 
-                                // Auto-clean invalid recent paths
+                                // 自动清理失效的最近项目路径（如果文件已不存在）
                                 if (result.error && (result.error.includes('not found') || result.error.includes('ENOENT'))) {
                                     setTimeout(async () => {
                                         if (confirm(i18n.t('welcome.confirmRemoveRecent', { path: arg }))) {
@@ -80,12 +89,15 @@ export const useAppController = () => {
                 case 'save': saveProject(); break;
                 case 'save-as': saveProjectAs(); break;
                 case 'close-project':
+                    // 关闭当前项目并返回欢迎页
                     closeProject();
                     break;
                 case 'settings': setIsSettingsOpen(true); break;
                 case 'extensions': setIsExtensionsOpen(true); break;
                 case 'project-settings': setIsProjectSettingsOpen(true); break;
                 case 'new-project-modal': setIsNewProjectOpen(true); break;
+
+                // --- 帮助菜单系列 ---
                 case 'help-user-guide': {
                     const result = await window.electronAPI.readHelpFile('user');
                     openHelp(t('help.userGuide'), result.content, result.path);
@@ -101,12 +113,16 @@ export const useAppController = () => {
                     openAbout(result.content);
                     break;
                 }
+
+                // --- 开发辅助 ---
                 case 'toggle-diag':
+                    // 切换诊断信息悬浮窗（通过事件广播）
                     window.dispatchEvent(new CustomEvent('toggle-diagnostic-overlay'));
                     break;
             }
         });
 
+        // 生命周期结束时卸载监听器
         return cleanup;
     }, [
         newProject, openProject, saveProject, saveProjectAs,

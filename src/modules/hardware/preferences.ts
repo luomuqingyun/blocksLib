@@ -23,6 +23,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化 NVS 存储命名空间
     registerBlock('nvs_begin', {
         init: function () {
             this.appendDummyInput()
@@ -38,22 +39,26 @@ const init = () => {
     }, (block: any) => {
         const name = arduinoGenerator.valueToCode(block, 'NAME', Order.ATOMIC) || '"my-app"';
 
+        // 包含 Preferences 库
         arduinoGenerator.addInclude('pref_lib', '#include <Preferences.h>');
+        // 定义全局 Preferences 对象
         arduinoGenerator.addVariable('pref_obj', `Preferences prefs;`);
 
+        // 在代码中打开指定的命名空间（第二个参数 false 表示读写模式）
         return `prefs.begin(${name}, false);\n`;
     });
 
+    // 将整数值存入指定的 NVS 键名下
     registerBlock('nvs_put_int', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_PREF_PUT_INT);
             this.appendValueInput("KEY")
                 .setCheck("String")
-                .appendField(Blockly.Msg.ARD_PREF_KEY);
+                .appendField(Blockly.Msg.ARD_PREF_KEY); // 键名 (Key)
             this.appendValueInput("VAL")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_PREF_VALUE);
+                .appendField(Blockly.Msg.ARD_PREF_VALUE); // 要存储的整数值
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(290);
@@ -63,9 +68,11 @@ const init = () => {
     }, (block: any) => {
         const key = arduinoGenerator.valueToCode(block, 'KEY', Order.ATOMIC) || '"key"';
         const val = arduinoGenerator.valueToCode(block, 'VAL', Order.ATOMIC) || '0';
+        // 调用 putInt 保存数据到非易失性存储器
         return `prefs.putInt(${key}, ${val});\n`;
     });
 
+    // 从 NVS 中根据键名获取整数值
     registerBlock('nvs_get_int', {
         init: function () {
             this.appendDummyInput()
@@ -75,7 +82,7 @@ const init = () => {
                 .appendField(Blockly.Msg.ARD_PREF_KEY);
             this.appendValueInput("DEFAULT")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_PREF_DEFAULT);
+                .appendField(Blockly.Msg.ARD_PREF_DEFAULT); // 如果键名不存在，则返回此默认值
             this.setOutput(true, "Number");
             this.setColour(290);
             this.setTooltip(Blockly.Msg.ARD_PREFS_GET_INT_TOOLTIP);
@@ -87,6 +94,7 @@ const init = () => {
         return [`prefs.getInt(${key}, ${def})`, Order.ATOMIC];
     });
 
+    // 将字符串存入指定的 NVS 键名下
     registerBlock('nvs_put_string', {
         init: function () {
             this.appendDummyInput()
@@ -96,7 +104,7 @@ const init = () => {
                 .appendField(Blockly.Msg.ARD_PREF_KEY);
             this.appendValueInput("VAL")
                 .setCheck("String")
-                .appendField(Blockly.Msg.ARD_PREF_VALUE);
+                .appendField(Blockly.Msg.ARD_PREF_VALUE); // 要存储的字符串
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(290);
@@ -109,6 +117,7 @@ const init = () => {
         return `prefs.putString(${key}, ${val});\n`;
     });
 
+    // 从 NVS 中根据键名获取字符串
     registerBlock('nvs_get_string', {
         init: function () {
             this.appendDummyInput()
@@ -118,7 +127,7 @@ const init = () => {
                 .appendField(Blockly.Msg.ARD_PREF_KEY);
             this.appendValueInput("DEFAULT")
                 .setCheck("String")
-                .appendField(Blockly.Msg.ARD_PREF_DEFAULT);
+                .appendField(Blockly.Msg.ARD_PREF_DEFAULT); // 如果键名不存在，则返回此默认值
             this.setOutput(true, "String");
             this.setColour(290);
             this.setTooltip(Blockly.Msg.ARD_PREFS_GET_STR_TOOLTIP);
@@ -132,9 +141,12 @@ const init = () => {
 
 };
 
+/**
+ * 参数存储 (Preferences) 模块
+ * 利用 ESP32 的 NVS (非易失性存储) 功能实现键值对形式的数据持久化。
+ */
 export const PreferencesModule: BlockModule = {
     id: 'hardware.preferences',
     name: 'Preferences (Storage)',
-    category: 'Storage',
     init
 };

@@ -22,7 +22,7 @@ const init = () => {
     // LCD I2C (LiquidCrystal_I2C)
     // =========================================================================
 
-    // Init Block
+    // 初始化 LCD I2C 屏幕
     registerBlock('display_lcd_init', {
         init: function () {
             this.appendDummyInput()
@@ -46,8 +46,11 @@ const init = () => {
         const cols = block.getFieldValue('COLS');
         const rows = block.getFieldValue('ROWS');
 
+        // 包含 LCD I2C 驱动库
         arduinoGenerator.addInclude('lcd_lib', '#include <LiquidCrystal_I2C.h>');
+        // 定义全局 lcd 对象
         arduinoGenerator.addVariable('lcd_def', `LiquidCrystal_I2C lcd(${addr}, ${cols}, ${rows});`);
+        // 在 setup 中初始化 LCD 并开启背光
         arduinoGenerator.addSetup('lcd_init', 'lcd.init();\n  lcd.backlight();');
 
         return '';
@@ -100,7 +103,7 @@ const init = () => {
     // NeoPixel (Adafruit_NeoPixel)
     // =========================================================================
 
-    // Init Block
+    // 初始化 NeoPixel 发光二极管 (WS2812B)
     registerBlock('display_neopixel_init', {
         init: function () {
             this.appendDummyInput()
@@ -122,8 +125,11 @@ const init = () => {
 
         reservePin(block, pin, 'OUTPUT');
 
+        // 包含 NeoPixel 驱动库
         arduinoGenerator.addInclude('neopixel_lib', '#include <Adafruit_NeoPixel.h>');
+        // 为特定引脚定义独立的 strip 对象，支持多个灯带
         arduinoGenerator.addVariable(`neopixel_def_${pin}`, `Adafruit_NeoPixel strip_${pin}(${count}, ${pin}, NEO_GRB + NEO_KHZ800);`);
+        // 在 setup 中开始运行并初始化为全灭状态
         arduinoGenerator.addSetup(`neopixel_init_${pin}`, `strip_${pin}.begin();\n  strip_${pin}.show();`);
 
         return '';
@@ -162,9 +168,11 @@ const init = () => {
         const g = arduinoGenerator.valueToCode(block, 'G', Order.ATOMIC) || '0';
         const b = arduinoGenerator.valueToCode(block, 'B', Order.ATOMIC) || '0';
 
+        // 设置指定像素的颜色并刷新显示
         return `strip_${pin}.setPixelColor(${led}, strip_${pin}.Color(${r}, ${g}, ${b}));\nstrip_${pin}.show();\n`;
     });
 
+    // 将整个 NeoPixel 灯条填充为统一颜色
     registerBlock('display_neopixel_fill', {
         init: function () {
             this.appendDummyInput()
@@ -187,7 +195,7 @@ const init = () => {
         const g = arduinoGenerator.valueToCode(block, 'G', Order.ATOMIC) || '0';
         const b = arduinoGenerator.valueToCode(block, 'B', Order.ATOMIC) || '0';
 
-        // Helper function for fill
+        // 生成辅助函数，遍历所有像素设置颜色
         const funcName = `neopixel_fill_${pin}`;
         arduinoGenerator.addFunction(funcName, `
 void ${funcName}(int r, int g, int b) {
@@ -199,6 +207,7 @@ void ${funcName}(int r, int g, int b) {
         return `${funcName}(${r}, ${g}, ${b});\n`;
     });
 
+    // 清除 NeoPixel 灯条（关闭所有灯）
     registerBlock('display_neopixel_clear', {
         init: function () {
             this.appendDummyInput()
@@ -213,9 +222,11 @@ void ${funcName}(int r, int g, int b) {
         }
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
+        // 调用 clear() 方法并 show() 以更新物理状态
         return `strip_${pin}.clear();\nstrip_${pin}.show();\n`;
     });
 
+    // 播放彩虹动画效果
     registerBlock('display_neopixel_rainbow', {
         init: function () {
             this.appendDummyInput()
@@ -233,6 +244,7 @@ void ${funcName}(int r, int g, int b) {
         const pin = block.getFieldValue('PIN');
         const wait = arduinoGenerator.valueToCode(block, 'WAIT', Order.ATOMIC) || '20';
 
+        // 使用 HSV 颜色空间生成平滑渐变的彩虹循环
         const funcName = `neopixel_rainbow_${pin}`;
         arduinoGenerator.addFunction(funcName, `
 void ${funcName}(int wait) {
@@ -248,6 +260,7 @@ void ${funcName}(int wait) {
         return `${funcName}(${wait});\n`;
     });
 
+    // 控制 LCD I2C 屏幕的背光开关
     registerBlock('display_lcd_backlight', {
         init: function () {
             this.appendDummyInput()
@@ -268,6 +281,5 @@ void ${funcName}(int wait) {
 export const DisplaysModule: BlockModule = {
     id: 'hardware.displays',
     name: 'Displays & Lights',
-    category: 'Displays',
     init
 };

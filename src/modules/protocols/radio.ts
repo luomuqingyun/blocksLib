@@ -25,12 +25,13 @@ const init = () => {
     // RCSwitch (RCSwitch.h) - 433MHz
     // =========================================================================
 
+    // 初始化红外/射频发射端
     registerBlock('radio_tx_init', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_RADIO_TX_INIT);
             this.appendDummyInput()
-                .appendField("Pin")
+                .appendField("引脚")
                 .appendField(new Blockly.FieldTextInput("10"), "PIN");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
@@ -41,20 +42,24 @@ const init = () => {
         const pin = block.getFieldValue('PIN');
         reservePin(block, pin, 'OUTPUT');
 
+        // 包含 RCSwitch 库
         arduinoGenerator.addInclude('rcswitch_lib', '#include <RCSwitch.h>');
+        // 定义 mySwitch 对象
         arduinoGenerator.addVariable('rcswitch_obj', `RCSwitch mySwitch = RCSwitch();`);
+        // 在 setup 中启用指定引脚的发射功能
         arduinoGenerator.addSetup('rcswitch_tx_init', `mySwitch.enableTransmit(${pin});`);
 
         return '';
     });
 
+    // 发送 433MHz 无线信号
     registerBlock('radio_tx_send', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_RADIO_TX_SEND);
             this.appendValueInput("VAL")
                 .setCheck("Number")
-                .appendField("Value");
+                .appendField("数值");
             this.appendValueInput("LEN")
                 .setCheck("Number")
                 .appendField(Blockly.Msg.ARD_RADIO_LEN);
@@ -67,16 +72,18 @@ const init = () => {
     }, (block: any) => {
         const val = arduinoGenerator.valueToCode(block, 'VAL', Order.ATOMIC) || '0';
         const len = arduinoGenerator.valueToCode(block, 'LEN', Order.ATOMIC) || '24';
+        // 发送特定位长度的数值信号
         return `mySwitch.send(${val}, ${len});\n`;
     });
 
+    // 初始化接收端（使用中断引脚）
     registerBlock('radio_rx_init', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_RADIO_RX_INIT);
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_RADIO_IRQ_PIN)
-                .appendField(new Blockly.FieldTextInput("0"), "PIN"); // 0 is usually Pin 2 on Uno
+                .appendField(new Blockly.FieldTextInput("0"), "PIN"); // 0 通常对应 Uno 的 2 号引脚
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(90);
@@ -84,15 +91,16 @@ const init = () => {
         }
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
-        // reservePin(block, pin, 'INPUT'); // Logic for IRQ mapping is complex, simplest to just use number
 
         arduinoGenerator.addInclude('rcswitch_lib', '#include <RCSwitch.h>');
         arduinoGenerator.addVariable('rcswitch_obj', `RCSwitch mySwitch = RCSwitch();`);
+        // 开启指定中断号的接收功能
         arduinoGenerator.addSetup('rcswitch_rx_init', `mySwitch.enableReceive(${pin});`);
 
         return '';
     });
 
+    // 检查是否有可用的无线信号
     registerBlock('radio_rx_available', {
         init: function () {
             this.appendDummyInput()
@@ -117,6 +125,7 @@ const init = () => {
         return ['mySwitch.getReceivedValue()', Order.ATOMIC];
     });
 
+    // 重置接收状态
     registerBlock('radio_rx_reset', {
         init: function () {
             this.appendDummyInput()
@@ -127,6 +136,7 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_RADIO_RX_RESET_TOOLTIP);
         }
     }, (block: any) => {
+        // 解码完成后必续重置以允许接收新信号
         return `mySwitch.resetAvailable();\n`;
     });
 
@@ -153,6 +163,5 @@ const init = () => {
 export const RadioModule: BlockModule = {
     id: 'protocols.radio',
     name: 'Radio (RF433)',
-    category: 'Radio',
     init
 };

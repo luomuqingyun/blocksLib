@@ -29,16 +29,24 @@
 export class Logger {
     private tag: string;
 
+    /**
+     * 初始化日志工具
+     * @param tag - 模块标识标签，通常为类名或文件名
+     */
     constructor(tag: string) {
         this.tag = tag;
     }
 
+    /**
+     * 内部辅助：格式化日志消息，带上模块标签
+     */
     private formatMessage(message: string): string {
         return `[${this.tag}] ${message}`;
     }
 
     /**
-     * Log a debug message. Only visible in DEV mode.
+     * 输出调试信息 (Debug)
+     * 仅在开发环境 (import.meta.env.DEV 为 true) 下生效，生产环境将静默。
      */
     debug(message: string, ...args: any[]) {
         if (import.meta.env.DEV) {
@@ -47,21 +55,22 @@ export class Logger {
     }
 
     /**
-     * Log an info message. Visible in all modes, but can be filtered.
+     * 输出提示性信息 (Info)
+     * 在所有环境下均会输出。
      */
     info(message: string, ...args: any[]) {
         console.info(this.formatMessage(message), ...args);
     }
 
     /**
-     * Log a warning message. Always visible.
+     * 输出警告信息 (Warn)
      */
     warn(message: string, ...args: any[]) {
         console.warn(this.formatMessage(message), ...args);
     }
 
     /**
-     * Log an error message. Always visible.
+     * 输出错误信息 (Error)
      */
     error(message: string, ...args: any[]) {
         console.error(this.formatMessage(message), ...args);

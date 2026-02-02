@@ -19,50 +19,60 @@ import { useBuild } from '../../contexts/BuildContext';
 
 // --- 组件属性类型 ---
 interface RightPanelProps {
+    /** 面板宽度 (像素) */
     width: number;
 }
 
 export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
     const { t } = useTranslation();
+    // 编译日志容器引用 (用于自动滚动)
     const bottomPanelRef = useRef<HTMLDivElement>(null);
+    // 串口连接状态
     const { isConnected } = useSerial();
 
-    // FileSystem
+    // 文件系统: 代码内容
     const { code, setCode } = useFileSystem();
 
-    // UI
+    // UI 状态: 手动编辑模式、当前标签页
     const { isManualEditMode, setIsManualEditMode, activeTab, setActiveTab } = useUI();
 
-    // Build
+    // 构建上下文: 编译日志
     const { logs } = useBuild();
 
-    // Auto-scroll build logs logic
+    /**
+     * 滚动到底部
+     * 用于新日志追加时自动滚动
+     */
     const scrollToBottom = () => {
         if (bottomPanelRef.current) {
             bottomPanelRef.current.scrollTop = bottomPanelRef.current.scrollHeight;
         }
     };
 
+    // 日志更新或切换到构建标签页时自动滚动
     useEffect(() => {
         if (activeTab === 'build') {
             scrollToBottom();
         }
     }, [logs, activeTab]);
 
+    // ========== 渲染右侧面板 ==========
     return (
         <div
             className="flex flex-col border-l border-slate-700 bg-[#1e1e1e] shadow-2xl flex-none"
             style={{ width }}
         >
 
-            {/* C++ Code Viewer */}
+            {/* C++ 代码查看器 */}
             <div className="flex-1 flex flex-col min-h-0 border-b border-[#333]">
+                {/* 代码编辑器头部: 标题和编辑模式切换 */}
                 <div className="bg-[#252526] px-4 py-2 text-slate-400 text-xs font-mono font-bold uppercase tracking-wider flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <span>{t('editor.sourcePreview')}</span>
                         {isManualEditMode && <span className="text-orange-500 text-[10px] bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">{t('editor.manualMode')}</span>}
                     </div>
 
+                    {/* 编辑模式切换按钮 */}
                     <button
                         onClick={() => {
                             setIsManualEditMode(!isManualEditMode);
@@ -74,6 +84,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
                         <span className="text-[10px]">{isManualEditMode ? t('editor.unlock') : t('editor.locked')}</span>
                     </button>
                 </div>
+                {/* Monaco 代码编辑器 */}
                 <div className="flex-1 overflow-hidden relative bg-[#1e1e1e]">
                     <CodeEditor
                         code={code}
@@ -83,17 +94,19 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
                 </div>
             </div>
 
-            {/* Bottom Tabs: Terminal & Monitor */}
+            {/* 底部标签页: 编译日志 和 串口监视器 */}
             <div className="h-[40%] flex flex-col min-h-[200px] bg-[#1e1e1e]">
 
-                {/* Tab Headers */}
+                {/* 标签页头部 */}
                 <div className="flex border-b border-[#333] bg-[#252526]">
+                    {/* 构建输出标签 */}
                     <button
                         onClick={() => setActiveTab('build')}
                         className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'build' ? 'border-blue-500 text-slate-200 bg-[#1e1e1e]' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
                     >
                         {t('app.buildOutput')}
                     </button>
+                    {/* 串口监视器标签 (带连接状态指示器) */}
                     <button
                         onClick={() => setActiveTab('serial')}
                         className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'serial' ? 'border-green-500 text-slate-200 bg-[#1e1e1e]' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
@@ -103,12 +116,13 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
                     </button>
                 </div>
 
-                {/* Tab Content: Build Logs */}
+                {/* 标签页内容: 构建日志 */}
                 <div ref={bottomPanelRef} className={`flex-1 p-3 overflow-auto font-mono text-xs custom-scrollbar ${activeTab === 'build' ? 'block' : 'hidden'}`}>
-                    {logs.length === 0 && <div className="text-[#00ff00]/50">No logs yet...</div>}
+                    {logs.length === 0 && <div className="text-[#00ff00]/50">暂无日志...</div>}
                     {logs.map((log, i) => (<div key={i} className="mb-0.5 text-[#00ff00] break-words whitespace-pre-wrap border-l-2 border-transparent hover:border-slate-700 pl-1">{log}</div>))}
                 </div>
 
+                {/* 标签页内容: 串口监视器 */}
                 <SerialMonitorPanel
                     isVisible={activeTab === 'serial'}
                 />

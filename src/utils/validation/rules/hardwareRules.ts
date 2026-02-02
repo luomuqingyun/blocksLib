@@ -2,8 +2,10 @@ import * as Blockly from 'blockly';
 import { ValidationRule } from '../types';
 
 /**
- * List of field names that are recognized as hardware pins.
+ * 硬件引脚冲突校验规则 (Hardware Pin Conflict Rules)
  */
+
+// 系统识别为硬件引脚的字段名称列表
 const PIN_FIELD_NAMES = [
     'PIN', 'PIN_DATA', 'PIN_DATA_IN', 'PIN_CLOCK', 'PIN_CS', 'PIN_LATCH',
     'TX', 'RX', 'PIN_TX', 'PIN_RX',
@@ -13,17 +15,19 @@ const PIN_FIELD_NAMES = [
 ];
 
 /**
- * Global Rule: Prevents multiple blocks from using the same hardware pin.
+ * 全局规则：防止多个积木占用同一个硬件引脚。
  */
 export const checkPinConflict: ValidationRule = (block) => {
     if (!block.workspace) return null;
 
-    // 1. Identify pins used by the current block
+    // 1. 识别当前积木所使用的全部引脚
     const usedPins: { field: string, value: string }[] = [];
     block.inputList.forEach((input: any) => {
         input.fieldRow.forEach((field: any) => {
+            // 检查字段名是否在硬件引脚白名单中
             if (field.name && PIN_FIELD_NAMES.includes(field.name)) {
                 const val = field.getValue();
+                // 排除空值或无效值
                 if (val && val !== 'none' && val !== 'unnamed') {
                     usedPins.push({ field: field.name, value: val });
                 }
@@ -33,12 +37,13 @@ export const checkPinConflict: ValidationRule = (block) => {
 
     if (usedPins.length === 0) return null;
 
-    // 2. Scan workspace for conflicts
+    // 2. 遍历整个工作区查找冲突
     const allBlocks = block.workspace.getAllBlocks(false);
     for (const otherBlock of allBlocks) {
+        // 跳过自身
         if (otherBlock.id === block.id) continue;
 
-        // Skip disabled blocks or blocks in flyouts
+        // 跳过已禁用的积木或位于工具栏预览中的积木
         if (otherBlock.isEnabled() === false || otherBlock.isInFlyout) continue;
 
         for (const otherInput of otherBlock.inputList) {
@@ -46,15 +51,13 @@ export const checkPinConflict: ValidationRule = (block) => {
                 if (otherField.name && PIN_FIELD_NAMES.includes(otherField.name)) {
                     const otherVal = otherField.getValue();
 
-                    // Check if any of our pins conflict with this field
+                    // 检查是否存在引脚编号重叠
                     const conflict = usedPins.find(p => p.value === otherVal);
                     if (conflict) {
-                        // Found a conflict!
+                        // 发现冲突：将引脚占用的具体积木名称反馈给用户
                         const otherBlockName = otherBlock.type.replace(/_/g, ' ');
                         const pinName = conflict.value;
 
-                        // Localization hack: if we're in a Chinese environment, try to translate.
-                        // For now, English is fine as the system has i18n support.
                         return `引脚 ${pinName} 已被积木 "${otherBlockName}" 占用，请选择其他引脚。`;
                     }
                 }

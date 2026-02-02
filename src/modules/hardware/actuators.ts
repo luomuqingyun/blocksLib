@@ -22,11 +22,11 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
-    // =========================================================================
-    // Generic Actuators
-    // =========================================================================
+    // ===================================
+    // 通用执行器 (Generic Actuators)
+    // ===================================
 
-    // RELAY
+    // 继电器 (Relay)
     registerBlock('actuator_relay', {
         init: function () {
             this.appendDummyInput()
@@ -36,7 +36,7 @@ const init = () => {
                 .appendField(new Blockly.FieldTextInput("2"), "PIN");
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_ACTUATOR_STATE)
-                .appendField(new Blockly.FieldDropdown([["ON (High)", "HIGH"], ["OFF (Low)", "LOW"]]), "STATE");
+                .appendField(new Blockly.FieldDropdown([["开启 (高电平)", "HIGH"], ["关闭 (低电平)", "LOW"]]), "STATE");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(0);
@@ -47,11 +47,13 @@ const init = () => {
         const state = block.getFieldValue('STATE');
         reservePin(block, pin, 'OUTPUT');
 
+        // 在 setup 中将引脚设为输出模式
         arduinoGenerator.addSetup(`pin_${pin}_mode`, `pinMode(${pin}, OUTPUT);`);
+        // 执行数字输出
         return `digitalWrite(${pin}, ${state});\n`;
     });
 
-    // SOLENOID
+    // 电磁铁/电磁阀 (Solenoid)
     registerBlock('actuator_solenoid', {
         init: function () {
             this.appendDummyInput()
@@ -73,10 +75,11 @@ const init = () => {
         reservePin(block, pin, 'OUTPUT');
         arduinoGenerator.addSetup(`pin_${pin}_mode`, `pinMode(${pin}, OUTPUT);`);
 
+        // 产生一条持续指定时间的脉冲信号
         return `digitalWrite(${pin}, HIGH);\ndelay(${time});\ndigitalWrite(${pin}, LOW);\n`;
     });
 
-    // BUZZER (Simpler than Tone block in base, just generic Digital/Tone wrapper)
+    // 蜂鸣器 (Buzzer) - 发声
     registerBlock('actuator_buzzer', {
         init: function () {
             this.appendDummyInput()
@@ -102,9 +105,11 @@ const init = () => {
         const dur = arduinoGenerator.valueToCode(block, 'DUR', Order.ATOMIC) || '500';
         reservePin(block, pin, 'OUTPUT');
 
+        // 使用 Arduino 标准 tone() 函数发声
         return `tone(${pin}, ${freq}, ${dur});\n`;
     });
 
+    // 蜂鸣器停止发声
     registerBlock('actuator_buzzer_notone', {
         init: function () {
             this.appendDummyInput()
@@ -119,10 +124,11 @@ const init = () => {
         }
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
+        // 调用 noTone() 停止发声
         return `noTone(${pin});\n`;
     });
 
-    // VIBRATION MOTOR
+    // 振动马达 (Vibration Motor)
     registerBlock('actuator_vibration', {
         init: function () {
             this.appendDummyInput()
@@ -132,7 +138,7 @@ const init = () => {
                 .appendField(new Blockly.FieldTextInput("5"), "PIN");
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_ACTUATOR_STATE)
-                .appendField(new Blockly.FieldDropdown([["ON", "HIGH"], ["OFF", "LOW"]]), "STATE");
+                .appendField(new Blockly.FieldDropdown([["开启", "HIGH"], ["关闭", "LOW"]]), "STATE");
             this.appendValueInput("TIME")
                 .setCheck("Number")
                 .appendField(Blockly.Msg.ARD_ACTUATOR_DURATION_FOREVER);
@@ -150,6 +156,7 @@ const init = () => {
         reservePin(block, pin, 'OUTPUT');
         arduinoGenerator.addSetup(`pin_${pin}_mode`, `pinMode(${pin}, OUTPUT);`);
 
+        // 如果设置了时间，则振动一段时间后关闭；否则保持当前状态
         if (state === 'HIGH') {
             return `digitalWrite(${pin}, HIGH);\nif(${time}>0) {\n  delay(${time});\n  digitalWrite(${pin}, LOW);\n}\n`;
         } else {
@@ -162,6 +169,5 @@ const init = () => {
 export const ActuatorsModule: BlockModule = {
     id: 'hardware.actuators',
     name: 'Actuators',
-    category: 'Actuators',
     init
 };

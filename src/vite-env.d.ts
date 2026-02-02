@@ -29,17 +29,17 @@
 import { BoardBuildConfig, ProjectBuildConfig } from './types/board';
 
 interface ElectronAPI {
-  // --- System ---
+  // --- 系统 ---
   checkSystem: () => Promise<{ success: boolean; message: string; mode: string }>;
 
-  // --- Build & Upload ---
+  // --- 编译与上传 ---
   buildProject: (code: string, buildConfig: BoardBuildConfig, projectPath?: string) => Promise<{ success: boolean; exitCode?: number }>;
   uploadProject: (code: string, buildConfig: BoardBuildConfig, port?: string, projectPath?: string) => Promise<{ success: boolean; exitCode?: number }>;
 
-  // --- Logs ---
+  // --- 日志 ---
   onLog: (callback: (msg: string) => void) => () => void;
 
-  // --- Serial ---
+  // --- 串口 ---
   listPorts: () => Promise<SerialPort[]>;
   openSerial: (port: string, baud: number, dataBits?: number, stopBits?: number, parity?: string) => Promise<{ success: boolean; error?: string }>;
   closeSerial: () => Promise<{ success: boolean; error?: string }>;
@@ -51,43 +51,43 @@ interface ElectronAPI {
   onMonitorStatus: (callback: (status: { connected: boolean; port?: string }) => void) => () => void;
   onMonitorError: (callback: (error: string) => void) => () => void;
 
-  // --- File Operations ---
+  // --- 文件操作 ---
   openFileDialog: (options?: any) => Promise<{ path: string; content: string } | null>;
   saveProjectDialog: () => Promise<{ path: string } | null>;
   saveCodeDialog: () => Promise<string | null>;
   saveFileContent: (content: string, path: string) => Promise<{ success: boolean; error?: string }>;
 
-  // --- Project Operations ---
+  // --- 项目操作 ---
   createProject: (parentDir: string, name: string, boardId: string, buildConfig?: BoardBuildConfig) => Promise<{ success: boolean; path?: string; error?: string }>;
   copyProject: (srcPath: string, parentDir: string, newName: string) => Promise<{ success: boolean; newPath?: string; error?: string }>;
   saveProjectFolder: (path: string, data: { blocklyState: string, code: string, boardId?: string, buildConfig?: ProjectBuildConfig }) => Promise<{ success: boolean; error?: string }>;
   openProjectFolder: () => Promise<{ cancelled: boolean; error?: string; projectPath?: string; data?: any }>;
   openProjectByPath: (path: string) => Promise<{ cancelled: boolean; error?: string; projectPath?: string; data?: any }>;
 
-  // --- Backup ---
+  // --- 备份 ---
   backupProject: (path: string, data: any) => Promise<{ success: boolean; error?: string }>;
   checkBackup: (path: string) => Promise<{ hasBackup: boolean; timestamp?: number }>;
   restoreBackup: (path: string) => Promise<{ success: boolean; data?: any; error?: string }>;
   discardBackup: (path: string) => Promise<void>;
 
-  // --- Settings ---
+  // --- 设置 ---
   selectWorkDir: () => Promise<string | null>;
   getWorkDir: () => Promise<string>;
 
-  // --- Legacy Support ---
+  // --- 遗留支持 ---
   saveProject: (content: string, filename: string) => Promise<{ success: boolean; filePath?: string; error?: string }>;
 
-  // --- Config ---
+  // --- 配置 ---
   getConfig: (key?: string) => Promise<any>;
   setConfig: (key: string, value: any) => Promise<boolean>;
   updateHistory: (history: string[]) => Promise<string[]>;
-  removeRecentProject: (path: string) => Promise<{ success: boolean }>; // New
+  removeRecentProject: (path: string) => Promise<{ success: boolean }>; // 移除最近项目
   restoreDefaults: (section?: string, clearHistory?: boolean) => Promise<any>;
   openConfigDir: () => Promise<void>;
   openConfigFile: () => Promise<void>;
   openWorkDir: () => Promise<void>;
 
-  // --- Extensions ---
+  // --- 扩展 ---
   extensionsList: () => Promise<any[]>;
   extensionReadFile: (extId: string, path: string, encoding?: string) => Promise<string | null>;
   importExtension: (options?: { force?: boolean, sourcePath?: string }) => Promise<{ success: boolean; message: string; extensionId?: string; status?: 'ok' | 'downgrade' | 'error'; currentVersion?: string; newVersion?: string; actualSourcePath?: string }>;
@@ -96,7 +96,7 @@ interface ElectronAPI {
   openHelpGuide: (type: 'user' | 'plugin' | 'marketplace') => Promise<{ success: boolean; message?: string }>;
   openExternal: (path: string) => Promise<boolean>;
 
-  // --- Marketplace ---
+  // --- 市场 ---
   marketplaceListUrls: () => Promise<string[]>;
   marketplaceAddUrl: (url: string) => Promise<boolean>;
   marketplaceRemoveUrl: (url: string) => Promise<boolean>;
@@ -104,7 +104,7 @@ interface ElectronAPI {
   marketplaceInstall: (ext: any, force?: boolean) => Promise<{ success: boolean; message: string; status?: string; currentVersion?: string; newVersion?: string }>;
   marketplaceGetCachedIcon: (url: string) => Promise<string | null>;
 
-  // --- Menu ---
+  // --- 菜单 ---
   onMenuAction: (callback: (action: string, arg?: any) => void) => () => void;
 }
 declare global {
@@ -115,8 +115,8 @@ declare global {
 
 
 declare global {
-  // Web Serial API Definitions
-  // We namespace them to avoid conflict if necessary, but standard is global `SerialPort`
+  // Web Serial API 定义
+  // 我们在 global 命名空间下定义，以避免标准定义的冲突或补充标准定义
   interface WebSerialPort {
     onconnect: ((this: WebSerialPort, ev: Event) => any) | null;
     ondisconnect: ((this: WebSerialPort, ev: Event) => any) | null;

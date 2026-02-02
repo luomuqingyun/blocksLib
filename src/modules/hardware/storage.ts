@@ -24,13 +24,14 @@ const init = () => {
     // =========================================================================
 
     // Init Block
+    // 初始化 SD 卡模块 (SPI 接口)
     registerBlock('storage_sd_init', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_STORAGE_SD_INIT);
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_STORAGE_SD_CS_PIN)
-                .appendField(new Blockly.FieldTextInput("4"), "CSPIN");
+                .appendField(new Blockly.FieldTextInput("4"), "CSPIN"); // 片选引脚
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(30);
@@ -41,22 +42,25 @@ const init = () => {
         const cspin = block.getFieldValue('CSPIN');
         reservePin(block, cspin, 'OUTPUT');
 
+        // 包含 SPI 和 SD 库
         arduinoGenerator.addInclude('sd_lib', '#include <SPI.h>\n#include <SD.h>');
+        // 在 setup 中根据引脚启动 SD 卡
         arduinoGenerator.addSetup('sd_init', `SD.begin(${cspin});`);
         return '';
     });
 
     // Write File Block
+    // 在 SD 卡上写入数据（追加模式，并换行）
     registerBlock('storage_sd_write', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_STORAGE_SD_WRITE);
+                .appendField(Blockly.Msg.ARD_STORAGE_SD_WRITE); // SD 卡写入
             this.appendValueInput("FILENAME")
                 .setCheck("String")
-                .appendField(Blockly.Msg.ARD_STORAGE_FILENAME);
+                .appendField(Blockly.Msg.ARD_STORAGE_FILENAME); // 文件名
             this.appendValueInput("DATA")
                 .setCheck("String")
-                .appendField(Blockly.Msg.ARD_STORAGE_DATA);
+                .appendField(Blockly.Msg.ARD_STORAGE_DATA); // 数据
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(30);
@@ -67,7 +71,7 @@ const init = () => {
         const filename = arduinoGenerator.valueToCode(block, 'FILENAME', Order.ATOMIC) || '"log.txt"';
         const data = arduinoGenerator.valueToCode(block, 'DATA', Order.ATOMIC) || '""';
 
-        // Using a function to keep loop code clean and handle file opening cleanly
+        // 封装写入函数，以保证 loop 代码简洁并正确处理文件开关
         const funcName = 'sd_write_file';
         arduinoGenerator.functions_[funcName] = `
 void ${funcName}(String filename, String data) {
@@ -80,10 +84,11 @@ void ${funcName}(String filename, String data) {
         return `${funcName}(${filename}, ${data});\n`;
     });
 
+    // 从 SD 卡中读取文件内容并返回字符串
     registerBlock('storage_sd_read', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_STORAGE_SD_READ);
+                .appendField(Blockly.Msg.ARD_STORAGE_SD_READ); // SD 卡读取
             this.appendValueInput("FILENAME")
                 .setCheck("String")
                 .appendField(Blockly.Msg.ARD_STORAGE_FILENAME);
@@ -112,10 +117,11 @@ String ${funcName}(String filename) {
         return [`${funcName}(${filename})`, Order.ATOMIC];
     });
 
+    // 检查 SD 卡中是否存在指定文件
     registerBlock('storage_sd_exists', {
         init: function () {
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_STORAGE_SD_EXISTS);
+                .appendField(Blockly.Msg.ARD_STORAGE_SD_EXISTS); // 文件是否存在
             this.appendValueInput("FILENAME")
                 .setCheck("String")
                 .appendField(Blockly.Msg.ARD_STORAGE_FILENAME);
@@ -131,19 +137,20 @@ String ${funcName}(String filename) {
 
 
     // =========================================================================
-    // EEPROM
+    // EEPROM (电可擦除可编程只读存储器)
     // =========================================================================
 
+    // 向 EEPROM 指定地址写入一个字节的数据
     registerBlock('storage_eeprom_write', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_STORAGE_EEPROM_WRITE);
             this.appendValueInput("ADDR")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_STORAGE_ADDRESS);
+                .appendField(Blockly.Msg.ARD_STORAGE_ADDRESS); // 地址
             this.appendValueInput("VAL")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_STORAGE_VALUE_BYTE);
+                .appendField(Blockly.Msg.ARD_STORAGE_VALUE_BYTE); // 字节值 (0-255)
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(30);
@@ -155,18 +162,16 @@ String ${funcName}(String filename) {
         const val = arduinoGenerator.valueToCode(block, 'VAL', Order.ATOMIC) || '0';
         arduinoGenerator.addInclude('eeprom_lib', '#include <EEPROM.h>');
 
-        // ESP32 compatibility: EEPROM.begin(size) needed in setup if not present
-        // We can add a safe check or just assume standard Arduino or add setup line
-        // For ESP32, EEPROM is emulated in flash.
-        // Let's add a generic safe begin for ESP32 in setup just in case.
+        // 在 ESP32/ESP8266 上，EEPROM 是在 Flash 中模拟的，需要先 begin 指定大小
         arduinoGenerator.addSetup('eeprom_begin', `
 #if defined(ESP32) || defined(ESP8266)
-    EEPROM.begin(512);
+    EEPROM.begin(512); // 初始化 512 字节的模拟 EEPROM 空间
 #endif
 `);
         return `EEPROM.write(${addr}, ${val});\n`;
     });
 
+    // 从 EEPROM 指定地址读取一个字节的数据
     registerBlock('storage_eeprom_read', {
         init: function () {
             this.appendDummyInput()
@@ -182,7 +187,7 @@ String ${funcName}(String filename) {
     }, (block: any) => {
         const addr = arduinoGenerator.valueToCode(block, 'ADDR', Order.ATOMIC) || '0';
         arduinoGenerator.addInclude('eeprom_lib', '#include <EEPROM.h>');
-        // Ensure setup is present if read is used first
+        // 确保初始化代码存在
         arduinoGenerator.addSetup('eeprom_begin', `
 #if defined(ESP32) || defined(ESP8266)
     EEPROM.begin(512);
@@ -191,6 +196,7 @@ String ${funcName}(String filename) {
         return [`EEPROM.read(${addr})`, Order.ATOMIC];
     });
 
+    // 提交 EEPROM 更改（仅对 ESP32/ESP8266 必须，将缓存写入 Flash）
     registerBlock('storage_eeprom_commit', {
         init: function () {
             this.appendDummyInput()
@@ -208,7 +214,8 @@ String ${funcName}(String filename) {
 `;
     });
 
-    // SPIFFS (ESP32)
+    // SPIFFS 文件系统 (仅限 ESP32)
+    // 初始化 SPIFFS 存储
     registerBlock('storage_spiffs_begin', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_STORAGE_SPIFFS_BEGIN);
@@ -218,15 +225,17 @@ String ${funcName}(String filename) {
         }
     }, (block: any) => {
         arduinoGenerator.addInclude('spiffs_lib', '#include <SPIFFS.h>');
+        // 在 setup 中挂载 SPIFFS 分区，true 表示挂载失败时格式化
         arduinoGenerator.addSetup('spiffs_begin', 'if(!SPIFFS.begin(true)){ return; }');
         return '';
     });
 
+    // 在 SPIFFS 文件系统中写入数据
     registerBlock('storage_spiffs_write', {
         init: function () {
-            this.appendDummyInput().appendField(Blockly.Msg.ARD_STORAGE_SPIFFS_WRITE);
-            this.appendValueInput("PATH").setCheck("String").appendField(Blockly.Msg.ARD_STORAGE_PATH);
-            this.appendValueInput("DATA").setCheck("String").appendField(Blockly.Msg.ARD_STORAGE_DATA);
+            this.appendDummyInput().appendField(Blockly.Msg.ARD_STORAGE_SPIFFS_WRITE); // SPIFFS 写入
+            this.appendValueInput("PATH").setCheck("String").appendField(Blockly.Msg.ARD_STORAGE_PATH); // 路径
+            this.appendValueInput("DATA").setCheck("String").appendField(Blockly.Msg.ARD_STORAGE_DATA); // 内容
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(30);
@@ -249,9 +258,12 @@ String ${funcName}(String filename) {
 
 };
 
+/**
+ * 存储模块
+ * 提供对 SD 卡文件系统、EEPROM 掉电存储以及 ESP32 内置闪存文件系统（SPIFFS）的操作支持。
+ */
 export const StorageModule: BlockModule = {
     id: 'hardware.storage',
     name: 'Storage (SD/EEPROM)',
-    category: 'Storage',
     init
 };

@@ -14,10 +14,15 @@ import { useFileSystem } from '../contexts/FileSystemContext';
 
 // --- 组件属性类型 ---
 interface WelcomeScreenProps {
+    /** 打开新建项目弹窗的回调 */
     onNewProject: () => void;
+    /** 打开设置弹窗的回调 */
     onOpenConfig: () => void;
+    /** 打开扩展管理弹窗的回调 */
     onOpenExtensions: () => void;
+    /** 最近项目路径列表 */
     recentProjects: string[];
+    /** 刷新最近项目列表的回调 (可选) */
     onRefreshRecent?: () => void;
 }
 
@@ -25,22 +30,29 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
     const { t } = useTranslation();
     const { openProject, openProjectByPath } = useFileSystem();
 
+    // 错误提示信息状态
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
+    /**
+     * 处理打开最近项目
+     * 如果项目文件不存在，提示用户是否从列表中移除
+     * 
+     * @param path 项目文件路径
+     */
     const handleOpenRecent = async (path: string) => {
-        setErrorMessage(null);
+        setErrorMessage(null); // 清除之前的错误信息
         const result = await openProjectByPath(path);
         if (!result.success) {
             setErrorMessage(result.error || t('welcome.openError', 'Failed to open project'));
 
-            // Prompt to remove if not found
+            // 如果文件不存在，提示用户是否移除
             if (result.error && (result.error.includes('not found') || result.error.includes('ENOENT'))) {
                 setTimeout(async () => {
-                    // Use t('key', { path }) for interpolation
+                    // 使用 t('key', { path }) 进行字符串插值
                     if (confirm(t('welcome.confirmRemoveRecent', { path: path }))) {
                         if (window.electronAPI.removeRecentProject) {
                             await window.electronAPI.removeRecentProject(path);
-                            onRefreshRecent?.();
+                            onRefreshRecent?.(); // 刷新最近项目列表
                             setErrorMessage(null);
                         }
                     }
@@ -50,10 +62,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-full w-full bg-[#1e1e1e] text-slate-200 p-8 select-none">
-            <div className="max-w-2xl w-full space-y-12">
+        <div className="flex flex-col items-center h-full w-full bg-[#1e1e1e] text-slate-200 p-8 select-none overflow-y-auto auto-hide-scrollbar">
+            <div className="max-w-2xl w-full space-y-8 flex-shrink-0">
 
-                {/* Header */}
+                {/* 标题区域 - Logo 和应用名称 */}
                 <div className="text-center space-y-4">
                     <div className="inline-block p-4 mb-4">
                         <img src="./EmbedBlocks.png" alt="EmbedBlocks Logo" className="w-24 h-24 object-contain drop-shadow-2xl" />
@@ -66,7 +78,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
                     </p>
                 </div>
 
-                {/* Main Actions */}
+                {/* 主要操作按钮 - 新建、打开、目录、扩展 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <button
                         onClick={onNewProject}
@@ -137,7 +149,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
                     </button>
                 </div>
 
-                {/* Error Banner */}
+                {/* 错误提示横幅 */}
                 {errorMessage && (
                     <div className="bg-red-900/50 border border-red-900 text-red-200 px-4 py-3 rounded-xl flex items-center justify-between">
                         <span>{errorMessage}</span>
@@ -145,15 +157,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
                     </div>
                 )}
 
-                {/* Recent Projects */}
+                {/* 最近项目列表 - 限制最大高度并支持滚动 */}
                 {recentProjects.length > 0 && (
                     <div className="space-y-4">
                         <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                             <Clock size={16} />
                             {t('welcome.recent', 'Recent Projects')}
                         </h2>
-                        <div className="bg-[#252526] border border-slate-700/50 rounded-xl overflow-hidden">
-                            {recentProjects.slice(0, 5).map((path, index) => (
+                        <div className="bg-[#252526] border border-slate-700/50 rounded-xl overflow-hidden max-h-48 overflow-y-auto auto-hide-scrollbar">
+                            {recentProjects.slice(0, 10).map((path, index) => (
                                 <button
                                     key={index}
                                     onClick={() => handleOpenRecent(path)}
@@ -167,11 +179,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
                     </div>
                 )}
 
-                {/* Footer */}
-                <div className="flex items-center justify-between text-slate-600 text-sm pt-8">
+                {/* 底部工具栏 - 版本号和设置入口 */}
+                <div className="flex items-center justify-between text-slate-600 text-sm pt-4 pb-4">
                     <span>v1.0.0</span>
                     <div className="flex gap-4">
-                        <button onClick={onOpenConfig} className="hover:text-slate-400 transition-colors">
+                        <button onClick={onOpenConfig} className="hover:text-slate-400 transition-colors" title={t('app.settings')}>
                             <Settings size={18} />
                         </button>
                         {/* <a href="https://github.com/EmbedBlocks" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors">

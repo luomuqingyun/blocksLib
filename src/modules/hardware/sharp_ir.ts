@@ -26,6 +26,7 @@ const init = () => {
     // Clean room strategy: Generic analog read wrapper or SharpIR library.
     // SharpIR library is standard for accurate cm conversion.
 
+    // 初始化 Sharp 红外测距传感器
     registerBlock('sharp_ir_init', {
         init: function () {
             this.appendDummyInput()
@@ -51,41 +52,46 @@ const init = () => {
 
         reservePin(block, pin, 'INPUT');
 
+        // 包含 SharpIR 专用计算库
         arduinoGenerator.addInclude('sharp_ir_lib', '#include <SharpIR.h>');
-        // Note: SharpIR construct arguments vary by library version. 
-        // Commonly: SharpIR sensor(model, pin); Or defines.
-        // We assume generic usage: SharpIR sensor(SharpIR::GP2Y0A21YK0F, A0);
-        // Mapping codes to library constants:
-        let modelCode = "SharpIR::GP2Y0A21YK0F"; // 1080 default
+
+        // 将选择的型号编码映射为库内部定义的常量
+        let modelCode = "SharpIR::GP2Y0A21YK0F"; // 1080 默认款
         if (model === "430") modelCode = "SharpIR::GP2Y0A41SK0F";
         if (model === "100500") modelCode = "SharpIR::GP2Y0A02YK0F";
 
+        // 定义引脚绑定的传感器对象，库会自动处理非线性的电压-距离转换
         arduinoGenerator.addVariable(`sharp_${pin}`, `SharpIR sharp_${pin}(${modelCode}, ${pin});`);
 
         return '';
     });
 
+    // 读取 Sharp 红外测距传感器的距离
     registerBlock('sharp_ir_read', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_SHARP_READ);
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_SENSOR_PIN)
-                .appendField(new Blockly.FieldTextInput("A0"), "PIN");
+                .appendField(new Blockly.FieldTextInput("A0"), "PIN"); // 模拟输入引脚
             this.setOutput(true, "Number");
             this.setColour(280);
             this.setTooltip(Blockly.Msg.ARD_SHARP_IR_READ_TOOLTIP);
         }
     }, (block: any) => {
         const pin = block.getFieldValue('PIN');
+        // 调用之前初始化的 sharp 对象获取距离 (单位通常为 cm)
         return [`sharp_${pin}.getDistance()`, Order.ATOMIC];
     });
 
 };
 
+/**
+ * Sharp 红外测距模块
+ * 支持多种型号（如 GP2Y0A21, GP2Y0A02 等），通过模拟电压转换输出距离。
+ */
 export const SharpIRModule: BlockModule = {
     id: 'hardware.sharp_ir',
     name: 'Sharp IR',
-    category: 'Sharp IR',
     init
 };

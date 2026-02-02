@@ -22,6 +22,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 播放音调
     registerBlock('audio_tone', {
         init: function () {
             this.appendDummyInput()
@@ -46,8 +47,7 @@ const init = () => {
         const freq = arduinoGenerator.valueToCode(block, 'FREQ', Order.ATOMIC) || '440';
         const dur = arduinoGenerator.valueToCode(block, 'DURATION', Order.ATOMIC) || '1000';
 
-        // reservePin(block, pin, 'OUTPUT'); // Dynamic pin, hard to reserve if variable
-
+        // 使用 Arduino 内置 tone 函数播放指定频率和持续时间的音调
         return `tone(${pin}, ${freq}, ${dur});\n`;
     });
 
@@ -97,6 +97,5 @@ const init = () => {
 export const AudioModule: BlockModule = {
     id: 'hardware.audio',
     name: 'Audio (Tone)',
-    category: 'Sensors', // or Actuators, or a new Category 'Audio'? Keeping simple.
     init
 };

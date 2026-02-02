@@ -92,11 +92,14 @@ export const scanVariablesCategorized = (workspace: Blockly.Workspace): VarCateg
     }
 
     // 第二遍：详细扫描
+    // 第二遍：详细扫描所有积木，提取变量、类型和作用域信息
     for (const block of blocks) {
         const type = block.type;
         const isEnabled = block.isEnabled();
 
-        // Definitions should still be initialized even if disabled by validation
+        // 如果积木被禁用，通常跳过。
+        // 但如果是因为校验失败（validation_error）而被禁用，我们仍然需要提取其定义，
+        // 以避免在编辑器中显示不必要的“未定义”错误。
         if (!isEnabled) {
             // @ts-ignore
             if (!block._disabledByValidation) {
@@ -107,18 +110,21 @@ export const scanVariablesCategorized = (workspace: Blockly.Workspace): VarCateg
             }
         }
 
-        // --- Global Definitions ---
+        // --- 处理全局定义与函数作用域 ---
+
+        // 情况 1: 函数定义 (支持参数扫描)
         if (type === 'arduino_functions_def_flexible') {
             const name = block.getFieldValue('NAME');
             if (name) vars.functions.add(name);
 
-            // Scan params
+            // 扫描函数参数，并存入对应的函数作用域中
             const scope = vars.functionScopes.get(block.id);
             if (scope) {
                 let paramBlock = block.getInputTargetBlock('PARAMS');
                 while (paramBlock) {
                     const isParamEnabled = paramBlock.isEnabled();
                     let isEligible = isParamEnabled;
+                    // 同样处理参数积木的校验禁用状态
                     if (!isParamEnabled) {
                         // @ts-ignore
                         if (paramBlock._disabledByValidation || (typeof paramBlock.getDisabledReason === 'function' && paramBlock.getDisabledReason('validation_error'))) {
@@ -134,23 +140,27 @@ export const scanVariablesCategorized = (workspace: Blockly.Workspace): VarCateg
                 }
             }
         }
+        // 情况 2: 结构体定义
         else if (type === 'c_struct_define') {
             const name = block.getFieldValue('NAME');
             if (name) {
                 vars.userTypes.add("struct " + name);
                 const members: string[] = [];
+                // 提取结构体成员变量名，用于成员自动补全
                 if (Array.isArray((block as any).members_)) {
                     for (const m of (block as any).members_) { if (m && m.name) members.push(m.name); }
                 }
                 vars.structDefinitions.set(name, members);
             }
         }
+        // 情况 3: 枚举定义
         else if (type === 'c_enum_define') {
             const name = block.getFieldValue('NAME');
             if (name) {
                 vars.userTypes.add("enum " + name);
             }
 
+            // 扫描枚举项并在全局范围内注册它们，因为 C++ 枚举项在同一作用域内是全局可见的
             const items = (block as any).items_ || (block as any).extraState?.items;
             if (Array.isArray(items)) {
                 items.forEach((item: any) => {
@@ -158,28 +168,33 @@ export const scanVariablesCategorized = (workspace: Blockly.Workspace): VarCateg
                 });
             }
         }
+        // 情况 4: 普通变量声明
         else if (type === 'arduino_var_declare') {
             const name = block.getFieldValue('VAR');
             const varType = block.getFieldValue('TYPE');
             if (name) {
                 vars.variableTypes.set(name, varType);
+                // 判断变量属于全局还是局部作用域
                 const parentFunc = findParentFunctionBlock(block);
                 if (parentFunc) {
                     const scope = vars.functionScopes.get(parentFunc.id);
-                    if (scope) scope.locals.add(name);
+                    if (scope) scope.locals.add(name); // 局部变量
                 } else {
-                    vars.globals.add(name);
+                    vars.globals.add(name); // 全局变量
                 }
             }
         }
+        // 情况 5: 宏定义
         else if (type === 'c_macro_define') {
             const name = block.getFieldValue('NAME');
             if (name) vars.macros.add(name);
         }
+        // 情况 6: 数组定义
         else if (type === 'c_array_define') {
             const name = block.getFieldValue('VAR');
             if (name) vars.arrays.add(name);
         }
+        // 情况 7: 结构体变量声明
         else if (type === 'c_struct_var_declare') {
             const name = block.getFieldValue('VAR');
             const structName = block.getFieldValue('STRUCT_NAME');
@@ -188,6 +203,7 @@ export const scanVariablesCategorized = (workspace: Blockly.Workspace): VarCateg
                 vars.structs.add(name);
             }
         }
+        // 情况 8: 枚举变量声明
         else if (type === 'c_enum_var_declare') {
             const name = block.getFieldValue('VAR');
             const enumName = block.getFieldValue('ENUM_NAME');

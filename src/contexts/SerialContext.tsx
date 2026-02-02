@@ -195,33 +195,45 @@ export const SerialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const listenersRef = useRef<((event: SerialDataEvent) => void)[]>([]);
     const clearListenersRef = useRef<(() => void)[]>([]);
 
+    /** 
+     * 广播串口数据事件 
+     * 将订阅到的串口原始数据/解析后数据分发给所有监听者 (如多个串口监视器实例)
+     */
     const broadcastEvent = useCallback((event: SerialDataEvent) => {
         listenersRef.current.forEach(cb => {
-            try { cb(event); } catch (e) { console.error('[SerialContext] Error in listener:', e); }
+            try { cb(event); } catch (e) { console.error('[SerialContext] 监听回调出错:', e); }
         });
     }, []);
 
+    /** 
+     * 广播清屏事件 
+     * 触发所有监视器的清空显示逻辑
+     */
     const broadcastClear = useCallback(() => {
         clearListenersRef.current.forEach(cb => cb());
     }, []);
 
+    /** 添加数据监听者 */
     const addSerialListener = useCallback((cb: (event: SerialDataEvent) => void) => {
         listenersRef.current.push(cb);
     }, []);
 
+    /** 移除数据监听者 */
     const removeSerialListener = useCallback((cb: (event: SerialDataEvent) => void) => {
         listenersRef.current = listenersRef.current.filter(x => x !== cb);
     }, []);
 
+    /** 添加清屏事件监听者 */
     const addClearListener = useCallback((cb: () => void) => {
         clearListenersRef.current.push(cb);
     }, []);
 
+    /** 移除清屏事件监听者 */
     const removeClearListener = useCallback((cb: () => void) => {
         clearListenersRef.current = clearListenersRef.current.filter(x => x !== cb);
     }, []);
 
-    // Helper functions for common dispatch actions (to maintain backward compatibility in some places)
+    // --- 供 UI 组件调用的辅助分发函数 (保持向后兼容) ---
     const setSelectedPort = (port: string) => dispatch({ type: 'SET_SELECTED_PORT', payload: port });
     const setSerialInput = (input: string) => dispatch({ type: 'SET_SERIAL_INPUT', payload: input });
     const setIsConnected = (connected: boolean) => dispatch({ type: 'SET_CONNECTED', payload: connected });
@@ -280,22 +292,27 @@ export const SerialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         window.electronAPI.setConfig('serialSettings', settings);
     }, [state.baudRate, state.dataBits, state.stopBits, state.parity, state.hexDisplay, state.hexSend, state.lineEnding, state.encoding, state.enterSends, state.clearInputOnSend, state.historyDeduplication, state.inputSpellCheck, state.selectedPort, state.isConfigLoaded]);
 
+    /** 刷新可用串口列表 */
     const refreshPorts = async () => {
         if (window.electronAPI) {
             const list = await window.electronAPI.listPorts();
             setPorts(list);
+            // 如果已有端口列表中存在项且未选中任何端口，默认选中第一个
             if (list.length > 0 && !state.selectedPort) setSelectedPort(list[0].path);
         }
     };
 
+    /** 恢复串口配置为默认值 */
     const restoreDefaults = async () => {
         if (!window.electronAPI) return;
         if (confirm(t('serial.confirmRestoreDefaults'))) {
+            // 如果当前已连接，先断开
             if (state.isConnected) await window.electronAPI.closeSerial();
             dispatch({ type: 'RESTORE_DEFAULTS', payload: { ports: state.ports } });
         }
     };
 
+    /** 重新加载发送历史记录 (从全局配置中恢复) */
     const reloadHistory = async () => {
         if (window.electronAPI?.getConfig) {
             const history = await window.electronAPI.getConfig('serialSettings.serialHistory');
@@ -303,12 +320,16 @@ export const SerialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
     };
 
+    // --- 上下文对外暴露的值 ---
     const value = {
         ...state,
         dispatch,
+        // Setter 函数
         setSelectedPort, setSerialInput, setBaudRate, setDataBits, setStopBits,
         setParity, setHexDisplay, setHexSend, setLineEnding, setEncoding, setEnterSends, setClearInputOnSend, setHistoryDeduplication, setInputSpellCheck,
+        // 核心动作函数
         refreshPorts, toggleSerial, clearSerial, sendSerialData, restoreDefaults, reloadHistory, toggleDTR, toggleRTS,
+        // 事件监听管理
         addSerialListener, removeSerialListener, addClearListener, removeClearListener
     };
 

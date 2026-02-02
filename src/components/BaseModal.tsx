@@ -43,10 +43,12 @@ export const BaseModal: React.FC<BaseModalProps> = ({
     className = "",
     overlayClassName = ""
 }) => {
+    // 模态框容器引用
     const modalRef = useRef<HTMLDivElement>(null);
 
-    // ESC key listener
+    // ========== Effect: 监听键盘 ESC 键 ==========
     useEffect(() => {
+        /** 处理 ESC 按键按下 */
         const handleEsc = (event: KeyboardEvent) => {
             if (event.key === 'Escape' && isOpen) {
                 onClose();
@@ -56,7 +58,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
         return () => window.removeEventListener('keydown', handleEsc);
     }, [isOpen, onClose]);
 
-    // Prevent body scroll when modal is open
+    // ========== Effect: 模态框打开时禁止背景页面滚动 ==========
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -68,24 +70,32 @@ export const BaseModal: React.FC<BaseModalProps> = ({
         };
     }, [isOpen]);
 
+    // 如果模态框未打开，不渲染任何内容
     if (!isOpen) return null;
 
+    /** 
+     * 处理背景遮罩层点击 
+     * 点击遮罩层时关闭模态框 (仅当点击的是遮罩本身而非其子元素时)
+     */
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
             onClose();
         }
     };
 
+    // ========== 渲染模态框 ==========
     return (
         <div
             className={`fixed inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-md transition-all duration-300 ${overlayClassName}`}
             onClick={handleOverlayClick}
         >
+            {/* 模态框主体内容容器 */}
             <div
                 ref={modalRef}
                 className={`animate-in fade-in zoom-in duration-200 outline-none ${className}`}
                 tabIndex={-1}
             >
+                {/* 渲染子组件内容 */}
                 {children}
             </div>
         </div>

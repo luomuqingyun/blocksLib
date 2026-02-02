@@ -1,10 +1,33 @@
+/**
+ * ============================================================
+ * 串口设置区域组件 (Serial Settings Section Component)
+ * ============================================================
+ * 
+ * 设置模态框中的串口设置标签页内容。
+ * 
+ * 功能:
+ * - 发送历史记录限制
+ * - 历史去重开关
+ * - 行尾符选择 (None/LF/CR/CRLF)
+ * - 编码选择 (UTF-8/GBK/ASCII/Latin1)
+ * - Enter 发送开关
+ * - 发送后清空输入开关
+ * - 拼写检查开关
+ * 
+ * @file src/components/settings/sections/SerialSettings.tsx
+ * @module EmbedBlocks/Frontend/Components/Settings
+ */
+
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSerial } from '../../../contexts/SerialContext';
 
+/** 串口设置组件属性 */
 interface SerialSettingsProps {
+    /** 当前配置对象 */
     config: any;
+    /** 保存配置回调 */
     handleSave: (key: string, value: any) => void;
 }
 
@@ -20,6 +43,7 @@ export const SerialSettings: React.FC<SerialSettingsProps> = ({ config, handleSa
         inputSpellCheck, setInputSpellCheck
     } = useSerial();
 
+    /** 清除串口历史记录 */
     const handleClearHistory = async () => {
         if (confirm(t('settings.confirmClearHistory'))) {
             await window.electronAPI.updateHistory([]);
@@ -30,7 +54,7 @@ export const SerialSettings: React.FC<SerialSettingsProps> = ({ config, handleSa
 
     return (
         <div className="space-y-8">
-            {/* History Limit */}
+            {/* 历史记录数量限制 */}
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-300">
                     {t('settings.historyLimit')}
@@ -54,7 +78,7 @@ export const SerialSettings: React.FC<SerialSettingsProps> = ({ config, handleSa
                 <p className="text-xs text-slate-500">{t('settings.historyLimitDesc')}</p>
             </div>
 
-            {/* History Deduplication */}
+            {/* 历史记录去重 */}
             <div className="flex items-center justify-between">
                 <div>
                     <label className="text-sm font-medium text-slate-300 block">{t('serial.historyDeduplication')}</label>
@@ -68,7 +92,7 @@ export const SerialSettings: React.FC<SerialSettingsProps> = ({ config, handleSa
                 />
             </div>
 
-            {/* Behavior Settings */}
+            {/* 行为设置 */}
             <div className="space-y-4 pt-4 border-t border-slate-700">
                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">{t('serial.inputBehavior')}</h3>
 

@@ -291,18 +291,20 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                     </div>
                 </div>
 
-                {/* 大图内容区 (Canvas-like controls) */}
+                {/* 大图内容区 (支持缩放和平移的画布样式控件) */}
                 <div
                     ref={zoomContainerRef}
                     className="flex-1 bg-[#1e1e1e] relative overflow-hidden select-none"
                     style={{ cursor: isGrabbing ? 'grabbing' : 'grab' }}
                     onMouseDown={(e) => {
+                        // 开始拖拽平移
                         isDragging.current = true;
                         setIsGrabbing(true);
                         startPos.current = { x: e.clientX - transform.x, y: e.clientY - transform.y };
                     }}
                     onMouseMove={(e) => {
                         if (!isDragging.current) return;
+                        // 计算鼠标移动偏差并更新平移位置
                         setTransform(prev => ({
                             ...prev,
                             x: e.clientX - startPos.current.x,
@@ -318,12 +320,14 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                         setIsGrabbing(false);
                     }}
                 >
+                    {/* 变换容器：应用平移和缩放比例 */}
                     <div
                         className="w-full h-full flex items-center justify-center origin-center transition-transform duration-75 ease-out"
                         style={{
                             transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
                         }}
                     >
+                        {/* 渲染顺序：1. 开发板大图 -> 2. 芯片 3D 渲染器 -> 3. 空 */}
                         {activeImage && !imgError ? (
                             <img
                                 src={activeImage}
@@ -333,6 +337,7 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                             />
                         ) : canRenderChip ? (
                             <div className="w-[800px] h-[800px] pointer-events-none">
+                                {/* 当没有实物图时，使用 ChipRenderer 进行 3D/仿真预览 */}
                                 <ChipRenderer
                                     mcu={mcu || name}
                                     packageType={packageType || 'Unknown'}

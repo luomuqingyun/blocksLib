@@ -18,35 +18,44 @@
 import * as Blockly from 'blockly';
 import { setBlocklyLocale } from '../locales/setupBlocklyLocales';
 
-// 初始化语言设置 (默认英文)
+// 初始化语言设置 (默认英文，后续会根据浏览器或配置动态切换)
 setBlocklyLocale('en').catch(console.error);
 
+/**
+ * 初始化 Blockly 的 Polyfills (兼容性填充)
+ * 为已弃用的 API 提供兼容性实现，防止旧代码报错并消除警告
+ */
 export const initBlocklyPolyfills = () => {
-    // Polyfill for deprecated getAllVariables to silence warning
+    // 为已弃用的 getAllVariables 提供 Polyfill
     // @ts-ignore
     if (Blockly.Workspace.prototype.getAllVariables && !Blockly.Workspace.prototype.getAllVariables.isPolyfill) {
         // @ts-ignore
         Blockly.Workspace.prototype.getAllVariables = function () {
+            // 重定向到新的 VariableMap 系统
             return this.getVariableMap().getAllVariables();
         };
         // @ts-ignore
         Blockly.Workspace.prototype.getAllVariables.isPolyfill = true;
     }
 
+    // 为已弃用的 getVariableById 提供 Polyfill
     // @ts-ignore
     if (Blockly.Workspace.prototype.getVariableById && !Blockly.Workspace.prototype.getVariableById.isPolyfill) {
         // @ts-ignore
         Blockly.Workspace.prototype.getVariableById = function (id: string) {
+            // 重定向到 VariableMap 进行根据 ID 查找
             return this.getVariableMap().getVariableById(id);
         };
         // @ts-ignore
         Blockly.Workspace.prototype.getVariableById.isPolyfill = true;
     }
 
+    // 为已弃用的 getVariable 提供 Polyfill
     // @ts-ignore
     if (Blockly.Workspace.prototype.getVariable && !Blockly.Workspace.prototype.getVariable.isPolyfill) {
         // @ts-ignore
         Blockly.Workspace.prototype.getVariable = function (name: string) {
+            // 重定向到 VariableMap 进行根据名称查找
             return this.getVariableMap().getVariable(name);
         };
         // @ts-ignore

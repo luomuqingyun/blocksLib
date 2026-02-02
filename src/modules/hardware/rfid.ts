@@ -59,6 +59,7 @@ const init = () => {
         return '';
     });
 
+    // 检测是否有新卡片放置在读卡器上，并尝试读取其序列号
     registerBlock('rfid_is_new_card', {
         init: function () {
             this.appendDummyInput()
@@ -68,9 +69,12 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_RFID_AVAIL_TOOLTIP);
         }
     }, (block: any) => {
+        // PICC_IsNewCardPresent: 检查感应区域是否有卡
+        // PICC_ReadCardSerial: 读取卡片信息
         return ['mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()', Order.ATOMIC];
     });
 
+    // 读取当前卡片的唯一标识符 (UID) 并以十六进制字符串形式返回
     registerBlock('rfid_read_uid', {
         init: function () {
             this.appendDummyInput()
@@ -80,7 +84,7 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_RFID_GET_TOOLTIP);
         }
     }, (block: any) => {
-        // Helper function to format UID as hex string
+        // 定义辅助函数 get_rfid_uid 遍历字节数组并拼接成字符串
         const funcName = 'get_rfid_uid';
         arduinoGenerator.addFunction(funcName, `
 String ${funcName}() {
@@ -95,6 +99,7 @@ String ${funcName}() {
         return [`${funcName}()`, Order.ATOMIC];
     });
 
+    // 停止读取并释放卡片通信，允许系统进入低功耗或与其他设备通信
     registerBlock('rfid_halt', {
         init: function () {
             this.appendDummyInput()
@@ -108,13 +113,14 @@ String ${funcName}() {
         return `mfrc522.PICC_HaltA();\n  mfrc522.PCD_StopCrypto1();\n`;
     });
 
+    // MIFARE 卡片扇区验证（读写扇区前必须先通过密钥验证）
     registerBlock('rfid_auth', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_RFID_AUTH);
             this.appendValueInput("BLOCK")
                 .setCheck("Number")
-                .appendField(Blockly.Msg.ARD_RFID_BLOCK);
+                .appendField(Blockly.Msg.ARD_RFID_BLOCK); // 扇区内的块编号
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_RFID_KEY_TYPE)
                 .appendField(new Blockly.FieldDropdown([["Key A", "A"], ["Key B", "B"]]), "KEY_TYPE");
@@ -128,27 +134,29 @@ String ${funcName}() {
         const type = block.getFieldValue('KEY_TYPE');
         const keyCmd = type === 'A' ? 'PICC_CMD_MF_AUTH_KEY_A' : 'PICC_CMD_MF_AUTH_KEY_B';
 
-        // Define default key just once globally or locally
         return `
     MFRC522::MIFARE_Key key;
+    // 使用工厂默认密钥: FF FF FF FF FF FF
     for (byte i = 0; i < 6; i++) key.keyByte[i] = 0xFF;
+    // 调用 PCD_Authenticate 进行身份校验，校验通过后才能操作 block
     MFRC522::StatusCode status = mfrc522.PCD_Authenticate(MFRC522::${keyCmd}, ${blk}, &key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
-       // Serial.print(F("Auth failed"));
+       // 校验失败逻辑（可选）
     }
 \n`;
     });
 
+    // 写入原始数据块 (16 字节)
     registerBlock('rfid_write', {
         init: function () {
             this.appendDummyInput()
-                .appendField("RFID Write Block");
+                .appendField("RFID 写入数据块");
             this.appendValueInput("BLOCK")
                 .setCheck("Number")
-                .appendField("Block #");
+                .appendField("块编号 #");
             this.appendValueInput("DATA")
                 .setCheck("String")
-                .appendField("String (16 chars)");
+                .appendField("字符串 (16 字符)");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(180);
@@ -160,7 +168,7 @@ String ${funcName}() {
         return `
     byte buffer[18];
     String str = ${data};
-    // Pad or truncate
+    // 自动填充或截断至 16 字节宽度
     for(int i=0; i<16; i++) {
         if(i < str.length()) buffer[i] = str[i];
         else buffer[i] = ' '; 
@@ -169,10 +177,7 @@ String ${funcName}() {
 \n`;
     });
 
-    // Helper function for block read/write is complex due to keys/authentication
-    // We will assume default key FF FF FF FF FF FF for simplification in this context
-    // or provide a simple wrapper if needed. For now, we'll try to keep it inline or simple func.
-
+    // 读取指定数据块的内容并转换为字符串
     registerBlock('rfid_read_block', {
         init: function () {
             this.appendDummyInput()
@@ -189,6 +194,7 @@ String ${funcName}() {
         const blockNum = arduinoGenerator.valueToCode(block, 'BLOCK', Order.ATOMIC) || '0';
 
         const funcName = 'rfid_read_str_block';
+        // 生成辅助函数，包含自动验证和读取逻辑
         arduinoGenerator.addFunction(funcName, `
 String ${funcName}(int blockNumber) {
   MFRC522::MIFARE_Key key;
@@ -196,10 +202,15 @@ String ${funcName}(int blockNumber) {
   MFRC522::StatusCode status;
   byte buffersize = 18;
   byte buffer[18];
+  
+  // 操作前必须先验证对应块所属的扇区
   status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, blockNumber, &key, &(mfrc522.uid));
   if (status != MFRC522::STATUS_OK) return "";
+  
+  // 读取块内容
   status = mfrc522.MIFARE_Read(blockNumber, buffer, &buffersize);
   if (status != MFRC522::STATUS_OK) return "";
+  
   String str = "";
   for(byte i = 0; i < 16; i++){
     if(buffer[i] != 0) str += (char)buffer[i];
@@ -209,6 +220,7 @@ String ${funcName}(int blockNumber) {
         return [`${funcName}(${blockNum})`, Order.ATOMIC];
     });
 
+    // 格式化写入字符串到指定数据块
     registerBlock('rfid_write_block', {
         init: function () {
             this.appendDummyInput()
@@ -230,18 +242,23 @@ String ${funcName}(int blockNumber) {
         const data = arduinoGenerator.valueToCode(block, 'DATA', Order.ATOMIC) || '"hello"';
 
         const funcName = 'rfid_write_str_block';
+        // 生成辅助函数，清理旧数据并写入新字符串
         arduinoGenerator.addFunction(funcName, `
 void ${funcName}(int blockNumber, String dataStr) {
   MFRC522::MIFARE_Key key;
   for (byte i = 0; i < 6; i++) key.keyByte[i] = 0xFF;
   MFRC522::StatusCode status;
   byte buffer[16];
+  
+  // 填充缓冲区
   for(byte i=0; i<16; i++) buffer[i] = 0;
   for(byte i=0; i<dataStr.length() && i<16; i++) buffer[i] = dataStr[i];
   
+  // 验证
   status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, blockNumber, &key, &(mfrc522.uid));
   if (status != MFRC522::STATUS_OK) return;
   
+  // 写入
   status = mfrc522.MIFARE_Write(blockNumber, buffer, 16);
   if (status != MFRC522::STATUS_OK) return;
 }`);
@@ -249,9 +266,12 @@ void ${funcName}(int blockNumber, String dataStr) {
     });
 };
 
+/**
+ * RFID (MFRC522) 模块
+ * 提供对 MIFARE IC 卡的 UID 读取、块读取和写入功能。
+ */
 export const RFIDModule: BlockModule = {
     id: 'hardware.rfid',
     name: 'RFID (MFRC522)',
-    category: 'RFID',
     init
 };

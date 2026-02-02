@@ -22,6 +22,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化 USB 键盘
     registerBlock('usb_keyboard_init', {
         init: function () {
             this.appendDummyInput()
@@ -32,14 +33,17 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_USB_KB_BEGIN_TOOLTIP);
         }
     }, (block: any) => {
+        // 包含原生 USB 和键盘库
         arduinoGenerator.addInclude('usb_lib', '#include "USB.h"');
         arduinoGenerator.addInclude('usb_kb_lib', '#include <Keyboard.h>');
         arduinoGenerator.addVariable('usb_kb_init', `bool usb_kb_initialized = false;`);
 
+        // 在 setup 中开启键盘模拟和 USB 外设
         arduinoGenerator.addSetup('usb_kb_begin', `Keyboard.begin();\n  USB.begin();`);
         return '';
     });
 
+    // USB 键盘打印文本
     registerBlock('usb_keyboard_print', {
         init: function () {
             this.appendDummyInput()
@@ -53,6 +57,7 @@ const init = () => {
         }
     }, (block: any) => {
         const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '""';
+        // 模拟键盘输入文字内容
         return `Keyboard.print(${text});\n`;
     });
 
@@ -76,6 +81,7 @@ const init = () => {
         return `Keyboard.write(${key});\n`;
     });
 
+    // 初始化 USB 鼠标
     registerBlock('usb_mouse_init', {
         init: function () {
             this.appendDummyInput()
@@ -90,6 +96,7 @@ const init = () => {
         arduinoGenerator.addInclude('usb_mouse_lib', '#include <Mouse.h>');
         arduinoGenerator.addVariable('usb_mouse_init', `bool usb_mouse_initialized = false;`);
 
+        // 在 setup 中开启鼠标模拟和 USB 外设
         arduinoGenerator.addSetup('usb_mouse_begin', `Mouse.begin();\n  USB.begin();`);
         return '';
     });
@@ -115,6 +122,7 @@ const init = () => {
         return `Mouse.move(${x}, ${y});\n`;
     });
 
+    // 模拟 USB 鼠标点击
     registerBlock('usb_mouse_click', {
         init: function () {
             this.appendDummyInput()
@@ -126,6 +134,7 @@ const init = () => {
         }
     }, (block: any) => {
         const btn = block.getFieldValue('BTN');
+        // 模拟鼠标按键点击动作
         return `Mouse.click(${btn});\n`;
     });
 
@@ -134,6 +143,5 @@ const init = () => {
 export const USBHidModule: BlockModule = {
     id: 'protocols.usb_hid',
     name: 'USB HID',
-    category: 'Communication',
     init
 };

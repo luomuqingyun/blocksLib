@@ -49,11 +49,15 @@ import { CATEGORY_COLORS } from '../config/theme';
  * 管理所有支持的开发板配置，动态生成工具箱
  */
 class BoardRegistryService {
+    // 存储所有已注册的板卡配置，Key 为板卡 ID
     private boards: Map<string, BoardConfig> = new Map();
+    // 缓存已生成的工具箱配置，提升切换性能
     private toolboxCache: Map<string, any> = new Map();
+    // 当前选中的板卡 ID
     private currentBoardId: string | null = null;
 
     constructor() {
+        // 初始化时从仓库加载预置板卡
         this.initializeBoards();
         this.toolboxCache.clear();
     }
@@ -74,8 +78,11 @@ class BoardRegistryService {
         return this.get(this.currentBoardId);
     }
 
+    /**
+     * 初始化板卡列表
+     * 从统一仓库加载已发现的板卡和家族注入信息
+     */
     private initializeBoards() {
-        // Load all boards from the unified repository which handles discovery and family injection
         const allBoards = boardRepository.getAllBoards();
         console.log(`[BoardRegistry] Loaded ${allBoards.length} boards from repository.`);
 
@@ -96,10 +103,16 @@ class BoardRegistryService {
         this.notifyListeners();
     }
 
+    /**
+     * 根据 ID 获取开发板配置
+     */
     public get(id: string): BoardConfig | undefined {
         return this.boards.get(id);
     }
 
+    /**
+     * 获取所有已注册的开发板配置
+     */
     public getAll(): BoardConfig[] {
         return Array.from(this.boards.values());
     }
@@ -112,19 +125,19 @@ class BoardRegistryService {
      * @remarks 使用缓存机制提升性能，避免重复生成
      */
     public getToolboxConfig(boardId: string) {
-        // Input validation
+        // 输入验证
         if (!boardId || typeof boardId !== 'string') {
             throw new Error('[BoardRegistry] Invalid boardId provided');
         }
 
-        // Check cache first
+        // 优先从缓存获取
         if (this.toolboxCache.has(boardId)) {
             return this.toolboxCache.get(boardId);
         }
 
         const boardConfig = this.get(boardId);
-        // Fallback to first board if not found, or throw error depending on desired behavior
-        // logic moved from constants.ts
+
+        // 如果找不到配置，回退到第一个已注册的板子
         if (!boardConfig) {
             console.warn(`Board ${boardId} not found, using default toolbox.`);
             const allBoards = this.getAll();
@@ -139,6 +152,7 @@ class BoardRegistryService {
             return config;
         }
 
+        // 生成新配置并存入缓存
         const config = this.generateToolbox(boardConfig);
         this.toolboxCache.set(boardId, config);
         return config;
@@ -187,19 +201,21 @@ class BoardRegistryService {
             { kind: 'category', name: '%{BKY_CAT_VENDOR}', colour: CATEGORY_COLORS.VENDOR, contents: VENDOR_CONTENTS }
         ];
 
-        // 2.5 Optional Hardware Categories based on Capabilities
+        // 2.5 根据能力可选的硬件分类
         const cap = boardConfig.capabilities || {};
         const optionalHardware: any[] = [];
 
+        // 如果支持 WiFi 或属于 ESP32 家族，添加 IoT 和联网分类
         if (cap.wifi || boardConfig.family === 'esp32') {
             optionalHardware.push({ kind: 'category', name: '%{BKY_CAT_IOT}', colour: CATEGORY_COLORS.IOT, contents: IOT_CONTENTS });
             optionalHardware.push({ kind: 'category', name: '%{BKY_CAT_NETWORK}', colour: CATEGORY_COLORS.ESP_NETWORK, contents: ESP32_CONTENTS });
         }
 
         if (cap.ethernet) {
-            // If not already included in IOT or similar
+            // 如果支持以太网且不在 IOT 分类中，此处可扩展
         }
 
+        // 如果支持 RTOS 或属于常见的高性能家族，添加 RTOS 分类
         if (cap.rtos || boardConfig.family === 'esp32' || boardConfig.family === 'stm32') {
             optionalHardware.push({ kind: 'category', name: '%{BKY_CAT_RTOS}', colour: CATEGORY_COLORS.RTOS, contents: RTOS_CONTENTS });
         }
@@ -209,15 +225,14 @@ class BoardRegistryService {
             hardwareCategories.push(...optionalHardware);
         }
 
-        // 3. Family Specific Categories
+        // 3. 家族特定分类 (STM32, ESP32 等)
         let specificCategories: Array<{ kind: string; name?: string; colour?: string; contents?: any[]; custom?: string }> = [];
 
         if (boardConfig.family === 'stm32') {
             const stm32Cat: any[] = [];
 
-            // Check Capabilities
-            // Default behavior: if capabilities object is missing, nothing is shown to be safe,
-            // or we could show all for generic boards. Let's be semi-strict.
+            // 检查板卡具体的硬件能力
+            // 默认行为：如果 capabilities 对象缺失，则不显示以确保安全。
             const hasCap = (key: string) => !!(boardConfig.capabilities && (boardConfig.capabilities as any)[key]);
 
             if (hasCap('can')) {
@@ -227,33 +242,29 @@ class BoardRegistryService {
                 if (stm32Cat.length > 0) stm32Cat.push({ kind: 'sep', gap: 20 });
                 stm32Cat.push(...STM32_USB_CONTENTS);
             }
-            if (hasCap('ethernet')) { // or 'network'
+            if (hasCap('ethernet')) { // 或 'network'
                 if (stm32Cat.length > 0) stm32Cat.push({ kind: 'sep', gap: 20 });
                 stm32Cat.push(...STM32_NET_CONTENTS);
             }
 
-            // Fallback for generic boards with NO capabilities defined: Show ALL?
-            // Or better: update the generic board definitions to have capabilities.
-            // For now, if STM32 and NO specific sub-features enabled, show nothing?
-            // User requested "Dynamic loading", so strict is better.
-
+            // 对于没有任何能力定义的 STM32 开发板，可以保持分类为空或显示全部
             if (stm32Cat.length > 0) {
                 specificCategories.push({ kind: 'sep' });
                 specificCategories.push({ kind: 'category', name: '%{BKY_CAT_STM32}', colour: CATEGORY_COLORS.STM32, contents: stm32Cat });
             }
         }
 
-        // 4. External Extension Categories
+        // 4. 外部扩展分类
         if (this.externalCategories.size > 0) {
             let hasExternal = false;
             this.externalCategories.forEach((items) => {
                 items.forEach(item => {
-                    // Check Compatibility
+                    // 检查扩展与当前板卡的兼容性
                     if (item.compatibility) {
                         const { families, boards } = item.compatibility;
                         let allowed = true;
 
-                        // Check Family
+                        // 检查所属家族
                         if (families && families.length > 0) {
                             const normalizedFamilies = families.map(f => f.toLowerCase());
                             if (!normalizedFamilies.includes(boardConfig.family.toLowerCase())) {
@@ -261,7 +272,7 @@ class BoardRegistryService {
                             }
                         }
 
-                        // Check Board ID
+                        // 检查具体板卡 ID
                         if (boards && boards.length > 0) {
                             const normalizedBoards = boards.map(b => b.toLowerCase());
                             if (!normalizedBoards.includes(boardConfig.id.toLowerCase())) {
@@ -294,33 +305,35 @@ class BoardRegistryService {
         };
     }
 
+    // 存储扩展提供的分类
     private externalCategories: Map<string, { category: any; compatibility?: { families?: string[]; boards?: string[] } }[]> = new Map();
+    // 监听注册表变更的回调列表
     private listeners: (() => void)[] = [];
 
     /**
-     * Register a new toolbox category from an extension.
-     * @param extId The extension ID
-     * @param category The category definition object
-     * @param compatibility Optional compatibility constraints
+     * 注册来自扩展的工具箱分类
+     * @param extId 扩展 ID
+     * @param category 分类定义对象
+     * @param compatibility 兼容性约束（可选）
      */
     public registerExtensionCategory(extId: string, category: any, compatibility?: { families?: string[]; boards?: string[] }) {
         if (!this.externalCategories.has(extId)) {
             this.externalCategories.set(extId, []);
         }
         this.externalCategories.get(extId)?.push({ category, compatibility });
+        // 清除缓存以使新注册生效
         this.toolboxCache.clear();
         this.notifyListeners();
     }
 
     /**
-     * Unregister all categories and boards for a specific extension.
-     * @param extId The extension ID
+     * 取消注册特定扩展的所有分类和板卡
+     * @param extId 扩展 ID
      */
     public unregisterExtension(extId: string) {
         let changed = false;
 
-        // 1. Remove Boards contributed by this extension
-        // Extension boards are prefixed with "${extId}:" in ExtensionRegistry
+        // 1. 移除由该扩展贡献的板卡
         const prefix = `${extId}:`;
         for (const [id] of this.boards.entries()) {
             if (id.startsWith(prefix)) {
@@ -329,7 +342,7 @@ class BoardRegistryService {
             }
         }
 
-        // 2. Remove Categories
+        // 2. 移除对应的工具箱分类
         if (this.externalCategories.has(extId)) {
             this.externalCategories.delete(extId);
             changed = true;
@@ -341,6 +354,11 @@ class BoardRegistryService {
         }
     }
 
+    /**
+     * 订阅注册表变更事件
+     * @param listener 回调函数
+     * @returns 取消订阅的函数
+     */
     public subscribe(listener: () => void): () => void {
         this.listeners.push(listener);
         return () => {
@@ -348,6 +366,9 @@ class BoardRegistryService {
         };
     }
 
+    /**
+     * 通知所有订阅者注册表已变更
+     */
     private notifyListeners() {
         this.listeners.forEach(l => l());
     }

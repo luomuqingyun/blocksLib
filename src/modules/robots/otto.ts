@@ -26,6 +26,7 @@ const init = () => {
     // Otto DIY (Otto.h)
     // =========================================================================
 
+    // 初始化 Otto 机器人
     registerBlock('otto_init', {
         init: function () {
             this.appendDummyInput()
@@ -61,15 +62,19 @@ const init = () => {
         const calib = block.getFieldValue('CALIB') === 'TRUE';
         const buzzer = block.getFieldValue('PIN_B');
 
+        // 包含 Otto 库头文件
         arduinoGenerator.addInclude('otto_lib', '#include <Otto.h>');
+        // 定义 Otto 对象
         arduinoGenerator.addVariable('otto_obj', `Otto Otto;`);
 
+        // 在 Setup 中初始化引脚、校准状态和蜂鸣器，并归位
         arduinoGenerator.addSetup('otto_init', `
   Otto.init(${yl}, ${yr}, ${rl}, ${rr}, ${calib}, ${buzzer});\n  Otto.home();`);
 
         return '';
     });
 
+    // 机器人舵机归位
     registerBlock('otto_home', {
         init: function () {
             this.appendDummyInput()
@@ -83,6 +88,7 @@ const init = () => {
         return `Otto.home();\n`;
     });
 
+    // 控制机器人移动逻辑（行进、转向、跳跃等）
     registerBlock('otto_move', {
         init: function () {
             this.appendDummyInput()
@@ -116,15 +122,15 @@ const init = () => {
         const t = arduinoGenerator.valueToCode(block, 'T', Order.ATOMIC) || '1000';
 
         let routine = '';
-        // Map simplified dropdown to Otto library calls
+        // 将下拉框选项映射到 Otto 库的相应方法
         switch (action) {
-            case 'walk': routine = `Otto.walk(${steps}, ${t}, 1);`; break; // dir=1 usually forward
-            case 'back': routine = `Otto.walk(${steps}, ${t}, -1);`; break;
-            case 'turnL': routine = `Otto.turn(${steps}, ${t}, 1);`; break;
-            case 'turnR': routine = `Otto.turn(${steps}, ${t}, -1);`; break;
-            case 'bendKeyL': routine = `Otto.bend(${steps}, ${t}, 1);`; break;
-            case 'bendKeyR': routine = `Otto.bend(${steps}, ${t}, -1);`; break;
-            case 'jump': routine = `Otto.jump(${steps}, ${t});`; break;
+            case 'walk': routine = `Otto.walk(${steps}, ${t}, 1);`; break; // 前进
+            case 'back': routine = `Otto.walk(${steps}, ${t}, -1);`; break; // 后退
+            case 'turnL': routine = `Otto.turn(${steps}, ${t}, 1);`; break; // 左转
+            case 'turnR': routine = `Otto.turn(${steps}, ${t}, -1);`; break; // 右转
+            case 'bendKeyL': routine = `Otto.bend(${steps}, ${t}, 1);`; break; // 左侧弯腰
+            case 'bendKeyR': routine = `Otto.bend(${steps}, ${t}, -1);`; break; // 右侧弯腰
+            case 'jump': routine = `Otto.jump(${steps}, ${t});`; break; // 跳跃
             default: routine = `Otto.home();`;
         }
 
@@ -166,6 +172,7 @@ const init = () => {
         return `Otto.${dance}(${steps}, ${t}, ${20}, 1);\n`;
     });
 
+    // 让机器人发出特定的声音/唱歌
     registerBlock('otto_sound', {
         init: function () {
             this.appendDummyInput()
@@ -198,9 +205,11 @@ const init = () => {
         }
     }, (block: any) => {
         const sound = block.getFieldValue('SOUND');
+        // 调用 Otto.sing 方法发出预定义声音
         return `Otto.sing(${sound});\n`;
     });
 
+    // 执行预设的手势动作
     registerBlock('otto_gesture', {
         init: function () {
             this.appendDummyInput()
@@ -228,6 +237,7 @@ const init = () => {
         }
     }, (block: any) => {
         const gesture = block.getFieldValue('GESTURE');
+        // 调用 Otto.playGesture 播放动作
         return `Otto.playGesture(${gesture});\n`;
     });
 
@@ -270,6 +280,5 @@ const init = () => {
 export const OttoModule: BlockModule = {
     id: 'robots.otto',
     name: 'Otto DIY',
-    category: 'Otto',
     init
 };

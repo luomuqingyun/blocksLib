@@ -7,7 +7,6 @@ import { initComplexBlock } from './blocks';
 export const ComplexModule = defineBlockModule({
     id: 'examples.complex',
     name: 'examples.complex_name',
-    category: 'SENSORS',
     init: () => {
         // 在这里调用其他文件的初始化函数
         initComplexBlock();

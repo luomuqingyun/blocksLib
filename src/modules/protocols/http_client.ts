@@ -21,6 +21,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 发起 HTTP GET 请求
     registerBlock('http_get', {
         init: function () {
             this.appendDummyInput()
@@ -35,8 +36,10 @@ const init = () => {
     }, (block: any) => {
         const url = arduinoGenerator.valueToCode(block, 'URL', Order.ATOMIC) || '""';
 
+        // 包含 HTTPClient 库
         arduinoGenerator.addInclude('http_lib', '#include <HTTPClient.h>');
 
+        // 定义发送 GET 请求的自定义函数
         const funcName = 'sendHTTPGet';
         arduinoGenerator.functions_[funcName] = `
 String ${funcName}(String url) {
@@ -46,8 +49,10 @@ String ${funcName}(String url) {
     int httpCode = http.GET();
     String payload = "{}";
     if (httpCode > 0) {
+      // 获取服务端返回的响应内容
       payload = http.getString();
     } else {
+       // 返回错误代码
        payload = "Error: " + String(httpCode);
     }
     http.end();
@@ -58,6 +63,7 @@ String ${funcName}(String url) {
         return [`${funcName}(${url})`, Order.ATOMIC];
     });
 
+    // 发起 HTTP POST 请求
     registerBlock('http_post', {
         init: function () {
             this.appendDummyInput()
@@ -69,7 +75,7 @@ String ${funcName}(String url) {
                 .setCheck("String")
                 .appendField(Blockly.Msg.ARD_HTTP_CLIENT_DATA);
             this.appendDummyInput()
-                .appendField(Blockly.Msg.ARD_NET_HTTP_TYPE) // Content-Type
+                .appendField(Blockly.Msg.ARD_NET_HTTP_TYPE) // 内容类型 (Content-Type)
                 .appendField(new Blockly.FieldDropdown([
                     ["application/json", "application/json"],
                     ["application/x-www-form-urlencoded", "application/x-www-form-urlencoded"],
@@ -86,6 +92,7 @@ String ${funcName}(String url) {
 
         arduinoGenerator.addInclude('http_lib', '#include <HTTPClient.h>');
 
+        // 定义发送 POST 请求的自定义函数
         const funcName = 'sendHTTPPost';
         arduinoGenerator.functions_[funcName] = `
 String ${funcName}(String url, String data, String contentType) {
@@ -114,6 +121,5 @@ String ${funcName}(String url, String data, String contentType) {
 export const HTTPClientModule: BlockModule = {
     id: 'protocols.http_client',
     name: 'HTTP Client',
-    category: 'Cloud',
     init
 };

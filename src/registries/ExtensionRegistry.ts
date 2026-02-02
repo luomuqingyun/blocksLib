@@ -105,13 +105,13 @@ class ExtensionRegistryService {
     private initPromise: Promise<void> | null = null;
 
     constructor() {
-        // Defer initialization - will be triggered lazily when needed
-        // This avoids the anti-pattern of calling async in constructor
+        // 推迟初始化 - 仅在需要时延迟触发
+        // 避免在构造函数中调用 async 的反模式
     }
 
     /**
-     * Ensures the registry is initialized. Safe to call multiple times.
-     * Uses cached promise to avoid duplicate initialization.
+     * 确保注册表已初始化。可安全多次调用。
+     * 使用缓存的 Promise 避免重复初始化。
      */
     public ensureInitialized(): Promise<void> {
         if (!this.initPromise) {
@@ -121,15 +121,15 @@ class ExtensionRegistryService {
     }
 
     private async init(): Promise<void> {
-        // Create Sandbox Iframe
+        // 创建沙箱 iframe
         const iframe = document.createElement('iframe');
-        // In Dev: Vite serves files directly from src
-        // In Prod: sandbox.html is built to dist/ root (see vite.sandbox.config.ts)
+        // 开发环境：Vite 直接从 src 提供文件
+        // 生产环境：sandbox.html 构建到 dist/ 根目录 (参考 vite.sandbox.config.ts)
         iframe.src = import.meta.env.DEV ? '/src/sandbox/sandbox.html' : './sandbox.html';
         iframe.style.display = 'none';
 
-        // In Dev, we need allow-same-origin for Vite HMR and script loading from localhost
-        // In Prod, we strictly isolate with allow-scripts only
+        // 开发环境：我们需要 allow-same-origin 以支持 Vite HMR 和从 localhost 加载脚本
+        // 生产环境：我们需要严格隔离，仅允许脚本运行 (allow-scripts)
         const sandboxAttr = import.meta.env.DEV ? 'allow-scripts allow-same-origin' : 'allow-scripts';
         iframe.setAttribute('sandbox', sandboxAttr);
 
@@ -150,7 +150,7 @@ class ExtensionRegistryService {
                 console.log('Extensions loaded:', this.extensions);
                 await this.loadResources();
 
-                // Re-load resources when language changes to update localized strings
+                // 当语言变更时重新加载资源以更新本地化字符串
                 i18n.on('languageChanged', async () => {
                     console.log('[ExtensionRegistry] Language changed, refreshing resources...');
                     await this.loadResources();
@@ -161,10 +161,14 @@ class ExtensionRegistryService {
         }
     }
 
+    /**
+     * 处理来自沙箱的消息
+     */
     private handleMessage(event: MessageEvent) {
         const data = event.data;
         if (!data) return;
 
+        // 处理代码生成请求的回调
         if (data.type === 'code-generated') {
             const request = this.codeGenRequests.get(data.requestId);
             if (request) {
@@ -175,14 +179,21 @@ class ExtensionRegistryService {
         }
     }
 
+    /**
+     * 向沙箱发送消息
+     */
     private sendMessage(msg: any) {
         if (this.sandboxInfo && this.sandboxInfo.loaded && this.sandboxInfo.iframe.contentWindow) {
             this.sandboxInfo.iframe.contentWindow.postMessage(msg, '*');
         } else {
+            // 如果沙箱尚未加载，则缓存消息
             this.pendingMessages.push(msg);
         }
     }
 
+    /**
+     * 发送所有待处理的消息
+     */
     private flushPendingMessages() {
         if (!this.sandboxInfo || !this.sandboxInfo.loaded || !this.sandboxInfo.iframe.contentWindow) return;
         while (this.pendingMessages.length > 0) {
@@ -191,15 +202,23 @@ class ExtensionRegistryService {
         }
     }
 
+    /**
+     * 获取已加载的扩展列表
+     */
     public getExtensions(): LoadedExtension[] {
         return this.extensions;
     }
 
+    /**
+     * 重新加载所有扩展
+     */
     public async reload() {
         if (window.electronAPI) {
             try {
+                // 从 Electron 进程获取最新的扩展列表
                 this.extensions = await window.electronAPI.extensionsList();
                 console.log('Extensions reloaded:', this.extensions);
+                // 重新加载扩展相关的资源（如 Blockly 定义）
                 await this.loadResources();
             } catch (e) {
                 console.error("Failed to reload extensions", e);
@@ -209,21 +228,21 @@ class ExtensionRegistryService {
 
     private async loadResources() {
         for (const ext of this.extensions) {
-            // Restore original manifest if exists (to avoid double translation on language switch)
+            // 恢复原始 Manifest（如果存在），避免切换语言时重复翻译
             if (ext.originalManifest) {
                 ext.manifest = JSON.parse(JSON.stringify(ext.originalManifest));
             } else {
-                // First load: Backup original manifest
+                // 首次加载：备份原始 Manifest
                 ext.originalManifest = JSON.parse(JSON.stringify(ext.manifest));
             }
 
-            // 0. Clear previous resources for this extension to prevent duplicates/leftovers
+            // 0. 清除该扩展之前的资源，防止重复/残留
             BoardRegistry.unregisterExtension(ext.manifest.id);
 
-            // 0.1 Load Translations
+            // 0.1 加载翻译文件
             let translations: Record<string, string> = {};
             if (ext.languages && ext.languages.length > 0) {
-                const currentLang = i18n.language.split('-')[0]; // Simple match (en-US -> en)
+                const currentLang = i18n.language.split('-')[0]; // 简单匹配 (en-US -> en)
                 const targetLang = ext.languages.includes(currentLang) ? currentLang :
                     (ext.languages.includes('en') ? 'en' : ext.languages[0]);
 
@@ -231,12 +250,12 @@ class ExtensionRegistryService {
                     const langContent = await window.electronAPI.extensionReadFile(ext.manifest.id, `locales/${targetLang}.json`);
                     if (langContent) {
                         translations = JSON.parse(langContent);
-                        // Merge into i18next for general UI strings
+                        // 合并到 i18next 用于通用 UI 字符串
                         i18n.addResourceBundle(targetLang, 'translation', translations, true, true);
-                        // Also merge into Blockly for block specific strings
+                        // 同时合并到 Blockly 用于积木特定字符串
                         Object.assign(Blockly.Msg, translations);
 
-                        // Translate Manifest fields if they are keys
+                        // 如果 Manifest 字段是键值引用，则进行翻译
                         const translateFieldHelper = (val: string) => {
                             if (val && val.startsWith('%{') && val.endsWith('}')) {
                                 const key = val.substring(2, val.length - 1);
@@ -254,40 +273,40 @@ class ExtensionRegistryService {
                 }
             }
 
-            // Define helper locally for boards and blocks
+            // 定义本地翻译助手，用于板卡和积木
             const translateField = (val: any) => {
                 if (typeof val === 'object' && val !== null) {
                     const targetLang = i18n.language || 'en';
-                    // Support direct objects like { "zh": "...", "en": "..." }
+                    // 支持直接对象格式，如 { "zh": "...", "en": "..." }
                     return val[targetLang] || val['en'] || Object.values(val)[0] || '';
                 }
                 if (typeof val === 'string' && val.startsWith('%{') && val.endsWith('}')) {
                     let key = val.substring(2, val.length - 1);
-                    // Support Blockly style BKY_ prefix
+                    // 支持 Blockly 风格的 BKY_ 前缀
                     if (key.startsWith('BKY_')) {
                         key = key.substring(4);
                     }
-                    // Try Global Blockly Msgs (System) -> Plugin Shared Locales -> Key as fallback
+                    // 尝试顺序：全局 Blockly Msg (系统) -> 插件共享 Locales -> 键名作为降级
                     return (Blockly.Msg as any)[key] || translations[key] || val;
                 }
                 return val;
             };
 
-            // 1. Load Custom Boards (Trusted JSON, handled in Main/Renderer)
+            // 1. 加载自定义板卡 (受信任的 JSON，在 Main/Renderer 中处理)
             if (ext.hasBoards && ext.manifest.contributes.boards) {
                 for (const boardFile of ext.manifest.contributes.boards) {
                     try {
                         const content = await window.electronAPI.extensionReadFile(ext.manifest.id, boardFile);
                         if (content) {
                             const boardConfig: BoardConfig = JSON.parse(content);
-                            // Ensure ID is unique/namespaced to avoid collisions
+                            // 确保 ID 唯一/命名空间化，以避免冲突
                             boardConfig.id = `${ext.manifest.id}:${boardConfig.id}`;
 
-                            // Translate board name if it's a key
+                            // 翻译板卡名称（如果它是一个键）
                             const displayName = translateField(boardConfig.name);
                             boardConfig.name = `${displayName} (Ext)`;
 
-                            // Deep translate pins labels
+                            // 深度翻译引脚标签
                             if (boardConfig.pins) {
                                 Object.keys(boardConfig.pins).forEach(group => {
                                     const pins = (boardConfig.pins as any)[group];
@@ -310,24 +329,24 @@ class ExtensionRegistryService {
                 }
             }
 
-            // 2. Load Blocks and Generators
+            // 2. 加载积木和生成器
             const blockFiles = ext.manifest.contributes.blocks || [];
             const generatorFiles = ext.manifest.contributes.generators || [];
 
-            // 2.1 Process Block Definitions (JSON -> UI & Sandbox)
+            // 2.1 处理积木定义 (JSON -> UI & 沙箱)
             for (const blockFile of blockFiles) {
                 try {
                     const content = await window.electronAPI.extensionReadFile(ext.manifest.id, blockFile);
                     if (content) {
                         try {
-                            // If JSON, it's a UI definition
+                            // 如果是 JSON，则是 UI 定义
                             if (blockFile.endsWith('.json')) {
                                 const definitions = JSON.parse(content);
-                                // Register in Main Window (for Editor UI)
+                                // 在主窗口注册 (用于编辑器 UI)
                                 Blockly.defineBlocksWithJsonArray(definitions);
                                 console.log(`[Extension] Registered ${definitions.length} blocks from ${blockFile}`);
 
-                                // Generate Toolbox Category
+                                // 生成工具箱分类
                                 if (definitions.length > 0) {
                                     const contents = definitions.map((def: any) => ({
                                         kind: 'block',
@@ -344,15 +363,15 @@ class ExtensionRegistryService {
                                     BoardRegistry.registerExtensionCategory(ext.manifest.id, category, ext.manifest.compatibility);
                                 }
 
-                                // Sync to Sandbox (for Headless Workspace)
+                                // 同步到沙箱 (用于无头工作区)
                                 this.sendMessage({
                                     type: 'load-definitions',
                                     id: ext.manifest.id,
                                     definitions: definitions
                                 });
                             } else {
-                                // If JS, it might be legacy definition or logic. 
-                                // Send to Sandbox.
+                                // 如果是 JS 文件，可能是旧版定义或逻辑。
+                                // 发送到沙箱。
                                 this.sendMessage({
                                     type: 'load-script',
                                     id: ext.manifest.id,
@@ -368,7 +387,7 @@ class ExtensionRegistryService {
                 }
             }
 
-            // 2.2 Process Generators (JS -> Sandbox only)
+            // 2.2 处理生成器 (JS -> 仅沙箱)
             for (const scriptFile of generatorFiles) {
                 try {
                     const content = await window.electronAPI.extensionReadFile(ext.manifest.id, scriptFile);
@@ -386,14 +405,14 @@ class ExtensionRegistryService {
         }
     }
 
-    // Public API for Code Generation
+    // 用于代码生成的公共 API
     public generateCode(xml: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const requestId = Math.random().toString(36).substring(7);
             this.codeGenRequests.set(requestId, { resolve, reject });
             this.sendMessage({ type: 'generate-code', xml, requestId });
 
-            // Timeout
+            // 超时处理
             setTimeout(() => {
                 if (this.codeGenRequests.has(requestId)) {
                     this.codeGenRequests.get(requestId)?.reject(new Error('Timeout'));

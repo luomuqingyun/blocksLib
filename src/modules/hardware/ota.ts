@@ -21,6 +21,7 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
+    // 初始化 OTA (空中升级) 配置
     registerBlock('ota_setup', {
         init: function () {
             this.appendDummyInput()
@@ -37,11 +38,13 @@ const init = () => {
     }, (block: any) => {
         const name = arduinoGenerator.valueToCode(block, 'NAME', Order.ATOMIC) || '"MyDevice"';
 
+        // 包含 Arduino 官方 OTA 库
         arduinoGenerator.addInclude('ota_lib', '#include <ArduinoOTA.h>');
 
+        // 在 setup 中配置主机名并启动 OTA 服务
         arduinoGenerator.addSetup('ota_config', `
   ArduinoOTA.setHostname(${name});
-  // ArduinoOTA.setPassword("admin"); // Optional
+  // ArduinoOTA.setPassword("admin"); // 可选
   
   ArduinoOTA.onStart([]() {
     String type;
@@ -49,7 +52,7 @@ const init = () => {
       type = "sketch";
     else // U_SPIFFS
       type = "filesystem";
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    // 注意：若是更新 SPIFFS，需在此处卸载文件系统
   });
   
   ArduinoOTA.begin();`);
@@ -57,6 +60,7 @@ const init = () => {
         return '';
     });
 
+    // 处理 OTA 待命任务（必须放在主循环 loop 中执行）
     registerBlock('ota_handle', {
         init: function () {
             this.appendDummyInput()
@@ -67,14 +71,18 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_OTA_LOOP_TOOLTIP);
         }
     }, (block: any) => {
+        // ArduinoOTA.handle() 会检查是否有新的固件上传请求，并处理上传过程
         return `ArduinoOTA.handle();\n`;
     });
 
 };
 
+/**
+ * 远程无线更新 (OTA) 模块
+ * 允许通过 Wi-Fi 远程上传固件，无需连接 USB 线，适用于部署后的设备维护。
+ */
 export const OTAModule: BlockModule = {
     id: 'hardware.ota',
     name: 'Wireless Update (OTA)',
-    category: 'ESP32',
     init
 };
