@@ -20,7 +20,7 @@
  */
 
 import { useRef, useEffect, useCallback, MutableRefObject } from 'react';
-import { constructVariablesToolbox, constructTypesToolbox, constructToolsToolbox } from '../../../utils/variable_scanner';
+import { constructVariablesToolbox, constructTypesToolbox, constructToolsToolbox } from '../../../utils/toolbox/ToolboxConstructor';
 export const useBlocklyDynamicToolbox = (
     workspaceRef: MutableRefObject<any>,
     toolboxConfiguration: any

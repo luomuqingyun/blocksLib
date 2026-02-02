@@ -19,7 +19,8 @@
     "clean:pio": "rimraf bundled_pio",
     "gen:stm32": "npx tsx scripts/1c_discover_from_open_data.ts && npx tsx scripts/2_scan_stm32_pins.ts && npx tsx scripts/5_fetch_official_layouts.ts && npx tsx scripts/4_generate_stm32_data.ts && npx tsx scripts/7_parse_stm32duino_variants.ts",
     "sync:stm32": "npx tsx scripts/global_sync_data.ts",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@blockly/block-plus-minus": "^9.0.5",
@@ -47,6 +48,7 @@
   },
   "devDependencies": {
     "@electron/rebuild": "^4.0.2",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20.19.27",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
@@ -56,6 +58,7 @@
     "electron": "^29.0.0",
     "electron-builder": "^24.9.1",
     "jimp": "^1.6.0",
+    "jsdom": "^28.0.0",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.4.35",
     "rimraf": "^5.0.10",

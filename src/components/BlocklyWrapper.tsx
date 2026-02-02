@@ -20,33 +20,27 @@
  * - resize(): 强制调整大小
  * - clear(): 清空工作区
  * 
- * 内部 Hooks:
- * - useWorkspacePersistence: 工作区持久化
- * - useBlocklyDynamicToolbox: 动态工具箱
- * - useBlocklyShortcuts: 快捷键处理
- * - useBlocklyValidation: 积木块验证
- * 
  * @file src/components/BlocklyWrapper.tsx
  * @module EmbedBlocks/Frontend/Components
  */
 import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
 // @ts-ignore
 import * as Blockly from 'blockly';
-import { CrossTabCopyPaste } from '@blockly/plugin-cross-tab-copy-paste';
 import { CustomBackpack } from './blockly/CustomBackpack';
 import { useTranslation } from 'react-i18next';
 // import { createUseStyles } from 'react-jss'; // Removed
 import { arduinoGenerator } from '../generators/arduino-base';
 import { initAllModules, refreshBlockDefinitions } from '../modules/index';
 import { PromptModal } from './PromptModal';
-import { constructVariablesToolbox, constructTypesToolbox, constructToolsToolbox } from '../utils/variable_scanner';
+import { constructVariablesToolbox, constructTypesToolbox, constructToolsToolbox } from '../utils/toolbox/ToolboxConstructor';
 import { validateBlock } from '../utils/block_validation';
-import { initBlocklyPolyfills } from '../config/blockly-setup';
+
 import { setBlocklyLocale } from '../locales/setupBlocklyLocales';
 import { BoardRegistry } from '../registries/BoardRegistry';
 import { DarkTheme, LightTheme, useBlocklyStyles } from './blockly/BlocklyTheme';
 import { UnifiedSearch } from './blockly/UnifiedSearch';
 import { useUI } from '../contexts/UIContext';
+import { AppInitializer } from '../services/AppInitializer';
 
 // Import custom hooks
 import { useBlocklyShortcuts } from './blockly/hooks/useBlocklyShortcuts';
@@ -58,28 +52,7 @@ import { useBlocklyValidation } from './blockly/hooks/useBlocklyValidation';
 // ------------------------------------------------------------------
 // 全局初始化设置
 // ------------------------------------------------------------------
-// 初始化所有功能模块
-initAllModules();
-// 初始化 Blockly 的降级/填充方案
-initBlocklyPolyfills();
-
-// ------------------------------------------------------------------
-// 全局单例插件 (Global Singleton Plugins)
-// ------------------------------------------------------------------
-// 在 React 重新挂载期间只初始化一次，避免插件“已注册”错误。
-const copyPastePlugin = new CrossTabCopyPaste();
-/** 初始化插件 */
-const initPlugins = () => {
-  try {
-    // 只有在未注册时才初始化 (检查一个已知的 ID)
-    if (!Blockly.ContextMenuRegistry.registry.getItem('blockCopyToStorage')) {
-      copyPastePlugin.init({ contextMenu: true, shortcut: true });
-    }
-  } catch (e) {
-    console.warn('[BlocklyWrapper] CrossTabCopyPaste 已初始化或失败:', e);
-  }
-};
-initPlugins();
+// 移至 AppInitializer 处理
 
 /** 组件属性定义 */
 interface BlocklyWrapperProps {
@@ -164,6 +137,11 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
   const [workspaceInstance, setWorkspaceInstance] = useState<any>(null);
   /** 是否准备好接受编辑 (加载项目完成后) */
   const [isReadyForEdits, setIsReadyForEdits] = useState(false);
+  // 组件挂载时执行全局初始化
+  useEffect(() => {
+    AppInitializer.initialize();
+  }, []);
+
   const isReadyForEditsRef = useRef(false);
   useEffect(() => { isReadyForEditsRef.current = isReadyForEdits; }, [isReadyForEdits]);
 

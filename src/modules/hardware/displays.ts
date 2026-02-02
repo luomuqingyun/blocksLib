@@ -45,13 +45,15 @@ const init = () => {
         const addr = block.getFieldValue('ADDR');
         const cols = block.getFieldValue('COLS');
         const rows = block.getFieldValue('ROWS');
+        const cleanAddr = addr.replace('0x', '').replace('0X', '');
+        const objName = `lcd_${cleanAddr}`;
 
         // 包含 LCD I2C 驱动库
         arduinoGenerator.addInclude('lcd_lib', '#include <LiquidCrystal_I2C.h>');
         // 定义全局 lcd 对象
-        arduinoGenerator.addVariable('lcd_def', `LiquidCrystal_I2C lcd(${addr}, ${cols}, ${rows});`);
+        arduinoGenerator.addVariable(`lcd_def_${cleanAddr}`, `LiquidCrystal_I2C ${objName}(${addr}, ${cols}, ${rows});`);
         // 在 setup 中初始化 LCD 并开启背光
-        arduinoGenerator.addSetup('lcd_init', 'lcd.init();\n  lcd.backlight();');
+        arduinoGenerator.addSetup(`lcd_init_${cleanAddr}`, `${objName}.init();\n  ${objName}.backlight();`);
 
         return '';
     });
@@ -70,6 +72,9 @@ const init = () => {
             this.appendValueInput("ROW")
                 .setCheck("Number")
                 .appendField(Blockly.Msg.ARD_DISPLAY_ROW);
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_ADDR)
+                .appendField(new Blockly.FieldTextInput("0x27"), "ADDR");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(60);
@@ -80,8 +85,11 @@ const init = () => {
         const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '""';
         const col = arduinoGenerator.valueToCode(block, 'COL', Order.ATOMIC) || '0';
         const row = arduinoGenerator.valueToCode(block, 'ROW', Order.ATOMIC) || '0';
+        const addr = block.getFieldValue('ADDR');
+        const cleanAddr = addr.replace('0x', '').replace('0X', '');
+        const objName = `lcd_${cleanAddr}`;
 
-        return `lcd.setCursor(${col}, ${row});\nlcd.print(${text});\n`;
+        return `${objName}.setCursor(${col}, ${row});\n${objName}.print(${text});\n`;
     });
 
     // Clear Block
@@ -89,13 +97,19 @@ const init = () => {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_DISPLAY_LCD_CLEAR);
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_ADDR)
+                .appendField(new Blockly.FieldTextInput("0x27"), "ADDR");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(60);
             this.setTooltip(Blockly.Msg.ARD_LCD_CLEAR_TOOLTIP);
         }
     }, (block: any) => {
-        return `lcd.clear();\n`;
+        const addr = block.getFieldValue('ADDR');
+        const cleanAddr = addr.replace('0x', '').replace('0X', '');
+        const objName = `lcd_${cleanAddr}`;
+        return `${objName}.clear();\n`;
     });
 
 
@@ -267,6 +281,9 @@ void ${funcName}(int wait) {
                 .appendField(Blockly.Msg.ARD_DISPLAY_LCD_BACKLIGHT);
             this.appendDummyInput()
                 .appendField(new Blockly.FieldDropdown([["ON", "backlight"], ["OFF", "noBacklight"]]), "STATE");
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_DISPLAY_ADDR)
+                .appendField(new Blockly.FieldTextInput("0x27"), "ADDR");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(60);
@@ -274,7 +291,10 @@ void ${funcName}(int wait) {
         }
     }, (block: any) => {
         const state = block.getFieldValue('STATE');
-        return `lcd.${state}();\n`;
+        const addr = block.getFieldValue('ADDR');
+        const cleanAddr = addr.replace('0x', '').replace('0X', '');
+        const objName = `lcd_${cleanAddr}`;
+        return `${objName}.${state}();\n`;
     });
 };
 

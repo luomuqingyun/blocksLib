@@ -16,7 +16,8 @@
 
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, cleanName } from '../../generators/arduino-base';
-import { getFunctionDropdownOptions } from '../../utils/variable_scanner';
+import { getFunctionDropdownOptions } from '../../utils/scanner/VariableScanner';
+import { TypedBlock, BlockGenerator } from '../../types/blockly-type-shim';
 // 引用自定义字段，用于智能下拉菜单
 import { FieldDropdownSmart } from '../../utils/custom_fields';
 import { BlockModule } from '../../registries/ModuleRegistry';
@@ -77,7 +78,7 @@ const appendFunctionDropdown = (block: any) => {
     const dropdown = new FieldDropdownSmart(function () {
         const b = this.sourceBlock_ || block;
         if (!b || !b.workspace) return [['(No Funcs)', 'no_func']];
-        // getFunctionDropdownOptions 从 variable_scanner 中获取所有函数块的名字
+        // getFunctionDropdownOptions 从 VariableScanner 中获取所有函数块的名字
         return getFunctionDropdownOptions(b.workspace, this.getValue());
     });
     let input = block.getInput('DUMMY');
@@ -176,7 +177,7 @@ const init = () => {
     // =========================================================================
     const generateCallBlock = (hasOutput: boolean) => {
         return {
-            init: function () {
+            init: function (this: TypedBlock & { arguments_: string[] }) {
                 this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_SYS_CALL); // 调用函数
                 appendFunctionDropdown(this);
                 if (hasOutput) this.setOutput(true, null);
@@ -187,7 +188,7 @@ const init = () => {
                 this.setColour(290);
                 // 启用 Mutator 允许用户配置参数个数
                 if (Blockly.icons?.MutatorIcon) {
-                    this.setMutator(new Blockly.icons.MutatorIcon(['arduino_call_arg_item'], this));
+                    this.setMutator(new Blockly.icons.MutatorIcon(['arduino_call_arg_item'], this as any));
                 }
                 this.arguments_ = [];
             },
@@ -229,9 +230,9 @@ const init = () => {
         };
     };
 
-    const generateCallCode = (block: any) => {
+    const generateCallCode: BlockGenerator = (block: TypedBlock) => {
         const name = cleanName(block.getFieldValue('NAME'));
-        const args = [];
+        const args: string[] = [];
         let i = 0;
         while (block.getInput('ARG' + i)) {
             args.push(arduinoGenerator.valueToCode(block, 'ARG' + i, Order.NONE) || '0');
@@ -241,8 +242,8 @@ const init = () => {
         return block.outputConnection ? [code, Order.ATOMIC] : code + ';\n';
     };
 
-    registerBlock('arduino_functions_call_dynamic', generateCallBlock(false), generateCallCode);
-    registerBlock('arduino_functions_call_ret', generateCallBlock(true), generateCallCode);
+    registerBlock('arduino_functions_call_dynamic', generateCallBlock(false), generateCallCode as BlockGenerator);
+    registerBlock('arduino_functions_call_ret', generateCallBlock(true), generateCallCode as BlockGenerator);
 
 
     // =========================================================================

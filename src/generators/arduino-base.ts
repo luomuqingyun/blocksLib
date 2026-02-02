@@ -30,6 +30,8 @@ import * as Blockly from 'blockly';
 import { Order } from './utils/generator_constants';
 import { ArduinoGenerator } from './utils/generator_types';
 import { CodeBuilder } from './utils/CodeBuilder';
+import { LibraryMapper } from './utils/LibraryMapper';
+import { TypedBlock, BlockGenerator, BlockInit } from '../types/blockly-type-shim';
 
 /**
  * 核心代码生成器实例
@@ -108,20 +110,8 @@ arduinoGenerator.getFamily = function () {
  * 包含智能库映射逻辑：根据芯片家族自动选择对应的库实现
  */
 arduinoGenerator.addInclude = function (key: string, code: string) {
-  let finalCode = code;
-
-  // 1. 根据芯片家族进行自动库映射 (Library Mapping)
   const family = (this as any).family_ || 'arduino';
-
-  if (family === 'esp32') {
-    // ESP32 平台映射
-    if (code.includes('<Servo.h>')) finalCode = '#include <ESP32Servo.h>';
-    else if (code.includes('<WiFi.h>')) finalCode = '#include <WiFi.h>'; // ESP32 默认就是 WiFi.h
-  } else if (family === 'esp8266') {
-    // ESP8266 平台映射
-    if (code.includes('<WiFi.h>')) finalCode = '#include <ESP8266WiFi.h>';
-    else if (code.includes('<Servo.h>')) finalCode = '#include <Servo.h>'; // ESP8266 通常使用标准 Servo.h
-  }
+  const finalCode = LibraryMapper.mapInclude(family, code);
 
   // 2. 交付给 CodeBuilder 进行去重和存储
   builder.addInclude(key, finalCode);

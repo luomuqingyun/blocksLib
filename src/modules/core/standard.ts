@@ -16,6 +16,7 @@
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerGeneratorOnly, cleanName } from '../../generators/arduino-base';
+import { TypedBlock } from '../../types/blockly-type-shim';
 
 import { BlockModule } from '../../registries/ModuleRegistry';
 
@@ -31,7 +32,7 @@ const init = () => {
     // =========================================================================
 
     /** If-Else 分支结构 */
-    registerGeneratorOnly('controls_if', function (block: any) {
+    registerGeneratorOnly('controls_if', function (block: TypedBlock) {
         let n = 0;
         let code = '';
         // 获取第一个 IF 分支的条件和代码块
@@ -56,7 +57,7 @@ const init = () => {
     });
 
     /** 比较运算 (==, !=, <, <=, >, >=) */
-    registerGeneratorOnly('logic_compare', function (block: any) {
+    registerGeneratorOnly('logic_compare', function (block: TypedBlock) {
         const OPERATORS: any = { 'EQ': '==', 'NEQ': '!=', 'LT': '<', 'LTE': '<=', 'GT': '>', 'GTE': '>=' };
         const op = OPERATORS[block.getFieldValue('OP')];
         const a = arduinoGenerator.valueToCode(block, 'A', Order.EQUALITY) || '0';
@@ -65,7 +66,7 @@ const init = () => {
     });
 
     /** 逻辑运算 (AND, OR) */
-    registerGeneratorOnly('logic_operation', function (block: any) {
+    registerGeneratorOnly('logic_operation', function (block: TypedBlock) {
         const op = (block.getFieldValue('OP') === 'AND') ? '&&' : '||';
         const order = (op === '&&') ? Order.LOGICAL_AND : Order.LOGICAL_OR;
         let a = arduinoGenerator.valueToCode(block, 'A', order);
@@ -75,13 +76,13 @@ const init = () => {
     });
 
     /** 逻辑非 (Not) */
-    registerGeneratorOnly('logic_negate', function (block: any) {
+    registerGeneratorOnly('logic_negate', function (block: TypedBlock) {
         const arg = arduinoGenerator.valueToCode(block, 'BOOL', Order.UNARY_PREFIX) || 'true';
         return [`!${arg}`, Order.UNARY_PREFIX];
     });
 
     /** 布尔常量 (True/False) */
-    registerGeneratorOnly('logic_boolean', function (block: any) {
+    registerGeneratorOnly('logic_boolean', function (block: TypedBlock) {
         return [(block.getFieldValue('BOOL') === 'TRUE') ? 'true' : 'false', Order.ATOMIC];
     });
 
@@ -90,7 +91,7 @@ const init = () => {
     // =========================================================================
 
     /** 计数循环 (Repeat n times) */
-    registerGeneratorOnly('controls_repeat_ext', function (block: any) {
+    registerGeneratorOnly('controls_repeat_ext', function (block: TypedBlock) {
         // 增加循环深度计数，用于生成唯一的迭代变量名 (i, i2, i3...)，防止嵌套冲突
         arduinoGenerator.loopDepth_++;
         const repeats = arduinoGenerator.valueToCode(block, 'TIMES', Order.ATOMIC) || '0';
@@ -104,7 +105,7 @@ const init = () => {
     });
 
     /** 条件循环 (While / Until) */
-    registerGeneratorOnly('controls_whileUntil', function (block: any) {
+    registerGeneratorOnly('controls_whileUntil', function (block: TypedBlock) {
         const mode = block.getFieldValue('MODE');
         const until = mode === 'UNTIL';
         let argument0 = arduinoGenerator.valueToCode(block, 'BOOL', until ? Order.UNARY_PREFIX : Order.NONE) || 'false';
@@ -118,7 +119,7 @@ const init = () => {
     });
 
     /** 范围循环 (For) */
-    registerGeneratorOnly('controls_for', function (block: any) {
+    registerGeneratorOnly('controls_for', function (block: TypedBlock) {
         const variable0 = cleanName(block.getField('VAR').getText());
         const from = arduinoGenerator.valueToCode(block, 'FROM', Order.ASSIGNMENT) || '0';
         const to = arduinoGenerator.valueToCode(block, 'TO', Order.ASSIGNMENT) || '0';
@@ -132,12 +133,12 @@ const init = () => {
     // =========================================================================
 
     /** 数字常量 */
-    registerGeneratorOnly('math_number', function (block: any) {
+    registerGeneratorOnly('math_number', function (block: TypedBlock) { // Type 'unknown' is not assignable to type 'number'.
         return [parseFloat(block.getFieldValue('NUM')), Order.ATOMIC];
     });
 
     /** 基础四则运算 */
-    registerGeneratorOnly('math_arithmetic', function (block: any) {
+    registerGeneratorOnly('math_arithmetic', function (block: TypedBlock) {
         const OP: any = { 'ADD': ['+', Order.ADDITIVE], 'MINUS': ['-', Order.ADDITIVE], 'MULTIPLY': ['*', Order.MULTIPLICATIVE], 'DIVIDE': ['/', Order.MULTIPLICATIVE] };
         const tuple = OP[block.getFieldValue('OP')];
         const operator = tuple ? tuple[0] : '+';
@@ -148,7 +149,7 @@ const init = () => {
     });
 
     /** 单目数学运算 (平方根、绝对值等) */
-    registerGeneratorOnly('math_single', function (block: any) {
+    registerGeneratorOnly('math_single', function (block: TypedBlock) {
         const operator = block.getFieldValue('OP');
         let code;
         let arg;
@@ -174,7 +175,7 @@ const init = () => {
     });
 
     /** 映射函数 (Map) - Arduino 专属 API */
-    registerGeneratorOnly('math_map', function (block: any) {
+    registerGeneratorOnly('math_map', function (block: TypedBlock) {
         const value = arduinoGenerator.valueToCode(block, 'VALUE', Order.NONE) || '0';
         const fromLow = arduinoGenerator.valueToCode(block, 'FROM_LOW', Order.NONE) || '0';
         const fromHigh = arduinoGenerator.valueToCode(block, 'FROM_HIGH', Order.NONE) || '1024';
@@ -184,7 +185,7 @@ const init = () => {
     });
 
     /** 数值约束 (Constrain) - Arduino 专属 API */
-    registerGeneratorOnly('math_constrain', function (block: any) {
+    registerGeneratorOnly('math_constrain', function (block: TypedBlock) {
         const value = arduinoGenerator.valueToCode(block, 'VALUE', Order.NONE) || '0';
         const low = arduinoGenerator.valueToCode(block, 'LOW', Order.NONE) || '0';
         const high = arduinoGenerator.valueToCode(block, 'HIGH', Order.NONE) || '255';
@@ -192,14 +193,14 @@ const init = () => {
     });
 
     /** 随机数 (Random) */
-    registerGeneratorOnly('math_random', function (block: any) {
+    registerGeneratorOnly('math_random', function (block: TypedBlock) {
         const min = arduinoGenerator.valueToCode(block, 'MIN', Order.NONE) || '0';
         const max = arduinoGenerator.valueToCode(block, 'MAX', Order.NONE) || '100';
         return [`random(${min}, ${max})`, Order.ATOMIC];
     });
 
     /** 位运算 (&, |, ^, ~, <<, >>) */
-    registerGeneratorOnly('math_bitwise', function (block: any) {
+    registerGeneratorOnly('math_bitwise', function (block: TypedBlock) {
         const OPS: any = {
             'AND': ['&', Order.BITWISE_AND],
             'OR': ['|', Order.BITWISE_OR],
@@ -228,14 +229,14 @@ const init = () => {
     // =========================================================================
 
     /** 字符串常量 */
-    registerGeneratorOnly('text', function (block: any) {
+    registerGeneratorOnly('text', function (block: TypedBlock) {
         // 使用 quote_ 辅助函数处理字符串中的特殊字符和引号转义
         const code = arduinoGenerator.quote_(block.getFieldValue('TEXT'));
         return [code, Order.ATOMIC];
     });
 
     /** 打印到串口 (Print) */
-    registerGeneratorOnly('text_print', function (block: any) {
+    registerGeneratorOnly('text_print', function (block: TypedBlock) {
         const msg = arduinoGenerator.valueToCode(block, 'TEXT', Order.NONE) || '""';
         return `Serial.println(${msg});\n`;
     });

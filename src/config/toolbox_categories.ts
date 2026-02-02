@@ -758,5 +758,10 @@ export const SPECIAL_SENSORS_CONTENTS = [
 
 export const TEST_DEV_CONTENTS = [
     { kind: 'label', text: 'Dev Test' },
-    { kind: 'block', type: 'test_dev_log' }
+    { kind: 'block', type: 'test_dev_log' },
+    { kind: 'label', text: 'Examples' },
+    { kind: 'block', type: 'example_led_control' },
+    { kind: 'block', type: 'example_dht_init' },
+    { kind: 'block', type: 'example_dht_read_temp' },
+    { kind: 'block', type: 'complex_sensor_read' }
 ];

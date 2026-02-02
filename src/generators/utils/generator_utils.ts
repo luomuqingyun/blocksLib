@@ -14,7 +14,9 @@
  */
 
 import * as Blockly from 'blockly';
+
 import { arduinoGenerator } from '../arduino-base';
+import { TypedBlock, BlockGenerator } from '../../types/blockly-type-shim';
 
 /** 
  * 清理名称为有效 C 标识符 (移除非法字符) 
@@ -34,10 +36,10 @@ export { validateBlock } from '../../utils/block_validation';
  * @param def 积木定义对象 (模型)
  * @param generator 生成器函数 (将积木逻辑转为代码)
  */
-export const registerBlock = (type: string, def: any, generator: (block: any) => any) => {
+export const registerBlock = (type: string, def: any, generator: BlockGenerator) => {
     const originalInit = def.init;
     // 重写 init 以确保可以注入通用的初始化逻辑
-    def.init = function () {
+    def.init = function (this: TypedBlock) {
         if (originalInit) originalInit.call(this);
         // 注意：校验逻辑现在由 BlocklyWrapper 中的全局监听器统一处理
     };
@@ -46,8 +48,8 @@ export const registerBlock = (type: string, def: any, generator: (block: any) =>
     Blockly.Blocks[type] = def;
 
     // 绑定至 Arduino 编译器
-    if (arduinoGenerator.forBlock) arduinoGenerator.forBlock[type] = generator;
-    else (arduinoGenerator as any)[type] = generator;
+    // @ts-ignore
+    arduinoGenerator.forBlock[type] = generator;
 };
 
 // Removed injectStandardValidation as we now use a global listener
@@ -55,9 +57,9 @@ export const registerBlock = (type: string, def: any, generator: (block: any) =>
 /**
  * 仅注册生成器 (适用于已在其他地方定义好、仅需定义转换逻辑的积木)
  */
-export const registerGeneratorOnly = (type: string, generator: (block: any) => any) => {
-    if (arduinoGenerator.forBlock) arduinoGenerator.forBlock[type] = generator;
-    else (arduinoGenerator as any)[type] = generator;
+export const registerGeneratorOnly = (type: string, generator: BlockGenerator) => {
+    // @ts-ignore
+    arduinoGenerator.forBlock[type] = generator;
 };
 
 /**

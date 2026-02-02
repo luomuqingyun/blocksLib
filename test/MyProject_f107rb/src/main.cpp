@@ -4,11 +4,13 @@
 
 void setup() {
   pinMode(PA0, OUTPUT);
+  pinMode(PA3, OUTPUT);
   pinMode(PA1, OUTPUT);
 }
 
 void loop() {
   digitalWrite(PA0, HIGH);
+  digitalWrite(PA3, LOW);
   analogWrite(PA1, 255);
 
 }

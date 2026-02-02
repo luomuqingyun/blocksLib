@@ -12,7 +12,7 @@ import {
     getStructDropdownOptions, getStructMemberDropdownOptions,
     getMacroDropdownOptions, getEnumDropdownOptions, getEnumItemDropdownOptions, getVarScope,
     scanVariablesCategorized
-} from '../../../utils/variable_scanner';
+} from '../../../utils/scanner/VariableScanner';
 import { FieldDropdownPermissive, FieldDropdownSmart } from '../../../utils/custom_fields';
 import { BLOCK_COLORS, getVarScopeColor } from '../../../config/block-colors';
 

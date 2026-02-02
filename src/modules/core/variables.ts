@@ -19,7 +19,7 @@
 // @ts-nocheck
 import * as Blockly from 'blockly';
 import { arduinoGenerator, Order, registerBlock, cleanName } from '../../generators/arduino-base';
-import { scanVariablesCategorized, getUserTypesDropdownOptions } from '../../utils/variable_scanner';
+import { scanVariablesCategorized, getUserTypesDropdownOptions } from '../../utils/scanner/VariableScanner';
 import { VAR_TYPES } from './system';
 import { BlockModule } from '../../registries/ModuleRegistry';
 

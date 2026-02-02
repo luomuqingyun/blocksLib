@@ -113,6 +113,19 @@ const CustomMsgs = {
         ARD_LOOP_FOR_CUSTOM_TOOLTIP: "Standard C loop: for(init; condition; step) {}",
         ARD_LOOP_BREAK_TOOLTIP: "Exit the current loop immediately.",
         ARD_LOOP_CONTINUE_TOOLTIP: "Skip to the next iteration of the loop.",
+        ARD_OLED_X: "X",
+        ARD_OLED_Y: "Y",
+        ARD_OLED_W: "Width",
+        ARD_OLED_H: "Height",
+        ARD_OLED_FILL: "Fill?",
+        ARD_OLED_RADIUS: "Radius",
+        ARD_OLED_COLOR_WHITE: "White",
+        ARD_OLED_START_X: "Start X1",
+        ARD_OLED_START_Y: "Start Y1",
+        ARD_OLED_END_X: "End X2",
+        ARD_OLED_END_Y: "End Y2",
+        ARD_OLED_CENTER_X: "Center X",
+        ARD_OLED_CENTER_Y: "Center Y",
 
         // Custom Struct/Enum UI
         ARD_STRUCT_MEMBERS: "Members",
@@ -764,8 +777,6 @@ const CustomMsgs = {
         ARD_OLED_WIDTH: "Width",
         ARD_OLED_HEIGHT: "Height",
         ARD_OLED_SIZE: "Size",
-        ARD_OLED_RADIUS: "Radius",
-        ARD_OLED_FILL: "Fill",
 
         // MP3 Player
         ARD_MP3_INIT: "MP3 Init (DFPlayer)",
@@ -1517,6 +1528,19 @@ const CustomMsgs = {
         ARD_LOOP_FOR_CUSTOM_TOOLTIP: "标准 C 风格 for 循环：for(初始化; 条件; 步长) {}。",
         ARD_LOOP_BREAK_TOOLTIP: "立即跳出当前循环。",
         ARD_LOOP_CONTINUE_TOOLTIP: "跳过本次循环，进入下一次迭代。",
+        ARD_OLED_X: "X",
+        ARD_OLED_Y: "Y",
+        ARD_OLED_W: "宽度",
+        ARD_OLED_H: "高度",
+        ARD_OLED_FILL: "填充?",
+        ARD_OLED_RADIUS: "半径",
+        ARD_OLED_COLOR_WHITE: "白色",
+        ARD_OLED_START_X: "起点 X1",
+        ARD_OLED_START_Y: "起点 Y1",
+        ARD_OLED_END_X: "终点 X2",
+        ARD_OLED_END_Y: "终点 Y2",
+        ARD_OLED_CENTER_X: "圆心 X",
+        ARD_OLED_CENTER_Y: "圆心 Y",
 
         // Custom Struct/Enum UI
         ARD_STRUCT_MEMBERS: "成员列表",
@@ -2012,8 +2036,6 @@ const CustomMsgs = {
         ARD_OLED_WIDTH: "宽度",
         ARD_OLED_HEIGHT: "高度",
         ARD_OLED_SIZE: "大小",
-        ARD_OLED_RADIUS: "半径",
-        ARD_OLED_FILL: "填充",
 
         // MP3 Player
         ARD_MP3_INIT: "MP3初始化 (DFPlayer)",

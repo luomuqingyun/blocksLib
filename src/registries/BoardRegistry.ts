@@ -6,6 +6,10 @@
  * 负责管理所有支持的开发板配置，并根据所选开发板动态生成工具箱 (Toolbox)。
  * 实现了单例模式 (Singleton Pattern)。
  * 
+ * 重构说明 (Phase 3):
+ * 原有的硬编码工具箱生成逻辑已被策略模式 (Strategy Pattern) 取代。
+ * 现在通过注册 `ToolboxCategoryProvider` 来扩展工具箱，支持更灵活的硬件能力 (WiFi, RTOS, etc.)。
+ * 
  * 核心功能:
  * - register(): 注册新的开发板配置
  * - get()/getAll(): 获取开发板配置
@@ -16,9 +20,8 @@
  * 工具箱生成逻辑:
  * 1. 通用分类 (逻辑、循环、数学等)
  * 2. 硬件分类 (I/O、串口、传感器等)
- * 3. 按能力可选分类 (WiFi/RTOS/CAN等)
- * 4. 板卡家族特定分类 (STM32/ESP32等)
- * 5. 外部扩展插件分类
+ * 3. 动态策略分类 (通过 ToolboxStrategies 提供，如 IoT, RTOS, STM32)
+ * 4. 外部扩展插件分类
  * 
  * @file src/registries/BoardRegistry.ts
  * @module EmbedBlocks/Frontend/Registries
@@ -33,16 +36,17 @@ import {
     IO_CONTENTS, TIME_CONTENTS, SERIAL_CONTENTS, SERVO_CONTENTS,
     ACTUATOR_CONTENTS, RFID_CONTENTS, QR_CONTENTS, PS2_CONTENTS,
     SENSORS_CONTENTS, MOTORS_CONTENTS, DISPLAYS_CONTENTS,
-    IOT_CONTENTS, PROTOCOLS_CONTENTS, AUDIO_CONTENTS, STORAGE_CONTENTS,
-    ESP32_CONTENTS, ESP_UTILS_CONTENTS, STM32_CONTENTS, STM32_CAN_CONTENTS, STM32_USB_CONTENTS, STM32_NET_CONTENTS,
+    PROTOCOLS_CONTENTS, AUDIO_CONTENTS, STORAGE_CONTENTS,
+    ESP_UTILS_CONTENTS, STM32_CONTENTS,
     LISTS_CONTENTS, INPUTS_CONTENTS, EXPANSION_CONTENTS, HID_CONTENTS,
-    AI_CONTENTS, DATA_SC_CONTENTS, DATA_FMT_CONTENTS, RTOS_CONTENTS, GAME_CONTENTS,
+    AI_CONTENTS, DATA_SC_CONTENTS, DATA_FMT_CONTENTS, GAME_CONTENTS,
     SYSTEM_CONTENTS, STATS_CONTENTS, AUDIO_IN_CONTENTS,
     ROBOTS_CONTENTS, MENU_CONTENTS, PID_CONTENTS, LOGGING_CONTENTS,
     DIAGNOSTICS_CONTENTS, JSON_CONTENTS, VENDOR_CONTENTS, ADVANCED_VARS_CONTENTS,
     SPECIAL_SENSORS_CONTENTS, SIGNAL_CONTENTS, TEST_DEV_CONTENTS
 } from '../config/toolbox_categories';
 import { CATEGORY_COLORS } from '../config/theme';
+import { ToolboxCategoryProvider, STM32ToolboxProvider, IoTToolboxProvider, RTOSToolboxProvider } from './ToolboxStrategies';
 
 /**
  * 开发板注册服务类
@@ -55,8 +59,15 @@ class BoardRegistryService {
     private toolboxCache: Map<string, any> = new Map();
     // 当前选中的板卡 ID
     private currentBoardId: string | null = null;
+    // 注册的工具箱策略提供者
+    private strategies: ToolboxCategoryProvider[] = [];
 
     constructor() {
+        // 初始化预置策略
+        this.strategies.push(new IoTToolboxProvider());
+        this.strategies.push(new RTOSToolboxProvider());
+        this.strategies.push(new STM32ToolboxProvider());
+
         // 初始化时从仓库加载预置板卡
         this.initializeBoards();
         this.toolboxCache.clear();
@@ -201,58 +212,22 @@ class BoardRegistryService {
             { kind: 'category', name: '%{BKY_CAT_VENDOR}', colour: CATEGORY_COLORS.VENDOR, contents: VENDOR_CONTENTS }
         ];
 
-        // 2.5 根据能力可选的硬件分类
-        const cap = boardConfig.capabilities || {};
-        const optionalHardware: any[] = [];
+        // 2.5 利用策略生成动态可选分类 (Standard + Family Specific)
+        const dynamicCategories: any[] = [];
+        let hasSeparator = false;
 
-        // 如果支持 WiFi 或属于 ESP32 家族，添加 IoT 和联网分类
-        if (cap.wifi || boardConfig.family === 'esp32') {
-            optionalHardware.push({ kind: 'category', name: '%{BKY_CAT_IOT}', colour: CATEGORY_COLORS.IOT, contents: IOT_CONTENTS });
-            optionalHardware.push({ kind: 'category', name: '%{BKY_CAT_NETWORK}', colour: CATEGORY_COLORS.ESP_NETWORK, contents: ESP32_CONTENTS });
-        }
-
-        if (cap.ethernet) {
-            // 如果支持以太网且不在 IOT 分类中，此处可扩展
-        }
-
-        // 如果支持 RTOS 或属于常见的高性能家族，添加 RTOS 分类
-        if (cap.rtos || boardConfig.family === 'esp32' || boardConfig.family === 'stm32') {
-            optionalHardware.push({ kind: 'category', name: '%{BKY_CAT_RTOS}', colour: CATEGORY_COLORS.RTOS, contents: RTOS_CONTENTS });
-        }
-
-        if (optionalHardware.length > 0) {
-            hardwareCategories.push({ kind: 'sep' });
-            hardwareCategories.push(...optionalHardware);
-        }
-
-        // 3. 家族特定分类 (STM32, ESP32 等)
-        let specificCategories: Array<{ kind: string; name?: string; colour?: string; contents?: any[]; custom?: string }> = [];
-
-        if (boardConfig.family === 'stm32') {
-            const stm32Cat: any[] = [];
-
-            // 检查板卡具体的硬件能力
-            // 默认行为：如果 capabilities 对象缺失，则不显示以确保安全。
-            const hasCap = (key: string) => !!(boardConfig.capabilities && (boardConfig.capabilities as any)[key]);
-
-            if (hasCap('can')) {
-                stm32Cat.push(...STM32_CAN_CONTENTS);
+        this.strategies.forEach(strategy => {
+            if (strategy.canHandle(boardConfig)) {
+                const cats = strategy.getCategories(boardConfig);
+                if (cats && cats.length > 0) {
+                    if (!hasSeparator && hardwareCategories.length > 0) {
+                        dynamicCategories.push({ kind: 'sep' });
+                        hasSeparator = true;
+                    }
+                    dynamicCategories.push(...cats);
+                }
             }
-            if (hasCap('usb')) {
-                if (stm32Cat.length > 0) stm32Cat.push({ kind: 'sep', gap: 20 });
-                stm32Cat.push(...STM32_USB_CONTENTS);
-            }
-            if (hasCap('ethernet')) { // 或 'network'
-                if (stm32Cat.length > 0) stm32Cat.push({ kind: 'sep', gap: 20 });
-                stm32Cat.push(...STM32_NET_CONTENTS);
-            }
-
-            // 对于没有任何能力定义的 STM32 开发板，可以保持分类为空或显示全部
-            if (stm32Cat.length > 0) {
-                specificCategories.push({ kind: 'sep' });
-                specificCategories.push({ kind: 'category', name: '%{BKY_CAT_STM32}', colour: CATEGORY_COLORS.STM32, contents: stm32Cat });
-            }
-        }
+        });
 
         // 4. 外部扩展分类
         if (this.externalCategories.size > 0) {
@@ -284,23 +259,23 @@ class BoardRegistryService {
                     }
 
                     if (!hasExternal) {
-                        specificCategories.push({ kind: 'sep' });
+                        dynamicCategories.push({ kind: 'sep' });
                         hasExternal = true;
                     }
-                    specificCategories.push(item.category);
+                    dynamicCategories.push(item.category);
                 });
             });
         }
 
         // Debug: 输出生成的分类数量，方便确认动态分类是否生效
-        console.log(`[BoardRegistry] Generated ${commonCategories.length} common, ${hardwareCategories.length} hardware, ${specificCategories.length} specific, and ${this.externalCategories.size} external categories.`);
+        console.log(`[BoardRegistry] Generated ${commonCategories.length} common, ${hardwareCategories.length} hardware, ${dynamicCategories.length} dynamic, and ${this.externalCategories.size} external categories.`);
 
         return {
             kind: 'categoryToolbox',
             contents: [
                 ...commonCategories,
                 ...hardwareCategories,
-                ...specificCategories
+                ...dynamicCategories
             ]
         };
     }

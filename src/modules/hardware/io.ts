@@ -248,6 +248,41 @@ const init = () => {
     });
 
     // =========================================================================
+    // 移位输入 (ShiftIn)
+    // =========================================================================
+    registerBlock('io_shiftin', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_IO_SHIFTIN || "ShiftIn"); // 移位输入
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_IO_DATA_PIN) // 数据引脚
+                .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "DPIN");
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_IO_CLOCK_PIN) // 时钟引脚
+                .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "CPIN");
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_IO_ORDER) // 位序
+                .appendField(new Blockly.FieldDropdown([["MSBFIRST", "MSBFIRST"], ["LSBFIRST", "LSBFIRST"]]), "ORDER");
+            this.setOutput(true, "Number");
+            this.setColour(230);
+            this.setTooltip(Blockly.Msg.ARD_IO_SHIFTIN_TOOLTIP);
+            this.setInputsInline(true);
+        }
+    }, (block: any) => {
+        const dpin = block.getFieldValue('DPIN');
+        const cpin = block.getFieldValue('CPIN');
+        const order = block.getFieldValue('ORDER');
+
+        reservePin(block, dpin, 'INPUT');
+        reservePin(block, cpin, 'OUTPUT');
+
+        arduinoGenerator.addSetup(`pin_${dpin}_mode`, `pinMode(${dpin}, INPUT);`);
+        arduinoGenerator.addSetup(`pin_${cpin}_mode`, `pinMode(${cpin}, OUTPUT);`);
+
+        return [`shiftIn(${dpin}, ${cpin}, ${order})`, Order.ATOMIC];
+    });
+
+    // =========================================================================
     // 模拟读 (Analog Read)
     // =========================================================================
     registerBlock('arduino_analog_read', {
