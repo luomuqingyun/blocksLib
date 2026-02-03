@@ -11,6 +11,7 @@
   "description": "STM32F411VE - STM32F4 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f411ve.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": true,
     "usb": true,

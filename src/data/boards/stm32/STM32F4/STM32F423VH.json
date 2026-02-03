@@ -11,6 +11,7 @@
   "description": "STM32F423VH - STM32F4 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f423vh.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": true,
     "usb": true,

@@ -594,8 +594,42 @@ class ProjectService {
             }
 
             // 获取核心路径配置
-            // TODO: 这些默认路径应该移到配置文件中
-            const corePath = configService.get('advanced.arduinoCorePath') || 'G:\\Project\\Easy_Embedded\\STM32_DATA\\Arduino_Core_STM32';
+            // [核心增强] 智能搜索 Arduino Core 路径 (Bundled > Config > Default)
+            let corePath = '';
+
+            // 1. 优先检查配置 (Dev/User Override)
+            const configPath = configService.get('advanced.arduinoCorePath');
+            if (configPath && fs.existsSync(path.join(configPath, 'variants'))) {
+                corePath = configPath;
+            }
+
+            // 2. 检查内置资源目录 (Prod Bundled)
+            // 部署时应将 Arduino_Core_STM32 仓库内容打包至 resources/arduino_core
+            if (!corePath) {
+                const bundledPath = path.join(process.resourcesPath, 'arduino_core');
+                if (fs.existsSync(path.join(bundledPath, 'variants'))) {
+                    corePath = bundledPath;
+                    console.log('[ProjectService] Found bundled Arduino Core:', corePath);
+                }
+            }
+
+            // 3. 回退到默认开发路径 (Dev Fallback)
+            if (!corePath) {
+                const devDefault = 'G:\\Project\\Easy_Embedded\\STM32_DATA\\Arduino_Core_STM32';
+                if (fs.existsSync(path.join(devDefault, 'variants'))) {
+                    corePath = devDefault;
+                }
+            }
+
+            // 4. 最后尝试 PIO 内置路径 (可能过时，但在没有 bundled data 时是唯一的选择)
+            if (!corePath) {
+                // 尝试寻找 PIO 安装的 variants 目录的父级
+                // 通常路径: .platformio/packages/framework-arduinoststm32/
+                const pioFrameworkPath = path.join(require('os').homedir(), '.platformio', 'packages', 'framework-arduinoststm32');
+                if (fs.existsSync(path.join(pioFrameworkPath, 'variants'))) {
+                    corePath = pioFrameworkPath;
+                }
+            }
             const platformPath = configService.get('advanced.pioPlatformPath') || path.join(require('os').homedir(), '.platformio', 'platforms', 'ststm32');
 
             // 调用生成器生成补丁

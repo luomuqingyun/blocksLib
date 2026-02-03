@@ -11,6 +11,7 @@
   "description": "STM32H743AI - STM32H7 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32h743ai.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

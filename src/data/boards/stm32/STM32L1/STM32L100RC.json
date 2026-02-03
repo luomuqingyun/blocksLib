@@ -11,6 +11,7 @@
   "description": "STM32L100RC - STM32L1 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32l100rc.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

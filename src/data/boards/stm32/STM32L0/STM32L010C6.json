@@ -11,6 +11,7 @@
   "description": "STM32L010C6 - STM32L0 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32l010c6.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

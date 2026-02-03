@@ -11,6 +11,7 @@
   "description": "STM32F378VC - STM32F3 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f378vc.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

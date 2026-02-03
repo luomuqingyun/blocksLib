@@ -11,6 +11,7 @@
   "description": "STM32G0B1NE - STM32G0 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32g0b1.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

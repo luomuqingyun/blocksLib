@@ -7,9 +7,11 @@
 // 3. 将数据按系列 (Series, 如 STM32F4, STM32L0) 分拆到独立的子目录中。
 // 4. 每个板卡生成一个独立的 .json 文件 (如 STM32F103C8T6.json)，方便前端按需加载。
 // 5. 自动清理过时的 JSON 文件并移除空目录。
+// 6. [新增] 生成增强的兼容性映射 (stm32_compatibility_enhanced.json)，替代 Script 7 的功能。
 // ----------------------------------------------------------------------------
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os'; // Add os import
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,7 +21,10 @@ const __dirname = path.dirname(__filename);
 const INPUT_BASIC = path.join(__dirname, 'stm32_board_data.json');
 const INPUT_DETAILS = path.join(__dirname, 'detailed_board_data.json');
 const INPUT_LAYOUTS = path.join(__dirname, 'out_scripts', 'stm32_layouts_cache.json');
+const INPUT_REGISTRY = path.join(__dirname, 'stm32duino_support_registry.json'); // Add Registry Input
 const OUTPUT_DIR = path.join(__dirname, '../src/data/boards/stm32');
+const OUTPUT_ENHANCED_COMPAT = path.join(__dirname, '../electron/config/stm32_compatibility_enhanced.json'); // Add Compat Output
+
 
 function main() {
     console.log('正在开始生成最终 STM32 独立数据文件...');
@@ -141,6 +146,7 @@ function main() {
                 description: `${b.name} - ${series} series board`,
                 page_url: `https://www.st.com/en/microcontrollers-microprocessors/${baseModelForUrl.toLowerCase()}.html`,
                 has_ldscript: rawDetails?.has_ldscript || false,
+                tier: b.tier || 'official',
                 capabilities: capabilities,
                 defaults: defaults || {},
                 pinout: details || {},
@@ -366,8 +372,108 @@ function main() {
 
     cleanRecursive(OUTPUT_DIR);
     console.log(`清理完成，共移除了 ${cleanedCount} 个过时文件。`);
+
+    // ------------------------------------------------------------------
+    // [新增] 生成兼容性映射 (stm32_compatibility_enhanced.json)
+    // ------------------------------------------------------------------
+    console.log('\n正在生成兼容性映射...');
+    if (fs.existsSync(INPUT_REGISTRY)) {
+        generateCompatibilityMap(generatedFiles, INPUT_REGISTRY, OUTPUT_ENHANCED_COMPAT);
+    } else {
+        console.warn('警告: 未找到 stm32duino_support_registry.json，跳过兼容性映射生成。');
+    }
+
     console.log(`\n全部完成！共在 ${OUTPUT_DIR} 中生成了 ${totalFiles} 个独立的 STM32 数据文件。`);
 }
+
+/**
+ * 辅助函数：生成兼容性映射
+ */
+function generateCompatibilityMap(generatedFiles: Set<string>, registryPath: string, outputPath: string) {
+    const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+    const pioBoards = loadPioBoards();
+
+    // 增强的兼容性映射信息
+    interface EnhancedCompatInfo {
+        pioBoardId: string | null;
+        variantPath: string;
+        productLine: string;
+        maxSize: number;
+        maxDataSize: number;
+        requiresLocalPatch: boolean;
+    }
+
+    const enhancedCompat: Record<string, EnhancedCompatInfo> = {};
+    let matchedCount = 0;
+
+    // 获取所有可用的 boardTags 及其归一化名称
+    const allBoardTags = Object.keys(registry).map(tag => ({
+        tag,
+        mcu: tag.replace('GENERIC_', 'stm32').toLowerCase()
+    }));
+
+    // 遍历所有生成的文件 (generic_stm32fxxx.json 的路径)
+    generatedFiles.forEach(filePath => {
+        const fileName = path.basename(filePath); // e.g., generic_stm32f103c8.json
+        const chipId = fileName.replace('.json', ''); // e.g., generic_stm32f103c8
+
+        // 核心模糊匹配逻辑
+        const normalizedChipName = chipId.replace('generic_', '');
+        const match = allBoardTags.find(bt => bt.mcu.startsWith(normalizedChipName));
+
+        if (match) {
+            const chipInfo = registry[match.tag];
+            const directPioId = chipIdToPioBoardId(chipId);
+            const hasPioBoard = pioBoards.has(directPioId);
+
+            enhancedCompat[chipId] = {
+                pioBoardId: hasPioBoard ? directPioId : null,
+                variantPath: chipInfo.variantPath,
+                productLine: chipInfo.productLine || '',
+                maxSize: chipInfo.maxSize || 0,
+                maxDataSize: chipInfo.maxDataSize || 0,
+                requiresLocalPatch: !hasPioBoard
+            };
+            matchedCount++;
+        } else {
+            enhancedCompat[chipId] = {
+                pioBoardId: null,
+                variantPath: '',
+                productLine: '',
+                maxSize: 0,
+                maxDataSize: 0,
+                requiresLocalPatch: true
+            };
+        }
+    });
+
+    fs.writeFileSync(outputPath, JSON.stringify(enhancedCompat, null, 2));
+    console.log(`[完成] 已为 ${matchedCount}/${generatedFiles.size} 个芯片生成了兼容性映射。`);
+}
+
+/**
+ * [辅助] 加载现有的 PIO boards 列表
+ */
+function loadPioBoards(): Set<string> {
+    const pioBoards = new Set<string>();
+    const pioBoardsDir = path.join(os.homedir(), '.platformio', 'platforms', 'ststm32', 'boards');
+
+    if (fs.existsSync(pioBoardsDir)) {
+        const files = fs.readdirSync(pioBoardsDir).filter(f => f.endsWith('.json'));
+        for (const file of files) {
+            pioBoards.add(file.replace('.json', ''));
+        }
+    }
+    return pioBoards;
+}
+
+/**
+ * [辅助] 将 chipId 转换为可能的 PIO board ID
+ */
+function chipIdToPioBoardId(chipId: string): string {
+    return chipId.replace(/_stm32/i, 'STM32').replace(/_/g, '');
+}
+
 
 /**
  * 辅助函数: 从 MCU 名称推断规格 (Flash/RAM)

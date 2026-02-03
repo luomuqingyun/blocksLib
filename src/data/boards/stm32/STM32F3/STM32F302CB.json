@@ -11,6 +11,7 @@
   "description": "STM32F302CB - STM32F3 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f302cb.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

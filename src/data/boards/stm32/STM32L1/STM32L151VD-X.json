@@ -11,6 +11,7 @@
   "description": "STM32L151VD-X - STM32L1 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32l151vd.html",
   "has_ldscript": false,
+  "tier": "preview",
   "capabilities": {
     "can": false,
     "usb": false,

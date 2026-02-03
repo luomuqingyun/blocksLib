@@ -7,6 +7,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ----------------------------------------------------------------------------
 // 1. STM32 Official Open Pin Data
@@ -28,7 +32,13 @@ export const EMBASSY_STM32_DATA_PATH = 'G:\\Project\\Easy_Embedded\\STM32_DATA\\
 // 对应仓库：https://github.com/stm32duino/Arduino_Core_STM32
 // 用途：扫描 variants 目录，自动发现支持的型号并提取引脚宏映射
 // ----------------------------------------------------------------------------
-export const ARDUINO_CORE_STM32_PATH = 'G:\\Project\\Easy_Embedded\\STM32_DATA\\Arduino_Core_STM32';
+// [更改] 优先指向项目内的 Submodule，如不存在则回退到开发者的 G 盘
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+const SUBMODULE_PATH = path.join(PROJECT_ROOT, 'third_party', 'Arduino_Core_STM32');
+
+export const ARDUINO_CORE_STM32_PATH = fs.existsSync(SUBMODULE_PATH) && fs.readdirSync(SUBMODULE_PATH).length > 0
+    ? SUBMODULE_PATH
+    : 'G:\\Project\\Easy_Embedded\\STM32_DATA\\Arduino_Core_STM32';
 
 /**
  * 辅助函数：根据具体需求选择数据源，如果本地路径不存在则回退

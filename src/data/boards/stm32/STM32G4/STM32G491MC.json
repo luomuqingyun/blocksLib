@@ -11,6 +11,7 @@
   "description": "STM32G491MC - STM32G4 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32g491mc.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

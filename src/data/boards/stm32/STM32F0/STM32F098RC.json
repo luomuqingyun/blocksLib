@@ -11,6 +11,7 @@
   "description": "STM32F098RC - STM32F0 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f098rc.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

@@ -11,6 +11,7 @@
   "description": "STM32F401RD - STM32F4 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f401rd.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": true,
     "usb": true,

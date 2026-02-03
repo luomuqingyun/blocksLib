@@ -5,17 +5,14 @@
  * 
  * 一键同步所有 STM32 相关数据源并重新生成板卡数据。
  * 
- * 工作流程 (3 步):
+ * 工作流程 (2 步):
  * 1. [Git Pull] 同步本地克隆的 GitHub 仓库:
  *    - ST_OPEN_PIN_DATA_PATH  (ST 官方引脚数据)
  *    - EMBASSY_STM32_DATA_PATH (embassy-rs 芯片数据)
  *    - ARDUINO_CORE_STM32_PATH (STM32duino 变体)
  * 
- * 2. [PIO Boards] 从 PlatformIO CLI 获取最新的 STM32 板卡列表:
- *    - 执行 `pio boards ststm32 --json-output`
- *    - 保存到 scripts/pio_stm32_full.json
  * 
- * 3. [Generation] 运行完整的数据生成流水线:
+ * 2. [Generation] 运行完整的数据生成流水线:
  *    - 执行 `npm run gen:stm32`
  *    - 更新 src/data/boards/stm32/ 下的所有芯片 JSON 文件
  * 
@@ -52,11 +49,19 @@ async function globalSync() {
 
     // 1. Sync GitHub Repositories
     for (const repo of repos) {
-        console.log(`\n>>> [1/3] Syncing ${repo.name}...`);
+        console.log(`\n>>> [1/2] Syncing ${repo.name}...`);
         if (fs.existsSync(repo.path)) {
             try {
-                console.log(`Executing 'git pull' in ${repo.path}`);
-                execSync('git pull', { cwd: repo.path, stdio: 'inherit' });
+                // 如果路径在 third_party 目录下，认为它是子模块，使用 submodule update
+                if (repo.path.includes(path.join(PROJECT_ROOT, 'third_party'))) {
+                    console.log(`Executing 'git submodule update' in ${PROJECT_ROOT}`);
+                    // 获取子模块相对于根目录的路径
+                    const relativePath = path.relative(PROJECT_ROOT, repo.path);
+                    execSync(`git submodule update --init --recursive --remote ${relativePath}`, { cwd: PROJECT_ROOT, stdio: 'inherit' });
+                } else {
+                    console.log(`Executing 'git pull' in ${repo.path}`);
+                    execSync('git pull', { cwd: repo.path, stdio: 'inherit' });
+                }
             } catch (e) {
                 console.warn(`[Warning] Failed to sync ${repo.name}. Please check manual Git status.`);
             }
@@ -65,19 +70,8 @@ async function globalSync() {
         }
     }
 
-    // 2. Sync PlatformIO Boards
-    console.log('\n>>> [2/3] Syncing PlatformIO Board Database...');
-    try {
-        const pioJsonPath = path.join(__dirname, 'pio_stm32_full.json');
-        const output = execSync('pio boards ststm32 --json-output', { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-        fs.writeFileSync(pioJsonPath, output);
-        console.log('PlatformIO board data updated.');
-    } catch (e) {
-        console.error('[Error] Failed to fetch PIO boards. Ensure PIO CLI is in PATH.');
-    }
-
-    // 3. Run Full Generation Pipeline
-    console.log('\n>>> [3/3] Running Full STM32 Generation Pipeline...');
+    // 2. Run Full Generation Pipeline
+    console.log('\n>>> [2/2] Running Full STM32 Generation Pipeline...');
     console.log('This will update all 1500+ chip JSONs in src/data/boards/stm32/');
     try {
         execSync('npm run gen:stm32', { cwd: PROJECT_ROOT, stdio: 'inherit' });

@@ -13,6 +13,7 @@ import { EMBASSY_STM32_DATA_PATH } from './data_sources';
 
 const OUTPUT_STM32 = path.join(__dirname, 'stm32_board_data.json');
 const CHIPS_DIR = path.join(EMBASSY_STM32_DATA_PATH, 'data/chips');
+const REGISTRY_PATH = path.join(__dirname, 'stm32duino_support_registry.json');
 
 // ----------------------------------------------------------------------------
 // 辅助函数：从 MCU 名称推断硬件规格
@@ -106,6 +107,23 @@ async function main() {
         return;
     }
 
+    // [核心增强] 加载 STM32duino 支持注册表 (白名单)
+    const supportedMcus = new Set<string>();
+    if (fs.existsSync(REGISTRY_PATH)) {
+        try {
+            const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'));
+            Object.values(registry).forEach((entry: any) => {
+                if (entry.mcu) supportedMcus.add(entry.mcu.toLowerCase());
+            });
+            console.log(`[白名单] 已加载 ${supportedMcus.size} 个支持的 MCU 定义 (来自于 Variants)`);
+        } catch (e) {
+            console.warn(`[警告] 无法加载注册表 ${REGISTRY_PATH}, 将放行所有解析出的芯片 (风险模式)`);
+        }
+    } else {
+        console.warn(`[警告] 注册表 ${REGISTRY_PATH} 不存在, 请先运行脚本 7`);
+        return;
+    }
+
     // 策略：保留所有不是由本同步脚本自动生成的板卡（即 platform !== 'ststm32' 的手动添加项）
     const preservedBoards: any[] = [];
     Object.keys(stm32Data.STM32).forEach(series => {
@@ -132,6 +150,10 @@ async function main() {
     const chipFiles = fs.readdirSync(CHIPS_DIR).filter(f => f.endsWith('.json'));
     let addedCount = 0;
 
+    // 初始化未支持芯片统计
+    const unsupportedStats: Record<string, number> = {};
+    const unsupportedList: string[] = [];
+
     for (const file of chipFiles) {
         const filePath = path.join(CHIPS_DIR, file);
         try {
@@ -139,32 +161,26 @@ async function main() {
             const name = chipData.name; // 例如 "STM32F103C8"
             const family = chipData.family; // 例如 "STM32F1"
 
-            // [核心增强] 过滤掉 PlatformIO 目前完全不支持的系列 (防止生成无效板卡)
-            const EXCLUDED_SERIES = ['STM32C0', 'STM32N6', 'STM32U0', 'STM32U3', 'STM32WB0', 'STM32WBA'];
-            if (EXCLUDED_SERIES.includes(family)) {
-                continue;
-            }
+            // [核心增强] 动态白名单检查
+            // 策略：只要该芯片在 Open Data 里的名称 (如 STM32F103C8) 
+            // 能够匹配到 STM32duino Variants 注册表里的任何一个 MCU (如 stm32f103c8tx)
+            // 即认为底层支持该芯片，予以放行。
 
-            // [增强] 过滤掉 STM32duino 尚未支持的子系列 (可以在 PIO 版本更新后移除)
-            // - STM32H7A3/H7B0/H7B3/H7R/H7S: 较新的 H7 子系列
-            // - STM32U5: 超低功耗系列尚未完全支持
-            // - STM32H5: 较新系列
-            // - STM32L5: 部分支持，但 variant 不完整
-            const EXCLUDED_SUB_SERIES = [
-                'STM32H7A', 'STM32H7B', 'STM32H7R', 'STM32H7S', // H7 新子系列
-                'STM32U5',  // U5 超低功耗系列
-                'STM32H5',  // H5 新系列
-                'STM32L5',  // L5 安全系列
-            ];
-            const chipSubSeries = name.substring(0, 7).toUpperCase(); // 例: STM32H7A
-            if (EXCLUDED_SUB_SERIES.some(sub => chipSubSeries.startsWith(sub))) {
-                continue;
-            }
+            // 名称归一化：STM32F103C8 -> stm32f103c8
+            const normalizedName = name.toLowerCase();
 
-            // [增强] 过滤掉 L1xx 系列的 -A 变体 (STM32duino 将其合并到基础型号)
-            // 例: STM32L100C6-A -> 使用 STM32L100C6 的 variant
-            if (name.endsWith('-A')) {
-                continue;
+            // 检查：注册表中是否有以当前芯片名为前缀的条目
+            // 例如：Open Data 有 "STM32WBA65CG", Registry 有 "stm32wba65cgux" -> 匹配成功
+            const isSupported = Array.from(supportedMcus).some(mcu => mcu.startsWith(normalizedName));
+
+            // [改进] 不再直接跳过不支持的芯片，而是打上 tier: preview 标签
+            // 这样可以让用户看到引脚图，但提示功能可能受限
+            const tier = isSupported ? 'official' : 'preview';
+
+            if (!isSupported) {
+                unsupportedList.push(name);
+                const series = family || 'Unknown';
+                unsupportedStats[series] = (unsupportedStats[series] || 0) + 1;
             }
 
             const seriesName = family;
@@ -195,6 +211,7 @@ async function main() {
                     pinCount: pinCount,
                     package: pkgType,
                     specs: getSpecsFromMcuName(name), // 自动推断 Flash/RAM
+                    tier: tier,
                     capabilities: []
                 });
 
@@ -211,6 +228,20 @@ async function main() {
     fs.writeFileSync(OUTPUT_STM32, JSON.stringify(stm32Data, null, 2));
     console.log(`同步完成。共加载了 ${addedCount} 个权威芯片型号。`);
     console.log(`保留了 ${preservedBoards.length} 个手动添加的板卡。`);
+
+    // 输出未支持芯片报告
+    if (unsupportedList.length > 0) {
+        console.log('\n----------------------------------------');
+        console.log(' Unsupported Chips Report (Currently marked as Preview)');
+        console.log('----------------------------------------');
+        console.log(`Total Unsupported: ${unsupportedList.length}`);
+        console.log(' Breakdown by Series:');
+        Object.keys(unsupportedStats).forEach(s => {
+            console.log(`  - ${s}: ${unsupportedStats[s]}`);
+        });
+        console.log('\n(这些芯片已被添加为 preview 级别，引脚图可用，但 PIO 编译可能需要额外配置)');
+        console.log('----------------------------------------\n');
+    }
 }
 
 main();

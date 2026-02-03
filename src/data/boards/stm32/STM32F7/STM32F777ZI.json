@@ -11,6 +11,7 @@
   "description": "STM32F777ZI - STM32F7 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f777zi.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": true,
     "usb": true,

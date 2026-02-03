@@ -11,6 +11,7 @@
   "description": "STM32F769BI - STM32F7 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f769bi.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": true,
     "usb": true,

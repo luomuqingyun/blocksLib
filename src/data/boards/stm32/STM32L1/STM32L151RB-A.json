@@ -1,0 +1,353 @@
+{
+  "id": "generic_stm32l151rb-a",
+  "name": "STM32L151RB-A",
+  "platform": "ststm32",
+  "mcu": "STM32L151RB-A",
+  "variant": "generic",
+  "pinCount": 64,
+  "package": "TFBGA64",
+  "fcpu": 0,
+  "specs": "128k Flash / 16k RAM",
+  "description": "STM32L151RB-A - STM32L1 series board",
+  "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32l151rb.html",
+  "has_ldscript": false,
+  "tier": "preview",
+  "capabilities": {
+    "can": false,
+    "usb": false,
+    "ethernet": false,
+    "flash": true,
+    "sdio": false
+  },
+  "defaults": {},
+  "pinout": {},
+  "pinMap": [
+    {
+      "name": "PC14",
+      "position": "A1",
+      "functions": []
+    },
+    {
+      "name": "PC13",
+      "position": "A2",
+      "functions": []
+    },
+    {
+      "name": "PB9",
+      "position": "A3",
+      "functions": []
+    },
+    {
+      "name": "PB4",
+      "position": "A4",
+      "functions": []
+    },
+    {
+      "name": "PB3",
+      "position": "A5",
+      "functions": []
+    },
+    {
+      "name": "PA15",
+      "position": "A6",
+      "functions": []
+    },
+    {
+      "name": "PA14",
+      "position": "A7",
+      "functions": []
+    },
+    {
+      "name": "PA13",
+      "position": "A8",
+      "functions": []
+    },
+    {
+      "name": "PC15",
+      "position": "B1",
+      "functions": []
+    },
+    {
+      "name": "VLCD",
+      "position": "B2",
+      "functions": []
+    },
+    {
+      "name": "PB8",
+      "position": "B3",
+      "functions": []
+    },
+    {
+      "name": "BOOT0",
+      "position": "B4",
+      "functions": []
+    },
+    {
+      "name": "PD2",
+      "position": "B5",
+      "functions": []
+    },
+    {
+      "name": "PC11",
+      "position": "B6",
+      "functions": []
+    },
+    {
+      "name": "PC10",
+      "position": "B7",
+      "functions": []
+    },
+    {
+      "name": "PA12",
+      "position": "B8",
+      "functions": []
+    },
+    {
+      "name": "PH0",
+      "position": "C1",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "C2",
+      "functions": []
+    },
+    {
+      "name": "PB7",
+      "position": "C3",
+      "functions": []
+    },
+    {
+      "name": "PB5",
+      "position": "C4",
+      "functions": []
+    },
+    {
+      "name": "PC12",
+      "position": "C5",
+      "functions": []
+    },
+    {
+      "name": "PA10",
+      "position": "C6",
+      "functions": []
+    },
+    {
+      "name": "PA9",
+      "position": "C7",
+      "functions": []
+    },
+    {
+      "name": "PA11",
+      "position": "C8",
+      "functions": []
+    },
+    {
+      "name": "PH1",
+      "position": "D1",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "D2",
+      "functions": []
+    },
+    {
+      "name": "PB6",
+      "position": "D3",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D4",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D5",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "D6",
+      "functions": []
+    },
+    {
+      "name": "PA8",
+      "position": "D7",
+      "functions": []
+    },
+    {
+      "name": "PC9",
+      "position": "D8",
+      "functions": []
+    },
+    {
+      "name": "NRST",
+      "position": "E1",
+      "functions": []
+    },
+    {
+      "name": "PC1",
+      "position": "E2",
+      "functions": []
+    },
+    {
+      "name": "PC0",
+      "position": "E3",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "E4",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "E5",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "E6",
+      "functions": []
+    },
+    {
+      "name": "PC7",
+      "position": "E7",
+      "functions": []
+    },
+    {
+      "name": "PC8",
+      "position": "E8",
+      "functions": []
+    },
+    {
+      "name": "VSSA",
+      "position": "F1",
+      "functions": []
+    },
+    {
+      "name": "PC2",
+      "position": "F2",
+      "functions": []
+    },
+    {
+      "name": "PA2",
+      "position": "F3",
+      "functions": []
+    },
+    {
+      "name": "PA5",
+      "position": "F4",
+      "functions": []
+    },
+    {
+      "name": "PB0",
+      "position": "F5",
+      "functions": []
+    },
+    {
+      "name": "PC6",
+      "position": "F6",
+      "functions": []
+    },
+    {
+      "name": "PB15",
+      "position": "F7",
+      "functions": []
+    },
+    {
+      "name": "PB14",
+      "position": "F8",
+      "functions": []
+    },
+    {
+      "name": "VREF+",
+      "position": "G1",
+      "functions": []
+    },
+    {
+      "name": "PA0",
+      "position": "G2",
+      "functions": []
+    },
+    {
+      "name": "PA3",
+      "position": "G3",
+      "functions": []
+    },
+    {
+      "name": "PA6",
+      "position": "G4",
+      "functions": []
+    },
+    {
+      "name": "PB1",
+      "position": "G5",
+      "functions": []
+    },
+    {
+      "name": "PB2",
+      "position": "G6",
+      "functions": []
+    },
+    {
+      "name": "PB10",
+      "position": "G7",
+      "functions": []
+    },
+    {
+      "name": "PB13",
+      "position": "G8",
+      "functions": []
+    },
+    {
+      "name": "VDDA",
+      "position": "H1",
+      "functions": []
+    },
+    {
+      "name": "PA1",
+      "position": "H2",
+      "functions": []
+    },
+    {
+      "name": "PA4",
+      "position": "H3",
+      "functions": []
+    },
+    {
+      "name": "PA7",
+      "position": "H4",
+      "functions": []
+    },
+    {
+      "name": "PC4",
+      "position": "H5",
+      "functions": []
+    },
+    {
+      "name": "PC5",
+      "position": "H6",
+      "functions": []
+    },
+    {
+      "name": "PB11",
+      "position": "H7",
+      "functions": []
+    },
+    {
+      "name": "PB12",
+      "position": "H8",
+      "functions": []
+    }
+  ],
+  "pin_options": {
+    "digital": [],
+    "analog": [],
+    "pwm": [],
+    "i2c": [],
+    "spi": []
+  }
+}

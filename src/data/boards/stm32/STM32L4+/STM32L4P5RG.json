@@ -11,6 +11,7 @@
   "description": "STM32L4P5RG - STM32L4+ series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32l4p5.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

@@ -11,6 +11,7 @@
   "description": "STM32F051K8 - STM32F0 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f051k8.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

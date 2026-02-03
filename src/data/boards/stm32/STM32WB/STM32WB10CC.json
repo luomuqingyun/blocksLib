@@ -11,6 +11,7 @@
   "description": "STM32WB10CC - STM32WB series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32wb10cc.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

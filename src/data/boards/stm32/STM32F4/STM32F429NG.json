@@ -11,6 +11,7 @@
   "description": "STM32F429NG - STM32F4 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f429ng.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": true,
     "usb": true,

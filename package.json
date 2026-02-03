@@ -10,15 +10,16 @@
     "predev": "node scripts/cleanup.js",
     "build": "npm run clean:build && tsc && vite build && vite build -c vite.sandbox.config.js",
     "start": "npm run build && electron .",
-    "release": "npm run build && electron-builder",
+    "release": "npm run build && npm run bundle:core && electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "rebuild": "electron-builder install-app-deps",
     "preview": "vite preview",
     "clean:build": "rimraf dist dist-electron",
     "clean:all": "rimraf node_modules dist dist-electron release package-lock.json",
     "clean:pio": "rimraf bundled_pio",
-    "gen:stm32": "npx tsx scripts/1c_discover_from_open_data.ts && npx tsx scripts/2_scan_stm32_pins.ts && npx tsx scripts/5_fetch_official_layouts.ts && npx tsx scripts/4_generate_stm32_data.ts && npx tsx scripts/7_parse_stm32duino_variants.ts",
+    "gen:stm32": "npx tsx scripts/7_parse_stm32duino_variants.ts && npx tsx scripts/1c_discover_from_open_data.ts && npx tsx scripts/2_scan_stm32_pins.ts && npx tsx scripts/5_fetch_official_layouts.ts && npx tsx scripts/4_generate_stm32_data.ts",
     "sync:stm32": "npx tsx scripts/global_sync_data.ts",
+    "bundle:core": "npx tsx scripts/bundle_resources.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -96,6 +97,17 @@
         "to": "bundled_pio",
         "filter": [
           "**/*"
+        ]
+      },
+      {
+        "from": "bundled_arduino_core",
+        "to": "arduino_core",
+        "filter": [
+          "variants/**/*",
+          "cores/**/*",
+          "libraries/**/*",
+          "system/**/*",
+          "drivers/**/*"
         ]
       }
     ],

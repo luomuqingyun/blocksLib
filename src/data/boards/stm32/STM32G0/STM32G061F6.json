@@ -11,6 +11,7 @@
   "description": "STM32G061F6 - STM32G0 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32g061f6.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

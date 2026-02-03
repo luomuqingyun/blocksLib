@@ -11,6 +11,7 @@
   "description": "STM32L471ZE - STM32L4 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32l471ze.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

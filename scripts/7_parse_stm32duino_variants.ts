@@ -20,7 +20,8 @@ const __dirname = path.dirname(__filename);
 
 // 输出文件路径
 const OUTPUT_REGISTRY = path.join(__dirname, 'stm32duino_support_registry.json');
-const OUTPUT_ENHANCED_COMPAT = path.join(__dirname, '../electron/config/stm32_compatibility_enhanced.json');
+
+
 
 // PlatformIO 回退路径
 const PIO_VARIANTS_DIR = path.join(os.homedir(), '.platformio', 'packages', 'framework-arduinoststm32', 'variants');
@@ -216,103 +217,15 @@ function scanAllVariants(): Map<string, ChipSupportInfo> {
  * GENERIC_G431KBTX -> generic_stm32g431kb
  */
 function boardTagToChipId(boardTag: string): string {
-    // GENERIC_F103C8TX -> F103C8TX
-    const chipPart = boardTag.replace('GENERIC_', '');
-
-    // 移除封装后缀 (T, U, H, I, Y 等) 和温度等级后缀 (X, N 等)
-    // F103C8TX -> F103C8
-    // G431KBTX -> G431KB
-    // H743VITX -> H743VI (注意有些芯片有 I 封装)
-
-    // STM32 MCU 基础格式: Series(1-2) + SubSeries(2) + Pin(1) + Flash(1)
-    // 例: F103C8, G431KB, H743VI, F205RB
-    // 后面的都是封装和温度代码
-
-    // 通用正则: 匹配基础 MCU 部分
-    // Series: F/G/H/L/U/W/C + 数字
-    // SubSeries: 2位数字
-    // Pin: C/K/R/V/Z/A/I/B/N/M/T/F/G/Q/S 等
-    // Flash: 4/6/8/B/C/D/E/F/G/H/I/Z 等
-    const baseMatch = chipPart.match(/^([A-Z]\d)(\d{2})([A-Z])([A-Z0-9])/);
-    if (baseMatch) {
-        const [, series, subSeries, pin, flash] = baseMatch;
-        return `generic_stm32${series.toLowerCase()}${subSeries}${pin.toLowerCase()}${flash.toLowerCase()}`;
-    }
-
-    // 处理特殊情况 (如 WB55xx 等有更长的系列标识)
-    const specialMatch = chipPart.match(/^([A-Z]{2}\d{2})([A-Z])([A-Z0-9])/);
-    if (specialMatch) {
-        const [, series, pin, flash] = specialMatch;
-        return `generic_stm32${series.toLowerCase()}${pin.toLowerCase()}${flash.toLowerCase()}`;
-    }
-
-    // 回退处理: 移除常见的封装后缀
-    const simplified = chipPart.replace(/[TUHIYN]+X?$/i, '').toLowerCase();
+    // 基础逻辑：剥离 GENERIC_ 前缀并移除常见的封装后缀
+    // This is used for internal mapping to existing EmbedBlocks chip IDs
+    const simplified = boardTag.replace('GENERIC_', '').replace(/[TUHIYN]+X?$/i, '').toLowerCase();
     return `generic_stm32${simplified}`;
 }
 
 /**
- * 加载现有的 PIO boards 列表
- */
-function loadPioBoards(): Set<string> {
-    const pioBoards = new Set<string>();
-    const pioBoardsDir = path.join(os.homedir(), '.platformio', 'platforms', 'ststm32', 'boards');
-
-    if (fs.existsSync(pioBoardsDir)) {
-        const files = fs.readdirSync(pioBoardsDir).filter(f => f.endsWith('.json'));
-        for (const file of files) {
-            pioBoards.add(file.replace('.json', ''));
-        }
-    }
-
-    return pioBoards;
-}
-
-/**
- * 将 chipId 转换为可能的 PIO board ID
- * 例: generic_stm32f103c8 -> genericSTM32F103C8 (PIO 的命名格式)
- */
-function chipIdToPioBoardId(chipId: string): string {
-    // generic_stm32f103c8 -> genericSTM32F103C8
-    return chipId.replace(/_stm32/i, 'STM32').replace(/_/g, '');
-}
-
-/**
- * 加载 EmbedBlocks 中已收录的芯片列表
- * 这些芯片是经过过滤的，排除了 PIO 完全不支持的系列
- */
-function loadEmbedBlocksChips(): Set<string> {
-    const chips = new Set<string>();
-    const boardsDir = path.join(__dirname, '../src/data/boards/stm32');
-
-    if (!fs.existsSync(boardsDir)) {
-        console.warn(`[警告] 找不到 EmbedBlocks 板卡目录: ${boardsDir}`);
-        return chips;
-    }
-
-    // 遍历系列目录
-    const seriesDirs = fs.readdirSync(boardsDir).filter(name => {
-        const fullPath = path.join(boardsDir, name);
-        return fs.statSync(fullPath).isDirectory() && name.startsWith('STM32');
-    });
-
-    for (const seriesDir of seriesDirs) {
-        const seriesPath = path.join(boardsDir, seriesDir);
-        const chipFiles = fs.readdirSync(seriesPath).filter(f => f.endsWith('.json'));
-
-        for (const file of chipFiles) {
-            // 从文件名推断 chip ID: STM32F103C8.json -> generic_stm32f103c8
-            const chipName = file.replace('.json', '');
-            const chipId = `generic_${chipName.toLowerCase()}`;
-            chips.add(chipId);
-        }
-    }
-
-    return chips;
-}
-
-/**
  * 主函数
+
  */
 function main() {
     console.log('=== STM32duino Variants 解析器 ===\n');
@@ -340,99 +253,9 @@ function main() {
     fs.writeFileSync(OUTPUT_REGISTRY, JSON.stringify(registryObj, null, 2));
     console.log(`[完成] 写入完整 registry: ${OUTPUT_REGISTRY}`);
 
-    // 4. 加载 EmbedBlocks 支持的芯片列表 (已过滤)
-    const embedBlocksChips = loadEmbedBlocksChips();
-    console.log(`[信息] EmbedBlocks 支持 ${embedBlocksChips.size} 个芯片\n`);
-
-    // 5. 加载 PIO 板卡数据
-    const pioBoards = loadPioBoards();
-    console.log(`[信息] PIO boards 目录包含 ${pioBoards.size} 个板卡定义`);
-
-    // 6. 生成增强的兼容性映射 (仅针对 EmbedBlocks 支持的芯片)
-    const enhancedCompat: Record<string, EnhancedCompatInfo> = {};
-    let matchedCount = 0;
-    let unmatchedCount = 0;
-
-    for (const chipId of embedBlocksChips) {
-        const boardTag = chipIdToBoardTag.get(chipId);
-
-        if (boardTag) {
-            // 在 STM32duino 中找到了匹配
-            const chipInfo = registry.get(boardTag)!;
-            // 直接匹配 PIO board ID (仅精确匹配，不使用近似匹配)
-            const directPioId = chipIdToPioBoardId(chipId);
-            const hasPioBoard = pioBoards.has(directPioId);
-
-            enhancedCompat[chipId] = {
-                pioBoardId: hasPioBoard ? directPioId : null,
-                variantPath: chipInfo.variantPath,
-                productLine: chipInfo.productLine || '',
-                maxSize: chipInfo.maxSize || 0,
-                maxDataSize: chipInfo.maxDataSize || 0,
-                requiresLocalPatch: !hasPioBoard
-            };
-            matchedCount++;
-        } else {
-            // 在 STM32duino 中没有找到匹配 (可能是新系列或特殊芯片)
-            // 使用 local_patch 模式
-            enhancedCompat[chipId] = {
-                pioBoardId: null,
-                variantPath: '', // 无法从 STM32duino 获取
-                productLine: '',
-                maxSize: 0,
-                maxDataSize: 0,
-                requiresLocalPatch: true // 需要 local_patch
-            };
-            unmatchedCount++;
-        }
-    }
-
-    fs.writeFileSync(OUTPUT_ENHANCED_COMPAT, JSON.stringify(enhancedCompat, null, 2));
-    console.log(`[完成] 写入增强兼容性映射: ${OUTPUT_ENHANCED_COMPAT}`);
-
-    // 7. 统计信息
-    const totalChips = Object.keys(enhancedCompat).length;
-    const chipsWithPioBoard = Object.values(enhancedCompat).filter(c => c.pioBoardId).length;
-    const chipsWithVariantPath = Object.values(enhancedCompat).filter(c => c.variantPath).length;
-    const chipsNeedingPatch = Object.values(enhancedCompat).filter(c => c.requiresLocalPatch).length;
-
-    console.log('\n=== 统计 ===');
-    console.log(`EmbedBlocks 支持的芯片总数: ${totalChips}`);
-    console.log(`在 STM32duino 中找到匹配: ${matchedCount}`);
-    console.log(`在 STM32duino 中未找到匹配: ${unmatchedCount}`);
-    console.log(`有精确 Variant 路径: ${chipsWithVariantPath}`);
-    console.log(`有 PIO Board 映射: ${chipsWithPioBoard}`);
-    console.log(`需要 local_patch: ${chipsNeedingPatch}`);
-
-    // 8. 显示一些示例
-    console.log('\n=== 示例条目 ===');
-    const examples = ['generic_stm32f103c8', 'generic_stm32f205rb', 'generic_stm32f407vg', 'generic_stm32g431kb'];
-    for (const ex of examples) {
-        if (enhancedCompat[ex]) {
-            console.log(`${ex}:`);
-            console.log(`  variantPath: ${enhancedCompat[ex].variantPath || '(未找到)'}`);
-            console.log(`  pioBoardId: ${enhancedCompat[ex].pioBoardId || '(需要 local_patch)'}`);
-            console.log(`  productLine: ${enhancedCompat[ex].productLine || '(未知)'}`);
-        } else {
-            console.log(`${ex}: 未在 EmbedBlocks 中收录`);
-        }
-    }
-
-    // 9. 显示未匹配的芯片列表 (如果有)
-    if (unmatchedCount > 0) {
-        console.log(`\n=== 未在 STM32duino 中找到匹配的芯片 (前 10 个) ===`);
-        let shown = 0;
-        for (const chipId of embedBlocksChips) {
-            if (!chipIdToBoardTag.has(chipId)) {
-                console.log(`  ${chipId}`);
-                shown++;
-                if (shown >= 10) break;
-            }
-        }
-        if (unmatchedCount > 10) {
-            console.log(`  ... 及其他 ${unmatchedCount - 10} 个`);
-        }
-    }
+    // 4. 完成
+    console.log('\n[完成] 注册表生成完毕。');
+    console.log('兼容性映射 (stm32_compatibility_enhanced.json) 现在由 script 4 生成。');
 }
 
 main();

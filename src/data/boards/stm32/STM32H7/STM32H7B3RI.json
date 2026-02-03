@@ -11,6 +11,7 @@
   "description": "STM32H7B3RI - STM32H7 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32h7b3.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": true,
     "usb": true,

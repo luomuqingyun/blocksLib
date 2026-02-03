@@ -1,3 +1,6 @@
 [submodule "blocksLib"]
 	path = blocksLib
 	url = git@github.com:luomuqingyun/blocksLib.git
+[submodule "third_party/Arduino_Core_STM32"]
+	path = third_party/Arduino_Core_STM32
+	url = https://github.com/stm32duino/Arduino_Core_STM32.git

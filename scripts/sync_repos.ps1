@@ -1,4 +1,4 @@
-# 同步仓库脚本 (Sync Repositories Script)
+﻿# 同步仓库脚本 (Sync Repositories Script)
 # 功能: 自动化管理 blocksLib 子仓库与主项目的更新流程
 # 用法: .\scripts\sync_repos.ps1
 
@@ -20,7 +20,7 @@ if (-not (Get-Command "git" -ErrorAction SilentlyContinue)) {
     }
 }
 
-function Run-GitCommand {
+function Invoke-GitCommand {
     param(
         [string]$CommandStr
     )
@@ -45,25 +45,27 @@ function Update-BlocksLib {
         if ($shouldPack -eq "" -or $shouldPack -match "^[Yy]$") {
             Write-Host ">>> 执行插件打包逻辑..." -ForegroundColor Yellow
             .\pack_plugins.ps1
-        } else {
+        }
+        else {
             Write-Host ">>> 跳过打包步骤。" -ForegroundColor Gray
         }
-    } else {
+    }
+    else {
         Write-Warning "未找到 pack_plugins.ps1，跳过打包步骤。"
     }
 
     # 2. Git 提交
     Write-Host ">>> 提交代码..." -ForegroundColor Yellow
-    Run-GitCommand "add ."
+    Invoke-GitCommand "add ."
     
     $commitMsg = Read-Host "请输入blocksLib子项目提交信息 (默认为 'Update plugins')"
     if ([string]::IsNullOrWhiteSpace($commitMsg)) { $commitMsg = "Update plugins" }
     
-    Run-GitCommand "commit -m ""$commitMsg"""
+    Invoke-GitCommand "commit -m ""$commitMsg"""
     
     # 3. Git 推送
     Write-Host ">>> 推送至 GitHub..." -ForegroundColor Yellow
-    Run-GitCommand "push origin main"
+    Invoke-GitCommand "push origin main"
 
     Pop-Location
     Write-Host "=== blocksLib 更新完成 ===" -ForegroundColor Green
@@ -80,18 +82,54 @@ function Update-MainRepo {
 
     # 2. Git 提交
     Write-Host ">>> 提交代码..." -ForegroundColor Yellow
-    Run-GitCommand "add ."
+    Invoke-GitCommand "add ."
     
     $commitMsg = Read-Host "请输入主项目提交信息 (默认为 'Update project')"
     if ([string]::IsNullOrWhiteSpace($commitMsg)) { $commitMsg = "Update project" }
     
-    Run-GitCommand "commit -m ""$commitMsg"""
+    Invoke-GitCommand "commit -m ""$commitMsg"""
 
     # 3. Git 推送
     Write-Host ">>> 推送至 GitHub..." -ForegroundColor Yellow
-    Run-GitCommand "push origin main"
+    Invoke-GitCommand "push origin main"
 
     Write-Host "=== 主项目更新完成 ===" -ForegroundColor Green
+}
+
+function Update-ArduinoCore {
+    Write-Host "`n=== 正在同步 Arduino Core STM32 (子模块) ===" -ForegroundColor Cyan
+    
+    $SubPath = "third_party\Arduino_Core_STM32"
+    
+    if (Test-Path $SubPath) {
+        # 获取当前版本哈希
+        $oldCommit = & $GitPath -C $SubPath rev-parse --short HEAD 2>$null
+        Write-Host ">>> 当前版本: $oldCommit" -ForegroundColor Gray
+
+        Write-Host ">>> 正在从官方仓库拉取最新代码..." -ForegroundColor Yellow
+        # 更新 submodule 到远程最新 commit
+        Invoke-GitCommand "submodule update --init --recursive --remote third_party/Arduino_Core_STM32"
+        
+        # 获取更新后的版本哈希
+        $newCommit = & $GitPath -C $SubPath rev-parse --short HEAD 2>$null
+
+        if ($oldCommit -eq $newCommit) {
+            Write-Host "`n=== 已是最新版本 ($newCommit) ===" -ForegroundColor Green
+        }
+        else {
+            Write-Host "`n=== 同步成功! ($oldCommit -> $newCommit) ===" -ForegroundColor Green
+            
+            # 显示最近的一条日志
+            Write-Host "最新提交:" -ForegroundColor Gray
+            & $GitPath -C $SubPath log -1 --oneline
+
+            Write-Host "`n[提示] 请运行选项2提交子模块指针变更。" -ForegroundColor Magenta
+        }
+    }
+    else {
+        Write-Warning "未找到 $SubPath 目录。"
+        Write-Host "请先运行: git submodule add git@github.com:stm32duino/Arduino_Core_STM32.git third_party/Arduino_Core_STM32"
+    }
 }
 
 # --- 主菜单 ---
@@ -102,10 +140,11 @@ Write-Host "=========================================="
 Write-Host "1. 仅更新 blocksLib (插件库)"
 Write-Host "2. 仅更新 主项目 (EmbedBlocks Studio)"
 Write-Host "3. 联合更新 (先更新插件库，再更新主项目)"
+Write-Host "4. 同步 Arduino Core STM32 (从官方拉取最新)"
 Write-Host "Q. 退出"
 Write-Host "=========================================="
 
-$choice = Read-Host "请选择操作 [1-3, Q]"
+$choice = Read-Host "请选择操作 [1-4, Q]"
 
 switch ($choice) {
     "1" { Update-BlocksLib }
@@ -116,6 +155,7 @@ switch ($choice) {
         Start-Sleep -Seconds 1
         Update-MainRepo 
     }
+    "4" { Update-ArduinoCore }
     "Q" { exit }
     Default { Write-Warning "无效选择" }
 }

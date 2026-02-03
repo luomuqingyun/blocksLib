@@ -11,6 +11,7 @@
   "description": "STM32WB55CE - STM32WB series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32wb55ce.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

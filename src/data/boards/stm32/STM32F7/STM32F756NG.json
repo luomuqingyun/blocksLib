@@ -11,6 +11,7 @@
   "description": "STM32F756NG - STM32F7 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f756ng.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": true,
     "usb": true,

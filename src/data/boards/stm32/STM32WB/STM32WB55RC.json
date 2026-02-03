@@ -11,6 +11,7 @@
   "description": "STM32WB55RC - STM32WB series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32wb55rc.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

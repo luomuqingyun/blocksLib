@@ -11,6 +11,7 @@
   "description": "STM32F042K4 - STM32F0 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f042k4.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

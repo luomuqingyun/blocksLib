@@ -11,6 +11,7 @@
   "description": "STM32L162ZE - STM32L1 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32l162ze.html",
   "has_ldscript": false,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,

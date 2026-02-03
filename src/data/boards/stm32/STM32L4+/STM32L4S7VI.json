@@ -11,6 +11,7 @@
   "description": "STM32L4S7VI - STM32L4+ series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32l4s7.html",
   "has_ldscript": true,
+  "tier": "official",
   "capabilities": {
     "can": false,
     "usb": false,
