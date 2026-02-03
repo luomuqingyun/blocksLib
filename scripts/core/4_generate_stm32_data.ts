@@ -172,19 +172,35 @@ function main() {
             // 策略 1: 全名优先级匹配 (包含封装信息)
             const mcuLayouts = Object.keys(layoutCache).filter(k => k.startsWith(mcuKey));
 
-            if (mcuLayouts.length > 0) {
+            // [MODIFIED] 增加布局匹配优先级：优先匹配 LQFP -> QFP -> QFN -> TSSOP -> BGA
+            const getLayoutPriority = (key: string) => {
+                const k = key.toUpperCase();
+                if (k.includes('LQFP')) return 1;
+                if (k.includes('QFP')) return 2;
+                if (k.includes('QFN')) return 3;
+                if (k.includes('TSSOP')) return 4;
+                if (k.includes('BGA')) return 10;
+                return 5;
+            };
+
+            const sortedLayouts = mcuLayouts.sort((a, b) => getLayoutPriority(a) - getLayoutPriority(b));
+
+            if (sortedLayouts.length > 0) {
                 if (pkgFamily) {
-                    const bestMatch = mcuLayouts.find(k => k.includes(pkgFamily));
-                    bestMatchKey = bestMatch || mcuLayouts[0];
+                    const bestMatch = sortedLayouts.find(k => k.includes(pkgFamily));
+                    bestMatchKey = bestMatch || sortedLayouts[0];
                     layout = layoutCache[bestMatchKey];
                 } else {
-                    bestMatchKey = mcuLayouts[0];
+                    bestMatchKey = sortedLayouts[0];
                     layout = layoutCache[bestMatchKey];
                 }
             } else {
                 // 策略 2: 基础型号回退匹配 (去除封装细节)
                 const baseName = mcuKey.length > 10 ? mcuKey.substring(0, mcuKey.length - 2) : mcuKey;
-                const baseLayouts = Object.keys(layoutCache).filter(k => k.startsWith(baseName));
+                const baseLayouts = Object.keys(layoutCache)
+                    .filter(k => k.startsWith(baseName))
+                    .sort((a, b) => getLayoutPriority(a) - getLayoutPriority(b));
+
                 if (baseLayouts.length > 0) {
                     if (pkgFamily) {
                         const bestMatch = baseLayouts.find(k => k.includes(pkgFamily));

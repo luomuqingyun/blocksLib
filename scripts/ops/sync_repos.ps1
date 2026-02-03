@@ -1,4 +1,4 @@
-﻿# 同步仓库脚本 (Sync Repositories Script)
+# 同步仓库脚本 (Sync Repositories Script)
 # 功能: 自动化管理 blocksLib 子仓库与主项目的更新流程
 # 用法: .\scripts\sync_repos.ps1
 

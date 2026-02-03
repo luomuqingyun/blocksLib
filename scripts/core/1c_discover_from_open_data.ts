@@ -173,15 +173,15 @@ async function main() {
             // 例如：Open Data 有 "STM32WBA65CG", Registry 有 "stm32wba65cgux" -> 匹配成功
             const isSupported = Array.from(supportedMcus).some(mcu => mcu.startsWith(normalizedName));
 
-            // [改进] 不再直接跳过不支持的芯片，而是打上 tier: preview 标签
-            // 这样可以让用户看到引脚图，但提示功能可能受限
-            const tier = isSupported ? 'official' : 'preview';
-
+            // [修正] 严格过滤：跳过不支持编译的型号
             if (!isSupported) {
                 unsupportedList.push(name);
                 const series = family || 'Unknown';
                 unsupportedStats[series] = (unsupportedStats[series] || 0) + 1;
+                continue; // 严格过滤，不生成 JSON
             }
+
+            const tier = 'official';
 
             const seriesName = family;
             if (!stm32Data.STM32[seriesName]) {
@@ -191,31 +191,44 @@ async function main() {
             // 1:1 映射：为每个逻辑型号生成一个独立的 Board ID
             // 我们取首个封装包的信息来填充基础元数据（引脚数、封装类型）
             if (chipData.packages && Array.isArray(chipData.packages) && chipData.packages.length > 0) {
-                const firstPkg = chipData.packages[0];
+                // [MODIFIED] 优先级封装选择逻辑
+                // 排序规则：优先选择 LQFP/QFP/QFN/TSSOP (开发者常用封装)，将 BGA/WLCSP/CSP 移后
+                const sortedPackages = [...chipData.packages].sort((a: any, b: any) => {
+                    const getPriority = (pkg: string) => {
+                        const p = pkg.toUpperCase();
+                        if (p.includes('LQFP')) return 1;
+                        if (p.includes('QFP')) return 2;
+                        if (p.includes('QFN')) return 3;
+                        if (p.includes('TSSOP')) return 4;
+                        if (p.includes('BGA')) return 10;
+                        if (p.includes('CSP')) return 11;
+                        return 5;
+                    };
+                    return getPriority(a.package) - getPriority(b.package);
+                });
+
+                const firstPkg = sortedPackages[0];
                 const pkgType = firstPkg.package; // 例如 "LQFP48"
                 const pinCount = firstPkg.pins.length;
 
                 const boardId = `generic_${name.toLowerCase()}`;
 
                 // 避免重复项
-                if (stm32Data.STM32[seriesName].some((b: any) => b.id === boardId)) {
-                    continue;
+                if (!stm32Data.STM32[seriesName].some((b: any) => b.id === boardId)) {
+                    stm32Data.STM32[seriesName].push({
+                        id: boardId,
+                        name: name, // 逻辑型号名称作为显示名称
+                        platform: 'ststm32',
+                        mcu: name,
+                        fcpu: 0,
+                        pinCount: pinCount,
+                        package: pkgType,
+                        specs: getSpecsFromMcuName(name), // 自动推断 Flash/RAM
+                        tier: tier,
+                        capabilities: []
+                    });
+                    addedCount++;
                 }
-
-                stm32Data.STM32[seriesName].push({
-                    id: boardId,
-                    name: name, // 逻辑型号名称作为显示名称
-                    platform: 'ststm32',
-                    mcu: name,
-                    fcpu: 0,
-                    pinCount: pinCount,
-                    package: pkgType,
-                    specs: getSpecsFromMcuName(name), // 自动推断 Flash/RAM
-                    tier: tier,
-                    capabilities: []
-                });
-
-                addedCount++;
             } else {
                 console.warn(`跳过 ${file}: 未找到封装信息。`);
             }
@@ -232,14 +245,14 @@ async function main() {
     // 输出未支持芯片报告
     if (unsupportedList.length > 0) {
         console.log('\n----------------------------------------');
-        console.log(' Unsupported Chips Report (Currently marked as Preview)');
+        console.log(' Unsupported Chips Report (Successfully Filtered Out)');
         console.log('----------------------------------------');
-        console.log(`Total Unsupported: ${unsupportedList.length}`);
+        console.log(`Total Skipped (No Variant): ${unsupportedList.length}`);
         console.log(' Breakdown by Series:');
         Object.keys(unsupportedStats).forEach(s => {
             console.log(`  - ${s}: ${unsupportedStats[s]}`);
         });
-        console.log('\n(这些芯片已被添加为 preview 级别，引脚图可用，但 PIO 编译可能需要额外配置)');
+        console.log('\n(这些芯片因为缺少官方 Arduino Core Variant 支持，已被严格过滤，不会出现在 UI 中)');
         console.log('----------------------------------------\n');
     }
 }
