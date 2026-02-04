@@ -42,6 +42,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // =========================================================
   /** 检查 PlatformIO 是否已安装并可用 */
   checkSystem: () => ipcRenderer.invoke('pio:check'),
+  /** 获取 PIO 支持的变体列表 */
+  getPioSupportedVariants: () => ipcRenderer.invoke('pio:supported-variants'),
 
   // 构建与上传 (Build & Upload)
   buildProject: (code: string, buildConfig: PlatformIOTemplate, projectPath?: string) => ipcRenderer.invoke('build-project', code, buildConfig, projectPath),

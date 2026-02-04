@@ -25,24 +25,51 @@ import { Board } from '../types/board';
 
 // 利用 Vite 的 import.meta.glob 自动扫描目录下的所有 JSON 文件
 // eager: true 表示立即同步加载，以便在页面渲染前数据可用
+// [OPTIMIZATION] STM32 和 Custom 板卡数量巨大，改为 lazy loading (eager: false)
 const standardModules = import.meta.glob('/src/data/boards/standard/**/*.json', { eager: true });
-const stm32Modules = import.meta.glob('/src/data/boards/stm32/**/*.json', { eager: true });
+const stm32Modules = import.meta.glob('/src/data/boards/stm32/**/*.json', { eager: false });
 const customModules = import.meta.glob('/src/data/boards/custom/**/*.json', { eager: true });
+
+
 
 export interface BoardRepository {
     /** 获取标准分类板卡 (按品牌分组) */
     getStandardBoards: () => Record<string, Board[]>;
-    /** 获取 STM32 分类板卡 (按系列分组) */
+
+    /** 
+     * 获取 STM32 分类板卡 (按系列分组) 
+     * 如果尚未加载，返回空对象或部分缓存 
+     */
     getSTM32Boards: () => Record<string, any>;
-    /** 获取系统支持的所有板卡扁平列表 */
+
+    /** 异步加载 STM32 板卡数据 */
+    loadSTM32Boards: () => Promise<Record<string, any>>;
+
+    /** 获取系统支持的所有板卡扁平列表 (仅包含已加载的) */
     getAllBoards: () => Board[];
 }
 
 class BoardRepositoryImpl implements BoardRepository {
     private standardCache: Record<string, Board[]> | null = null;
     private stm32Cache: Record<string, any> | null = null;
+    private loadingPromise: Promise<Record<string, any>> | null = null;
+    private listeners: (() => void)[] = [];
 
     constructor() {
+    }
+
+    /**
+     * 订阅数据加载完成事件
+     */
+    public onDataLoaded(listener: () => void): () => void {
+        this.listeners.push(listener);
+        return () => {
+            this.listeners = this.listeners.filter(l => l !== listener);
+        };
+    }
+
+    private notifyListeners() {
+        this.listeners.forEach(l => l());
     }
 
     /**
@@ -79,17 +106,16 @@ class BoardRepositoryImpl implements BoardRepository {
                 if (!result[catName]) result[catName] = [];
                 const rawBoard = mod.default || mod;
 
-                // Inject family based on category (e.g. Arduino -> arduino, ESP32 -> esp32)
-                // Also ensure 'build' config exists to prevent crashes in FileSystemContext
                 const board = {
                     ...rawBoard,
                     family: category.toLowerCase(),
                     page_url: rawBoard.page_url || `https://www.google.com/search?q=${rawBoard.name ? rawBoard.name.replace(/\s+/g, '+') : rawBoard.id}+${category}+board`,
-                    build: rawBoard.build || {
+                    build: {
                         envName: rawBoard.mcu || `${rawBoard.id}`,
                         platform: rawBoard.platform || 'atmelavr', // Fallback
                         board: rawBoard.id,
-                        framework: 'arduino'
+                        framework: 'arduino',
+                        ...(rawBoard.build || {})
                     }
                 };
 
@@ -97,7 +123,7 @@ class BoardRepositoryImpl implements BoardRepository {
             });
         };
 
-        // 处理内置标准板卡和用户自定义板卡
+        // 处理内置标准板卡 (同步)
         processModules(standardModules, null);
         processModules(customModules, 'custom');
 
@@ -132,60 +158,137 @@ class BoardRepositoryImpl implements BoardRepository {
     }
 
     /**
-     * 获取 STM32 数据并按系列分组
+     * 获取 STM32 数据 (同步返回缓存)
      */
     getSTM32Boards() {
-        if (this.stm32Cache) return this.stm32Cache;
-
-        const result: any = { STM32: {} };
-        const stmRoot = result.STM32;
-
-        Object.entries(stm32Modules).forEach(([path, mod]: [string, any]) => {
-            // 路径结构: /src/data/boards/stm32/[Series]/[mcu].json
-            const parts = path.split('/');
-            const series = parts[5]; // 例如: STM32F4
-
-            if (!stmRoot[series]) stmRoot[series] = [];
-            const rawBoard = mod.default || mod;
-
-            // Smart URL generation for ST
-            let pageUrl = rawBoard.page_url;
-            if (!pageUrl) {
-                const mcu = rawBoard.mcu || "";
-                // Use site search to ensure valid results (direct links are flaky)
-                pageUrl = `https://www.st.com/content/st_com/en/search.html#q=${mcu}`;
-            }
-
-            // 为板卡注入系列（Family）信息，并确保 build 配置存在
-            // 注意: 此处不再硬编码 'env:' 前缀，交给 templates.ts 的 sanitizeEnvName 统一处理
-            const board = {
-                ...rawBoard,
-                family: 'stm32',
-                page_url: pageUrl,
-                build: rawBoard.build || {
-                    envName: rawBoard.mcu || `${rawBoard.id}`, // 环境名优先使用 MCU 型号，阅读更友好
-                    platform: rawBoard.platform || 'ststm32',
-                    board: rawBoard.id,
-                    framework: 'arduino'
-                }
-            };
-
-            stmRoot[series].push(board);
-        });
-
-        this.stm32Cache = result;
-        return result;
+        if (!this.stm32Cache) {
+            // Trigger lazy load in background
+            this.loadSTM32Boards();
+        }
+        return this.stm32Cache || { STM32: {} };
     }
 
     /**
-     * 获取系统支持的所有板卡数组
+     * 异步加载 STM32 数据
+     */
+    async loadSTM32Boards() {
+        if (this.stm32Cache) return this.stm32Cache;
+        if (this.loadingPromise) return this.loadingPromise;
+
+        this.loadingPromise = (async () => {
+            const result: any = { STM32: {} };
+            const stmRoot = result.STM32;
+
+            // 并行加载所有 STM32 模块
+            const entries = Object.entries(stm32Modules);
+
+            const loadedModules = await Promise.all(
+                entries.map(async ([path, importer]: [string, any]) => {
+                    const mod = await importer();
+                    return { path, mod };
+                })
+            );
+
+            // [FILTER] Fetch supported variants from PIO service
+            let supportedVariants: Set<string> | null = null;
+            try {
+                if (window.electronAPI) {
+                    const variants = await window.electronAPI.getPioSupportedVariants();
+                    if (variants && variants.length > 0) {
+                        // Normalize to uppercase for case-insensitive matching
+                        supportedVariants = new Set(variants.map(v => v.toUpperCase()));
+                        console.log(`[BoardRepository] Filtering boards against ${supportedVariants.size} supported variants`);
+                    }
+                }
+            } catch (e) {
+                console.warn('[BoardRepository] Failed to fetch supported variants, showing all defined boards', e);
+            }
+
+            loadedModules.forEach(({ path, mod }) => {
+                // 路径结构: /src/data/boards/stm32/[Series]/[mcu].json
+                const parts = path.split('/');
+                const series = parts[5]; // 例如: STM32F4
+
+                const rawBoard = mod.default || mod;
+
+                // [FILTER] Strict filtering based on official PIO support
+                // If we have a list of supported variants, and this board's variant is NOT in it, skip it.
+                if (supportedVariants) {
+                    const boardVariant = (rawBoard.variant || '').toUpperCase();
+                    // Also check if the variant might be just the folder name 
+                    // e.g. defined variant "STM32F1xx/Generic_F103C8" vs whitelist "F103C8"
+                    // STM32duino naming can be complex.
+
+                    // Simple check: Is the variant name present in the supported list?
+                    let isSupported = supportedVariants.has(boardVariant);
+
+                    // If not found, try checking if any supported variant ends with this name (handle subdirs)
+                    if (!isSupported) {
+                        // Some boards JSON might just say "F103C8" but PIO has "STM32F1xx/F103C8"
+                        // We checked this in the backend, backend returns both full path and short name.
+                        // So exact match should cover most cases if backend logic matches frontend expectation.
+
+                        // Special case: Generic boards often have variants like "Generic_F103Cx"
+
+                    }
+
+                    if (!isSupported) {
+                        // Keep it but mark as unsupported? Or hide it?
+                        // User request: "回退到原来以PIO官方支持的芯片...作为过滤标准"
+                        // This implies hiding them or putting them in a separate "Unsupported" category.
+                        // For now, let's just skip them to allow a clean "conserved" list.
+                        // console.debug(`[BoardRepository] Skipping unsupported board: ${rawBoard.name} (Variant: ${rawBoard.variant})`);
+                        return;
+                    }
+                }
+
+                if (!stmRoot[series]) stmRoot[series] = [];
+
+                // Smart URL generation for ST
+                let pageUrl = rawBoard.page_url;
+                if (!pageUrl) {
+                    const mcu = rawBoard.mcu || "";
+                    pageUrl = `https://www.st.com/content/st_com/en/search.html#q=${mcu}`;
+                }
+
+                const board = {
+                    ...rawBoard,
+                    family: 'stm32',
+                    page_url: pageUrl,
+                    build: {
+                        envName: rawBoard.mcu || `${rawBoard.id}`,
+                        platform: rawBoard.platform || 'ststm32',
+                        board: rawBoard.id,
+                        framework: 'arduino',
+                        ...(rawBoard.build || {})
+                    }
+                };
+
+                stmRoot[series].push(board);
+            });
+
+            this.stm32Cache = result;
+            this.loadingPromise = null;
+
+            // [OPTIMIZED] 使用发布者/订阅者模式通知，解耦注册表依赖
+            this.notifyListeners();
+
+            return result;
+        })();
+
+        return this.loadingPromise;
+    }
+
+    /**
+     * 获取系统支持的所有板卡数组 (仅返回已加载的)
      */
     getAllBoards() {
         const std = Object.values(this.getStandardBoards()).flat();
-        const stm = Object.values(this.getSTM32Boards().STM32).flat();
+        const stm = this.stm32Cache ? Object.values(this.stm32Cache.STM32).flat() : [];
         return [...std, ...stm] as Board[];
     }
 }
 
 // 导出单例，确保全局共用同一份缓存
 export const boardRepository = new BoardRepositoryImpl();
+

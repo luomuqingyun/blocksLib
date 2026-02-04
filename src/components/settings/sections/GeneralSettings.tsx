@@ -80,7 +80,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 <p className="text-xs text-slate-500">{t('settings.workDirDesc')}</p>
             </div>
 
-            {/* 项目历史记录限制 */}
+            {/* 历史记录保留数量 */}
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-300">
                     {t('settings.projectHistoryLimit')}

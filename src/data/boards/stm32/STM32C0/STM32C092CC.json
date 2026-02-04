@@ -3,14 +3,17 @@
   "name": "STM32C092CC",
   "platform": "ststm32",
   "mcu": "STM32C092CC",
-  "variant": "C092C(B-C)(T-U)",
+  "variant": "C092CBU_C092CC(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "256k Flash / 6k RAM",
   "description": "STM32C092CC - STM32C0 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32c092cc.html",
-  "has_ldscript": true,
+  "has_ldscript": false,
   "tier": "official",
   "capabilities": {
     "can": true,

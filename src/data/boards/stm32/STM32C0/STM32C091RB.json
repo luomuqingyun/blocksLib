@@ -5,6 +5,9 @@
   "mcu": "STM32C091RB",
   "variant": "C091RBT_C091RC(I-T)",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "128k Flash / 6k RAM",

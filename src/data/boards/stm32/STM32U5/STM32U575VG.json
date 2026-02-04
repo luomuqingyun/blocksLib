@@ -5,6 +5,9 @@
   "mcu": "STM32U575VG",
   "variant": "U575V(G-I)TxQ_U585VITxQ",
   "pinCount": 100,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP100",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

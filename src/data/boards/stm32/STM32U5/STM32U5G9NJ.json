@@ -5,6 +5,9 @@
   "mcu": "STM32U5G9NJ",
   "variant": "U5G9NJHxQ",
   "pinCount": 216,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "TFBGA216",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

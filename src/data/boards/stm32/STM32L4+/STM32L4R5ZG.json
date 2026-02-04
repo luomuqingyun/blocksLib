@@ -5,6 +5,9 @@
   "mcu": "STM32L4R5ZG",
   "variant": "L4R5Z(G-I)T_L4R7ZIT_L4S5ZIT_L4S7ZIT",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

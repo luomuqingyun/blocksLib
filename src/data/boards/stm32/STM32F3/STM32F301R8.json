@@ -5,6 +5,9 @@
   "mcu": "STM32F301R8",
   "variant": "F301R(6-8)T",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "64k Flash / 8k RAM",

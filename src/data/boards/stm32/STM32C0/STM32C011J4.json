@@ -5,6 +5,9 @@
   "mcu": "STM32C011J4",
   "variant": "C011J(4-6)M",
   "pinCount": 8,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "SO8N",
   "fcpu": 0,
   "specs": "16k Flash / 6k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32WBA55UG",
   "variant": "WBA55U(E-G)I",
   "pinCount": 59,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "UFBGA59",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

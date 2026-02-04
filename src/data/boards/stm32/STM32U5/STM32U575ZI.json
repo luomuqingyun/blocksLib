@@ -5,6 +5,9 @@
   "mcu": "STM32U575ZI",
   "variant": "U575Z(G-I)TxQ_U585ZITxQ",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

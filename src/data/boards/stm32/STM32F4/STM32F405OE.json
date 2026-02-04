@@ -5,6 +5,9 @@
   "mcu": "STM32F405OE",
   "variant": "F405O(E-G)Y_F415OGY",
   "pinCount": 90,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "WLCSP90",
   "fcpu": 0,
   "specs": "512k Flash / 128k RAM",

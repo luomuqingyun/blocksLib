@@ -5,6 +5,9 @@
   "mcu": "STM32H563MI",
   "variant": "H563MIYxQ_H573MIYxQ",
   "pinCount": 80,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "WLCSP80",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

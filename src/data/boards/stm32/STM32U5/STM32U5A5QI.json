@@ -5,6 +5,9 @@
   "mcu": "STM32U5A5QI",
   "variant": "U595Q(I-J)IxQ_U5A5Q(I-J)IxQ",
   "pinCount": 132,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "UFBGA132",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

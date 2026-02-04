@@ -5,6 +5,9 @@
   "mcu": "STM32C091GB",
   "variant": "C091G(B-C)U",
   "pinCount": 28,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "UFQFPN28",
   "fcpu": 0,
   "specs": "128k Flash / 6k RAM",

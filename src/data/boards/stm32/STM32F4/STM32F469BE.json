@@ -5,6 +5,9 @@
   "mcu": "STM32F469BE",
   "variant": "F469B(E-G-I)T_F469N(E-G-I)H_F479B(G-I)T_F479N(G-I)H",
   "pinCount": 208,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP208",
   "fcpu": 0,
   "specs": "512k Flash / 128k RAM",

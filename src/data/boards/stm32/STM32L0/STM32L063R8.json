@@ -5,6 +5,9 @@
   "mcu": "STM32L063R8",
   "variant": "L052R(6-8)T_L053R(6-8)T_L063R8T",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "64k Flash / 20k RAM",

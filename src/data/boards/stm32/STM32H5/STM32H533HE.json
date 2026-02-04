@@ -5,6 +5,9 @@
   "mcu": "STM32H533HE",
   "variant": "H523HEY_H533HEY",
   "pinCount": 39,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "WLCSP39",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32F373CC",
   "variant": "F373C(8-B-C)T",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

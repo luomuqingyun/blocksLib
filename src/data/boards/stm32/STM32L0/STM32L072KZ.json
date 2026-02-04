@@ -5,6 +5,9 @@
   "mcu": "STM32L072KZ",
   "variant": "L072K(B-Z)T_L082K(B-Z)T",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP32",
   "fcpu": 0,
   "specs": "192k Flash / 20k RAM",

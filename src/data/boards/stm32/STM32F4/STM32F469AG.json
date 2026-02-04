@@ -5,6 +5,9 @@
   "mcu": "STM32F469AG",
   "variant": "F469A(E-G-I)(H-Y)_F479A(G-I)(H-Y)",
   "pinCount": 169,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFBGA169",
   "fcpu": 0,
   "specs": "1024k Flash / 192k RAM",

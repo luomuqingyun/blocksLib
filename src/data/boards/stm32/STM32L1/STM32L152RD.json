@@ -5,6 +5,9 @@
   "mcu": "STM32L152RD",
   "variant": "L151RD(T-Y)_L152RD(T-Y)_L162RD(T-Y)",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "384k Flash / 48k RAM",

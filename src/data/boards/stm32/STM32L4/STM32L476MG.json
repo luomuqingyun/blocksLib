@@ -5,6 +5,9 @@
   "mcu": "STM32L476MG",
   "variant": "L476M(E-G)Y",
   "pinCount": 81,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "WLCSP81",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

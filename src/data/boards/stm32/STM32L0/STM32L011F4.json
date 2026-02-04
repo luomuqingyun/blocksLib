@@ -5,7 +5,10 @@
   "mcu": "STM32L011F4",
   "variant": "L010F4P_L011F(3-4)P_L021F4P",
   "pinCount": 20,
-  "package": "TSSOP20",
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
+  "package": "UFQFPN20",
   "fcpu": 0,
   "specs": "16k Flash / 8k RAM",
   "description": "STM32L011F4 - STM32L0 series board",
@@ -154,33 +157,28 @@
   },
   "pinMap": [
     {
-      "name": "PB9",
+      "name": "PC14",
       "position": "1",
       "functions": []
     },
     {
-      "name": "PC14",
+      "name": "PC15",
       "position": "2",
       "functions": []
     },
     {
-      "name": "PC15",
+      "name": "NRST",
       "position": "3",
       "functions": []
     },
     {
-      "name": "NRST",
+      "name": "VDDA",
       "position": "4",
       "functions": []
     },
     {
-      "name": "VDDA",
-      "position": "5",
-      "functions": []
-    },
-    {
       "name": "PA0",
-      "position": "6",
+      "position": "5",
       "functions": [
         "ADC1_IN",
         "LPUART1_RX",
@@ -191,7 +189,7 @@
     },
     {
       "name": "PA1",
-      "position": "7",
+      "position": "6",
       "functions": [
         "ADC1_IN",
         "LPUART1_TX",
@@ -200,30 +198,8 @@
       ]
     },
     {
-      "name": "PA2",
-      "position": "8",
-      "functions": [
-        "ADC1_IN",
-        "LPUART1_TX",
-        "TIM21_CH1",
-        "TIM2_CH3",
-        "USART2_TX"
-      ]
-    },
-    {
-      "name": "PA3",
-      "position": "9",
-      "functions": [
-        "ADC1_IN",
-        "LPUART1_RX",
-        "TIM21_CH2",
-        "TIM2_CH4",
-        "USART2_RX"
-      ]
-    },
-    {
       "name": "PA4",
-      "position": "10",
+      "position": "7",
       "functions": [
         "ADC1_IN",
         "I2C1_SCL",
@@ -233,7 +209,7 @@
     },
     {
       "name": "PA5",
-      "position": "11",
+      "position": "8",
       "functions": [
         "ADC1_IN",
         "SPI1_SCLK",
@@ -242,7 +218,7 @@
     },
     {
       "name": "PA6",
-      "position": "12",
+      "position": "9",
       "functions": [
         "ADC1_IN",
         "LPUART1_CTS",
@@ -251,7 +227,7 @@
     },
     {
       "name": "PA7",
-      "position": "13",
+      "position": "10",
       "functions": [
         "ADC1_IN",
         "SPI1_MOSI",
@@ -260,7 +236,7 @@
     },
     {
       "name": "PB1",
-      "position": "14",
+      "position": "11",
       "functions": [
         "ADC1_IN",
         "LPUART1_RTS",
@@ -270,17 +246,17 @@
     },
     {
       "name": "VSS",
-      "position": "15",
+      "position": "12",
       "functions": []
     },
     {
       "name": "VDD",
-      "position": "16",
+      "position": "13",
       "functions": []
     },
     {
       "name": "PA9",
-      "position": "17",
+      "position": "14",
       "functions": [
         "I2C1_SCL",
         "TIM21_CH2",
@@ -289,7 +265,7 @@
     },
     {
       "name": "PA10",
-      "position": "18",
+      "position": "15",
       "functions": [
         "I2C1_SDA",
         "TIM21_CH1",
@@ -299,7 +275,7 @@
     },
     {
       "name": "PA13",
-      "position": "19",
+      "position": "16",
       "functions": [
         "I2C1_SDA",
         "LPUART1_RX",
@@ -308,12 +284,27 @@
     },
     {
       "name": "PA14",
-      "position": "20",
+      "position": "17",
       "functions": [
         "LPUART1_TX",
         "SPI1_MISO",
         "USART2_TX"
       ]
+    },
+    {
+      "name": "PB6",
+      "position": "18",
+      "functions": []
+    },
+    {
+      "name": "PB7",
+      "position": "19",
+      "functions": []
+    },
+    {
+      "name": "PB9",
+      "position": "20",
+      "functions": []
     }
   ],
   "pin_options": {

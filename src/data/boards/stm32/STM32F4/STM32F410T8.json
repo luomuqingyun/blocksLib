@@ -5,6 +5,9 @@
   "mcu": "STM32F410T8",
   "variant": "F410T(8-B)Y",
   "pinCount": 36,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "WLCSP36",
   "fcpu": 0,
   "specs": "64k Flash / 128k RAM",

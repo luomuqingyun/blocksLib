@@ -5,6 +5,9 @@
   "mcu": "STM32G474QC",
   "variant": "G473Q(B-C)T_G473QETx(Z)_G474Q(B-C-E)T_G483QET_G484QET",
   "pinCount": 128,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP128",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

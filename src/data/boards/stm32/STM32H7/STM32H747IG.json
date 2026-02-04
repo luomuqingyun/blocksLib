@@ -5,6 +5,9 @@
   "mcu": "STM32H747IG",
   "variant": "H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT",
   "pinCount": 176,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP176",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

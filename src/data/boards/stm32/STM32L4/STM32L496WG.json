@@ -5,6 +5,9 @@
   "mcu": "STM32L496WG",
   "variant": "L496WGYxP",
   "pinCount": 115,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "WLCSP115",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

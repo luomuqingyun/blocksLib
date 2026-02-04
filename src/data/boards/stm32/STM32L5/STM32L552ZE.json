@@ -5,6 +5,9 @@
   "mcu": "STM32L552ZE",
   "variant": "L552Z(C-E)TxQ_L562ZETxQ",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

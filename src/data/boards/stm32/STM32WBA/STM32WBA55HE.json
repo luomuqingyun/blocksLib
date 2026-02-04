@@ -5,6 +5,9 @@
   "mcu": "STM32WBA55HE",
   "variant": "WBA55H(E-G)F",
   "pinCount": 41,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "WLCSP41",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

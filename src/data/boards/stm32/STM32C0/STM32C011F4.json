@@ -5,7 +5,10 @@
   "mcu": "STM32C011F4",
   "variant": "C011D6Y_C011F(4-6)(P-U)",
   "pinCount": 20,
-  "package": "TSSOP20",
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
+  "package": "UFQFPN20",
   "fcpu": 0,
   "specs": "16k Flash / 6k RAM",
   "description": "STM32C011F4 - STM32C0 series board",
@@ -232,58 +235,32 @@
   },
   "pinMap": [
     {
-      "name": "PB7",
-      "position": "1",
-      "functions": [
-        "I2C1_SCL",
-        "I2C1_SDA",
-        "TIM16_CH1",
-        "TIM17_CH1N",
-        "TIM1_CH4",
-        "TIM3_CH1",
-        "TIM3_CH4",
-        "USART1_RX",
-        "USART2_CTS"
-      ]
-    },
-    {
-      "name": "PC14",
-      "position": "2",
-      "functions": [
-        "I2C1_SDA",
-        "TIM17_CH1",
-        "TIM3_CH2",
-        "USART1_TX",
-        "USART2_RTS"
-      ]
-    },
-    {
       "name": "PC15",
-      "position": "3",
+      "position": "1",
       "functions": [
         "TIM3_CH3"
       ]
     },
     {
       "name": "VDD/VDDA",
-      "position": "4",
+      "position": "2",
       "functions": []
     },
     {
       "name": "VSS/VSSA",
-      "position": "5",
+      "position": "3",
       "functions": []
     },
     {
       "name": "PF2",
-      "position": "6",
+      "position": "4",
       "functions": [
         "TIM1_CH4"
       ]
     },
     {
       "name": "PA0",
-      "position": "7",
+      "position": "5",
       "functions": [
         "ADC1_IN",
         "TIM16_CH1",
@@ -294,7 +271,7 @@
     },
     {
       "name": "PA1",
-      "position": "8",
+      "position": "6",
       "functions": [
         "ADC1_IN",
         "SPI1_SCLK",
@@ -306,7 +283,7 @@
     },
     {
       "name": "PA2",
-      "position": "9",
+      "position": "7",
       "functions": [
         "ADC1_IN",
         "SPI1_MOSI",
@@ -317,7 +294,7 @@
     },
     {
       "name": "PA3",
-      "position": "10",
+      "position": "8",
       "functions": [
         "ADC1_IN",
         "TIM1_CH1N",
@@ -327,7 +304,7 @@
     },
     {
       "name": "PA4",
-      "position": "11",
+      "position": "9",
       "functions": [
         "ADC1_IN",
         "SPI1_SSEL",
@@ -339,7 +316,7 @@
     },
     {
       "name": "PA5",
-      "position": "12",
+      "position": "10",
       "functions": [
         "ADC1_IN",
         "SPI1_SCLK",
@@ -350,7 +327,7 @@
     },
     {
       "name": "PA6",
-      "position": "13",
+      "position": "11",
       "functions": [
         "ADC1_IN",
         "SPI1_MISO",
@@ -360,7 +337,7 @@
     },
     {
       "name": "PA7",
-      "position": "14",
+      "position": "12",
       "functions": [
         "ADC1_IN",
         "SPI1_MOSI",
@@ -372,7 +349,7 @@
     },
     {
       "name": "PA8",
-      "position": "15",
+      "position": "13",
       "functions": [
         "ADC1_IN",
         "SPI1_SSEL",
@@ -388,7 +365,7 @@
     },
     {
       "name": "PA11",
-      "position": "16",
+      "position": "14",
       "functions": [
         "ADC1_IN",
         "SPI1_MISO",
@@ -398,12 +375,12 @@
     },
     {
       "name": "PA10",
-      "position": "17",
+      "position": "15",
       "functions": []
     },
     {
       "name": "PA13",
-      "position": "18",
+      "position": "16",
       "functions": [
         "ADC1_IN",
         "USART2_RX"
@@ -411,7 +388,7 @@
     },
     {
       "name": "PA14",
-      "position": "19",
+      "position": "17",
       "functions": [
         "ADC1_IN",
         "SPI1_SSEL",
@@ -423,7 +400,7 @@
     },
     {
       "name": "PB6",
-      "position": "20",
+      "position": "18",
       "functions": [
         "I2C1_SCL",
         "SPI1_MISO",
@@ -438,6 +415,32 @@
         "USART1_CTS",
         "USART1_RTS",
         "USART1_TX"
+      ]
+    },
+    {
+      "name": "PB7",
+      "position": "19",
+      "functions": [
+        "I2C1_SCL",
+        "I2C1_SDA",
+        "TIM16_CH1",
+        "TIM17_CH1N",
+        "TIM1_CH4",
+        "TIM3_CH1",
+        "TIM3_CH4",
+        "USART1_RX",
+        "USART2_CTS"
+      ]
+    },
+    {
+      "name": "PC14",
+      "position": "20",
+      "functions": [
+        "I2C1_SDA",
+        "TIM17_CH1",
+        "TIM3_CH2",
+        "USART1_TX",
+        "USART2_RTS"
       ]
     }
   ],

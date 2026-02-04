@@ -5,6 +5,9 @@
   "mcu": "STM32L151UC",
   "variant": "L151RC(T-Y)x(A)_L151UCY_L152RCTx(A)_L152UCY_L162RCTx(A)",
   "pinCount": 63,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "WLCSP63",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

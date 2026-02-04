@@ -5,6 +5,9 @@
   "mcu": "STM32G070CB",
   "variant": "G070CBT",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "128k Flash / 32k RAM",

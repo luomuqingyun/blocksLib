@@ -5,6 +5,9 @@
   "mcu": "STM32L052T8",
   "variant": "L052T6Y_L052T8(F-Y)",
   "pinCount": 36,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP36",
   "fcpu": 0,
   "specs": "64k Flash / 20k RAM",

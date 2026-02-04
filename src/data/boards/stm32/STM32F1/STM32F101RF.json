@@ -5,6 +5,9 @@
   "mcu": "STM32F101RF",
   "variant": "F101R(F-G)T",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "768k Flash / 96k RAM",

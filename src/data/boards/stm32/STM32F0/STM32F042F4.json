@@ -5,6 +5,9 @@
   "mcu": "STM32F042F4",
   "variant": "F042F(4-6)P",
   "pinCount": 20,
+  "build": {
+    "cpu": "cortex-m0"
+  },
   "package": "TSSOP20",
   "fcpu": 0,
   "specs": "16k Flash / 4k RAM",

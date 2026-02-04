@@ -5,6 +5,9 @@
   "mcu": "STM32F303R8",
   "variant": "F303R(6-8)T_F334R(6-8)T",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "64k Flash / 8k RAM",

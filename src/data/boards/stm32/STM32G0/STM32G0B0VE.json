@@ -5,6 +5,9 @@
   "mcu": "STM32G0B0VE",
   "variant": "G0B0VET",
   "pinCount": 100,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP100",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

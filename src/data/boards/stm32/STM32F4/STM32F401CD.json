@@ -5,6 +5,9 @@
   "mcu": "STM32F401CD",
   "variant": "F401CC(F-U-Y)_F401C(B-D-E)(U-Y)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN48",
   "fcpu": 0,
   "specs": "384k Flash / 64k RAM",

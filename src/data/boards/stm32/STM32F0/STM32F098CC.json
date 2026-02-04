@@ -5,6 +5,9 @@
   "mcu": "STM32F098CC",
   "variant": "F098CC(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m0"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "256k Flash / 8k RAM",

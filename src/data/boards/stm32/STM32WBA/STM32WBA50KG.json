@@ -5,6 +5,9 @@
   "mcu": "STM32WBA50KG",
   "variant": "WBA50KGU",
   "pinCount": 33,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "UFQFPN32",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

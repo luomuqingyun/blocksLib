@@ -5,6 +5,9 @@
   "mcu": "STM32U585QI",
   "variant": "U575Q(G-I)IxQ_U585QIIxQ",
   "pinCount": 132,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "UFBGA132",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

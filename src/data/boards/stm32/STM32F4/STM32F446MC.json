@@ -5,6 +5,9 @@
   "mcu": "STM32F446MC",
   "variant": "F446M(C-E)Y",
   "pinCount": 81,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "WLCSP81",
   "fcpu": 0,
   "specs": "256k Flash / 128k RAM",

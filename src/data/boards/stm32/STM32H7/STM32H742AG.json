@@ -5,6 +5,9 @@
   "mcu": "STM32H742AG",
   "variant": "H742A(G-I)I_H743A(G-I)I_H753AII",
   "pinCount": 169,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "UFBGA169",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

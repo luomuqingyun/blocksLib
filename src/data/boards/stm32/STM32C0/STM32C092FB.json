@@ -5,6 +5,9 @@
   "mcu": "STM32C092FB",
   "variant": "C092ECY_C092F(B-C)P",
   "pinCount": 20,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "TSSOP20",
   "fcpu": 0,
   "specs": "128k Flash / 6k RAM",

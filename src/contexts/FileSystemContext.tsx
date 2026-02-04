@@ -89,6 +89,8 @@ interface FileSystemContextType {
     handleSaveConfirm: () => Promise<void>;
     handleDontSave: () => void;
     handleCancelPrompt: () => void;
+    isLoading: boolean;
+    setIsLoading: (loading: boolean) => void;
 }
 
 const FileSystemContext = createContext<FileSystemContextType | undefined>(undefined);
@@ -103,6 +105,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [workspaceVersion, setWorkspaceVersion] = useState<number>(0);
     const blocklyRef = useRef<BlocklyWrapperHandle>(null);
     const [pendingXml, setPendingXml] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false); // 初始化加载锁
 
     const { setIsNewProjectOpen, setIsSaveAsOpen } = useUI();
 
@@ -165,6 +168,8 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setIsDirty,
         setCode,
         setPendingXml,
+        isLoading,    // 透传加载锁状态
+        setIsLoading, // 透传加载锁控制
         markWorkspaceDirty,
         setIsNewProjectOpen,
         setIsSaveAsOpen
@@ -179,7 +184,8 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         workspaceVersion,
         code,
         projectMetadata,
-        blocklyRef
+        blocklyRef,
+        isLoading // 自动备份感知加载锁
     });
 
     // 弹窗提示 (Save Prompts)
@@ -200,12 +206,14 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // 4. 其余辅助操作 (Utility Operations)
     const closeProject = useCallback(async () => {
         checkDirtyAndRun(() => {
+            setIsLoading(true); // 关闭时也锁定，防止清理过程触发意外保存
             setCurrentFilePath(null);
             setProjectMetadata(null);
             setCode('');
             if (blocklyRef.current) blocklyRef.current.clear();
             setIsDirty(false);
             setPendingXml(null);
+            setTimeout(() => setIsLoading(false), 500);
         });
     }, [checkDirtyAndRun]);
 
@@ -289,7 +297,9 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         checkDirtyAndRun,        // 检查脏数据并执行操作 (用于安全关闭项目)
         handleSaveConfirm,       // 确认保存的回调
         handleDontSave,          // 不保存的回调
-        handleCancelPrompt       // 取消关闭操作
+        handleCancelPrompt,      // 取消关闭操作
+        isLoading,
+        setIsLoading
     };
 
     return (

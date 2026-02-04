@@ -5,6 +5,9 @@
   "mcu": "STM32F732RE",
   "variant": "F722R(C-E)T_F730R8T_F732RET",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

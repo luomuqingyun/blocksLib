@@ -5,6 +5,9 @@
   "mcu": "STM32H747XG",
   "variant": "H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH",
   "pinCount": 265,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "TFBGA240",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

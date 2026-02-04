@@ -5,6 +5,9 @@
   "mcu": "STM32L162ZC",
   "variant": "L151ZCT_L152ZCT_L162ZCT",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

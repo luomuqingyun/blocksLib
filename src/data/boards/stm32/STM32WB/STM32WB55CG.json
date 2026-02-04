@@ -5,6 +5,9 @@
   "mcu": "STM32WB55CG",
   "variant": "WB35C(C-E)UxA_WB55C(C-E-G)U",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN48",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

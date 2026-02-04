@@ -5,6 +5,9 @@
   "mcu": "STM32F756NG",
   "variant": "F746B(E-G)T_F746N(E-G)H_F750N8H_F756BGT_F756NGH",
   "pinCount": 216,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "TFBGA216",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

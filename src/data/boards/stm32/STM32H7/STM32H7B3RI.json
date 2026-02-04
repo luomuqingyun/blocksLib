@@ -5,6 +5,9 @@
   "mcu": "STM32H7B3RI",
   "variant": "H7A3R(G-I)T_H7B0RBT_H7B3RIT",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

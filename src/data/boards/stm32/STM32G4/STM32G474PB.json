@@ -5,6 +5,9 @@
   "mcu": "STM32G474PB",
   "variant": "G473P(B-C-E)I_G474P(B-C-E)I_G483PEI_G484PEI",
   "pinCount": 121,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFBGA121",
   "fcpu": 0,
   "specs": "128k Flash / 16k RAM",

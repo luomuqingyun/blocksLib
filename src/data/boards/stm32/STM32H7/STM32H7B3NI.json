@@ -5,6 +5,9 @@
   "mcu": "STM32H7B3NI",
   "variant": "H7A3N(G-I)H_H7B3NIH",
   "pinCount": 216,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "TFBGA216",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

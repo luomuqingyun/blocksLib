@@ -62,15 +62,41 @@ class BoardRegistryService {
     // 注册的工具箱策略提供者
     private strategies: ToolboxCategoryProvider[] = [];
 
+    private isInitialized = false;
+
     constructor() {
-        // 初始化预置策略
+        // 初始化预设策略
         this.strategies.push(new IoTToolboxProvider());
         this.strategies.push(new RTOSToolboxProvider());
         this.strategies.push(new STM32ToolboxProvider());
 
-        // 初始化时从仓库加载预置板卡
-        this.initializeBoards();
+        // [OPTIMIZATION] 订阅数据仓库更新，解耦循环依赖
+        boardRepository.onDataLoaded(() => {
+            console.log('[BoardRegistry] Data repository updated, refreshing boards...');
+            this.initializeBoards();
+        });
+
+        // [OPTIMIZATION] 不再在构造函数中同步加载板卡，延迟到第一次请求时
+        // this.initializeBoards();
         this.toolboxCache.clear();
+    }
+
+    /**
+     * 确保注册表已初始化
+     */
+    public ensureInitialized() {
+        if (!this.isInitialized) {
+            this.isInitialized = true; // Set early to prevent potential recursion from inner calls
+            console.time('[BoardRegistry] ensureInitialized');
+            this.initializeBoards();
+            console.timeEnd('[BoardRegistry] ensureInitialized');
+
+            // [FIX] 触发 STM32 模块的后台加载
+            // 这里不再需要 .then() 里的回调，因为我们已经在 constructor 里订阅了 onDataLoaded
+            boardRepository.loadSTM32Boards().catch(e => {
+                console.error('[BoardRegistry] Background STM32 load failed:', e);
+            });
+        }
     }
 
     /**
@@ -78,6 +104,7 @@ class BoardRegistryService {
      * @param id 开发板 ID
      */
     public setCurrentBoard(id: string) {
+        this.ensureInitialized();
         this.currentBoardId = id;
     }
 
@@ -85,6 +112,7 @@ class BoardRegistryService {
      * 获取当前选中的开发板配置
      */
     public getCurrentBoard(): BoardConfig | undefined {
+        this.ensureInitialized();
         if (!this.currentBoardId) return undefined;
         return this.get(this.currentBoardId);
     }
@@ -93,13 +121,22 @@ class BoardRegistryService {
      * 初始化板卡列表
      * 从统一仓库加载已发现的板卡和家族注入信息
      */
-    private initializeBoards() {
+    public initializeBoards() {
+        this.boards.clear();
+
+        // 批量加载标准/自定义板卡 (非 STM32 此时为同步加载)
         const allBoards = boardRepository.getAllBoards();
         console.log(`[BoardRegistry] Loaded ${allBoards.length} boards from repository.`);
 
         allBoards.forEach(board => {
-            this.register(board as unknown as BoardConfig);
+            // 直接操作 Map 避免触发 register 中的 notify
+            this.boards.set(board.id, board as unknown as BoardConfig);
         });
+
+        // 统一清理缓存
+        this.toolboxCache.clear();
+        // 统一通知监听器
+        this.notifyListeners();
     }
 
     /**
@@ -118,6 +155,7 @@ class BoardRegistryService {
      * 根据 ID 获取开发板配置
      */
     public get(id: string): BoardConfig | undefined {
+        this.ensureInitialized();
         return this.boards.get(id);
     }
 
@@ -125,6 +163,7 @@ class BoardRegistryService {
      * 获取所有已注册的开发板配置
      */
     public getAll(): BoardConfig[] {
+        this.ensureInitialized();
         return Array.from(this.boards.values());
     }
 
@@ -136,6 +175,7 @@ class BoardRegistryService {
      * @remarks 使用缓存机制提升性能，避免重复生成
      */
     public getToolboxConfig(boardId: string) {
+        this.ensureInitialized();
         // 输入验证
         if (!boardId || typeof boardId !== 'string') {
             throw new Error('[BoardRegistry] Invalid boardId provided');
@@ -306,6 +346,7 @@ class BoardRegistryService {
      * @param extId 扩展 ID
      */
     public unregisterExtension(extId: string) {
+        this.ensureInitialized();
         let changed = false;
 
         // 1. 移除由该扩展贡献的板卡

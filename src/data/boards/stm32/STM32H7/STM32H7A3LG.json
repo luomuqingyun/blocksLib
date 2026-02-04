@@ -5,6 +5,9 @@
   "mcu": "STM32H7A3LG",
   "variant": "H7A3L(G-I)HxQ_H7B3LIHxQ",
   "pinCount": 225,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "TFBGA225",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

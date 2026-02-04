@@ -3,8 +3,11 @@
   "name": "STM32C092RB",
   "platform": "ststm32",
   "mcu": "STM32C092RB",
-  "variant": "C092RBT_C092RC(I-T)",
+  "variant": "C092CBT_C092RBT_C092RC(I-T)",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "128k Flash / 6k RAM",

@@ -5,12 +5,15 @@
   "mcu": "STM32H745ZG",
   "variant": "H745Z(G-I)T_H755ZIT",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",
   "description": "STM32H745ZG - STM32H7 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32h745zg.html",
-  "has_ldscript": true,
+  "has_ldscript": false,
   "tier": "official",
   "capabilities": {
     "can": false,

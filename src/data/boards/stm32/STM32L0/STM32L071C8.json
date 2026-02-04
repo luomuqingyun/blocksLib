@@ -5,6 +5,9 @@
   "mcu": "STM32L071C8",
   "variant": "L071C(8-B-Z)(T-U)_L081CBT_L081CZ(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "64k Flash / 20k RAM",

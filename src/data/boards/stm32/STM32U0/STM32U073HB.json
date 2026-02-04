@@ -5,6 +5,9 @@
   "mcu": "STM32U073HB",
   "variant": "U073H(8-B-C)Y_U083HCY",
   "pinCount": 42,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP42",
   "fcpu": 0,
   "specs": "128k Flash / 16k RAM",

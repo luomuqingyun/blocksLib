@@ -5,6 +5,9 @@
   "mcu": "STM32F030C8",
   "variant": "F030C8T",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m0"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "64k Flash / 8k RAM",

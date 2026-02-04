@@ -5,6 +5,9 @@
   "mcu": "STM32F100CB",
   "variant": "F100C(8-B)T",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "128k Flash / 20k RAM",

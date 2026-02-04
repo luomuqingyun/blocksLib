@@ -5,6 +5,9 @@
   "mcu": "STM32G071R6",
   "variant": "G071R(6-8)T_G071RB(I-T)_G081RB(I-T)",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "32k Flash / 8k RAM",

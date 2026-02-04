@@ -5,6 +5,9 @@
   "mcu": "STM32F429VG",
   "variant": "F427V(G-I)T_F429V(E-G-I)T_F437V(G-I)T_F439V(G-I)T",
   "pinCount": 100,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP100",
   "fcpu": 0,
   "specs": "1024k Flash / 192k RAM",

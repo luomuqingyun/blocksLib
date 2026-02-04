@@ -5,6 +5,9 @@
   "mcu": "STM32L4A6QG",
   "variant": "L496QEI_L496QGIx(S)_L4A6QGI",
   "pinCount": 132,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFBGA132",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

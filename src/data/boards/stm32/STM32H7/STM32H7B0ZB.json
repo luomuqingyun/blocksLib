@@ -5,6 +5,9 @@
   "mcu": "STM32H7B0ZB",
   "variant": "H7A3Z(G-I)T_H7B0ZBT_H7B3ZIT",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

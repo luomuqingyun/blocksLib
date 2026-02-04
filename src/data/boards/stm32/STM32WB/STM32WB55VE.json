@@ -5,6 +5,9 @@
   "mcu": "STM32WB55VE",
   "variant": "WB55V(C-E-G)(Q-Y)_WB55VYY",
   "pinCount": 129,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFBGA129",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

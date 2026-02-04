@@ -5,6 +5,9 @@
   "mcu": "STM32F730Z8",
   "variant": "F723Z(C-E)(I-T)_F730Z8T_F733ZE(I-T)",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "64k Flash / 8k RAM",

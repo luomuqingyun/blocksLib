@@ -5,6 +5,9 @@
   "mcu": "STM32F072RB",
   "variant": "F072R8T_F072RB(H-I-T)",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m0"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "128k Flash / 8k RAM",

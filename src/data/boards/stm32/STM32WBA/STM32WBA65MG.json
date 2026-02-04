@@ -5,6 +5,9 @@
   "mcu": "STM32WBA65MG",
   "variant": "WBA62M(G-I)F_WBA65M(G-I)F",
   "pinCount": 88,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "WLCSP88",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

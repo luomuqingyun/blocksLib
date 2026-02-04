@@ -5,6 +5,9 @@
   "mcu": "STM32U599BJ",
   "variant": "U599BJYxQ_U5A9BJYxQ",
   "pinCount": 208,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "WLCSP208",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

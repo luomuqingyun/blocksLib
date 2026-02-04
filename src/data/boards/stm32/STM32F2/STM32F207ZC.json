@@ -5,6 +5,9 @@
   "mcu": "STM32F207ZC",
   "variant": "F207Z(C-E-F-G)T_F217Z(E-G)T",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

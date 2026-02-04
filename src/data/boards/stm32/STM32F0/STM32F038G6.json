@@ -5,6 +5,9 @@
   "mcu": "STM32F038G6",
   "variant": "F038G6U",
   "pinCount": 28,
+  "build": {
+    "cpu": "cortex-m0"
+  },
   "package": "UFQFPN28",
   "fcpu": 0,
   "specs": "32k Flash / 4k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32U031F8",
   "variant": "U031F(4-6-8)P",
   "pinCount": 20,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "TSSOP20",
   "fcpu": 0,
   "specs": "64k Flash / 8k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32WBA65PI",
   "variant": "WBA62P(G-I)I_WBA65P(G-I)I",
   "pinCount": 121,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "UFBGA121",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

@@ -5,6 +5,9 @@
   "mcu": "STM32G031Y8",
   "variant": "G031F(4-6-8)P_G031Y8Y_G041F(6-8)P_G041Y8Y",
   "pinCount": 18,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP18",
   "fcpu": 0,
   "specs": "64k Flash / 16k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32H573RI",
   "variant": "H563R(G-I)T_H573RIT",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

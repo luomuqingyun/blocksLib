@@ -5,6 +5,9 @@
   "mcu": "STM32WB10CC",
   "variant": "WB10CCU",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN48",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

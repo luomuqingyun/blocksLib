@@ -5,12 +5,15 @@
   "mcu": "STM32C051C8",
   "variant": "C051C(6-8)(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "64k Flash / 6k RAM",
   "description": "STM32C051C8 - STM32C0 series board",
   "page_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32c051c8.html",
-  "has_ldscript": true,
+  "has_ldscript": false,
   "tier": "official",
   "capabilities": {
     "can": false,

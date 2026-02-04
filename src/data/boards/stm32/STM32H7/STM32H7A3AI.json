@@ -5,6 +5,9 @@
   "mcu": "STM32H7A3AI",
   "variant": "H7A3A(G-I)IxQ_H7B0ABIxQ_H7B3AIIxQ",
   "pinCount": 169,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "UFBGA169",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

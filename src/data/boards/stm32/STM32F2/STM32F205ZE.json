@@ -5,6 +5,9 @@
   "mcu": "STM32F205ZE",
   "variant": "F205Z(C-E-F-G)T_F215Z(E-G)T",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

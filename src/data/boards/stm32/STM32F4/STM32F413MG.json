@@ -5,6 +5,9 @@
   "mcu": "STM32F413MG",
   "variant": "F413M(G-H)Y_F423MHY",
   "pinCount": 81,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "WLCSP81",
   "fcpu": 0,
   "specs": "1024k Flash / 192k RAM",

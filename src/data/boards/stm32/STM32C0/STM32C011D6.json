@@ -5,6 +5,9 @@
   "mcu": "STM32C011D6",
   "variant": "C011D6Y_C011F(4-6)(P-U)",
   "pinCount": 12,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP12",
   "fcpu": 0,
   "specs": "32k Flash / 12k RAM",

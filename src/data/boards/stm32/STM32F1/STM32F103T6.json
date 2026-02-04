@@ -5,6 +5,9 @@
   "mcu": "STM32F103T6",
   "variant": "F103T(4-6)U",
   "pinCount": 36,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "VFQFPN36",
   "fcpu": 0,
   "specs": "32k Flash / 6k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32L496ZE",
   "variant": "L496Z(E-G)T_L4A6ZGT",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

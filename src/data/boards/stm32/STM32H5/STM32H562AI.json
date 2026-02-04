@@ -5,6 +5,9 @@
   "mcu": "STM32H562AI",
   "variant": "H562A(G-I)I",
   "pinCount": 169,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "UFBGA169",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

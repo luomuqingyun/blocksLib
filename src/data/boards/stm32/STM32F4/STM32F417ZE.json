@@ -5,6 +5,9 @@
   "mcu": "STM32F417ZE",
   "variant": "F407Z(E-G)T_F417Z(E-G)T",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "512k Flash / 128k RAM",

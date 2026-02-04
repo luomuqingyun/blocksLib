@@ -5,6 +5,9 @@
   "mcu": "STM32F750Z8",
   "variant": "F745Z(E-G)T_F746Z(E-G)(T-Y)_F750Z8T_F756ZG(T-Y)",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "64k Flash / 8k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32H573ZI",
   "variant": "H563Z(G-I)T_H573ZIT",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

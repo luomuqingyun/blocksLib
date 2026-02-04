@@ -257,6 +257,74 @@ export class PioService {
         }
     }
 
+
+    /**
+     * 获取系统支持的官方 STM32 变体列表
+     * 扫描 ~/.platformio/packages/framework-arduinoststm32/variants 目录
+     */
+    public async getSystemSupportedVariants(): Promise<string[]> {
+        let variantsPath = '';
+
+        // 1. 优先检查便携版环境
+        if (this.mode === 'PORTABLE' && this.portableExePath) {
+            const pkgDir = path.join(this.coreDir, 'packages', 'framework-arduinoststm32', 'variants');
+            if (fs.existsSync(pkgDir)) variantsPath = pkgDir;
+        }
+
+        // 2. 检查系统环境 (Windows User Home)
+        if (!variantsPath) {
+            const userHome = process.env.USERPROFILE || process.env.HOME || '';
+            const systemPkgDir = path.join(userHome, '.platformio', 'packages', 'framework-arduinoststm32', 'variants');
+            if (fs.existsSync(systemPkgDir)) variantsPath = systemPkgDir;
+        }
+
+        // 3. 检查 bundled resources
+        if (!variantsPath && app.isPackaged) {
+            const bundledPkgDir = path.join(process.resourcesPath, 'framework-arduinoststm32', 'variants');
+            if (fs.existsSync(bundledPkgDir)) variantsPath = bundledPkgDir;
+        }
+
+        if (!variantsPath) {
+            console.warn('[PioService] Could not locate framework-arduinoststm32 variants directory');
+            return [];
+        }
+
+        try {
+            const items = await fs.promises.readdir(variantsPath, { withFileTypes: true });
+            // 递归查找所有变体？通常 STM32duino 结构是 flattened (例如 STM32F1xx/F103C8) 或者直接在 variants 根下
+            // 这里为了简单，我们收集所有定义的变体文件夹名称
+            const variants: string[] = [];
+
+            // FIXME: STM32duino 的变体目录结构可能是 variants/STM32F1xx/STM32F103C8... 这里的逻辑需要更健壮
+            // 目前用户需求是匹配 variants 文件夹下的内容
+            // 简单的策略：收集 variants 实际上是 folders with variant_generic.h or something?
+            // "Unofficial" logic usually expects the variant name to match the folder name relative to variants/
+
+            // 简单的扁平化扫描
+            for (const item of items) {
+                if (item.isDirectory()) {
+                    variants.push(item.name);
+                    // 检查是否是系列文件夹 (e.g., STM32F1xx)
+                    if (item.name.startsWith('STM32') && item.name.endsWith('xx')) {
+                        const subPath = path.join(variantsPath, item.name);
+                        const subItems = await fs.promises.readdir(subPath, { withFileTypes: true });
+                        for (const subItem of subItems) {
+                            if (subItem.isDirectory()) {
+                                variants.push(subItem.name); // Add short name (e.g. F103C8)
+                                variants.push(path.join(item.name, subItem.name).replace(/\\/g, '/')); // Add full relative path
+                            }
+                        }
+                    }
+                }
+            }
+            // console.log('[PioService] Found supported variants:', variants.length);
+            return variants;
+        } catch (e) {
+            console.error('[PioService] Failed to scan variants', e);
+            return [];
+        }
+    }
 }
+
 
 export const pioService = new PioService();

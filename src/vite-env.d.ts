@@ -31,6 +31,7 @@ import { BoardBuildConfig, ProjectBuildConfig } from './types/board';
 interface ElectronAPI {
   // --- 系统 ---
   checkSystem: () => Promise<{ success: boolean; message: string; mode: string }>;
+  getPioSupportedVariants: () => Promise<string[]>;
 
   // --- 编译与上传 ---
   buildProject: (code: string, buildConfig: BoardBuildConfig, projectPath?: string) => Promise<{ success: boolean; exitCode?: number }>;

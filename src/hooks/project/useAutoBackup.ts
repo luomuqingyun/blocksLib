@@ -25,6 +25,7 @@ interface AutoBackupProps {
     code: string;               // 当前生成的代码内容
     projectMetadata: any;       // 项目元数据（如板卡配置等）
     blocklyRef: React.RefObject<BlocklyWrapperHandle>; // Blockly 包装器的引用，用于导出 XML
+    isLoading?: boolean;        // [新] 是否正在加载中（锁定写操作）
 }
 
 /**
@@ -32,13 +33,14 @@ interface AutoBackupProps {
  * 当检测到项目内容变化时，自动在后台进行防抖备份，并在退出前强制备份。
  */
 export const useAutoBackup = (props: AutoBackupProps) => {
-    const { isDirty, currentFilePath, workspaceVersion, code, projectMetadata, blocklyRef } = props;
+    const { isDirty, currentFilePath, workspaceVersion, code, projectMetadata, blocklyRef, isLoading } = props;
 
     // 1. 自动备份机制 (带防抖逻辑)
     // 当积木块、代码或元数据发生变化且处于 "已修改" (Dirty) 状态时触发。
     useEffect(() => {
-        // 如果没有更改、没有文件路径或处于非 Electron 环境，则不执行备份
-        if (!isDirty || !currentFilePath || !window.electronAPI) return;
+        // 如果正在加载、没有更改、没有文件路径或处于非 Electron 环境，则不执行备份
+        // [关键修复] 严禁在加载锁开启时进行备份，防止空状态覆盖文件
+        if (isLoading || !isDirty || !currentFilePath || !window.electronAPI) return;
 
         // 设置 3 秒防抖，避免频繁磁盘操作
         const timer = setTimeout(async () => {
@@ -58,16 +60,16 @@ export const useAutoBackup = (props: AutoBackupProps) => {
 
         // 清理函数：如果用户继续操作，则取消上一次的延时任务
         return () => clearTimeout(timer);
-    }, [isDirty, workspaceVersion, currentFilePath, code, projectMetadata, blocklyRef]);
+    }, [isDirty, workspaceVersion, currentFilePath, code, projectMetadata, blocklyRef, isLoading]);
 
     // 2. 窗口退出/刷新时的强制备份
-    // 确保用户直接关闭窗口或刷新浏览器时，最后的更改也能通过备份机制保留。
     useEffect(() => {
         const handleBeforeUnload = () => {
-            if (isDirty && currentFilePath && window.electronAPI && blocklyRef.current) {
+            // [关键修复] 只有在非加载且脏数据状态下才允许备份
+            if (!isLoading && isDirty && currentFilePath && window.electronAPI && blocklyRef.current) {
                 const state = blocklyRef.current.getXml();
+                // ... (保持原逻辑)
                 if (state) {
-                    // 同步发送备份请求
                     window.electronAPI.backupProject(currentFilePath, {
                         blocklyState: state,
                         code: code,
@@ -79,5 +81,5 @@ export const useAutoBackup = (props: AutoBackupProps) => {
         };
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [isDirty, currentFilePath, code, projectMetadata, blocklyRef]);
+    }, [isDirty, currentFilePath, code, projectMetadata, blocklyRef, isLoading]);
 };

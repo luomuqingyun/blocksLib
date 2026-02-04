@@ -5,6 +5,9 @@
   "mcu": "STM32G491KC",
   "variant": "G491K(C-E)U_G4A1KEU",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN32",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

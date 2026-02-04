@@ -5,6 +5,9 @@
   "mcu": "STM32U535CB",
   "variant": "U535C(B-C-E)(T-U)xQ_U545CE(T-U)xQ",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "128k Flash / 16k RAM",

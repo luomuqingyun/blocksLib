@@ -5,6 +5,9 @@
   "mcu": "STM32WBA63CI",
   "variant": "WBA63C(G-I)U",
   "pinCount": 49,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "UFQFPN48",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

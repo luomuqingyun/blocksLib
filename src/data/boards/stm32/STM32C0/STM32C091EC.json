@@ -5,6 +5,9 @@
   "mcu": "STM32C091EC",
   "variant": "C091ECY_C091F(B-C)P",
   "pinCount": 24,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP24",
   "fcpu": 0,
   "specs": "256k Flash / 6k RAM",

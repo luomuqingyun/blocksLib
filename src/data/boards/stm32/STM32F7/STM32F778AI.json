@@ -5,6 +5,9 @@
   "mcu": "STM32F778AI",
   "variant": "F768AIY_F769A(G-I)Y_F778AIY_F779AIY",
   "pinCount": 180,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "WLCSP180",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

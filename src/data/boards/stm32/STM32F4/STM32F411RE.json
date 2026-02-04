@@ -5,6 +5,9 @@
   "mcu": "STM32F411RE",
   "variant": "F411R(C-E)T",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "512k Flash / 128k RAM",

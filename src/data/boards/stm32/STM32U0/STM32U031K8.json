@@ -5,6 +5,9 @@
   "mcu": "STM32U031K8",
   "variant": "U031K(4-6-8)U",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "UFQFPN32",
   "fcpu": 0,
   "specs": "64k Flash / 8k RAM",

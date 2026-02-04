@@ -5,6 +5,9 @@
   "mcu": "STM32F205RG",
   "variant": "F205RE(T-Y)_F205R(B-C-F)T_F205RG(E-T-Y)_F215R(E-G)T",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32G041C8",
   "variant": "G031C(4-6-8)(T-U)_G041C(6-8)(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "64k Flash / 16k RAM",

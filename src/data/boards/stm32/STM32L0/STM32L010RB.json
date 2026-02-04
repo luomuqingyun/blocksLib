@@ -5,6 +5,9 @@
   "mcu": "STM32L010RB",
   "variant": "L010RBT",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "128k Flash / 20k RAM",

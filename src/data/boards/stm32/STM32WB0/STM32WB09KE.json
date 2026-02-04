@@ -5,6 +5,9 @@
   "mcu": "STM32WB09KE",
   "variant": "WB05KZV_WB05TZF_WB09KEV_WB09TEF",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "VFQFPN32",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

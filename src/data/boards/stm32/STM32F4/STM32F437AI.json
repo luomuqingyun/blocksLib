@@ -5,6 +5,9 @@
   "mcu": "STM32F437AI",
   "variant": "F427A(G-I)H_F429A(G-I)H_F437AIH_F439AIH",
   "pinCount": 169,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFBGA169",
   "fcpu": 0,
   "specs": "2048k Flash / 192k RAM",

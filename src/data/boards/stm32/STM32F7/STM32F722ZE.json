@@ -5,6 +5,9 @@
   "mcu": "STM32F722ZE",
   "variant": "F722Z(C-E)T_F732ZET",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

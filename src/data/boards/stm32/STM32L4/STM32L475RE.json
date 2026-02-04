@@ -5,6 +5,9 @@
   "mcu": "STM32L475RE",
   "variant": "L475R(C-E-G)T_L476R(C-E-G)T_L486RGT",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

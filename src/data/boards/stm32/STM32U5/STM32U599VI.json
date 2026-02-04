@@ -5,6 +5,9 @@
   "mcu": "STM32U599VI",
   "variant": "U595V(I-J)TxQ_U599V(I-J)TxQ_U5A5VJTxQ_U5A9VJTxQ",
   "pinCount": 100,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP100",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

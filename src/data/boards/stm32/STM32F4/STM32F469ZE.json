@@ -5,6 +5,9 @@
   "mcu": "STM32F469ZE",
   "variant": "F469Z(E-G-I)T_F479Z(G-I)T",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "512k Flash / 128k RAM",

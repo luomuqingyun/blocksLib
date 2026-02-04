@@ -259,6 +259,22 @@ function createWindow() {
 
     // Hook up Serial Events to UI
     setupSerialEvents(mainWindow);
+
+    // ============================================================
+    // Content Security Policy (CSP)
+    // ============================================================
+    mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+        const csp = process.env.VITE_DEV_SERVER_URL
+            ? "default-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:* blob: data:; img-src 'self' blob: data: https:; connect-src 'self' http://localhost:* ws://localhost:* https:;"
+            : "default-src 'self' 'unsafe-inline' blob: data:; img-src 'self' blob: data: https:; connect-src 'self' https:;";
+
+        callback({
+            responseHeaders: {
+                ...details.responseHeaders,
+                'Content-Security-Policy': [csp]
+            }
+        });
+    });
 }
 
 // ============================================================
@@ -359,8 +375,10 @@ if (!gotTheLock) {
     });
 
     app.whenReady().then(() => {
+        console.time('[Main] Startup');
         registerAllIpcs();
         createWindow();
+        console.timeEnd('[Main] Startup');
 
         const file = process.argv.find(arg => arg.endsWith('.ebproj'));
         if (file) {

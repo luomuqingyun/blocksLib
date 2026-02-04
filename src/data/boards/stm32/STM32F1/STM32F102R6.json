@@ -5,6 +5,9 @@
   "mcu": "STM32F102R6",
   "variant": "F102R(4-6)T",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "32k Flash / 6k RAM",

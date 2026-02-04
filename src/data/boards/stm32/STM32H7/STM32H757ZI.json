@@ -5,6 +5,9 @@
   "mcu": "STM32H757ZI",
   "variant": "H747ZIY_H757ZIY",
   "pinCount": 156,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "WLCSP156",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

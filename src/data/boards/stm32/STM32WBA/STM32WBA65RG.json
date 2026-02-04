@@ -5,6 +5,9 @@
   "mcu": "STM32WBA65RG",
   "variant": "WBA65R(G-I)V",
   "pinCount": 69,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "VFQFPN68_SMPS_USB",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

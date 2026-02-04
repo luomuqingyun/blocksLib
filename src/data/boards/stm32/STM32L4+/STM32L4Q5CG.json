@@ -5,6 +5,9 @@
   "mcu": "STM32L4Q5CG",
   "variant": "L4P5C(E-G)(T-U)_L4Q5CG(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

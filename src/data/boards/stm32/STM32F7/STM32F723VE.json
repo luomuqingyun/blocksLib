@@ -5,6 +5,9 @@
   "mcu": "STM32F723VE",
   "variant": "F723V(C-E)(T-Y)_F733VE(T-Y)",
   "pinCount": 100,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP100",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

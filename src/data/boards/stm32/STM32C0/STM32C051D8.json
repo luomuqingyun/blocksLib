@@ -5,6 +5,9 @@
   "mcu": "STM32C051D8",
   "variant": "C051D8Y_C051F(6-8)P",
   "pinCount": 15,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP15",
   "fcpu": 0,
   "specs": "64k Flash / 6k RAM",

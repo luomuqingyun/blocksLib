@@ -5,6 +5,9 @@
   "mcu": "STM32L433CC",
   "variant": "L433C(B-C)(T-U)_L443CC(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32F413CG",
   "variant": "F413C(G-H)U_F423CHU",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN48",
   "fcpu": 0,
   "specs": "1024k Flash / 192k RAM",

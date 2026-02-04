@@ -5,7 +5,10 @@
   "mcu": "STM32F765VG",
   "variant": "F765V(G-I)(H-T)_F767V(G-I)(H-T)_F777VI(H-T)",
   "pinCount": 100,
-  "package": "TFBGA100",
+  "build": {
+    "cpu": "cortex-m7"
+  },
+  "package": "LQFP100",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",
   "description": "STM32F765VG - STM32F7 series board",
@@ -665,354 +668,110 @@
   },
   "pinMap": [
     {
-      "name": "PC14",
-      "position": "A1",
-      "functions": []
-    },
-    {
-      "name": "PA13",
-      "position": "A10",
-      "functions": []
-    },
-    {
-      "name": "PC13",
-      "position": "A2",
-      "functions": []
-    },
-    {
       "name": "PE2",
-      "position": "A3",
+      "position": "1",
       "functions": [
         "ETH_ETH",
         "SPI4_SCLK"
       ]
     },
     {
-      "name": "PB9",
-      "position": "A4",
-      "functions": [
-        "CAN1_TD",
-        "I2C1_SDA",
-        "I2C4_SDA",
-        "SPI2_SSEL",
-        "TIM11_CH1",
-        "TIM4_CH4",
-        "UART5_TX"
-      ]
-    },
-    {
-      "name": "PB7",
-      "position": "A5",
-      "functions": [
-        "I2C1_SDA",
-        "I2C4_SDA",
-        "TIM4_CH2",
-        "USART1_RX"
-      ]
-    },
-    {
-      "name": "PB4",
-      "position": "A6",
-      "functions": [
-        "CAN3_TD",
-        "SPI1_MISO",
-        "SPI2_SSEL",
-        "SPI3_MISO",
-        "SPI6_MISO",
-        "TIM3_CH1",
-        "UART7_TX"
-      ]
-    },
-    {
-      "name": "PB3",
-      "position": "A7",
-      "functions": [
-        "CAN3_RD",
-        "SPI1_SCLK",
-        "SPI3_SCLK",
-        "SPI6_SCLK",
-        "TIM2_CH2",
-        "UART7_RX"
-      ]
-    },
-    {
-      "name": "PA15",
-      "position": "A8",
-      "functions": [
-        "CAN3_TD",
-        "SPI1_SSEL",
-        "SPI3_SSEL",
-        "SPI6_SSEL",
-        "TIM2_CH1",
-        "UART4_RTS",
-        "UART7_TX"
-      ]
-    },
-    {
-      "name": "PA14",
-      "position": "A9",
-      "functions": []
-    },
-    {
-      "name": "PC15",
-      "position": "B1",
-      "functions": []
-    },
-    {
-      "name": "PA12",
-      "position": "B10",
-      "functions": [
-        "CAN1_TD",
-        "SPI2_SCLK",
-        "UART4_TX",
-        "USART1_RTS",
-        "USB_OTG_FS_OTG_FS"
-      ]
-    },
-    {
-      "name": "VBAT",
-      "position": "B2",
-      "functions": []
-    },
-    {
       "name": "PE3",
-      "position": "B3",
-      "functions": []
-    },
-    {
-      "name": "PB8",
-      "position": "B4",
-      "functions": [
-        "CAN1_RD",
-        "ETH_ETH",
-        "I2C1_SCL",
-        "I2C4_SCL",
-        "TIM10_CH1",
-        "TIM4_CH3",
-        "UART5_RX"
-      ]
-    },
-    {
-      "name": "PB6",
-      "position": "B5",
-      "functions": [
-        "CAN2_TD",
-        "I2C1_SCL",
-        "I2C4_SCL",
-        "TIM4_CH1",
-        "UART5_TX",
-        "USART1_TX"
-      ]
-    },
-    {
-      "name": "PD5",
-      "position": "B6",
-      "functions": [
-        "USART2_TX"
-      ]
-    },
-    {
-      "name": "PD2",
-      "position": "B7",
-      "functions": [
-        "SDMMC1_CMD",
-        "UART5_RX"
-      ]
-    },
-    {
-      "name": "PC11",
-      "position": "B8",
-      "functions": [
-        "SPI3_MISO",
-        "UART4_RX",
-        "USART3_RX"
-      ]
-    },
-    {
-      "name": "PC10",
-      "position": "B9",
-      "functions": [
-        "SPI3_SCLK",
-        "UART4_TX",
-        "USART3_TX"
-      ]
-    },
-    {
-      "name": "PH0",
-      "position": "C1",
-      "functions": []
-    },
-    {
-      "name": "PA11",
-      "position": "C10",
-      "functions": [
-        "CAN1_RD",
-        "SPI2_SSEL",
-        "TIM1_CH4",
-        "UART4_RX",
-        "USART1_CTS",
-        "USB_OTG_FS_OTG_FS"
-      ]
-    },
-    {
-      "name": "VSS",
-      "position": "C2",
+      "position": "2",
       "functions": []
     },
     {
       "name": "PE4",
-      "position": "C3",
+      "position": "3",
       "functions": [
         "SPI4_SSEL"
       ]
     },
     {
-      "name": "PE1",
-      "position": "C4",
-      "functions": [
-        "UART8_TX"
-      ]
-    },
-    {
-      "name": "PB5",
-      "position": "C5",
-      "functions": [
-        "CAN2_RD",
-        "ETH_ETH",
-        "SPI1_MOSI",
-        "SPI3_MOSI",
-        "SPI6_MOSI",
-        "TIM3_CH2",
-        "UART5_RX",
-        "USB_OTG_HS_OTG_HS"
-      ]
-    },
-    {
-      "name": "PD6",
-      "position": "C6",
-      "functions": [
-        "SDMMC2_CK",
-        "SPI3_MOSI",
-        "USART2_RX"
-      ]
-    },
-    {
-      "name": "PD3",
-      "position": "C7",
-      "functions": [
-        "SPI2_SCLK",
-        "USART2_CTS"
-      ]
-    },
-    {
-      "name": "PC12",
-      "position": "C8",
-      "functions": [
-        "SDMMC1_CK",
-        "SPI3_MOSI",
-        "UART5_TX"
-      ]
-    },
-    {
-      "name": "PA9",
-      "position": "C9",
-      "functions": [
-        "SPI2_SCLK",
-        "TIM1_CH2",
-        "USART1_TX",
-        "USB_OTG_FS_OTG_FS"
-      ]
-    },
-    {
-      "name": "PH1",
-      "position": "D1",
-      "functions": []
-    },
-    {
-      "name": "PA10",
-      "position": "D10",
-      "functions": [
-        "TIM1_CH3",
-        "USART1_RX",
-        "USB_OTG_FS_OTG_FS"
-      ]
-    },
-    {
-      "name": "VDD",
-      "position": "D2",
-      "functions": []
-    },
-    {
       "name": "PE5",
-      "position": "D3",
+      "position": "4",
       "functions": [
         "SPI4_MISO",
         "TIM9_CH1"
       ]
     },
     {
-      "name": "PE0",
-      "position": "D4",
+      "name": "PE6",
+      "position": "5",
       "functions": [
-        "UART8_RX"
+        "SPI4_MOSI",
+        "TIM9_CH2"
       ]
     },
     {
-      "name": "BOOT0",
-      "position": "D5",
+      "name": "VBAT",
+      "position": "6",
       "functions": []
     },
     {
-      "name": "PD7",
-      "position": "D6",
-      "functions": [
-        "SDMMC2_CMD",
-        "SPI1_MOSI"
-      ]
+      "name": "PC13",
+      "position": "7",
+      "functions": []
     },
     {
-      "name": "PD4",
-      "position": "D7",
-      "functions": [
-        "USART2_RTS"
-      ]
+      "name": "PC14",
+      "position": "8",
+      "functions": []
     },
     {
-      "name": "PD0",
-      "position": "D8",
-      "functions": [
-        "CAN1_RD",
-        "UART4_RX"
-      ]
+      "name": "PC15",
+      "position": "9",
+      "functions": []
     },
     {
-      "name": "PA8",
-      "position": "D9",
-      "functions": [
-        "CAN3_RD",
-        "I2C3_SCL",
-        "TIM1_CH1",
-        "UART7_RX",
-        "USB_OTG_FS_OTG_FS"
-      ]
+      "name": "VSS",
+      "position": "10",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "11",
+      "functions": []
+    },
+    {
+      "name": "PH0",
+      "position": "12",
+      "functions": []
+    },
+    {
+      "name": "PH1",
+      "position": "13",
+      "functions": []
     },
     {
       "name": "NRST",
-      "position": "E1",
+      "position": "14",
       "functions": []
     },
     {
-      "name": "PC7",
-      "position": "E10",
+      "name": "PC0",
+      "position": "15",
       "functions": [
-        "TIM3_CH2",
-        "TIM8_CH2",
-        "USART6_RX"
+        "ADC1_IN",
+        "ADC2_IN",
+        "ADC3_IN",
+        "USB_OTG_HS_OTG_HS"
+      ]
+    },
+    {
+      "name": "PC1",
+      "position": "16",
+      "functions": [
+        "ADC1_IN",
+        "ADC2_IN",
+        "ADC3_IN",
+        "ETH_ETH",
+        "SPI2_MOSI"
       ]
     },
     {
       "name": "PC2",
-      "position": "E2",
+      "position": "17",
       "functions": [
         "ADC1_IN",
         "ADC2_IN",
@@ -1023,84 +782,8 @@
       ]
     },
     {
-      "name": "PE6",
-      "position": "E3",
-      "functions": [
-        "SPI4_MOSI",
-        "TIM9_CH2"
-      ]
-    },
-    {
-      "name": "VSS",
-      "position": "E4",
-      "functions": []
-    },
-    {
-      "name": "VSS",
-      "position": "E5",
-      "functions": []
-    },
-    {
-      "name": "BYPASS_REG",
-      "position": "E6",
-      "functions": []
-    },
-    {
-      "name": "VCAP_2",
-      "position": "E7",
-      "functions": []
-    },
-    {
-      "name": "PD1",
-      "position": "E8",
-      "functions": [
-        "CAN1_TD",
-        "UART4_TX"
-      ]
-    },
-    {
-      "name": "PC9",
-      "position": "E9",
-      "functions": [
-        "I2C3_SDA",
-        "TIM3_CH4",
-        "TIM8_CH4",
-        "UART5_CTS"
-      ]
-    },
-    {
-      "name": "PC0",
-      "position": "F1",
-      "functions": [
-        "ADC1_IN",
-        "ADC2_IN",
-        "ADC3_IN",
-        "USB_OTG_HS_OTG_HS"
-      ]
-    },
-    {
-      "name": "PC6",
-      "position": "F10",
-      "functions": [
-        "TIM3_CH1",
-        "TIM8_CH1",
-        "USART6_TX"
-      ]
-    },
-    {
-      "name": "PC1",
-      "position": "F2",
-      "functions": [
-        "ADC1_IN",
-        "ADC2_IN",
-        "ADC3_IN",
-        "ETH_ETH",
-        "SPI2_MOSI"
-      ]
-    },
-    {
       "name": "PC3",
-      "position": "F3",
+      "position": "18",
       "functions": [
         "ADC1_IN",
         "ADC2_IN",
@@ -1108,64 +791,26 @@
         "ETH_ETH",
         "SPI2_MOSI",
         "USB_OTG_HS_OTG_HS"
-      ]
-    },
-    {
-      "name": "VDD",
-      "position": "F4",
-      "functions": []
-    },
-    {
-      "name": "VDD",
-      "position": "F5",
-      "functions": []
-    },
-    {
-      "name": "VDDUSB",
-      "position": "F6",
-      "functions": []
-    },
-    {
-      "name": "PDR_ON",
-      "position": "F7",
-      "functions": []
-    },
-    {
-      "name": "VCAP_1",
-      "position": "F8",
-      "functions": []
-    },
-    {
-      "name": "PC8",
-      "position": "F9",
-      "functions": [
-        "SDMMC1_D0",
-        "TIM3_CH3",
-        "TIM8_CH3",
-        "UART5_RTS"
       ]
     },
     {
       "name": "VSSA",
-      "position": "G1",
+      "position": "19",
       "functions": []
     },
     {
-      "name": "PB15",
-      "position": "G10",
-      "functions": [
-        "SPI2_MOSI",
-        "TIM12_CH2",
-        "TIM1_CH3N",
-        "TIM8_CH3N",
-        "UART4_CTS",
-        "USART1_RX",
-        "USB_OTG_HS_OTG_HS"
-      ]
+      "name": "VREF+",
+      "position": "20",
+      "functions": []
+    },
+    {
+      "name": "VDDA",
+      "position": "21",
+      "functions": []
     },
     {
       "name": "PA0",
-      "position": "G2",
+      "position": "22",
       "functions": [
         "ADC1_IN",
         "ADC2_IN",
@@ -1178,88 +823,8 @@
       ]
     },
     {
-      "name": "PA4",
-      "position": "G3",
-      "functions": [
-        "ADC1_IN",
-        "ADC2_IN",
-        "DAC1_OUT",
-        "SPI1_SSEL",
-        "SPI3_SSEL",
-        "SPI6_SSEL",
-        "USB_OTG_HS_OTG_HS"
-      ]
-    },
-    {
-      "name": "PC4",
-      "position": "G4",
-      "functions": [
-        "ADC1_IN",
-        "ADC2_IN",
-        "ETH_ETH"
-      ]
-    },
-    {
-      "name": "PB2",
-      "position": "G5",
-      "functions": [
-        "SPI3_MOSI"
-      ]
-    },
-    {
-      "name": "PE10",
-      "position": "G6",
-      "functions": [
-        "TIM1_CH2N",
-        "UART7_CTS"
-      ]
-    },
-    {
-      "name": "PE14",
-      "position": "G7",
-      "functions": [
-        "SPI4_MOSI",
-        "TIM1_CH4"
-      ]
-    },
-    {
-      "name": "PD15",
-      "position": "G8",
-      "functions": [
-        "TIM4_CH4",
-        "UART8_RTS"
-      ]
-    },
-    {
-      "name": "PD11",
-      "position": "G9",
-      "functions": [
-        "USART3_CTS"
-      ]
-    },
-    {
-      "name": "VDDA",
-      "position": "H1",
-      "functions": []
-    },
-    {
-      "name": "PB14",
-      "position": "H10",
-      "functions": [
-        "SDMMC2_D0",
-        "SPI2_MISO",
-        "TIM12_CH1",
-        "TIM1_CH2N",
-        "TIM8_CH2N",
-        "UART4_RTS",
-        "USART1_TX",
-        "USART3_RTS",
-        "USB_OTG_HS_OTG_HS"
-      ]
-    },
-    {
       "name": "PA1",
-      "position": "H2",
+      "position": "23",
       "functions": [
         "ADC1_IN",
         "ADC2_IN",
@@ -1272,77 +837,8 @@
       ]
     },
     {
-      "name": "PA5",
-      "position": "H3",
-      "functions": [
-        "ADC1_IN",
-        "ADC2_IN",
-        "DAC1_OUT",
-        "SPI1_SCLK",
-        "SPI6_SCLK",
-        "TIM2_CH1",
-        "TIM8_CH1N",
-        "USB_OTG_HS_OTG_HS"
-      ]
-    },
-    {
-      "name": "PC5",
-      "position": "H4",
-      "functions": [
-        "ADC1_IN",
-        "ADC2_IN",
-        "ETH_ETH"
-      ]
-    },
-    {
-      "name": "PE7",
-      "position": "H5",
-      "functions": [
-        "UART7_RX"
-      ]
-    },
-    {
-      "name": "PE11",
-      "position": "H6",
-      "functions": [
-        "SPI4_SSEL",
-        "TIM1_CH2"
-      ]
-    },
-    {
-      "name": "PE15",
-      "position": "H7",
-      "functions": []
-    },
-    {
-      "name": "PD14",
-      "position": "H8",
-      "functions": [
-        "TIM4_CH3",
-        "UART8_CTS"
-      ]
-    },
-    {
-      "name": "PD10",
-      "position": "H9",
-      "functions": []
-    },
-    {
-      "name": "VSS",
-      "position": "J1",
-      "functions": []
-    },
-    {
-      "name": "PD13",
-      "position": "J10",
-      "functions": [
-        "I2C4_SDA",
-        "TIM4_CH2"
-      ]
-    },
-    {
       "name": "PA2",
-      "position": "J2",
+      "position": "24",
       "functions": [
         "ADC1_IN",
         "ADC2_IN",
@@ -1355,96 +851,8 @@
       ]
     },
     {
-      "name": "PA6",
-      "position": "J3",
-      "functions": [
-        "ADC1_IN",
-        "ADC2_IN",
-        "SPI1_MISO",
-        "SPI6_MISO",
-        "TIM13_CH1",
-        "TIM3_CH1"
-      ]
-    },
-    {
-      "name": "PB0",
-      "position": "J4",
-      "functions": [
-        "ADC1_IN",
-        "ADC2_IN",
-        "ETH_ETH",
-        "TIM1_CH2N",
-        "TIM3_CH3",
-        "TIM8_CH2N",
-        "UART4_CTS",
-        "USB_OTG_HS_OTG_HS"
-      ]
-    },
-    {
-      "name": "PE8",
-      "position": "J5",
-      "functions": [
-        "TIM1_CH1N",
-        "UART7_TX"
-      ]
-    },
-    {
-      "name": "PE12",
-      "position": "J6",
-      "functions": [
-        "SPI4_SCLK",
-        "TIM1_CH3N"
-      ]
-    },
-    {
-      "name": "PB10",
-      "position": "J7",
-      "functions": [
-        "ETH_ETH",
-        "I2C2_SCL",
-        "SPI2_SCLK",
-        "TIM2_CH3",
-        "USART3_TX",
-        "USB_OTG_HS_OTG_HS"
-      ]
-    },
-    {
-      "name": "PB13",
-      "position": "J8",
-      "functions": [
-        "CAN2_TD",
-        "ETH_ETH",
-        "SPI2_SCLK",
-        "TIM1_CH1N",
-        "UART5_TX",
-        "USART3_CTS",
-        "USB_OTG_HS_OTG_HS"
-      ]
-    },
-    {
-      "name": "PD9",
-      "position": "J9",
-      "functions": [
-        "USART3_RX"
-      ]
-    },
-    {
-      "name": "VDD",
-      "position": "K1",
-      "functions": []
-    },
-    {
-      "name": "PD12",
-      "position": "K10",
-      "functions": [
-        "I2C4_SCL",
-        "TIM4_CH1",
-        "USART3_RTS"
-      ]
-    },
-    {
       "name": "PA3",
-      "position": "K2",
+      "position": "25",
       "functions": [
         "ADC1_IN",
         "ADC2_IN",
@@ -1458,8 +866,57 @@
       ]
     },
     {
+      "name": "VSS",
+      "position": "26",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "27",
+      "functions": []
+    },
+    {
+      "name": "PA4",
+      "position": "28",
+      "functions": [
+        "ADC1_IN",
+        "ADC2_IN",
+        "DAC1_OUT",
+        "SPI1_SSEL",
+        "SPI3_SSEL",
+        "SPI6_SSEL",
+        "USB_OTG_HS_OTG_HS"
+      ]
+    },
+    {
+      "name": "PA5",
+      "position": "29",
+      "functions": [
+        "ADC1_IN",
+        "ADC2_IN",
+        "DAC1_OUT",
+        "SPI1_SCLK",
+        "SPI6_SCLK",
+        "TIM2_CH1",
+        "TIM8_CH1N",
+        "USB_OTG_HS_OTG_HS"
+      ]
+    },
+    {
+      "name": "PA6",
+      "position": "30",
+      "functions": [
+        "ADC1_IN",
+        "ADC2_IN",
+        "SPI1_MISO",
+        "SPI6_MISO",
+        "TIM13_CH1",
+        "TIM3_CH1"
+      ]
+    },
+    {
       "name": "PA7",
-      "position": "K3",
+      "position": "31",
       "functions": [
         "ADC1_IN",
         "ADC2_IN",
@@ -1473,8 +930,40 @@
       ]
     },
     {
+      "name": "PC4",
+      "position": "32",
+      "functions": [
+        "ADC1_IN",
+        "ADC2_IN",
+        "ETH_ETH"
+      ]
+    },
+    {
+      "name": "PC5",
+      "position": "33",
+      "functions": [
+        "ADC1_IN",
+        "ADC2_IN",
+        "ETH_ETH"
+      ]
+    },
+    {
+      "name": "PB0",
+      "position": "34",
+      "functions": [
+        "ADC1_IN",
+        "ADC2_IN",
+        "ETH_ETH",
+        "TIM1_CH2N",
+        "TIM3_CH3",
+        "TIM8_CH2N",
+        "UART4_CTS",
+        "USB_OTG_HS_OTG_HS"
+      ]
+    },
+    {
       "name": "PB1",
-      "position": "K4",
+      "position": "35",
       "functions": [
         "ADC1_IN",
         "ADC2_IN",
@@ -1486,24 +975,95 @@
       ]
     },
     {
+      "name": "PB2",
+      "position": "36",
+      "functions": [
+        "SPI3_MOSI"
+      ]
+    },
+    {
+      "name": "PE7",
+      "position": "37",
+      "functions": [
+        "UART7_RX"
+      ]
+    },
+    {
+      "name": "PE8",
+      "position": "38",
+      "functions": [
+        "TIM1_CH1N",
+        "UART7_TX"
+      ]
+    },
+    {
       "name": "PE9",
-      "position": "K5",
+      "position": "39",
       "functions": [
         "TIM1_CH1",
         "UART7_RTS"
       ]
     },
     {
+      "name": "PE10",
+      "position": "40",
+      "functions": [
+        "TIM1_CH2N",
+        "UART7_CTS"
+      ]
+    },
+    {
+      "name": "PE11",
+      "position": "41",
+      "functions": [
+        "SPI4_SSEL",
+        "TIM1_CH2"
+      ]
+    },
+    {
+      "name": "PE12",
+      "position": "42",
+      "functions": [
+        "SPI4_SCLK",
+        "TIM1_CH3N"
+      ]
+    },
+    {
       "name": "PE13",
-      "position": "K6",
+      "position": "43",
       "functions": [
         "SPI4_MISO",
         "TIM1_CH3"
       ]
     },
     {
+      "name": "PE14",
+      "position": "44",
+      "functions": [
+        "SPI4_MOSI",
+        "TIM1_CH4"
+      ]
+    },
+    {
+      "name": "PE15",
+      "position": "45",
+      "functions": []
+    },
+    {
+      "name": "PB10",
+      "position": "46",
+      "functions": [
+        "ETH_ETH",
+        "I2C2_SCL",
+        "SPI2_SCLK",
+        "TIM2_CH3",
+        "USART3_TX",
+        "USB_OTG_HS_OTG_HS"
+      ]
+    },
+    {
       "name": "PB11",
-      "position": "K7",
+      "position": "47",
       "functions": [
         "ETH_ETH",
         "I2C2_SDA",
@@ -1513,8 +1073,23 @@
       ]
     },
     {
+      "name": "VCAP_1",
+      "position": "48",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "49",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "50",
+      "functions": []
+    },
+    {
       "name": "PB12",
-      "position": "K8",
+      "position": "51",
       "functions": [
         "CAN2_RD",
         "ETH_ETH",
@@ -1524,11 +1099,439 @@
       ]
     },
     {
+      "name": "PB13",
+      "position": "52",
+      "functions": [
+        "CAN2_TD",
+        "ETH_ETH",
+        "SPI2_SCLK",
+        "TIM1_CH1N",
+        "UART5_TX",
+        "USART3_CTS",
+        "USB_OTG_HS_OTG_HS"
+      ]
+    },
+    {
+      "name": "PB14",
+      "position": "53",
+      "functions": [
+        "SDMMC2_D0",
+        "SPI2_MISO",
+        "TIM12_CH1",
+        "TIM1_CH2N",
+        "TIM8_CH2N",
+        "UART4_RTS",
+        "USART1_TX",
+        "USART3_RTS",
+        "USB_OTG_HS_OTG_HS"
+      ]
+    },
+    {
+      "name": "PB15",
+      "position": "54",
+      "functions": [
+        "SPI2_MOSI",
+        "TIM12_CH2",
+        "TIM1_CH3N",
+        "TIM8_CH3N",
+        "UART4_CTS",
+        "USART1_RX",
+        "USB_OTG_HS_OTG_HS"
+      ]
+    },
+    {
       "name": "PD8",
-      "position": "K9",
+      "position": "55",
       "functions": [
         "USART3_TX"
       ]
+    },
+    {
+      "name": "PD9",
+      "position": "56",
+      "functions": [
+        "USART3_RX"
+      ]
+    },
+    {
+      "name": "PD10",
+      "position": "57",
+      "functions": []
+    },
+    {
+      "name": "PD11",
+      "position": "58",
+      "functions": [
+        "USART3_CTS"
+      ]
+    },
+    {
+      "name": "PD12",
+      "position": "59",
+      "functions": [
+        "I2C4_SCL",
+        "TIM4_CH1",
+        "USART3_RTS"
+      ]
+    },
+    {
+      "name": "PD13",
+      "position": "60",
+      "functions": [
+        "I2C4_SDA",
+        "TIM4_CH2"
+      ]
+    },
+    {
+      "name": "PD14",
+      "position": "61",
+      "functions": [
+        "TIM4_CH3",
+        "UART8_CTS"
+      ]
+    },
+    {
+      "name": "PD15",
+      "position": "62",
+      "functions": [
+        "TIM4_CH4",
+        "UART8_RTS"
+      ]
+    },
+    {
+      "name": "PC6",
+      "position": "63",
+      "functions": [
+        "TIM3_CH1",
+        "TIM8_CH1",
+        "USART6_TX"
+      ]
+    },
+    {
+      "name": "PC7",
+      "position": "64",
+      "functions": [
+        "TIM3_CH2",
+        "TIM8_CH2",
+        "USART6_RX"
+      ]
+    },
+    {
+      "name": "PC8",
+      "position": "65",
+      "functions": [
+        "SDMMC1_D0",
+        "TIM3_CH3",
+        "TIM8_CH3",
+        "UART5_RTS"
+      ]
+    },
+    {
+      "name": "PC9",
+      "position": "66",
+      "functions": [
+        "I2C3_SDA",
+        "TIM3_CH4",
+        "TIM8_CH4",
+        "UART5_CTS"
+      ]
+    },
+    {
+      "name": "PA8",
+      "position": "67",
+      "functions": [
+        "CAN3_RD",
+        "I2C3_SCL",
+        "TIM1_CH1",
+        "UART7_RX",
+        "USB_OTG_FS_OTG_FS"
+      ]
+    },
+    {
+      "name": "PA9",
+      "position": "68",
+      "functions": [
+        "SPI2_SCLK",
+        "TIM1_CH2",
+        "USART1_TX",
+        "USB_OTG_FS_OTG_FS"
+      ]
+    },
+    {
+      "name": "PA10",
+      "position": "69",
+      "functions": [
+        "TIM1_CH3",
+        "USART1_RX",
+        "USB_OTG_FS_OTG_FS"
+      ]
+    },
+    {
+      "name": "PA11",
+      "position": "70",
+      "functions": [
+        "CAN1_RD",
+        "SPI2_SSEL",
+        "TIM1_CH4",
+        "UART4_RX",
+        "USART1_CTS",
+        "USB_OTG_FS_OTG_FS"
+      ]
+    },
+    {
+      "name": "PA12",
+      "position": "71",
+      "functions": [
+        "CAN1_TD",
+        "SPI2_SCLK",
+        "UART4_TX",
+        "USART1_RTS",
+        "USB_OTG_FS_OTG_FS"
+      ]
+    },
+    {
+      "name": "PA13",
+      "position": "72",
+      "functions": []
+    },
+    {
+      "name": "VCAP_2",
+      "position": "73",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "74",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "75",
+      "functions": []
+    },
+    {
+      "name": "PA14",
+      "position": "76",
+      "functions": []
+    },
+    {
+      "name": "PA15",
+      "position": "77",
+      "functions": [
+        "CAN3_TD",
+        "SPI1_SSEL",
+        "SPI3_SSEL",
+        "SPI6_SSEL",
+        "TIM2_CH1",
+        "UART4_RTS",
+        "UART7_TX"
+      ]
+    },
+    {
+      "name": "PC10",
+      "position": "78",
+      "functions": [
+        "SPI3_SCLK",
+        "UART4_TX",
+        "USART3_TX"
+      ]
+    },
+    {
+      "name": "PC11",
+      "position": "79",
+      "functions": [
+        "SPI3_MISO",
+        "UART4_RX",
+        "USART3_RX"
+      ]
+    },
+    {
+      "name": "PC12",
+      "position": "80",
+      "functions": [
+        "SDMMC1_CK",
+        "SPI3_MOSI",
+        "UART5_TX"
+      ]
+    },
+    {
+      "name": "PD0",
+      "position": "81",
+      "functions": [
+        "CAN1_RD",
+        "UART4_RX"
+      ]
+    },
+    {
+      "name": "PD1",
+      "position": "82",
+      "functions": [
+        "CAN1_TD",
+        "UART4_TX"
+      ]
+    },
+    {
+      "name": "PD2",
+      "position": "83",
+      "functions": [
+        "SDMMC1_CMD",
+        "UART5_RX"
+      ]
+    },
+    {
+      "name": "PD3",
+      "position": "84",
+      "functions": [
+        "SPI2_SCLK",
+        "USART2_CTS"
+      ]
+    },
+    {
+      "name": "PD4",
+      "position": "85",
+      "functions": [
+        "USART2_RTS"
+      ]
+    },
+    {
+      "name": "PD5",
+      "position": "86",
+      "functions": [
+        "USART2_TX"
+      ]
+    },
+    {
+      "name": "PD6",
+      "position": "87",
+      "functions": [
+        "SDMMC2_CK",
+        "SPI3_MOSI",
+        "USART2_RX"
+      ]
+    },
+    {
+      "name": "PD7",
+      "position": "88",
+      "functions": [
+        "SDMMC2_CMD",
+        "SPI1_MOSI"
+      ]
+    },
+    {
+      "name": "PB3",
+      "position": "89",
+      "functions": [
+        "CAN3_RD",
+        "SPI1_SCLK",
+        "SPI3_SCLK",
+        "SPI6_SCLK",
+        "TIM2_CH2",
+        "UART7_RX"
+      ]
+    },
+    {
+      "name": "PB4",
+      "position": "90",
+      "functions": [
+        "CAN3_TD",
+        "SPI1_MISO",
+        "SPI2_SSEL",
+        "SPI3_MISO",
+        "SPI6_MISO",
+        "TIM3_CH1",
+        "UART7_TX"
+      ]
+    },
+    {
+      "name": "PB5",
+      "position": "91",
+      "functions": [
+        "CAN2_RD",
+        "ETH_ETH",
+        "SPI1_MOSI",
+        "SPI3_MOSI",
+        "SPI6_MOSI",
+        "TIM3_CH2",
+        "UART5_RX",
+        "USB_OTG_HS_OTG_HS"
+      ]
+    },
+    {
+      "name": "PB6",
+      "position": "92",
+      "functions": [
+        "CAN2_TD",
+        "I2C1_SCL",
+        "I2C4_SCL",
+        "TIM4_CH1",
+        "UART5_TX",
+        "USART1_TX"
+      ]
+    },
+    {
+      "name": "PB7",
+      "position": "93",
+      "functions": [
+        "I2C1_SDA",
+        "I2C4_SDA",
+        "TIM4_CH2",
+        "USART1_RX"
+      ]
+    },
+    {
+      "name": "BOOT0",
+      "position": "94",
+      "functions": []
+    },
+    {
+      "name": "PB8",
+      "position": "95",
+      "functions": [
+        "CAN1_RD",
+        "ETH_ETH",
+        "I2C1_SCL",
+        "I2C4_SCL",
+        "TIM10_CH1",
+        "TIM4_CH3",
+        "UART5_RX"
+      ]
+    },
+    {
+      "name": "PB9",
+      "position": "96",
+      "functions": [
+        "CAN1_TD",
+        "I2C1_SDA",
+        "I2C4_SDA",
+        "SPI2_SSEL",
+        "TIM11_CH1",
+        "TIM4_CH4",
+        "UART5_TX"
+      ]
+    },
+    {
+      "name": "PE0",
+      "position": "97",
+      "functions": [
+        "UART8_RX"
+      ]
+    },
+    {
+      "name": "PE1",
+      "position": "98",
+      "functions": [
+        "UART8_TX"
+      ]
+    },
+    {
+      "name": "VSS",
+      "position": "99",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "100",
+      "functions": []
     }
   ],
   "pin_options": {

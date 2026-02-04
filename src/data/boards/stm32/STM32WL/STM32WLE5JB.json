@@ -5,6 +5,9 @@
   "mcu": "STM32WLE5JB",
   "variant": "WL54JCI_WL55JCI_WLE4J(8-B-C)I_WLE5J(8-B-C)I",
   "pinCount": 73,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFBGA73",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

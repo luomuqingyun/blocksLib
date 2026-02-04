@@ -5,6 +5,9 @@
   "mcu": "STM32L451CC",
   "variant": "L451CCU_L451CE(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN48",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

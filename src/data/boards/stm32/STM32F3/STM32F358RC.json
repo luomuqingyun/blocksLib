@@ -5,6 +5,9 @@
   "mcu": "STM32F358RC",
   "variant": "F358RCT",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32G471CE",
   "variant": "G471C(C-E)T",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

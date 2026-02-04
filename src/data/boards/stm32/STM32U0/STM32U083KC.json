@@ -5,6 +5,9 @@
   "mcu": "STM32U083KC",
   "variant": "U073K(8-B-C)U_U083KCU",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "UFQFPN32",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

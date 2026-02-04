@@ -5,6 +5,9 @@
   "mcu": "STM32WB55RE",
   "variant": "WB55R(C-E-G)V",
   "pinCount": 68,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "VFQFPN68",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32G081EB",
   "variant": "G071EBY_G081EBY",
   "pinCount": 25,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP25",
   "fcpu": 0,
   "specs": "128k Flash / 32k RAM",

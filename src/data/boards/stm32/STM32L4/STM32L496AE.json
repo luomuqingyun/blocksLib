@@ -5,6 +5,9 @@
   "mcu": "STM32L496AE",
   "variant": "L496A(E-G)I_L4A6AGI",
   "pinCount": 169,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFBGA169",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

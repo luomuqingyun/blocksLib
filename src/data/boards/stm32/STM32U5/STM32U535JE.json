@@ -5,6 +5,9 @@
   "mcu": "STM32U535JE",
   "variant": "U535JEYxQ_U545JEYxQ",
   "pinCount": 72,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "WLCSP72",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

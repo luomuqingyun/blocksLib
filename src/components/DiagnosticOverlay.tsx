@@ -13,7 +13,9 @@ import { useUI } from '../contexts/UIContext';
  * 记录每次键盘事件的详细信息
  */
 interface LogEntry {
-  /** 按下的键名 */
+  /** 事件类型: KEYBOARD / MOUSE / SYSTEM */
+  type: 'KEYBOARD' | 'MOUSE' | 'SYSTEM';
+  /** 按下的键名或鼠标事件名 */
   key: string;
   /** 事件目标元素描述 */
   target: string;
@@ -25,6 +27,10 @@ interface LogEntry {
   timestamp: number;
   /** 事件阶段: CAPTURING/TARGET/BUBBLING */
   phase?: string;
+  /** 是否为输入元素 (INPUT/TEXTAREA/ContentEditable) */
+  isInput?: boolean;
+  /** 鼠标坐标 (仅对于鼠标事件) */
+  coords?: { x: number; y: number };
 }
 
 /**
@@ -96,60 +102,96 @@ export const DiagnosticOverlay: React.FC = () => {
     // 标记已补丁
     (KeyboardEvent.prototype as any)._isEbPatched = true;
 
-    /**
-     * 键盘事件处理器
-     * 捕获所有键盘事件并记录到日志
-     */
-    const handler = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      // 构建目标元素描述: TAG#id.class
-      let targetDesc = target?.tagName || 'UNKNOWN';
-      if (target?.id) targetDesc += `#${target.id}`;
-      const className = (target && typeof target.className === 'string') ? target.className : (target?.className as any)?.baseVal || '';
+    const getTargetDesc = (target: HTMLElement | null) => {
+      if (!target) return 'UNKNOWN';
+      let desc = target.tagName;
+      if (target.id) desc += `#${target.id}`;
+      const className = (typeof target.className === 'string') ? target.className : (target.className as any)?.baseVal || '';
       if (className) {
         const firstClass = className.split(' ')[0];
-        if (firstClass) targetDesc += `.${firstClass}`;
+        if (firstClass) desc += `.${firstClass}`;
       }
+      return desc;
+    };
 
-      // 延迟记录以确保获取正确的 prevented/stopped 状态
+    const isElementEditable = (el: HTMLElement | null): boolean => {
+      if (!el) return false;
+      const tagName = el.tagName.toUpperCase();
+      return (
+        tagName === 'INPUT' ||
+        tagName === 'TEXTAREA' ||
+        el.isContentEditable ||
+        !!el.closest('.blocklyHtmlInput') ||
+        !!el.closest('.monaco-editor')
+      );
+    };
+
+    const kbdHandler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const targetDesc = getTargetDesc(target);
+      const isInput = isElementEditable(target);
+
       setTimeout(() => {
         setLogs(prev => [{
+          type: 'KEYBOARD' as const,
           key: e.key,
           target: targetDesc,
+          isInput,
           prevented: e.defaultPrevented,
           stopped: (e as any)._propagationStopped || false,
           timestamp: Date.now(),
           phase: e.eventPhase === 1 ? 'CAPTURING' : e.eventPhase === 3 ? 'BUBBLING' : 'TARGET'
-        }, ...prev].slice(0, 30)); // 最多保留 30 条记录
+        }, ...prev].slice(0, 50));
       }, 0);
+    };
+
+    const mouseHandler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target?.closest('.diagnostic-panel-container')) return;
+
+      const targetDesc = getTargetDesc(target);
+      const isInput = isElementEditable(target);
+
+      setLogs(prev => [{
+        type: 'MOUSE' as const,
+        key: `CLICK_${e.button === 0 ? 'LEFT' : e.button === 2 ? 'RIGHT' : 'MID'}`,
+        target: targetDesc,
+        isInput,
+        prevented: e.defaultPrevented,
+        stopped: false,
+        timestamp: Date.now(),
+        phase: 'TARGET',
+        coords: { x: e.clientX, y: e.clientY }
+      }, ...prev].slice(0, 50));
     };
 
     /** 切换叠加层可见性 */
     const toggleHandler = () => setIsVisible(v => !v);
     window.addEventListener('toggle-diagnostic-overlay', toggleHandler);
 
-    /** 窗口获得焦点时记录 */
     const windowFocusHandler = () => {
       setLogs(prev => [{
+        type: 'SYSTEM' as const,
         key: 'WINDOW_FOCUS',
         target: 'N/A',
         prevented: false,
         stopped: false,
         timestamp: Date.now(),
         phase: 'SYSTEM'
-      }, ...prev].slice(0, 30));
+      }, ...prev].slice(0, 50));
     };
 
     /** 窗口失去焦点时记录 */
     const windowBlurHandler = () => {
       setLogs(prev => [{
+        type: 'SYSTEM' as const,
         key: 'WINDOW_BLUR',
         target: 'N/A',
         prevented: false,
         stopped: false,
         timestamp: Date.now(),
         phase: 'SYSTEM'
-      }, ...prev].slice(0, 30));
+      }, ...prev].slice(0, 50));
     };
 
     /**
@@ -176,14 +218,16 @@ export const DiagnosticOverlay: React.FC = () => {
       setPos(prev => constrainPos(prev.x, prev.y));
     };
 
-    window.addEventListener('keydown', handler, true);
+    window.addEventListener('keydown', kbdHandler, true);
+    window.addEventListener('mousedown', mouseHandler, true);
     window.addEventListener('focus', windowFocusHandler);
     window.addEventListener('blur', windowBlurHandler);
     window.addEventListener('resize', handleResize);
     const focusInterval = setInterval(focusTracker, 500);
 
     return () => {
-      window.removeEventListener('keydown', handler, true);
+      window.removeEventListener('keydown', kbdHandler, true);
+      window.removeEventListener('mousedown', mouseHandler, true);
       window.removeEventListener('focus', windowFocusHandler);
       window.removeEventListener('blur', windowBlurHandler);
       window.removeEventListener('resize', handleResize);
@@ -231,16 +275,80 @@ export const DiagnosticOverlay: React.FC = () => {
   // 不可见时不渲染
   if (!isVisible) return null;
 
+  /**
+   * 导出当前的交互记录为 Markdown 格式的文档记录
+   */
+  const exportLogsAsDocument = () => {
+    if (logs.length === 0) {
+      showNotification('没有可导出的日志记录', 'info');
+      return;
+    }
+
+    const title = `# EmbedBlocks Interaction Diagnostic Record (${new Date().toLocaleString()})\n\n`;
+    const header = `| Time | Type | Action/Key | Target Element | Detail |\n| :--- | :--- | :--- | :--- | :--- |\n`;
+    const rows = logs.map(log => {
+      const time = new Date(log.timestamp).toLocaleTimeString([], { hour12: false });
+      const type = log.type === 'KEYBOARD' ? '⌨️ KBD' : log.type === 'MOUSE' ? '🖱️ MOUSE' : '⚙️ SYS';
+      const detail = log.type === 'MOUSE' ? `Coord: (${log.coords?.x}, ${log.coords?.y})` :
+        `${log.prevented ? '[Prevented]' : ''} ${log.stopped ? '[Stopped]' : ''} (${log.phase})`;
+      return `| ${time} | ${type} | **${log.key}** | \`${log.target}\` | ${detail} |`;
+    }).join('\n');
+
+    const doc = title + header + rows;
+
+    // 方案 1: 使用现代 Clipboard API
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(doc).then(() => {
+        showNotification('交互记录已作为 Markdown 文档复制到剪切板', 'success');
+      }).catch(err => {
+        console.warn('[Diagnostic] Clipboard API failed, trying fallback...', err);
+        fallbackCopy(doc);
+      });
+    } else {
+      fallbackCopy(doc);
+    }
+  };
+
+  /**
+   * 备选复制方案: 使用隐藏的 Textarea (不受焦点限制)
+   */
+  const fallbackCopy = (text: string) => {
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (successful) {
+        showNotification('交互记录已通过兼容模式复制到剪切板', 'success');
+      } else {
+        throw new Error('execCommand failed');
+      }
+    } catch (err) {
+      console.error('所有复制方案均失败:', err);
+      showNotification('无法复制记录，请在控制台查看输出', 'error');
+      console.log('--- DIAGNOSTIC LOG ---', text);
+    }
+  };
+
   // ========== 渲染诊断叠加层 ==========
   return (
-    <div style={{
-      position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999,
-      background: 'rgba(0,0,0,0.92)', color: '#0f0', padding: '12px',
-      borderRadius: '8px', fontSize: '12px', fontFamily: 'monospace',
-      width: '420px', maxHeight: '450px', overflow: 'hidden', pointerEvents: 'auto',
-      userSelect: 'text', border: '1px solid #444', boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
-      display: 'flex', flexDirection: 'column'
-    }}>
+    <div
+      className="diagnostic-panel-container"
+      style={{
+        position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999,
+        background: 'rgba(0,0,0,0.92)', color: '#0f0', padding: '12px',
+        borderRadius: '8px', fontSize: '12px', fontFamily: 'monospace',
+        width: '420px', maxHeight: '450px', overflow: 'hidden', pointerEvents: 'auto',
+        userSelect: 'text', border: '1px solid #444', boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
+        display: 'flex', flexDirection: 'column'
+      }}
+    >
       {/* 标题栏 - 支持拖拽 */}
       <div
         onMouseDown={startDrag}
@@ -252,7 +360,7 @@ export const DiagnosticOverlay: React.FC = () => {
       >
         {/* 标题和焦点信息 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <span style={{ fontSize: '14px', color: '#0f0', letterSpacing: '1px' }}>⌨️ 键盘诊断工具</span>
+          <span style={{ fontSize: '14px', color: '#0f0', letterSpacing: '1px' }}>⌨️ 交互诊断工具 (Mouse/Kbd)</span>
           <span style={{
             color: activeFocus.includes('[INPUT-READY]') ? '#0f0' : '#f0f',
             fontSize: '11px',
@@ -284,12 +392,14 @@ export const DiagnosticOverlay: React.FC = () => {
         {logs.map((log, i) => (
           <div key={i} style={{ marginBottom: '2px', whiteSpace: 'nowrap', borderBottom: '1px solid #1a1a1a', padding: '4px 0' }}>
             <span style={{ color: '#555', fontSize: '10px' }}>[{new Date(log.timestamp).toLocaleTimeString([], { hour12: false })}]</span>
+            <span style={{ marginLeft: '4px' }}>{log.type === 'KEYBOARD' ? '⌨️' : log.type === 'MOUSE' ? '🖱️' : '⚙️'}</span>
             <b style={{
-              color: log.key.includes('WINDOW_') ? '#ff0' : (log.prevented ? '#f55' : '#fff'),
-              marginLeft: '6px', minWidth: '60px', display: 'inline-block'
+              color: log.type === 'SYSTEM' ? '#ff0' : (log.prevented ? '#f55' : '#fff'),
+              marginLeft: '4px', minWidth: '60px', display: 'inline-block'
             }}>{log.key}</b>
             <span style={{ color: '#888', marginLeft: '4px', fontSize: '11px' }}>于 {log.target}</span>
-            <span style={{ color: '#444', marginLeft: '4px', fontSize: '9px' }}>({log.phase})</span>
+            {log.isInput && <span style={{ color: '#f90', fontSize: '9px', fontWeight: 'bold' }}> [EDIT]</span>}
+            {log.coords && <span style={{ color: '#0af', fontSize: '9px' }}> ({log.coords.x}, {log.coords.y})</span>}
             {log.prevented ? <span style={{ color: '#f55', fontWeight: 'bold', fontSize: '10px' }}> [已阻止]</span> : ''}
             {log.stopped ? <span style={{ color: '#ff5', fontWeight: 'bold', fontSize: '10px' }}> [已停止]</span> : ''}
           </div>
@@ -298,17 +408,26 @@ export const DiagnosticOverlay: React.FC = () => {
       {/* 底部操作按钮 */}
       <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
         <button
+          onClick={exportLogsAsDocument}
+          style={{
+            flex: 1, background: '#060', color: '#fff', border: '1px solid #0a0', padding: '6px',
+            borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold'
+          }}
+        >
+          📄 导出文档记录
+        </button>
+        <button
           onClick={() => {
             (document.activeElement as HTMLElement)?.blur();
             document.body.focus();
             showNotification('Global focus reset to document body', 'success');
           }}
           style={{
-            flex: 1, background: '#333', color: '#fff', border: '1px solid #555', padding: '6px',
+            background: '#333', color: '#fff', border: '1px solid #555', padding: '6px',
             borderRadius: '4px', fontSize: '11px', cursor: 'pointer'
           }}
         >
-          重置全局焦点
+          重置焦点
         </button>
         {/* 清空日志按钮 */}
         <button
@@ -318,7 +437,7 @@ export const DiagnosticOverlay: React.FC = () => {
             borderRadius: '4px', fontSize: '11px', cursor: 'pointer'
           }}
         >
-          清空日志
+          清空
         </button>
       </div>
       <div style={{

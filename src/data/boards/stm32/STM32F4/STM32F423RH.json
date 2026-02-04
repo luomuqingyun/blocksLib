@@ -5,6 +5,9 @@
   "mcu": "STM32F423RH",
   "variant": "F413R(G-H)T_F423RHT",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "1536k Flash / 192k RAM",

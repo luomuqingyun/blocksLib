@@ -5,7 +5,10 @@
   "mcu": "STM32F031K6",
   "variant": "F031K(4-6)U",
   "pinCount": 32,
-  "package": "UFQFPN32",
+  "build": {
+    "cpu": "cortex-m0"
+  },
+  "package": "LQFP32",
   "fcpu": 0,
   "specs": "32k Flash / 4k RAM",
   "description": "STM32F031K6 - STM32F0 series board",
@@ -314,7 +317,7 @@
       ]
     },
     {
-      "name": "PB2",
+      "name": "VSS",
       "position": "16",
       "functions": []
     },
@@ -432,12 +435,9 @@
       "functions": []
     },
     {
-      "name": "PB8",
+      "name": "VSS",
       "position": "32",
-      "functions": [
-        "I2C1_SCL",
-        "TIM16_CH1"
-      ]
+      "functions": []
     }
   ],
   "pin_options": {

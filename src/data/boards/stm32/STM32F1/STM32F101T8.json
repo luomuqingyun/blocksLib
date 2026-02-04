@@ -5,6 +5,9 @@
   "mcu": "STM32F101T8",
   "variant": "F101T(8-B)U",
   "pinCount": 36,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "VFQFPN36",
   "fcpu": 0,
   "specs": "64k Flash / 20k RAM",

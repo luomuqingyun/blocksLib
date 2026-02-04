@@ -5,6 +5,9 @@
   "mcu": "STM32F101C6",
   "variant": "F101C(4-6)T",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "32k Flash / 6k RAM",

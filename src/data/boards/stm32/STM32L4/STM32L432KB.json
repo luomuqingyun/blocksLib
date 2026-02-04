@@ -5,6 +5,9 @@
   "mcu": "STM32L432KB",
   "variant": "L432K(B-C)U_L442KCU",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN32",
   "fcpu": 0,
   "specs": "128k Flash / 16k RAM",

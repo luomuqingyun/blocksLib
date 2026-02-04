@@ -5,6 +5,9 @@
   "mcu": "STM32H523RE",
   "variant": "H523R(C-E)T_H533RET",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

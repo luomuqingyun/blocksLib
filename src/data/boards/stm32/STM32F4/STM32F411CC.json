@@ -5,6 +5,9 @@
   "mcu": "STM32F411CC",
   "variant": "F411C(C-E)(U-Y)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN48",
   "fcpu": 0,
   "specs": "256k Flash / 128k RAM",

@@ -5,6 +5,9 @@
   "mcu": "STM32U031G6",
   "variant": "U031G(6-8)Y",
   "pinCount": 27,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP27",
   "fcpu": 0,
   "specs": "32k Flash / 4k RAM",

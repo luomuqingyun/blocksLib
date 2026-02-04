@@ -5,6 +5,9 @@
   "mcu": "STM32G051G6",
   "variant": "G051G(6-8)U_G061G(6-8)U",
   "pinCount": 28,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "UFQFPN28",
   "fcpu": 0,
   "specs": "32k Flash / 8k RAM",

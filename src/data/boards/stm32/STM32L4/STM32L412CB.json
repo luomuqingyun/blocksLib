@@ -5,6 +5,9 @@
   "mcu": "STM32L412CB",
   "variant": "L412C(8-B)(T-U)_L422CB(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "128k Flash / 16k RAM",

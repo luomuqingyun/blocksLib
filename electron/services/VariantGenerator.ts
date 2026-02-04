@@ -44,6 +44,13 @@ export interface VariantData {
   productLine?: string; // e.g. "STM32F103xB"
   maxFlashSize?: number; // bytes
   maxRamSize?: number; // bytes
+
+  // [Added] Option to use build config from JSON
+  build?: {
+    cpu?: string;
+    extra_flags?: string;
+    [key: string]: any;
+  };
 }
 
 class VariantGenerator {
@@ -222,15 +229,33 @@ class VariantGenerator {
     // 格式: ARDUINO_GENERIC_F103C8TX (系列 + 封装 + Flash + 后缀 'X')
     const arduinoBoardMacro = this.generateArduinoBoardMacro(data.mcu);
 
-    // [核心逻辑] 继承与重定向
-    const build = parentConfig?.build ? { ...parentConfig.build } : {
+    // [CORE UPDATE] Ensure mandatory fields (core, mcu) even if data.build is provided
+    const defaultBuild = {
       core: "stm32",
-      cpu: "cortex-m0",
-      // extra_flags 必须同时包含 product_line 和 Arduino 板卡宏
-      extra_flags: `-D${productLineMacro} -D${arduinoBoardMacro}`,
-      f_cpu: "72000000L",
-      mcu: data.mcu.toLowerCase(),
+      cpu: "cortex-m3", // Default fallback
+      mcu: data.mcu.toLowerCase()
     };
+
+    // Merge strategy: data.build (if any) > parentConfig.build (if any) > defaults
+    const build: any = {
+      ...defaultBuild,
+      ...(parentConfig?.build || {}),
+      ...(data.build || {})
+    };
+
+    // Ensure extra_flags includes productLineMacro and arduinoBoardMacro
+    const existingExtraFlags = build.extra_flags || '';
+    const requiredFlags = [`-D${productLineMacro}`, `-D${arduinoBoardMacro}`];
+    const newExtraFlags = [...new Set([...existingExtraFlags.split(' ').filter((f: string) => f), ...requiredFlags])].join(' ');
+    build.extra_flags = newExtraFlags;
+
+    // [FIX] Always ensure 'mcu' is in build config, required by PlatformIO
+    build.mcu = data.mcu.toLowerCase();
+
+    // Set f_cpu if not already set
+    if (!build.f_cpu) {
+      build.f_cpu = "72000000L"; // Default F_CPU
+    }
 
     // [增强] 使用增强兼容性映射中的 product_line
     if (data.productLine && !build.product_line) {
@@ -241,14 +266,16 @@ class VariantGenerator {
 
     // 智能修正 CPU 类型 (F4, F3, G4, H7 等为 M4/M7)
     if (!parentConfig?.build?.cpu) {
-      const mcuPrefix = data.mcu.substring(0, 7).toUpperCase();
-      if (['STM32F4', 'STM32F3', 'STM32G4', 'STM32L4', 'STM32WB'].some(p => mcuPrefix.startsWith(p))) {
+      const mcuName = data.mcu.toUpperCase();
+      if (mcuName.startsWith('STM32WBA') || mcuName.startsWith('STM32H5') || mcuName.startsWith('STM32U5') || mcuName.startsWith('STM32L5')) {
+        build.cpu = "cortex-m33";
+      } else if (['STM32F4', 'STM32F3', 'STM32G4', 'STM32L4', 'STM32WB'].some(p => mcuName.startsWith(p))) {
         build.cpu = "cortex-m4";
-      } else if (['STM32F7', 'STM32H7'].some(p => mcuPrefix.startsWith(p))) {
+      } else if (['STM32F7', 'STM32H7'].some(p => mcuName.startsWith(p))) {
         build.cpu = "cortex-m7";
-      } else if (['STM32G0', 'STM32F0', 'STM32L0', 'STM32C0'].some(p => mcuPrefix.startsWith(p))) {
+      } else if (['STM32G0', 'STM32F0', 'STM32L0', 'STM32C0'].some(p => mcuName.startsWith(p))) {
         build.cpu = "cortex-m0plus";
-      } else if (['STM32F2'].some(p => mcuPrefix.startsWith(p))) {
+      } else if (['STM32F2'].some(p => mcuName.startsWith(p))) {
         build.cpu = "cortex-m3";
       } else {
         build.cpu = "cortex-m3"; // F1, F2 等默认 M3

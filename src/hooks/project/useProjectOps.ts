@@ -44,6 +44,8 @@ interface ProjectOpsProps {
     setIsDirty: (dirty: boolean) => void;             // 设置脏状态的回调
     setCode: (code: string) => void;                  // 设置代码内容的回调
     setPendingXml: (xml: string | null) => void;      // 设置待加载 XML 的回调
+    isLoading: boolean;                               // [新] 是否正在加载中
+    setIsLoading?: (loading: boolean) => void;        // [新] 设置加载状态的回调
     markWorkspaceDirty: () => void;                   // 标记工作区为已修改的方法
     setIsNewProjectOpen: (open: boolean) => void;     // 控制“新建项目”模态框
     setIsSaveAsOpen: (open: boolean) => void;         // 控制“另存为”模态框
@@ -62,6 +64,8 @@ export const useProjectOps = (props: ProjectOpsProps) => {
         setIsDirty,
         setCode,
         setPendingXml,
+        isLoading,
+        setIsLoading,
         markWorkspaceDirty,
         setIsNewProjectOpen,
         setIsSaveAsOpen
@@ -77,6 +81,7 @@ export const useProjectOps = (props: ProjectOpsProps) => {
     const createNewProject = useCallback(async (name: string, boardId: string, parentDir: string) => {
         if (!window.electronAPI) return { success: false, error: 'Electron API not found' };
         try {
+            setIsLoading?.(true); // [新] 开启加载保护锁
             const boardConfig = BoardRegistry.get(boardId);
             const result = await window.electronAPI.createProject(parentDir, name, boardId, boardConfig?.build);
             if (result.success && result.path) {
@@ -124,6 +129,7 @@ export const useProjectOps = (props: ProjectOpsProps) => {
     const openProject = useCallback(async () => {
         try {
             if (!window.electronAPI) return;
+            setIsLoading?.(true); // [新] 开启加载保护锁
             const result = await window.electronAPI.openProjectFolder();
             if (!result.cancelled && result.projectPath && result.data) {
                 const projectPath = result.projectPath;
@@ -157,9 +163,14 @@ export const useProjectOps = (props: ProjectOpsProps) => {
                 setCode(code);
                 setPath(result.projectPath);
                 setMetadata(metadata);
+            } else {
+                setIsLoading?.(false); // [新] 如果中途取消或失败，立即释放锁
             }
-        } catch (e) { console.error(e); }
-    }, [markWorkspaceDirty, setCode, setPath, setIsDirty, setPendingXml, setMetadata]);
+        } catch (e) {
+            console.error(e);
+            setIsLoading?.(false);
+        }
+    }, [markWorkspaceDirty, setCode, setPath, setIsDirty, setPendingXml, setMetadata, setIsLoading]);
 
     /**
      * 通过指定路径打开项目（用于最近项目列表）
@@ -167,6 +178,7 @@ export const useProjectOps = (props: ProjectOpsProps) => {
     const openProjectByPath = useCallback(async (path: string) => {
         try {
             if (!window.electronAPI) return { success: false, error: 'Electron API not found' };
+            setIsLoading?.(true); // [新] 开启加载保护锁
             const result = await window.electronAPI.openProjectByPath(path);
             if (!result.cancelled && result.projectPath && result.data) {
                 const projectPath = result.projectPath;
@@ -199,14 +211,17 @@ export const useProjectOps = (props: ProjectOpsProps) => {
                 setMetadata(metadata);
                 return { success: true };
             } else if (result.error) {
+                setIsLoading?.(false);
                 return { success: false, error: result.error };
             }
+            setIsLoading?.(false);
             return { success: false, error: 'Cancelled or unknown error' };
         } catch (e) {
             console.error(e);
+            setIsLoading?.(false);
             return { success: false, error: String(e) };
         }
-    }, [markWorkspaceDirty, setCode, setPath, setIsDirty, setPendingXml, setMetadata]);
+    }, [markWorkspaceDirty, setCode, setPath, setIsDirty, setPendingXml, setMetadata, setIsLoading]);
 
     /**
      * 保存项目
@@ -217,6 +232,12 @@ export const useProjectOps = (props: ProjectOpsProps) => {
      */
     const saveProject = useCallback(async () => {
         if (!window.electronAPI) return;
+
+        // [关键修复] 严禁在加载期间保存，防止空状态覆盖磁盘
+        if (projectState.isDirty && isLoading) {
+            console.warn('[saveProject] Loading in progress, save blocked.');
+            return;
+        }
 
         if (!currentFilePath) {
             setIsNewProjectOpen(true);

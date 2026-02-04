@@ -5,6 +5,9 @@
   "mcu": "STM32F030K6",
   "variant": "F030K6T",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m0"
+  },
   "package": "LQFP32",
   "fcpu": 0,
   "specs": "32k Flash / 4k RAM",

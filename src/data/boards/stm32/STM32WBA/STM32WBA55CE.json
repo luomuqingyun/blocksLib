@@ -5,6 +5,9 @@
   "mcu": "STM32WBA55CE",
   "variant": "WBA55C(E-G)U",
   "pinCount": 49,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "UFQFPN48",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

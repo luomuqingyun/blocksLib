@@ -5,7 +5,10 @@
   "mcu": "STM32F100R4",
   "variant": "F100R(4-6)H",
   "pinCount": 64,
-  "package": "TFBGA64",
+  "build": {
+    "cpu": "cortex-m3"
+  },
+  "package": "LQFP64",
   "fcpu": 0,
   "specs": "16k Flash / 6k RAM",
   "description": "STM32F100R4 - STM32F1 series board",
@@ -229,269 +232,97 @@
   },
   "pinMap": [
     {
-      "name": "PC14",
-      "position": "A1",
+      "name": "VBAT",
+      "position": "1",
       "functions": []
     },
     {
       "name": "PC13",
-      "position": "A2",
+      "position": "2",
       "functions": []
     },
     {
-      "name": "PB9",
-      "position": "A3",
-      "functions": [
-        "I2C1_SDA",
-        "TIM17_CH1"
-      ]
-    },
-    {
-      "name": "PB4",
-      "position": "A4",
-      "functions": [
-        "SPI1_MISO",
-        "TIM3_CH1"
-      ]
-    },
-    {
-      "name": "PB3",
-      "position": "A5",
-      "functions": [
-        "SPI1_SCLK",
-        "TIM2_CH2"
-      ]
-    },
-    {
-      "name": "PA15",
-      "position": "A6",
-      "functions": [
-        "SPI1_SSEL",
-        "TIM2_CH1"
-      ]
-    },
-    {
-      "name": "PA14",
-      "position": "A7",
-      "functions": []
-    },
-    {
-      "name": "PA13",
-      "position": "A8",
+      "name": "PC14",
+      "position": "3",
       "functions": []
     },
     {
       "name": "PC15",
-      "position": "B1",
+      "position": "4",
       "functions": []
-    },
-    {
-      "name": "VBAT",
-      "position": "B2",
-      "functions": []
-    },
-    {
-      "name": "PB8",
-      "position": "B3",
-      "functions": [
-        "I2C1_SCL",
-        "TIM16_CH1"
-      ]
-    },
-    {
-      "name": "BOOT0",
-      "position": "B4",
-      "functions": []
-    },
-    {
-      "name": "PD2",
-      "position": "B5",
-      "functions": []
-    },
-    {
-      "name": "PC11",
-      "position": "B6",
-      "functions": []
-    },
-    {
-      "name": "PC10",
-      "position": "B7",
-      "functions": []
-    },
-    {
-      "name": "PA12",
-      "position": "B8",
-      "functions": [
-        "USART1_RTS"
-      ]
     },
     {
       "name": "PD0",
-      "position": "C1",
+      "position": "5",
       "functions": []
-    },
-    {
-      "name": "VSS",
-      "position": "C2",
-      "functions": []
-    },
-    {
-      "name": "PB7",
-      "position": "C3",
-      "functions": [
-        "I2C1_SDA",
-        "TIM17_CH1N",
-        "USART1_RX"
-      ]
-    },
-    {
-      "name": "PB5",
-      "position": "C4",
-      "functions": [
-        "SPI1_MOSI",
-        "TIM3_CH2"
-      ]
-    },
-    {
-      "name": "PC12",
-      "position": "C5",
-      "functions": []
-    },
-    {
-      "name": "PA10",
-      "position": "C6",
-      "functions": [
-        "TIM1_CH3",
-        "USART1_RX"
-      ]
-    },
-    {
-      "name": "PA9",
-      "position": "C7",
-      "functions": [
-        "TIM1_CH2",
-        "USART1_TX"
-      ]
-    },
-    {
-      "name": "PA11",
-      "position": "C8",
-      "functions": [
-        "TIM1_CH4",
-        "USART1_CTS"
-      ]
     },
     {
       "name": "PD1",
-      "position": "D1",
+      "position": "6",
       "functions": []
-    },
-    {
-      "name": "VDD",
-      "position": "D2",
-      "functions": []
-    },
-    {
-      "name": "PB6",
-      "position": "D3",
-      "functions": [
-        "I2C1_SCL",
-        "TIM16_CH1N",
-        "USART1_TX"
-      ]
-    },
-    {
-      "name": "VSS",
-      "position": "D4",
-      "functions": []
-    },
-    {
-      "name": "VSS",
-      "position": "D5",
-      "functions": []
-    },
-    {
-      "name": "VSS",
-      "position": "D6",
-      "functions": []
-    },
-    {
-      "name": "PA8",
-      "position": "D7",
-      "functions": [
-        "TIM1_CH1"
-      ]
-    },
-    {
-      "name": "PC9",
-      "position": "D8",
-      "functions": [
-        "TIM3_CH4"
-      ]
     },
     {
       "name": "NRST",
-      "position": "E1",
+      "position": "7",
       "functions": []
-    },
-    {
-      "name": "PC1",
-      "position": "E2",
-      "functions": [
-        "ADC1_IN"
-      ]
     },
     {
       "name": "PC0",
-      "position": "E3",
+      "position": "8",
       "functions": [
         "ADC1_IN"
       ]
     },
     {
-      "name": "VDD",
-      "position": "E4",
-      "functions": []
-    },
-    {
-      "name": "VDD",
-      "position": "E5",
-      "functions": []
-    },
-    {
-      "name": "VDD",
-      "position": "E6",
-      "functions": []
-    },
-    {
-      "name": "PC7",
-      "position": "E7",
+      "name": "PC1",
+      "position": "9",
       "functions": [
-        "TIM3_CH2"
+        "ADC1_IN"
       ]
-    },
-    {
-      "name": "PC8",
-      "position": "E8",
-      "functions": [
-        "TIM3_CH3"
-      ]
-    },
-    {
-      "name": "VSSA",
-      "position": "F1",
-      "functions": []
     },
     {
       "name": "PC2",
-      "position": "F2",
+      "position": "10",
       "functions": [
         "ADC1_IN"
+      ]
+    },
+    {
+      "name": "PC3",
+      "position": "11",
+      "functions": []
+    },
+    {
+      "name": "VSSA",
+      "position": "12",
+      "functions": []
+    },
+    {
+      "name": "VDDA",
+      "position": "13",
+      "functions": []
+    },
+    {
+      "name": "PA0",
+      "position": "14",
+      "functions": [
+        "ADC1_IN",
+        "TIM2_CH1",
+        "USART2_CTS"
+      ]
+    },
+    {
+      "name": "PA1",
+      "position": "15",
+      "functions": [
+        "ADC1_IN",
+        "TIM2_CH2",
+        "USART2_RTS"
       ]
     },
     {
       "name": "PA2",
-      "position": "F3",
+      "position": "16",
       "functions": [
         "ADC1_IN",
         "TIM15_CH1",
@@ -500,64 +331,8 @@
       ]
     },
     {
-      "name": "PA5",
-      "position": "F4",
-      "functions": [
-        "ADC1_IN",
-        "DAC1_OUT",
-        "SPI1_SCLK"
-      ]
-    },
-    {
-      "name": "PB0",
-      "position": "F5",
-      "functions": [
-        "ADC1_IN",
-        "TIM1_CH2N",
-        "TIM3_CH3"
-      ]
-    },
-    {
-      "name": "PC6",
-      "position": "F6",
-      "functions": [
-        "TIM3_CH1"
-      ]
-    },
-    {
-      "name": "PB15",
-      "position": "F7",
-      "functions": [
-        "TIM15_CH1N",
-        "TIM15_CH2",
-        "TIM1_CH3N"
-      ]
-    },
-    {
-      "name": "PB14",
-      "position": "F8",
-      "functions": [
-        "TIM15_CH1",
-        "TIM1_CH2N"
-      ]
-    },
-    {
-      "name": "VREF+",
-      "position": "G1",
-      "functions": []
-    },
-    {
-      "name": "PA0",
-      "position": "G2",
-      "functions": [
-        "ADC1_IN",
-        "TIM2_CH1",
-        "USART2_CTS"
-      ]
-    },
-    {
       "name": "PA3",
-      "position": "G3",
+      "position": "17",
       "functions": [
         "ADC1_IN",
         "TIM15_CH2",
@@ -566,8 +341,36 @@
       ]
     },
     {
+      "name": "VSS",
+      "position": "18",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "19",
+      "functions": []
+    },
+    {
+      "name": "PA4",
+      "position": "20",
+      "functions": [
+        "ADC1_IN",
+        "DAC1_OUT",
+        "SPI1_SSEL"
+      ]
+    },
+    {
+      "name": "PA5",
+      "position": "21",
+      "functions": [
+        "ADC1_IN",
+        "DAC1_OUT",
+        "SPI1_SCLK"
+      ]
+    },
+    {
       "name": "PA6",
-      "position": "G4",
+      "position": "22",
       "functions": [
         "ADC1_IN",
         "SPI1_MISO",
@@ -576,59 +379,8 @@
       ]
     },
     {
-      "name": "PB1",
-      "position": "G5",
-      "functions": [
-        "ADC1_IN",
-        "TIM1_CH3N",
-        "TIM3_CH4"
-      ]
-    },
-    {
-      "name": "PB2",
-      "position": "G6",
-      "functions": []
-    },
-    {
-      "name": "PB10",
-      "position": "G7",
-      "functions": [
-        "TIM2_CH3"
-      ]
-    },
-    {
-      "name": "PB13",
-      "position": "G8",
-      "functions": [
-        "TIM1_CH1N"
-      ]
-    },
-    {
-      "name": "VDDA",
-      "position": "H1",
-      "functions": []
-    },
-    {
-      "name": "PA1",
-      "position": "H2",
-      "functions": [
-        "ADC1_IN",
-        "TIM2_CH2",
-        "USART2_RTS"
-      ]
-    },
-    {
-      "name": "PA4",
-      "position": "H3",
-      "functions": [
-        "ADC1_IN",
-        "DAC1_OUT",
-        "SPI1_SSEL"
-      ]
-    },
-    {
       "name": "PA7",
-      "position": "H4",
+      "position": "23",
       "functions": [
         "ADC1_IN",
         "SPI1_MOSI",
@@ -639,28 +391,279 @@
     },
     {
       "name": "PC4",
-      "position": "H5",
+      "position": "24",
       "functions": [
         "ADC1_IN"
       ]
     },
     {
       "name": "PC5",
-      "position": "H6",
+      "position": "25",
       "functions": [
         "ADC1_IN"
       ]
     },
     {
+      "name": "PB0",
+      "position": "26",
+      "functions": [
+        "ADC1_IN",
+        "TIM1_CH2N",
+        "TIM3_CH3"
+      ]
+    },
+    {
+      "name": "PB1",
+      "position": "27",
+      "functions": [
+        "ADC1_IN",
+        "TIM1_CH3N",
+        "TIM3_CH4"
+      ]
+    },
+    {
+      "name": "PB2",
+      "position": "28",
+      "functions": []
+    },
+    {
+      "name": "PB10",
+      "position": "29",
+      "functions": [
+        "TIM2_CH3"
+      ]
+    },
+    {
       "name": "PB11",
-      "position": "H7",
+      "position": "30",
       "functions": [
         "TIM2_CH4"
       ]
     },
     {
+      "name": "VSS",
+      "position": "31",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "32",
+      "functions": []
+    },
+    {
       "name": "PB12",
-      "position": "H8",
+      "position": "33",
+      "functions": []
+    },
+    {
+      "name": "PB13",
+      "position": "34",
+      "functions": [
+        "TIM1_CH1N"
+      ]
+    },
+    {
+      "name": "PB14",
+      "position": "35",
+      "functions": [
+        "TIM15_CH1",
+        "TIM1_CH2N"
+      ]
+    },
+    {
+      "name": "PB15",
+      "position": "36",
+      "functions": [
+        "TIM15_CH1N",
+        "TIM15_CH2",
+        "TIM1_CH3N"
+      ]
+    },
+    {
+      "name": "PC6",
+      "position": "37",
+      "functions": [
+        "TIM3_CH1"
+      ]
+    },
+    {
+      "name": "PC7",
+      "position": "38",
+      "functions": [
+        "TIM3_CH2"
+      ]
+    },
+    {
+      "name": "PC8",
+      "position": "39",
+      "functions": [
+        "TIM3_CH3"
+      ]
+    },
+    {
+      "name": "PC9",
+      "position": "40",
+      "functions": [
+        "TIM3_CH4"
+      ]
+    },
+    {
+      "name": "PA8",
+      "position": "41",
+      "functions": [
+        "TIM1_CH1"
+      ]
+    },
+    {
+      "name": "PA9",
+      "position": "42",
+      "functions": [
+        "TIM1_CH2",
+        "USART1_TX"
+      ]
+    },
+    {
+      "name": "PA10",
+      "position": "43",
+      "functions": [
+        "TIM1_CH3",
+        "USART1_RX"
+      ]
+    },
+    {
+      "name": "PA11",
+      "position": "44",
+      "functions": [
+        "TIM1_CH4",
+        "USART1_CTS"
+      ]
+    },
+    {
+      "name": "PA12",
+      "position": "45",
+      "functions": [
+        "USART1_RTS"
+      ]
+    },
+    {
+      "name": "PA13",
+      "position": "46",
+      "functions": []
+    },
+    {
+      "name": "VSS",
+      "position": "47",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "48",
+      "functions": []
+    },
+    {
+      "name": "PA14",
+      "position": "49",
+      "functions": []
+    },
+    {
+      "name": "PA15",
+      "position": "50",
+      "functions": [
+        "SPI1_SSEL",
+        "TIM2_CH1"
+      ]
+    },
+    {
+      "name": "PC10",
+      "position": "51",
+      "functions": []
+    },
+    {
+      "name": "PC11",
+      "position": "52",
+      "functions": []
+    },
+    {
+      "name": "PC12",
+      "position": "53",
+      "functions": []
+    },
+    {
+      "name": "PD2",
+      "position": "54",
+      "functions": []
+    },
+    {
+      "name": "PB3",
+      "position": "55",
+      "functions": [
+        "SPI1_SCLK",
+        "TIM2_CH2"
+      ]
+    },
+    {
+      "name": "PB4",
+      "position": "56",
+      "functions": [
+        "SPI1_MISO",
+        "TIM3_CH1"
+      ]
+    },
+    {
+      "name": "PB5",
+      "position": "57",
+      "functions": [
+        "SPI1_MOSI",
+        "TIM3_CH2"
+      ]
+    },
+    {
+      "name": "PB6",
+      "position": "58",
+      "functions": [
+        "I2C1_SCL",
+        "TIM16_CH1N",
+        "USART1_TX"
+      ]
+    },
+    {
+      "name": "PB7",
+      "position": "59",
+      "functions": [
+        "I2C1_SDA",
+        "TIM17_CH1N",
+        "USART1_RX"
+      ]
+    },
+    {
+      "name": "BOOT0",
+      "position": "60",
+      "functions": []
+    },
+    {
+      "name": "PB8",
+      "position": "61",
+      "functions": [
+        "I2C1_SCL",
+        "TIM16_CH1"
+      ]
+    },
+    {
+      "name": "PB9",
+      "position": "62",
+      "functions": [
+        "I2C1_SDA",
+        "TIM17_CH1"
+      ]
+    },
+    {
+      "name": "VSS",
+      "position": "63",
+      "functions": []
+    },
+    {
+      "name": "VDD",
+      "position": "64",
       "functions": []
     }
   ],

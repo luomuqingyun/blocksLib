@@ -5,6 +5,9 @@
   "mcu": "STM32U595AI",
   "variant": "U595A(I-J)HxQ_U5A5AJHxQ",
   "pinCount": 169,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "TFBGA169",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

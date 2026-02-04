@@ -5,6 +5,9 @@
   "mcu": "STM32G0B1NE",
   "variant": "G0B1NEY_G0C1NEY",
   "pinCount": 52,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP52",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

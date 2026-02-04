@@ -23,7 +23,7 @@
  * @file src/components/BlocklyWrapper.tsx
  * @module EmbedBlocks/Frontend/Components
  */
-import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback, memo } from 'react';
 // @ts-ignore
 import * as Blockly from 'blockly';
 import { CustomBackpack } from './blockly/CustomBackpack';
@@ -91,7 +91,7 @@ export interface BlocklyWrapperHandle {
 // ------------------------------------------------------------------
 // 组件定义 (Component Definition)
 // ------------------------------------------------------------------
-export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperProps>((props, ref) => {
+export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapperProps>((props, ref) => {
   // 激活提取出的主题样式
   useBlocklyStyles();
   const { onCodeChange, toolboxConfiguration, initialXml, onXmlLoaded, onUiChange } = props;
@@ -137,6 +137,17 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
   const [workspaceInstance, setWorkspaceInstance] = useState<any>(null);
   /** 是否准备好接受编辑 (加载项目完成后) */
   const [isReadyForEdits, setIsReadyForEdits] = useState(false);
+  /** 注册表版本 (用于触发依赖于 BoardRegistry 的 Effect) */
+  const [registryVersion, setRegistryVersion] = useState(0);
+
+  // 监听注册表变更
+  useEffect(() => {
+    return BoardRegistry.subscribe(() => {
+      console.log('[BlocklyWrapper] BoardRegistry updated, refreshing definitions...');
+      refreshBlockDefinitions();
+      setRegistryVersion(v => v + 1);
+    });
+  }, []);
   // 组件挂载时执行全局初始化
   useEffect(() => {
     AppInitializer.initialize();
@@ -145,11 +156,28 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
   const isReadyForEditsRef = useRef(false);
   useEffect(() => { isReadyForEditsRef.current = isReadyForEdits; }, [isReadyForEdits]);
 
-  /** 视口变更回调引用 */
   const onViewportChangeRef = useRef(props.onViewportChange);
   useEffect(() => {
     onViewportChangeRef.current = props.onViewportChange;
   }, [props.onViewportChange]);
+
+  // --- 性能优化与状态追踪 Refs (移至顶层以符合 Hook 规则) ---
+  const codeGenTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isDraggingRef = useRef(false);
+  const wasEditingRef = useRef(false);
+
+  /**
+   * 执行代码生成的函数 (Helper)
+   */
+  const triggerCodeGeneration = useCallback(() => {
+    try {
+      if (!workspaceRef.current) return;
+      const code = arduinoGenerator.workspaceToCode(workspaceRef.current);
+      onCodeChangeRef.current(code);
+    } catch (e) {
+      console.error("[BlocklyWrapper] 代码生成错误:", e);
+    }
+  }, [workspaceRef]);
 
   // 1. Hook: 工作区持久化 (加载/保存 XML/JSON)
   const { loadWorkspaceState, saveWorkspaceState, attemptViewRestore, ensureDefaultBlocks, isDisposed } = useWorkspacePersistence(
@@ -182,18 +210,21 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
     if (props.selectedBoard) {
       const board = BoardRegistry.get(props.selectedBoard);
       if (board && board.family) {
+        console.log(`[BlocklyWrapper] Board synced: ${board.id} (${board.family})`);
         // 同步当前开发板到注册表，供积木块逻辑访问底层配置
         BoardRegistry.setCurrentBoard(board.id);
         // 设置代码生成器的家族类型
         arduinoGenerator.setFamily(board.family);
         // 如果工作区已就绪，立即触发重绘代码
-        if (workspaceRef.current && isReadyForEdits) {
+        if (workspaceRef.current && isReadyForEditsRef.current) {
           const code = arduinoGenerator.workspaceToCode(workspaceRef.current);
           onCodeChangeRef.current(code);
         }
+      } else {
+        console.warn(`[BlocklyWrapper] Board not found in registry yet: ${props.selectedBoard}`);
       }
     }
-  }, [props.selectedBoard, isReadyForEdits]);
+  }, [props.selectedBoard, isReadyForEdits, registryVersion]);
 
   // ========== Effect: 多语言加载 ==========
   useEffect(() => {
@@ -274,6 +305,7 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
     workspaceRef.current = Blockly.inject(editorRef.current, {
       toolbox: toolboxConfiguration || { kind: 'categoryToolbox', contents: [] },
       theme: currentTheme,
+      media: 'media/blockly/', // 使用本地媒体资源，避免 CSP 违规并支持离线
       trashcan: true, // 垃圾桶
       // @ts-ignore
       contextMenu: true, // 右键菜单
@@ -323,21 +355,56 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
       }, 100);
     }
 
-    /**
-     * 工作区变更监听 (代码生成)
-     */
     const onWorkspaceChange = (event: any) => {
-      // 过滤 UI 事件和加载期间的事件
-      if (event.isUiEvent || !workspaceRef.current || !isReadyForEditsRef.current) return;
+      // 1. 过滤由于加载或初始化产生的事件
+      if (!workspaceRef.current || !isReadyForEditsRef.current) return;
       if (event.workspaceId !== workspaceRef.current.id) return;
       if (event.type === Blockly.Events.FINISHED_LOADING) return;
-      try {
-        // 实时生成代码输出
-        const code = arduinoGenerator.workspaceToCode(workspaceRef.current);
-        onCodeChangeRef.current(code);
-      } catch (e) {
-        console.error("[BlocklyWrapper] 代码生成错误:", e);
+
+      // 2. 状态感知：处理拖拽事件
+      if (event.type === Blockly.Events.BLOCK_DRAG) {
+        if (event.isStart) {
+          isDraggingRef.current = true;
+          if (codeGenTimerRef.current) clearTimeout(codeGenTimerRef.current);
+          return;
+        } else {
+          isDraggingRef.current = false;
+          if (codeGenTimerRef.current) clearTimeout(codeGenTimerRef.current);
+          triggerCodeGeneration();
+          return;
+        }
       }
+
+      // 3. 状态感知：处理输入状态 (Field Editing)
+      // 判断当前是否有积木块的输入框、下拉菜单处于打开状态
+      const isEditing = !!(Blockly.WidgetDiv.isVisible() || Blockly.DropDownDiv.isVisible());
+
+      // 如果刚才在输入，现在刚退出，则立即触发一次更新 (Bypass Debounce)
+      if (wasEditingRef.current && !isEditing) {
+        console.log('[BlocklyWrapper] 退出编辑状态，立即触发代码生成');
+        wasEditingRef.current = false;
+        if (codeGenTimerRef.current) clearTimeout(codeGenTimerRef.current);
+        triggerCodeGeneration();
+        return;
+      }
+
+      // 记录当前编辑状态
+      wasEditingRef.current = isEditing;
+
+      // 4. 过滤非必要的 UI 事件 (如点击选择，但不包括上述状态切换)
+      if (event.isUiEvent) return;
+
+      // 5. 如果正在拖拽中，忽略后续产生的中间事件
+      if (isDraggingRef.current) return;
+
+      // 6. 执行防抖更新
+      if (codeGenTimerRef.current) clearTimeout(codeGenTimerRef.current);
+
+      // 智能分时：
+      // - 正在输入时：使用适中延迟 (800ms)，避免打字卡顿的同时保证反馈流畅
+      // - 非输入状态：使用常规延迟 (300ms)，保证操作反馈迅速
+      const delay = isEditing ? 800 : 300;
+      codeGenTimerRef.current = setTimeout(triggerCodeGeneration, delay);
     };
     workspaceRef.current.addChangeListener(onWorkspaceChange);
 
@@ -419,6 +486,7 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
       observer.disconnect();
       isDisposed.current = true;
       if (validationTimer.current) clearTimeout(validationTimer.current);
+      if (codeGenTimerRef.current) clearTimeout(codeGenTimerRef.current);
       if (workspaceRef.current) {
         // 移除所有监听器并销毁工作区
         workspaceRef.current.removeChangeListener(onWorkspaceChange);
@@ -429,6 +497,7 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
         workspaceRef.current.dispose();
         workspaceRef.current = null;
       }
+      hasInjectedRef.current = false;
     };
   }, [isLocaleLoaded]); // Removed initialXml and toolboxConfiguration to prevent injection loops
 
@@ -516,6 +585,6 @@ export const BlocklyWrapper = forwardRef<BlocklyWrapperHandle, BlocklyWrapperPro
       <CustomBackpack workspace={workspaceInstance} />
     </div>
   );
-});
+}));
 
 BlocklyWrapper.displayName = 'BlocklyWrapper';

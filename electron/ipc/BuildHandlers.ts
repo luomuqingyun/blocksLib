@@ -33,6 +33,11 @@ export function registerBuildHandlers(ipcMain: IpcMain, getMainWindow: () => Bro
     ipcMain.handle('pio:check', async () => await pioService.checkEnvironment());
 
     /**
+     * 获取系统 PIO 支持的 STM32 变体列表
+     */
+    ipcMain.handle('pio:supported-variants', async () => await pioService.getSystemSupportedVariants());
+
+    /**
      * 编译项目
      * @param code 源代码
      * @param buildConfig 构建配置

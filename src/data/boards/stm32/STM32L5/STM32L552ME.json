@@ -5,6 +5,9 @@
   "mcu": "STM32L552ME",
   "variant": "L552MEYxP_L562MEYxP",
   "pinCount": 81,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "WLCSP81",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

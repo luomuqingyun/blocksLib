@@ -5,6 +5,9 @@
   "mcu": "STM32F378CC",
   "variant": "F378CCT",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

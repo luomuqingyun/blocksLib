@@ -5,6 +5,9 @@
   "mcu": "STM32L552CE",
   "variant": "L552C(C-E)(T-U)_L562CE(T-U)",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

@@ -36,9 +36,10 @@ import { getI18nString } from '../utils/i18n_utils';
 // 通过 BoardRepository 统一访问底层硬件定义文件 (JSON)
 import { boardRepository } from '../data/BoardRepository';
 
-// 数据加载器: 利用 Vite Glob 静态分析出的板卡词典
-const standardData = boardRepository.getStandardBoards();
-const stm32Data = boardRepository.getSTM32Boards();
+/** 默认板卡数据 (延迟到组件内部初始化) */
+// const standardData = boardRepository.getStandardBoards();
+// stm32Data 改为组件内异步加载
+// const stm32Data = boardRepository.getSTM32Boards();
 
 export const NewProjectModal: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -48,6 +49,9 @@ export const NewProjectModal: React.FC = () => {
         setIsExtensionsOpen
     } = useUI();
     const { createNewProject, workDir, handleSetWorkDir, performSaveAs, projectMetadata } = useFileSystem();
+
+    // [OPTIMIZATION] 将标准板卡数据移入用 useMemo 延迟加载
+    const standardData = useMemo(() => boardRepository.getStandardBoards(), []);
 
     const isOpen = isNewProjectOpen || isSaveAsOpen;
     const isSaveAs = isSaveAsOpen;
@@ -66,82 +70,112 @@ export const NewProjectModal: React.FC = () => {
     // STM32 树形视图状态
     const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
+    // [OPTIMIZATION] 异步加载 STM32 数据
+    const [stm32Data, setStm32Data] = useState<any>({ STM32: {} });
+    const [isStm32Loading, setIsStm32Loading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            // 1. 初始化保存目录
+            if (workDir && !parentDir) {
+                setParentDir(workDir);
+            }
+
+            // 2. 默认选择 Arduino Uno 板卡 (如果当前未选择)
+            if (!selectedBoardId) {
+                const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
+                if (uno) {
+                    handleSelectBoard(uno);
+                }
+            }
+
+            // [OPTIMIZATION] 异步加载 STM32 数据
+            const loadData = async () => {
+                const cached = boardRepository.getSTM32Boards();
+                if (Object.keys(cached.STM32).length > 0) {
+                    setStm32Data(cached);
+                    return;
+                }
+
+                setIsStm32Loading(true);
+                try {
+                    const data = await boardRepository.loadSTM32Boards();
+                    setStm32Data(data);
+                } catch (e) {
+                    console.error("Failed to load STM32 boards:", e);
+                } finally {
+                    setIsStm32Loading(false);
+                }
+            };
+            loadData();
+
+            // 3. 重置位置到中心
+            setPos({ x: 0, y: 0 });
+        }
+    }, [isOpen, workDir]); // 仅在打开弹窗或工作目录变动时触发检查/加载
+
+    // 搜索与收藏状态
+    const [searchTerm, setSearchTerm] = useState('');
+    const [favorites, setFavorites] = useState<Set<string>>(() => {
+        const saved = localStorage.getItem('favorite_boards');
+        return new Set(saved ? JSON.parse(saved) : []);
+    });
+
+    // 获取配置 (为了读取 maxFavorites) - 简单期间直接读取 localStorage 或默认
+    // 理想情况是从 SettingsContext 获取，但这里简化直接读配置以减少依赖变更
+    const getMaxFavorites = () => {
+        try {
+            const cfg = JSON.parse(localStorage.getItem('app_settings') || '{}');
+            return cfg.general?.maxFavorites || 5;
+        } catch {
+            return 5;
+        }
+    };
+
+    // 切换收藏
+    const toggleFavorite = (boardId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const newSet = new Set(favorites);
+        if (newSet.has(boardId)) {
+            newSet.delete(boardId);
+        } else {
+            if (newSet.size >= getMaxFavorites()) {
+                alert(`最多只能收藏 ${getMaxFavorites()} 个常用板卡。可以在设置中修改此限制。`);
+                return;
+            }
+            newSet.add(boardId);
+        }
+        setFavorites(newSet);
+        localStorage.setItem('favorite_boards', JSON.stringify(Array.from(newSet)));
+    };
+
     // 窗口拖拽位置状态
     const [pos, setPos] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-    // ----- 副作用处理 -----
-
-    // 切换选项卡时的副作用: 重置选中状态
     useEffect(() => {
-        if (!isOpen) return;
-
-        // 当切换到 Standard 模式时，尝试自动选中第一个板卡 (Arduino Uno)
-        if (activeTab === 'standard') {
-            const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
-            if (uno && !selectedBoardId) handleSelectBoard(uno);
-        }
-        // 当切换到 Advanced 模式时，清空选中状态，让用户看到“ST”Logo等待选择
-        else if (activeTab === 'advanced') {
-            setSelectedBoardId('');
-            setSelectedBoardData(null);
-        }
-    }, [activeTab]);
-
-    // 弹窗打开时的初始化逻辑
-    useEffect(() => {
-        if (isOpen) {
-            // 居中显示
-            setPos({ x: (window.innerWidth - 800) / 2, y: (window.innerHeight - 600) / 2 });
-            setErrorMessage(null);
-
-            if (isSaveAs) {
-                // 如果是“另存为”模式，默认名称加前缀
-                const currentName = projectMetadata?.name || 'MyProject';
-                setProjectName(`${currentName}_copy`);
-            } else {
-                if (projectName === 'MyProject' || !projectName) setProjectName('MyProject');
-
-                // 默认选中 Arduino Uno (仅当在 Standard 模式或初始加载时)
-                // 强制将选项卡重置为 Standard (符合用户习惯)
-                setActiveTab('standard');
-                const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
-                if (uno) handleSelectBoard(uno);
+        const handleMouseMove = (e: MouseEvent) => {
+            if (isDragging) {
+                setPos({
+                    x: e.clientX - dragOffset.x,
+                    y: e.clientY - dragOffset.y
+                });
             }
-
-            setParentDir(workDir);
-
-            // 自动聚焦并全选输入框内容
-            setTimeout(() => {
-                nameInputRef.current?.focus();
-                nameInputRef.current?.select();
-            }, 50);
-        }
-    }, [isOpen]);
-
-    // 当全局工作目录变化时，同步更新路径输入框
-    useEffect(() => {
-        if (isOpen) setParentDir(workDir);
-    }, [workDir, isOpen]);
-
-    // 实现模态框的自定义拖拽逻辑
-    useEffect(() => {
-        const onMouseMove = (e: MouseEvent) => {
-            if (isDragging) setPos({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y });
         };
-        const onMouseUp = () => setIsDragging(false);
+        const handleMouseUp = () => {
+            setIsDragging(false);
+        };
+
         if (isDragging) {
-            window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
         }
         return () => {
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
         };
     }, [isDragging, dragOffset]);
-
-    // ----- 处理器函数 -----
 
     /**
      * 选择板卡时的处理
@@ -193,30 +227,163 @@ export const NewProjectModal: React.FC = () => {
 
     // ----- 渲染部分辅助函数 -----
 
+    // Helper: 渲染星星图标
+    const renderStar = (boardId: string) => {
+        const isFav = favorites.has(boardId);
+        return (
+            <button
+                onClick={(e) => toggleFavorite(boardId, e)}
+                className={`p-1 rounded hover:bg-slate-700 transition-colors ${isFav ? 'text-yellow-400' : 'text-slate-600 hover:text-slate-400'}`}
+                title={isFav ? "取消收藏" : "收藏"}
+            >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+            </button>
+        );
+    };
+
+    const renderBoardItem = (board: any) => (
+        <div
+            role="button"
+            tabIndex={0}
+            key={board.id}
+            onClick={() => handleSelectBoard(board)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSelectBoard(board);
+                }
+            }}
+            className={`w-full text-left px-3 py-2 rounded flex items-center gap-2 group transition-colors border border-transparent cursor-pointer ${selectedBoardId === board.id
+                ? 'bg-blue-600/20 text-blue-300 border-blue-600/50'
+                : 'hover:bg-[#333] text-slate-300'
+                }`}
+        >
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm truncate font-medium">{board.name || board.id}</span>
+                </div>
+            </div>
+            {renderStar(board.id)}
+        </div>
+    );
+
+    // 渲染收藏夹
+    const renderFavorites = () => {
+        if (favorites.size === 0) return null;
+
+        // 查找所有被收藏的板卡数据
+        const favBoards: any[] = [];
+        const findBoard = (list: any) => {
+            Object.values(list).forEach((val: any) => {
+                if (Array.isArray(val)) {
+                    val.forEach(b => {
+                        if (favorites.has(b.id)) favBoards.push(b);
+                    });
+                } else if (typeof val === 'object') {
+                    findBoard(val);
+                }
+            });
+        };
+        findBoard(standardData);
+        findBoard(stm32Data);
+
+        if (favBoards.length === 0) return null;
+
+        return (
+            <div className="mb-4">
+                <h3 className="text-xs font-bold text-yellow-500 uppercase tracking-wider mb-2 px-2 flex items-center gap-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    Favorites
+                </h3>
+                <div className="space-y-1">
+                    {favBoards.map(renderBoardItem)}
+                </div>
+                <div className="h-px bg-slate-700/50 my-2 mx-2"></div>
+            </div>
+        );
+    };
+
+    // 扁平化搜索结果
+    const renderSearchResults = () => {
+        if (!searchTerm) return null;
+
+        const term = searchTerm.toLowerCase();
+        const results: any[] = [];
+
+        const searchIn = (list: any) => {
+            Object.values(list).forEach((val: any) => {
+                if (Array.isArray(val)) {
+                    val.forEach(b => {
+                        if ((b.name?.toLowerCase().includes(term) || b.id.toLowerCase().includes(term))) {
+                            results.push(b);
+                        }
+                    });
+                } else if (typeof val === 'object') {
+                    searchIn(val);
+                }
+            });
+        };
+        searchIn(standardData);
+        searchIn(stm32Data);
+
+        if (results.length === 0) return <div className="p-4 text-center text-slate-500 text-sm">No matching boards found</div>;
+
+        return (
+            <div className="space-y-1">
+                {results.map(renderBoardItem)}
+            </div>
+        );
+    };
+
     const renderStandardList = () => (
         <div className="space-y-4">
+            {/* 只有在没有搜索且不是收藏夹模式时才显示分类 */}
+            {renderFavorites()}
+
             {Object.entries(standardData).map(([category, boards]: [string, any]) => (
                 <div key={category}>
                     <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2">{category}</h3>
                     <div className="space-y-1">
-                        {boards.map((board: any) => (
-                            <button
-                                key={board.id}
-                                onClick={() => handleSelectBoard(board)}
-                                className={`w-full text-left px-3 py-2 rounded flex items-center justify-between group transition-colors ${selectedBoardId === board.id
-                                    ? 'bg-blue-600/20 text-blue-300 border border-blue-600/50'
-                                    : 'hover:bg-[#333] text-slate-300 border border-transparent'
-                                    }`}
-                            >
-                                <span className="text-sm truncate">{board.name}</span>
-                                {selectedBoardId === board.id && <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />}
-                            </button>
-                        ))}
+                        {boards.map(renderBoardItem)}
                     </div>
                 </div>
             ))}
         </div>
     );
+
+    /**
+     * 智能分组: 将大列表按名称前缀分组
+     */
+    const groupBoards = (boards: any[]) => {
+        if (boards.length <= 12) return boards; // 数量少时不分组
+
+        const groups: Record<string, any[]> = {};
+        const singles: any[] = [];
+
+        boards.forEach(board => {
+            // 尝试提取前缀 (例如 STM32F103C8 -> STM32F103)
+            // 假设命名规范通常为 STM32 + Series(1) + Line(2) + Package/Flash
+            // 取前 9 位通常能命中 STM32F103 这一层级
+            const name = board.name || board.id;
+            const prefix = name.length > 9 ? name.substring(0, 9) : 'Other';
+
+            if (!groups[prefix]) groups[prefix] = [];
+            groups[prefix].push(board);
+        });
+
+        // 如果某个分组只有一个元素，或者分组太多导致并没有简化多少，则还需要进一步优化
+        // 这里的简单策略：如果分组后的 Keys 数量比原数量减少了至少 30%，则采用分组，否则原样返回
+        const groupKeys = Object.keys(groups);
+
+        // [FIX] 防止无限递归：如果全部分组后只有一个组 (例如 STM32F103 下全是 F103)，说明无法进一步拆分，直接返回原列表
+        if (groupKeys.length === 1) return boards;
+
+        if (groupKeys.length > boards.length * 0.8) return boards;
+
+        return groups;
+    };
 
     /**
      * 渲染 STM32 树形结构
@@ -228,23 +395,24 @@ export const NewProjectModal: React.FC = () => {
     const renderSTM32Tree = (data: any, pathIdx = 0) => {
         if (!data) return null;
 
-        // 情况1: 数组 - 叶子节点列表 (如 STM32F4 -> [boards...])
+        // 如果是根节点渲染 (pathIdx === 0)，先渲染收藏夹
+        // 注意：这里需要由于递归调用，只在最外层渲染收藏夹，但我们已在 list 渲染时统一处理了收藏夹
+
+        // 情况1: 数组 - 叶子节点列表
         if (Array.isArray(data)) {
+            // 尝试智能分组
+            const grouped = groupBoards(data);
+
+            // 如果分组后不再是数组，说明产生了子目录，递归调用自己处理
+            if (!Array.isArray(grouped)) {
+                return renderSTM32Tree(grouped, pathIdx);
+            }
+
+            // 否则渲染扁平列表
             return (
                 <div className="pl-2 border-l border-slate-700/50 space-y-1">
-                    {data.map((board: any) => (
-                        <button
-                            key={board.id}
-                            onClick={() => handleSelectBoard(board)}
-                            className={`w-full text-left px-2 py-1.5 rounded flex items-center gap-2 text-sm ${selectedBoardId === board.id
-                                ? 'bg-purple-600/20 text-purple-300'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-[#333]'
-                                }`}
-                        >
-                            <Box size={14} className="opacity-70" />
-                            <span className="truncate">{board.name || board.id}</span>
-                        </button>
-                    ))}
+                    {/* [MODIFIED] 使用 renderBoardItem 统一渲染 */}
+                    {grouped.map(renderBoardItem)}
                 </div>
             );
         }
@@ -254,16 +422,22 @@ export const NewProjectModal: React.FC = () => {
             return (
                 <div className="pl-2 border-l border-slate-700/50 space-y-1">
                     {Object.entries(data).map(([key, value]: [string, any]) => {
-                        const isExpanded = expandedNodes.has(key);
+                        // 为自动分组生成的 Key 创建唯一的 toggle ID
+                        const nodeKey = key; // 实际逻辑中最好带 path，暂时简化
+                        const isExpanded = expandedNodes.has(nodeKey);
+
+                        // 动态计算包含的板卡数量
+                        const count = Array.isArray(value) ? value.length : Object.keys(value).length;
 
                         return (
                             <div key={key}>
                                 <button
-                                    onClick={() => toggleNode(key)}
-                                    className="w-full flex items-center gap-1.5 px-2 py-1 text-slate-300 hover:text-white text-sm font-medium hover:bg-[#333] rounded"
+                                    onClick={() => toggleNode(nodeKey)}
+                                    className="w-full flex items-center gap-1.5 px-2 py-1 text-slate-300 hover:text-white text-sm font-medium hover:bg-[#333] rounded group"
                                 >
                                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                                    {key}
+                                    <span className="flex-1 text-left truncate">{key}</span>
+                                    <span className="text-xs text-slate-600 group-hover:text-slate-500">{count}</span>
                                 </button>
                                 {isExpanded && renderSTM32Tree(value, pathIdx + 1)}
                             </div>
@@ -282,7 +456,7 @@ export const NewProjectModal: React.FC = () => {
         <BaseModal isOpen={isOpen} onClose={handleClose}>
             <div
                 style={{ left: pos.x, top: pos.y }}
-                className="absolute bg-[#1e1e1e] w-[800px] h-[600px] rounded-lg shadow-2xl border border-slate-700 flex flex-col overflow-hidden pointer-events-auto"
+                className="relative bg-[#1e1e1e] w-[800px] h-[600px] rounded-lg shadow-2xl border border-slate-700 flex flex-col overflow-hidden pointer-events-auto"
             >
                 {/* 标题栏 - 支持拖拽 */}
                 <div
@@ -336,16 +510,30 @@ export const NewProjectModal: React.FC = () => {
                         </div>
 
                         {/* 标签页切换 (Standard / STM32 Advanced) */}
-                        {!isSaveAs && (
+                        {!isSaveAs && !searchTerm && (
                             <div className="flex border-b border-slate-700">
                                 <button
-                                    onClick={() => setActiveTab('standard')}
+                                    onClick={() => {
+                                        setActiveTab('standard');
+                                        // 切换回标准模式时，自动选中 Uno 作为起点
+                                        const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
+                                        if (uno) handleSelectBoard(uno);
+                                        else {
+                                            setSelectedBoardId('');
+                                            setSelectedBoardData(null);
+                                        }
+                                    }}
                                     className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'standard' ? 'bg-[#1e1e1e] text-blue-400 border-b-2 border-blue-500' : 'bg-[#252526] text-slate-500 hover:text-slate-300'}`}
                                 >
                                     Standard
                                 </button>
                                 <button
-                                    onClick={() => setActiveTab('advanced')}
+                                    onClick={() => {
+                                        setActiveTab('advanced');
+                                        // 切换到高级模式时，清空选择，以显示 ST Logo 占位符
+                                        setSelectedBoardId('');
+                                        setSelectedBoardData(null);
+                                    }}
                                     className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'advanced' ? 'bg-[#1e1e1e] text-purple-400 border-b-2 border-purple-500' : 'bg-[#252526] text-slate-500 hover:text-slate-300'}`}
                                 >
                                     STM32 / Advanced
@@ -353,10 +541,38 @@ export const NewProjectModal: React.FC = () => {
                             </div>
                         )}
 
+                        {/* 搜索框 & 过滤器 */}
+                        {!isSaveAs && (
+                            <div className="px-2 py-1.5 border-b border-slate-700 bg-[#252526] space-y-1.5">
+                                <input
+                                    type="text"
+                                    placeholder="Search boards (e.g. F401)..."
+                                    className="w-full bg-[#1e1e1e] border border-slate-600 rounded pl-2 pr-2 py-1 text-xs text-slate-200 outline-none focus:border-blue-500"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                        )}
+
                         {/* 板卡列表区域 */}
                         {!isSaveAs ? (
                             <div className="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-slate-700">
-                                {activeTab === 'standard' ? renderStandardList() : renderSTM32Tree(stm32Data['STM32'] || stm32Data)}
+                                {searchTerm ? renderSearchResults() : (
+                                    activeTab === 'standard' ? renderStandardList() : (
+                                        <>
+                                            {renderFavorites()}
+                                            {isStm32Loading ? (
+                                                <div className="flex items-center justify-center p-8 text-slate-500 gap-2">
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-500 border-t-transparent"></div>
+                                                    <span className="text-sm">Loading definitions...</span>
+                                                </div>
+                                            ) : (
+                                                renderSTM32Tree(stm32Data['STM32'] || stm32Data)
+                                            )}
+                                        </>
+                                    )
+                                )
+                                }
                             </div>
                         ) : (
                             <div className="flex-1 p-4 text-center text-slate-500 text-sm flex flex-col justify-center items-center">
@@ -371,19 +587,21 @@ export const NewProjectModal: React.FC = () => {
                     <div className="flex-1 bg-[#1e1e1e] p-6 flex flex-col">
                         <label className="text-xs font-medium text-slate-500 uppercase mb-3 block">选择预览</label>
                         {selectedBoardData ? (
-                            <BoardPreview
-                                name={selectedBoardData.name || selectedBoardData.id}
-                                mcu={selectedBoardData.mcu}
-                                packageType={selectedBoardData.package}
-                                pinCount={selectedBoardData.pinCount}
-                                pinMap={selectedBoardData.pinMap}
-                                pins={selectedBoardData.pin_options?.digital?.map((p: any) => Array.isArray(p) ? p[0] : p)}
-                                description={selectedBoardData.description || t('board.noDescription')}
-                                specs={selectedBoardData.specs} // e.g. "32k Flash"
-                                images={selectedBoardData.images}
-                                pageUrl={selectedBoardData.page_url}
-                                className="flex-1 shadow-lg"
-                            />
+                            <>
+                                <BoardPreview
+                                    name={selectedBoardData.name || selectedBoardData.id}
+                                    mcu={selectedBoardData.mcu}
+                                    packageType={selectedBoardData.package}
+                                    pinCount={selectedBoardData.pinCount}
+                                    pinMap={selectedBoardData.pinMap}
+                                    pins={selectedBoardData.pin_options?.digital?.map((p: any) => Array.isArray(p) ? p[0] : p)}
+                                    description={selectedBoardData.description || t('board.noDescription')}
+                                    specs={selectedBoardData.specs} // e.g. "32k Flash"
+                                    images={selectedBoardData.images}
+                                    pageUrl={selectedBoardData.page_url}
+                                    className="flex-1 shadow-lg"
+                                />
+                            </>
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center text-slate-600 border border-slate-700 border-dashed rounded-lg bg-[#252526]/50 select-none">
                                 {activeTab === 'advanced' ? (
@@ -437,3 +655,4 @@ export const NewProjectModal: React.FC = () => {
         </BaseModal>
     );
 };
+

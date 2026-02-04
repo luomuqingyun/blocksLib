@@ -5,6 +5,9 @@
   "mcu": "STM32U595RI",
   "variant": "U595R(I-J)TxQ_U5A5RJTxQ",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

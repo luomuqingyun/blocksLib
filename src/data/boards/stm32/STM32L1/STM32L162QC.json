@@ -5,6 +5,9 @@
   "mcu": "STM32L162QC",
   "variant": "L151QCH_L152QCH_L162QCH",
   "pinCount": 132,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "UFBGA132",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

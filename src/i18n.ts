@@ -28,7 +28,10 @@ i18n
     .use(initReactI18next)
     // 初始化配置
     .init({
-        debug: true,
+        // 是否开启调试模式。开启后会在控制台打印详细的初始化、语言切换和翻译缺失等日志。
+        // [优化] 开发环境下设为 false 以保持控制台整洁，仅在需要排查翻译问题时开启。
+        // debug: true,
+        debug: false,
         fallbackLng: 'en', // 后备语言
         interpolation: {
             escapeValue: false, // React 自动处理转义

@@ -48,7 +48,8 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const { setActiveTab } = useUI();
     const { isConnected: isSerialConnected, selectedPort: serialPort, toggleSerial } = useSerial();
 
-    const [selectedBoard, _setLocalSelectedBoard] = useState(BoardRegistry.getAll()[0].id);
+    // [OPTIMIZATION] 不要在这里直接调用 BoardRegistry.getAll()，这会触发全量板卡初始化
+    const [selectedBoard, _setLocalSelectedBoard] = useState('uno');
     const [logs, setLogs] = useState<string[]>([]);
     const [isBuilding, setIsBuilding] = useState(false);
 
@@ -96,7 +97,7 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // 1. 合并编译标志 (Build Flags)
         let flagsIds: string[] = [];
         // 首先保留开发板默认的编译标志
-        if (mixed['build_flags']) {
+        if (typeof mixed['build_flags'] === 'string') {
             flagsIds = mixed['build_flags'].split(' ').filter(x => x);
         }
 
@@ -146,6 +147,12 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
         if (project.monitor_speed) mixed['monitor_speed'] = project.monitor_speed;
         if (project.upload_speed) mixed['upload_speed'] = project.upload_speed;
+
+        // [核心修复] 允许项目配置覆盖关键 PIO 标识 (用于 local_patch)
+        if (project.board) mixed['board'] = project.board;
+        if (project.platform) mixed['platform'] = project.platform;
+        if (project.framework) mixed['framework'] = project.framework;
+        if (project.local_patch !== undefined) mixed['local_patch'] = project.local_patch;
 
         // 4. 处理自定义 INI 内容 (追加自定义配置)
         if (project.customIni) {

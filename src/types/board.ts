@@ -109,8 +109,10 @@ export interface BoardBuildConfig {
     upload_protocol?: string;
     /** 串口监视器波特率 (可选) */
     monitor_speed?: string;
+    /** 是否启用本地板卡补丁模式 */
+    local_patch?: boolean;
     /** 支持其他自定义配置项 */
-    [key: string]: string | undefined;
+    [key: string]: string | boolean | undefined;
 }
 
 /**
@@ -159,6 +161,8 @@ export interface ProjectBuildConfig {
     // ======== 高级选项 ========
     /** 自定义 platformio.ini 内容片段 */
     customIni?: string;
+    /** 是否启用本地板卡补丁模式 */
+    local_patch?: boolean;
 }
 
 /**

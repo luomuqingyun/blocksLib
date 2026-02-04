@@ -5,6 +5,9 @@
   "mcu": "STM32L010C6",
   "variant": "L010C6T",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP48",
   "fcpu": 0,
   "specs": "32k Flash / 8k RAM",

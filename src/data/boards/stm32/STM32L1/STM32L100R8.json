@@ -5,6 +5,9 @@
   "mcu": "STM32L100R8",
   "variant": "L100R(8-B)Tx(A)_L151R(6-8-B)Tx(A)_L152R(6-8-B)Tx(A)",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "64k Flash / 8k RAM",

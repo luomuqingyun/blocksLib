@@ -5,6 +5,9 @@
   "mcu": "STM32U385KG",
   "variant": "U375K(E-G)U_U385KGU",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "UQFN32",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

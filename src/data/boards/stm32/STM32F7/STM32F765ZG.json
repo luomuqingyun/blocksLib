@@ -5,6 +5,9 @@
   "mcu": "STM32F765ZG",
   "variant": "F765Z(G-I)T_F767Z(G-I)T_F777ZIT",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

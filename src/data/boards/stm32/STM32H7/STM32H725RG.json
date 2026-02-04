@@ -5,6 +5,9 @@
   "mcu": "STM32H725RG",
   "variant": "H725R(E-G)V_H735RGV",
   "pinCount": 68,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "VFQFPN68",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",

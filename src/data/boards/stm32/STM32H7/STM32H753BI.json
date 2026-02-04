@@ -5,6 +5,9 @@
   "mcu": "STM32H753BI",
   "variant": "H742B(G-I)T_H743B(G-I)T_H753BIT",
   "pinCount": 208,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "LQFP208",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

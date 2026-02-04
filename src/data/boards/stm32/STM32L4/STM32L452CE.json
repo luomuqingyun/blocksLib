@@ -5,7 +5,10 @@
   "mcu": "STM32L452CE",
   "variant": "L452CCU_L452CE(T-U)x(P)_L462CE(T-U)",
   "pinCount": 48,
-  "package": "UFQFPN48",
+  "build": {
+    "cpu": "cortex-m4"
+  },
+  "package": "LQFP48",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",
   "description": "STM32L452CE - STM32L4 series board",

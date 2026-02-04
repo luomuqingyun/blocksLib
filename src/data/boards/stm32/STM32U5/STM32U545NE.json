@@ -5,6 +5,9 @@
   "mcu": "STM32U545NE",
   "variant": "U535N(C-E)YxQ_U545NEYxQ",
   "pinCount": 56,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "WLCSP56",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

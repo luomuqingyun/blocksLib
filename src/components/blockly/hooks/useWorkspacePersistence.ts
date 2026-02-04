@@ -106,11 +106,24 @@ export const useWorkspacePersistence = (
      */
     const loadWorkspaceState = useCallback((stateStr: string) => {
         console.log('[loadWorkspaceState] Called with stateStr length:', stateStr?.length);
-        console.log('[loadWorkspaceState] stateStr preview:', stateStr?.substring(0, 200));
-        if (!workspaceRef.current || !stateStr) {
-            console.warn('[loadWorkspaceState] Early return - workspaceRef:', !!workspaceRef.current, 'stateStr:', !!stateStr);
+        if (!workspaceRef.current) return;
+
+        // [关键修复] 如果 stateStr 为空，也不能直接 return
+        // 必须确保默认积木加载并通知外界完成，否则会导致加载锁死锁
+        if (!stateStr) {
+            console.log('[loadWorkspaceState] Empty stateStr, ensuring default blocks...');
+            Blockly.Events.disable();
+            try {
+                workspaceRef.current.clear();
+                ensureDefaultBlocks();
+            } finally {
+                Blockly.Events.enable();
+            }
+            setIsReadyForEdits(true);
+            if (onXmlLoaded) onXmlLoaded();
             return;
         }
+
         try {
             // 检测是否为 XML 格式 (向后兼容旧版保存格式)
             if (stateStr.trim().startsWith('<xml')) {
@@ -155,10 +168,19 @@ export const useWorkspacePersistence = (
                 console.log('[loadWorkspaceState] Final stateToLoad keys:', Object.keys(stateToLoad));
 
                 // 清空并加载新状态
-                workspaceRef.current.clear();
-                console.log('[loadWorkspaceState] Workspace cleared, loading state...');
-                Blockly.serialization.workspaces.load(stateToLoad, workspaceRef.current);
-                console.log('[loadWorkspaceState] State loaded, blocks count:', workspaceRef.current.getAllBlocks().length);
+                // [关键修复] 加载期间禁用事件流，防止触发外界的 onChangeListener 分发“空状态”
+                Blockly.Events.disable();
+                try {
+                    workspaceRef.current.clear();
+                    console.log('[loadWorkspaceState] Workspace cleared, loading state...');
+                    Blockly.serialization.workspaces.load(stateToLoad, workspaceRef.current);
+                    console.log('[loadWorkspaceState] State loaded, blocks count:', workspaceRef.current.getAllBlocks().length);
+                    // 确保默认积木块存在 (如果加载的是空文件)
+                    ensureDefaultBlocks();
+                } finally {
+                    Blockly.Events.enable();
+                }
+
                 if (pendingViewState.current) {
                     Blockly.svgResize(workspaceRef.current);
                     attemptViewRestore();
@@ -170,7 +192,6 @@ export const useWorkspacePersistence = (
                     if (onXmlLoaded) onXmlLoaded();
                 }
             }
-            ensureDefaultBlocks();
         } catch (e) {
             console.error("[WorkspacePersistence] Failed to load state", e);
         }

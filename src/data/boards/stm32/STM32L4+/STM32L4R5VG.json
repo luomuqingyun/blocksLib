@@ -5,6 +5,9 @@
   "mcu": "STM32L4R5VG",
   "variant": "L4R5V(G-I)T_L4R7VIT_L4S5VIT_L4S7VIT",
   "pinCount": 100,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP100",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

@@ -5,6 +5,9 @@
   "mcu": "STM32L431KC",
   "variant": "L431K(B-C)U",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN32",
   "fcpu": 0,
   "specs": "256k Flash / 32k RAM",

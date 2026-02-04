@@ -24,6 +24,7 @@ import { boardRepository } from '../../data/BoardRepository';
 import { useBoards } from '../../hooks/useBoards';
 import { useToolbarActions } from '../../hooks/useToolbarActions';
 import { getI18nString } from '../../utils/i18n_utils';
+import { BoardSelector } from './BoardSelector';
 
 export const TopBar: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -117,86 +118,18 @@ export const TopBar: React.FC = () => {
                 </div>
 
                 {/* 开发板选择器 */}
-                <div className="flex items-center gap-2 min-w-[120px] max-w-[200px]">
+                <div className="flex items-center gap-2 min-w-[120px]">
                     <span className="text-xs text-slate-500 font-mono whitespace-nowrap hidden xl:inline">{t('app.board')}:</span>
-                    <div className="relative flex-1">
-                        <select
-                            className={`w-full bg-[#333] hover:bg-[#3c3c3c] text-xs text-slate-200 rounded px-2 py-1.5 outline-none border border-transparent focus:border-blue-500 transition-colors appearance-none cursor-pointer truncate pr-6 ${project.projectMetadata ? 'border-amber-500/30' : ''}`}
-                            value={build.selectedBoard}
-                            onChange={(e) => {
-                                const newBoardId = e.target.value;
-                                if (project.projectMetadata) {
-                                    // 智能锁定检查：确保新选中的开发板与当前项目属于同一家族
-                                    const current = BoardRegistry.get(build.selectedBoard);
-                                    const target = BoardRegistry.get(newBoardId);
-                                    if (current && target && current.family !== target.family) {
-                                        alert(`在一个活跃的项目中无法将家族从 ${current.family.toUpperCase()} 切换为 ${target.family.toUpperCase()}。请新建一个项目。`);
-                                        return;
-                                    }
-                                    project.updateProjectBoard(newBoardId);
-                                }
-                                build.setSelectedBoard(newBoardId);
-                            }}
-                            // 智能锁定：如果项目已激活，则通过 title 提示用户选项已被过。
-                            title={project.projectMetadata ? "仅显示兼容的开发板" : "选择开发板"}
-                        >
-                            {(() => {
-                                const renderGroups = () => {
-                                    const standard = boardRepository.getStandardBoards();
-                                    const stm32 = boardRepository.getSTM32Boards().STM32;
-                                    const currentBoard = BoardRegistry.get(build.selectedBoard);
-
-                                    /** 过滤函数：如果项目已激活，只显示同家族的开发板 */
-                                    const filterBoard = (b: any) => {
-                                        if (!project.projectMetadata) return true;
-                                        return currentBoard && b.family === currentBoard.family;
-                                    };
-
-                                    const groups = [];
-
-                                    // 1. 标准开发板 (Arduino, ESP32 等)
-                                    Object.entries(standard).forEach(([category, boards]) => {
-                                        const typedBoards = boards as unknown as Board[];
-                                        const filtered = typedBoards.filter(filterBoard);
-                                        if (filtered.length > 0) {
-                                            groups.push(
-                                                <optgroup key={category} label={category}>
-                                                    {filtered.map(b => (
-                                                        <option key={b.id} value={b.id}>
-                                                            {getI18nString(b.name, i18n.language)}
-                                                        </option>
-                                                    ))}
-                                                </optgroup>
-                                            );
-                                        }
-                                    });
-
-                                    // 2. STM32 开发板 (按系列分组)
-                                    Object.entries(stm32).forEach(([series, boards]: [string, any[]]) => {
-                                        const filtered = boards.filter(filterBoard);
-                                        if (filtered.length > 0) {
-                                            groups.push(
-                                                <optgroup key={series} label={series}>
-                                                    {filtered.map(b => (
-                                                        <option key={b.id} value={b.id}>
-                                                            {getI18nString(b.name, i18n.language)}
-                                                        </option>
-                                                    ))}
-                                                </optgroup>
-                                            );
-                                        }
-                                    });
-
-                                    return groups;
-                                };
-
-                                return renderGroups();
-                            })()}
-                        </select>
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        </div>
-                    </div>
+                    <BoardSelector
+                        selectedId={build.selectedBoard}
+                        onSelect={(newBoardId) => {
+                            if (project.projectMetadata) {
+                                project.updateProjectBoard(newBoardId);
+                            }
+                            build.setSelectedBoard(newBoardId);
+                        }}
+                        isProjectActive={!!project.projectMetadata}
+                    />
                 </div>
             </div>
 

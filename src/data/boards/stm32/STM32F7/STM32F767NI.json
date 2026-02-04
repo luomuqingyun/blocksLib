@@ -5,6 +5,9 @@
   "mcu": "STM32F767NI",
   "variant": "F765B(G-I)T_F765N(G-I)H_F767B(G-I)T_F767N(G-I)H_F777BIT_F777NIH",
   "pinCount": 216,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "TFBGA216",
   "fcpu": 0,
   "specs": "2048k Flash / 256k RAM",

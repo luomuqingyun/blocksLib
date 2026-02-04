@@ -5,6 +5,9 @@
   "mcu": "STM32C092KB",
   "variant": "C092K(B-C)(T-U)",
   "pinCount": 32,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "LQFP32",
   "fcpu": 0,
   "specs": "128k Flash / 6k RAM",

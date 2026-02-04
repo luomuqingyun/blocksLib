@@ -5,6 +5,9 @@
   "mcu": "STM32G431M8",
   "variant": "G431M(6-8-B)T_G441MBT",
   "pinCount": 80,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP80",
   "fcpu": 0,
   "specs": "64k Flash / 8k RAM",

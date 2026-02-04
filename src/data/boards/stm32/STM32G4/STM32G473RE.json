@@ -5,6 +5,9 @@
   "mcu": "STM32G473RE",
   "variant": "G473R(B-C)T_G473RETx(Z)_G474R(B-C-E)T_G483RET_G484RET",
   "pinCount": 64,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "LQFP64",
   "fcpu": 0,
   "specs": "512k Flash / 64k RAM",

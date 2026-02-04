@@ -5,6 +5,9 @@
   "mcu": "STM32C051F6",
   "variant": "C051D8Y_C051F(6-8)P",
   "pinCount": 20,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "TSSOP20",
   "fcpu": 0,
   "specs": "32k Flash / 12k RAM",

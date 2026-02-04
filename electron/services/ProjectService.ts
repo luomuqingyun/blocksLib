@@ -93,6 +93,40 @@ class ProjectService {
             const mainCppContent = `#include <Arduino.h>\n\nvoid setup() {\n  // put your setup code here, to run once:\n}\n\nvoid loop() {\n  // put your main code here, to run repeatedly:\n}\n`;
             await fs.promises.writeFile(path.join(projectPath, 'src', 'main.cpp'), mainCppContent);
 
+            // [核心增强] 自动检测 local_patch 模式 (移动到元数据创建之前)
+            // 这样确保保存到 .ebproj 的 buildConfig 是修正后的 (Board ID = eb_custom_board)
+            let needsLocalPatch = buildConfig.local_patch;
+
+            if (!needsLocalPatch && (buildConfig.framework === 'arduino' || !buildConfig.framework)) {
+                const enhancedMapPath = path.join(app.getAppPath(), 'electron', 'config', 'stm32_compatibility_enhanced.json');
+                if (fs.existsSync(enhancedMapPath)) {
+                    try {
+                        const enhancedMap = JSON.parse(fs.readFileSync(enhancedMapPath, 'utf-8'));
+                        const enhancedInfo = enhancedMap[boardId];
+                        if (enhancedInfo) {
+                            needsLocalPatch = enhancedInfo.requiresLocalPatch || !enhancedInfo.pioBoardId;
+                        } else {
+                            // 芯片不在映射中，默认使用 local_patch 模式
+                            // 只有当它是 STM32 板卡时 (简单判断 ID 格式或由调用者保证)
+                            if (boardId.startsWith('generic_stm32')) {
+                                needsLocalPatch = true;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[ProjectService] Failed to load enhanced mapping for local_patch detection', e);
+                    }
+                }
+            }
+
+            // 如果需要本地补丁，强制更新 buildConfig
+            if (needsLocalPatch) {
+                console.log(`[ProjectService] Board ${boardId} requires local patch. Updating buildConfig.`);
+                buildConfig.local_patch = true;
+                buildConfig.board = 'eb_custom_board';
+                if (!buildConfig.platform) buildConfig.platform = 'ststm32';
+                if (!buildConfig.framework) buildConfig.framework = 'arduino';
+            }
+
             // 创建项目元数据
             const metadata: ProjectMetadata = {
                 version: '1.0.0',
@@ -112,38 +146,6 @@ class ProjectService {
 
             // 生成 platformio.ini 和本地补丁
             try {
-                /**
-                 * [核心增强] 自动检测 local_patch 模式
-                 * 
-                 * 判断逻辑:
-                 * 1. buildConfig.local_patch 显式指定 -> 使用
-                 * 2. 查询增强兼容性映射:
-                 *    - requiresLocalPatch = true -> 需要补丁
-                 *    - pioBoardId 不存在 -> 需要补丁
-                 * 3. 芯片不在映射中 -> 默认使用补丁
-                 * 
-                 * 这避免了依赖前端传入的 local_patch 标志
-                 */
-                let needsLocalPatch = buildConfig.local_patch;
-
-                if (!needsLocalPatch && buildConfig.framework === 'arduino') {
-                    const enhancedMapPath = path.join(app.getAppPath(), 'electron', 'config', 'stm32_compatibility_enhanced.json');
-                    if (fs.existsSync(enhancedMapPath)) {
-                        try {
-                            const enhancedMap = JSON.parse(fs.readFileSync(enhancedMapPath, 'utf-8'));
-                            const enhancedInfo = enhancedMap[boardId];
-                            if (enhancedInfo) {
-                                needsLocalPatch = enhancedInfo.requiresLocalPatch || !enhancedInfo.pioBoardId;
-                            } else {
-                                // 芯片不在映射中，使用 local_patch 模式
-                                needsLocalPatch = true;
-                            }
-                        } catch (e) {
-                            console.warn('[ProjectService] Failed to load enhanced mapping for local_patch detection', e);
-                        }
-                    }
-                }
-
                 // 应用本地补丁 (生成 boards/, variants/ 等)
                 if (needsLocalPatch) {
                     await this.applyLocalPatch(projectPath, boardId);

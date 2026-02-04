@@ -5,6 +5,9 @@
   "mcu": "STM32F101ZD",
   "variant": "F101Z(C-D-E)T",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m3"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "384k Flash / 64k RAM",

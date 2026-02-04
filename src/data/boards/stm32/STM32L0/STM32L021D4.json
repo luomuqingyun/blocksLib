@@ -5,6 +5,9 @@
   "mcu": "STM32L021D4",
   "variant": "L011D(3-4)P_L021D4P",
   "pinCount": 14,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "TSSOP14",
   "fcpu": 0,
   "specs": "16k Flash / 8k RAM",

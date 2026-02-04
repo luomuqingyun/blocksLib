@@ -5,6 +5,9 @@
   "mcu": "STM32L4R9AG",
   "variant": "L4R9A(G-I)I_L4S9AII",
   "pinCount": 169,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFBGA169",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

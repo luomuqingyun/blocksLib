@@ -5,6 +5,9 @@
   "mcu": "STM32U595ZJ",
   "variant": "U595Z(I-J)TxQ_U599Z(I-J)TxQ_U5A5ZJTxQ_U5A9ZJTxQ",
   "pinCount": 144,
+  "build": {
+    "cpu": "cortex-m33"
+  },
   "package": "LQFP144",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

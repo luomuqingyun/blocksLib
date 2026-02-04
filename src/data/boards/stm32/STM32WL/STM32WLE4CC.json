@@ -5,6 +5,9 @@
   "mcu": "STM32WLE4CC",
   "variant": "WL54CCU_WL55CCU_WLE4C(8-B-C)U_WLE5C(8-B-C)U",
   "pinCount": 48,
+  "build": {
+    "cpu": "cortex-m4"
+  },
   "package": "UFQFPN48",
   "fcpu": 0,
   "specs": "Unknown specs (from variants)",

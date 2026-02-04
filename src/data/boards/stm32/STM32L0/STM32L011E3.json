@@ -5,6 +5,9 @@
   "mcu": "STM32L011E3",
   "variant": "L011E(3-4)Y",
   "pinCount": 25,
+  "build": {
+    "cpu": "cortex-m0plus"
+  },
   "package": "WLCSP25",
   "fcpu": 0,
   "specs": "8k Flash / 8k RAM",

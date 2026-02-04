@@ -5,6 +5,9 @@
   "mcu": "STM32F769NG",
   "variant": "F769B(G-I)T_F769N(G-I)H_F779BIT_F779NIH",
   "pinCount": 216,
+  "build": {
+    "cpu": "cortex-m7"
+  },
   "package": "TFBGA216",
   "fcpu": 0,
   "specs": "1024k Flash / 128k RAM",
