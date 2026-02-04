@@ -1,12 +1,6 @@
-/**
- * scripts/data_sources.ts
- * 
- * 集中管理项目使用的外部 STM32 数据源路径。
- * 这些路径指向本地克隆的官方或社区维护的仓库，用于高精度数据抓取和自动化补全。
- */
-
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -32,13 +26,14 @@ export const EMBASSY_STM32_DATA_PATH = 'G:\\Project\\Easy_Embedded\\STM32_DATA\\
 // 对应仓库：https://github.com/stm32duino/Arduino_Core_STM32
 // 用途：扫描 variants 目录，自动发现支持的型号并提取引脚宏映射
 // ----------------------------------------------------------------------------
-// [更改] 优先指向项目内的 Submodule，如不存在则回退到开发者的 G 盘
-const PROJECT_ROOT = path.resolve(__dirname, '../..');
-const SUBMODULE_PATH = path.join(PROJECT_ROOT, 'third_party', 'Arduino_Core_STM32');
+// [更改] 直接指向本地 PlatformIO 安装的 framework-arduinoststm32 包
+// 这确保了脚本生成的数据与 Studio 实际编译使用的核心完全一致
+const PIO_PACKAGES_DIR = path.join(os.homedir(), '.platformio', 'packages');
+const PIO_CORE_PATH = path.join(PIO_PACKAGES_DIR, 'framework-arduinoststm32');
 
-export const ARDUINO_CORE_STM32_PATH = fs.existsSync(SUBMODULE_PATH) && fs.readdirSync(SUBMODULE_PATH).length > 0
-    ? SUBMODULE_PATH
-    : 'G:\\Project\\Easy_Embedded\\STM32_DATA\\Arduino_Core_STM32';
+export const ARDUINO_CORE_STM32_PATH = fs.existsSync(PIO_CORE_PATH)
+    ? PIO_CORE_PATH
+    : path.join(PIO_PACKAGES_DIR, 'framework-arduinoststm32@*'); // Hint for debugging if main link missing
 
 /**
  * 辅助函数：根据具体需求选择数据源，如果本地路径不存在则回退

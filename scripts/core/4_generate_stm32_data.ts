@@ -25,9 +25,25 @@ const INPUT_REGISTRY = path.join(__dirname, '../generated', 'stm32duino_support_
 const OUTPUT_DIR = path.join(__dirname, '../../src/data/boards/stm32');
 const OUTPUT_ENHANCED_COMPAT = path.join(__dirname, '../../electron/config/stm32_compatibility_enhanced.json'); // Add Compat Output
 
+import { ST_OPEN_PIN_DATA_PATH } from '../utils/data_sources';
+
+/** [NEW] MCU 架构映射缓存 **/
+const mcuXmlMap = new Map<string, string>();
+const archCache = new Map<string, string>();
+
+/** [NEW] 复杂正则匹配器列表 (处理 (4-6), (B-D) 等范围模式) **/
+interface ComplexMatcher {
+    regex: RegExp;
+    path: string;
+}
+const complexMatchers: ComplexMatcher[] = [];
+
 
 function main() {
     console.log('正在开始生成最终 STM32 独立数据文件...');
+
+    // [New] 初始化 MCU -> XML 映射索引 (Accelerate file lookup)
+    initMcuXmlMap();
 
     if (!fs.existsSync(INPUT_BASIC) || !fs.existsSync(INPUT_DETAILS)) {
         console.error('错误: 找不到输入数据文件 (stm32_board_data 或 detailed_board_data)');
@@ -140,6 +156,13 @@ function main() {
                 mcu: mcuName,
                 variant: rawDetails?.variant || 'generic',
                 pinCount: b.pinCount || 0,
+
+                // [Enhanced] Infer CPU Architecture
+                build: {
+                    ...(b.build || {}),
+                    cpu: getCpuArch(mcuName)
+                },
+
                 package: b.package || 'Unknown',
                 fcpu: b.fcpu || 0,
                 specs: b.specs,
@@ -472,6 +495,14 @@ function generateCompatibilityMap(generatedFiles: Set<string>, registryPath: str
 
 /**
  * [辅助] 加载现有的 PIO boards 列表
+ * 
+ * 逻辑说明:
+ * 1. 扫描本机 PlatformIO 安装目录下的 `platforms/ststm32/boards` 文件夹。
+ *    路径通常为: `~/.platformio/platforms/ststm32/boards/*.json`
+ * 2. 如果某款芯片（如 genericSTM32F401RE）在该目录下有对应的 JSON 定义文件，
+ *    则认为它是 PIO "官方支持" 的板卡，可以直接使用。
+ * 3. 如果找不到对应文件，则说明需要启用 `local_patch` 模式，
+ *    由 EmbedBlocks 自行生成 `eb_custom_board.json` 和 variant 文件。
  */
 function loadPioBoards(): Set<string> {
     const pioBoards = new Set<string>();
@@ -553,6 +584,132 @@ function getSpecsFromMcuName(mcu: string): string {
     }
 
     return `${flashKb}k Flash / ${ramKb}k RAM`;
+}
+
+/**
+ * [New] 初始化 MCU 文件映射。
+ * 遍历 ST_OPEN_PIN_DATA_PATH/mcu 目录，建立索引。
+ */
+function initMcuXmlMap() {
+    const mcuDir = path.join(ST_OPEN_PIN_DATA_PATH, 'mcu');
+    if (!fs.existsSync(mcuDir)) {
+        console.warn(`警告: 未找到官方 OpenPinData 目录: ${mcuDir}。将回退到硬编码匹配。`);
+        return;
+    }
+
+    console.log('正在建立 MCU XML 索引...');
+    const files = fs.readdirSync(mcuDir);
+    files.forEach(file => {
+        if (file.endsWith('.xml')) {
+            // 文件名通常为 STM32WBA50KGUx.xml
+            const mcuPattern = file.replace('.xml', '').toUpperCase();
+            const fullPath = path.join(mcuDir, file);
+
+            // 1. 存入快速搜索表
+            mcuXmlMap.set(mcuPattern, fullPath);
+
+            // 2. 如果包含括号，建立正则匹配器 (处理范围模式，如 STM32F103R(C-D-E)Tx)
+            if (mcuPattern.includes('(')) {
+                try {
+                    // 转换逻辑: (8-B) -> [8-B], (C-D-E) -> [CDE], x -> .*
+                    let regexStr = mcuPattern.replace(/\((.*?)\)/g, (match, p1) => {
+                        // 如果是 A-B 形式且长度为 3 (如 4-6 或 C-E)，转为标准正则范围 [A-B]
+                        if (p1.length === 3 && p1[1] === '-') {
+                            return `[${p1}]`;
+                        }
+                        // 如果是 C-D-E 形式，转为字符集 [CDE]
+                        return `[${p1.replace(/-/g, '')}]`;
+                    }).replace(/X/g, '.*'); // 将 x 通配符替换为 .*
+
+                    complexMatchers.push({
+                        regex: new RegExp(`^${regexStr}$`, 'i'),
+                        path: fullPath
+                    });
+                } catch (e) {
+                    // 跳过无效正则
+                }
+            }
+        }
+    });
+    console.log(`已索引 ${mcuXmlMap.size} 个官方 XML 定义文件 (含 ${complexMatchers.length} 个复杂匹配规则)。`);
+}
+
+/**
+ * 辅助函数: 根据 MCU 名称推断 CPU 架构
+ * 优化策略: 优先尝试从官方 XML 抓取，失败后回退到硬编码前缀匹配。
+ */
+function getCpuArch(mcu: string): string {
+    const rawMcu = mcu.toUpperCase();
+
+    // 1. 检查缓存
+    if (archCache.has(rawMcu)) return archCache.get(rawMcu)!;
+
+    // 2. 尝试从官方 XML 获取
+    let arch = fetchArchFromXml(rawMcu);
+
+    // 3. 兜底策略: 硬编码前缀匹配
+    if (!arch) {
+        if (rawMcu.startsWith('STM32WBA') || rawMcu.startsWith('STM32H5') || rawMcu.startsWith('STM32U5') || rawMcu.startsWith('STM32L5')) {
+            arch = "cortex-m33";
+        } else if (['STM32F4', 'STM32F3', 'STM32G4', 'STM32L4', 'STM32WB'].some(p => rawMcu.startsWith(p))) {
+            arch = "cortex-m4";
+        } else if (['STM32F7', 'STM32H7'].some(p => rawMcu.startsWith(p))) {
+            arch = "cortex-m7";
+        } else if (['STM32G0', 'STM32F0', 'STM32L0', 'STM32C0'].some(p => rawMcu.startsWith(p))) {
+            arch = "cortex-m0plus";
+        } else if (['STM32F2'].some(p => rawMcu.startsWith(p))) {
+            arch = "cortex-m3";
+        } else {
+            arch = "cortex-m3"; // Default to M3 (F1 series etc)
+        }
+    }
+
+    archCache.set(rawMcu, arch);
+    return arch;
+}
+
+/**
+ * 核心逻辑: 解析官方 XML 中的 <Core> 标签
+ */
+function fetchArchFromXml(mcu: string): string | null {
+    // 1. 精准匹配
+    let xmlPath = mcuXmlMap.get(mcu);
+
+    // 2. 复杂模式识别 (解决带有范围 (4-6) 的文件名)
+    if (!xmlPath) {
+        const found = complexMatchers.find(m => m.regex.test(mcu));
+        if (found) xmlPath = found.path;
+    }
+
+    // 3. 模糊前缀搜索 (兜底策略)
+    if (!xmlPath) {
+        for (const [key, path] of mcuXmlMap.entries()) {
+            if (key.startsWith(mcu)) {
+                xmlPath = path;
+                break;
+            }
+        }
+    }
+
+    if (!xmlPath || !fs.existsSync(xmlPath)) return null;
+
+    try {
+        const content = fs.readFileSync(xmlPath, 'utf8');
+        // 使用正则提取 <Core>ARM Cortex-M33</Core>
+        const match = content.match(/<Core>(.*?)<\/Core>/);
+        if (match && match[1]) {
+            const rawCore = match[1].toLowerCase();
+            if (rawCore.includes('m33')) return "cortex-m33";
+            if (rawCore.includes('m4')) return "cortex-m4";
+            if (rawCore.includes('m7')) return "cortex-m7";
+            if (rawCore.includes('m0+')) return "cortex-m0plus";
+            if (rawCore.includes('m0')) return "cortex-m0";
+            if (rawCore.includes('m3')) return "cortex-m3";
+        }
+    } catch (e) {
+        console.warn(`无法解析 XML 内容: ${xmlPath}`, e);
+    }
+    return null;
 }
 
 main();

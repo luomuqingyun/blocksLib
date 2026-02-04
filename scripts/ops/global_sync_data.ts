@@ -39,9 +39,13 @@ const PROJECT_ROOT = path.join(__dirname, '../..');
 async function globalSync() {
     const repos = [
         { name: 'ST Open Pin Data', path: ST_OPEN_PIN_DATA_PATH },
-        { name: 'Embassy STM32 Data', path: EMBASSY_STM32_DATA_PATH },
-        { name: 'Arduino Core STM32', path: ARDUINO_CORE_STM32_PATH }
+        { name: 'Embassy STM32 Data', path: EMBASSY_STM32_DATA_PATH }
+        // [已移除] Arduino Core STM32 由 PlatformIO 包管理器统一管理，不再通过 git submodule 同步
+        // { name: 'Arduino Core STM32', path: ARDUINO_CORE_STM32_PATH }
     ];
+
+    // [New] 定义 PIO 包名
+    const PIO_PACKAGE_NAME = 'ststm32';
 
     console.log('==============================================');
     console.log('   EmbedBlocks Global Data Synchronizer');
@@ -68,6 +72,19 @@ async function globalSync() {
         } else {
             console.error(`[Error] Repository path not found: ${repo.path}`);
         }
+    }
+
+    // 1.5 同步 PlatformIO 软件包 (自动更新)
+    console.log(`\n>>> [1.5/2] 正在检查 PlatformIO 包更新 (${PIO_PACKAGE_NAME})...`);
+    console.log('    这能确保我们支持 ST 官方最新的芯片变体。');
+    try {
+        // -g: 全局存储 (Global storage)
+        // -p: 指定平台 (Platform)
+        // --silent: 减少噪音，仅显示错误或更新信息
+        execSync(`pio pkg update -g -p ${PIO_PACKAGE_NAME}`, { stdio: 'inherit' });
+    } catch (e) {
+        console.warn(`[Warning] 更新 PIO 平台 '${PIO_PACKAGE_NAME}' 失败，将使用本地缓存。`);
+        console.warn('    请确保 PlatformIO CLI 已安装并添加到了系统 PATH 环境变量中。');
     }
 
     // 2. Run Full Generation Pipeline

@@ -16,7 +16,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ARDUINO_CORE_STM32_PATH } from './data_sources';
+import { ARDUINO_CORE_STM32_PATH } from '../utils/data_sources';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const TARGET_DIR = path.join(PROJECT_ROOT, 'bundled_arduino_core');
@@ -41,6 +41,18 @@ async function bundleResources() {
         process.exit(1);
     }
 
+    // [核心改进] 
+    // 在 EmbedBlocks Studio v1.2+ 中，我们决定不再将几百MB的 Arduino Core 打包进安装程序
+    // 而是依赖用户本地安装的 PlatformIO 环境 (或 Portable 模式的 PIO)
+    // 这样可以显著减小安装包体积，且保证编译环境与数据源的一致性。
+
+    console.log('⚡ [Optimization] Skipping resource bundling.');
+    console.log('   EmbedBlocks now relies on the system PlatformIO packages.');
+    console.log('   This significantly reduces the installer size.');
+    console.log('   Please ensure PlatformIO is installed and frameworks are updated.');
+
+    // 以前的逻辑已注释，保留以备查阅
+    /*
     // Clean target
     if (fs.existsSync(TARGET_DIR)) {
         console.log('   Cleaning previous bundle...');
@@ -48,8 +60,6 @@ async function bundleResources() {
     }
     fs.mkdirSync(TARGET_DIR, { recursive: true });
 
-    // [核心改进] 采用 "Blacklist" 策略 (除了不想要的，全部复制)
-    // 这样能确保 system/variants/libraries 内部的任何隐藏依赖都被包含
     const BLACKLIST = ['.git', '.github', '.gitignore', 'CI', 'tests', 'examples', '.travis.yml'];
 
     const entries = fs.readdirSync(sourcePath);
@@ -66,23 +76,13 @@ async function bundleResources() {
         console.log(`   Copying ${entry}...`);
         await copyRecursive(srcPath, destPath);
     }
+    */
 
-    console.log('✅ Resource Bundling Complete. (Full Copy Strategy)');
+    console.log('✅ Bundle Optimization Complete.');
 }
 
 async function copyRecursive(src: string, dest: string) {
-    const stats = fs.statSync(src);
-    if (stats.isDirectory()) {
-        if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
-        const entries = fs.readdirSync(src);
-        for (const entry of entries) {
-            // 忽略内部 git 文件
-            if (entry === '.git') continue;
-            await copyRecursive(path.join(src, entry), path.join(dest, entry));
-        }
-    } else {
-        fs.copyFileSync(src, dest);
-    }
+    // ... (保留 helper 函数但不调用)
 }
 
 bundleResources().catch(err => {
