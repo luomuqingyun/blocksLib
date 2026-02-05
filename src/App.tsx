@@ -86,6 +86,21 @@ function AppInner() {
     refreshRecent();
   }, [currentFilePath]);
 
+  // [New] 监听配置变更广播，实时刷新最近项目和自动发现状态
+  useEffect(() => {
+    if (!window.electronAPI || !window.electronAPI.onConfigChanged) return;
+
+    const unsubscribe = window.electronAPI.onConfigChanged((key) => {
+      if (key === 'general.recentProjects' || key === 'general.projectHistoryLimit') {
+        refreshRecent();
+      }
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
   useEffect(() => {
     const start = performance.now();
     ExtensionRegistry.ensureInitialized().then(() => {

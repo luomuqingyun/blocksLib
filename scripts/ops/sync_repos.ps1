@@ -20,13 +20,24 @@ if (-not (Get-Command "git" -ErrorAction SilentlyContinue)) {
     }
 }
 
+/**
+ * 助手函数: 执行 Git 命令并处理错误
+ */
 function Invoke-GitCommand {
     param(
-        [string]$CommandStr
+        [string[]]$ArgsArr
     )
-    Write-Host "> git $CommandStr" -ForegroundColor Gray
-    # 使用 Invoke-Expression 执行带参数的 Git 命令
-    & $GitPath $CommandStr.Split(" ")
+    $cmdDisplay = "$GitPath " + ($ArgsArr -join " ")
+    Write-Host "> $cmdDisplay" -ForegroundColor Gray
+    
+    # 执行命令
+    & $GitPath $ArgsArr
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ">>> [错误] Git 命令执行失败 (退出码: $LASTEXITCODE)" -ForegroundColor Red
+        return $false
+    }
+    return $true
 }
 
 function Update-BlocksLib {
@@ -50,22 +61,25 @@ function Update-BlocksLib {
             Write-Host ">>> 跳过打包步骤。" -ForegroundColor Gray
         }
     }
-    else {
-        Write-Warning "未找到 pack_plugins.ps1，跳过打包步骤。"
-    }
 
-    # 2. Git 提交
-    Write-Host ">>> 提交代码..." -ForegroundColor Yellow
-    Invoke-GitCommand "add ."
+    # 2. Git 暂存 (-A 确保删除和新增都被记录)
+    Write-Host ">>> 准备暂存所有变更..." -ForegroundColor Yellow
+    if (-not (Invoke-GitCommand @("add", "-A"))) { 
+        Pop-Location
+        return 
+    }
     
-    $commitMsg = Read-Host "请输入blocksLib子项目提交信息 (默认为 'Update plugins')"
+    # 3. Git 提交
+    $commitMsg = Read-Host "请输入 blocksLib 子项目提交信息 (默认为 'Update plugins')"
     if ([string]::IsNullOrWhiteSpace($commitMsg)) { $commitMsg = "Update plugins" }
     
-    Invoke-GitCommand "commit -m ""$commitMsg"""
+    if (-not (Invoke-GitCommand @("commit", "-m", $commitMsg))) {
+        Write-Host ">>> 跳过提交 (可能无变更)" -ForegroundColor Gray
+    }
     
-    # 3. Git 推送
+    # 4. Git 推送
     Write-Host ">>> 推送至 GitHub..." -ForegroundColor Yellow
-    Invoke-GitCommand "push origin main"
+    Invoke-GitCommand @("push", "origin", "main")
 
     Pop-Location
     Write-Host "=== blocksLib 更新完成 ===" -ForegroundColor Green
@@ -74,26 +88,34 @@ function Update-BlocksLib {
 function Update-MainRepo {
     Write-Host "`n=== 正在更新 EmbedBlocks Studio (主项目) ===" -ForegroundColor Cyan
 
-    # 1. 检查是否有子模块变更
-    $status = & $GitPath status
-    if ($status -match "blocksLib") {
-        Write-Host "检测到 blocksLib 子模块有更新，正在记录新版本..." -ForegroundColor Yellow
+    # 1. 检查状态
+    $status = & $GitPath status --short
+    if ([string]::IsNullOrWhiteSpace($status)) {
+        Write-Host ">>> 本地无任何变更，无需备份。" -ForegroundColor Gray
+        return
     }
 
-    # 2. Git 提交
-    Write-Host ">>> 提交代码..." -ForegroundColor Yellow
-    Invoke-GitCommand "add ."
-    
+    # 2. Git 暂存 (使用 -A 实现全量备份，确保本地数据为主)
+    Write-Host ">>> 正在全量暂存本地数据 (Capture all changes)..." -ForegroundColor Yellow
+    if (-not (Invoke-GitCommand @("add", "-A"))) { return }
+
+    # 3. Git 提交
     $commitMsg = Read-Host "请输入主项目提交信息 (默认为 'Update project')"
     if ([string]::IsNullOrWhiteSpace($commitMsg)) { $commitMsg = "Update project" }
     
-    Invoke-GitCommand "commit -m ""$commitMsg"""
+    Write-Host ">>> 正在创建备份提交..." -ForegroundColor Yellow
+    if (-not (Invoke-GitCommand @("commit", "-m", $commitMsg))) {
+        Write-Host ">>> 提交失败或由于无变更被跳过。" -ForegroundColor Gray
+        return
+    }
 
-    # 3. Git 推送
-    Write-Host ">>> 推送至 GitHub..." -ForegroundColor Yellow
-    Invoke-GitCommand "push origin main"
-
-    Write-Host "=== 主项目更新完成 ===" -ForegroundColor Green
+    # 4. Git 推送 (确保推送到远程仓库)
+    Write-Host ">>> 正在推送到远程仓库 (Push to GitHub)..." -ForegroundColor Yellow
+    if (Invoke-GitCommand @("push", "origin", "main")) {
+        Write-Host "=== 主项目备份成功！所有本地数据已安全同步至云端 ===" -ForegroundColor Green
+    } else {
+        Write-Host ">>> [警告] 推送失败。请检查网络或是否存在远程冲突。" -ForegroundColor Red
+    }
 }
 
 

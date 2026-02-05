@@ -52,9 +52,21 @@ export const SerialSettings: React.FC<SerialSettingsProps> = ({ config, handleSa
         }
     };
 
+    /** 
+     * 处理数值变更并进行范围钳制 
+     * @param key 配置键
+     * @param value 输入值
+     * @param min 最小值
+     * @param max 最大值
+     */
+    const handleClampedSave = (key: string, value: number, min: number, max: number) => {
+        const clamped = Math.max(min, Math.min(max, value));
+        handleSave(key, clamped);
+    };
+
     return (
         <div className="space-y-8">
-            {/* 历史记录数量限制 */}
+            {/* 串口发送历史记录上限 */}
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-300">
                     {t('settings.historyLimit')}
@@ -63,7 +75,7 @@ export const SerialSettings: React.FC<SerialSettingsProps> = ({ config, handleSa
                     <input
                         type="number"
                         value={config.serialSettings?.historyLimit || 100}
-                        onChange={(e) => handleSave('serialSettings.historyLimit', Number(e.target.value))}
+                        onChange={(e) => handleClampedSave('serialSettings.historyLimit', Number(e.target.value), 10, 1000)}
                         className="flex-1 bg-[#333] border border-slate-600 rounded px-3 py-2 text-slate-200 text-sm focus:border-blue-500 outline-none"
                         min="10"
                         max="1000"

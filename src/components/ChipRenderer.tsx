@@ -308,7 +308,7 @@ export const ChipRenderer: React.FC<ChipRendererProps> = ({
             };
 
             return (
-                <div className={`relative flex items-center justify-center p-4 bg-[#0a0a0a] rounded-xl border border-slate-800 shadow-2xl overflow-hidden ${className}`}>
+                <div className={`relative flex items-center justify-center p-4 bg-[#1e1e1e] rounded-xl border border-slate-800 shadow-2xl overflow-hidden ${className}`}>
                     <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full max-w-[400px]" style={{ overflow: 'visible' }}>
                         <defs>
                             <filter id="shadow">

@@ -1,0 +1,23 @@
+﻿node.exe : npm warn Unknown user config "electron_mirror". Thi
+s will stop working in the next major version of npm.
+所在位置 D:\Program Files\nodejs\npx.ps1:16 字符: 5
++     & "$basedir/node$exe"  "$basedir/node_modules/npm/bin/np
+x-cli.js" ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unkno   
+ w...version of npm.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm warn Unknown user config "electron_builder_binaries_mirror
+". This will stop working in the next major version of npm.
+--- Simulating Smart PIO Discovery ---
+1. Checking 'pio' in PATH...
+   [Success] pio is NOT in PATH. Proceeding to Smart Discovery...
+
+2. Starting Smart Discovery...
+   Scanned paths that exist: 1
+   Checking: C:\Users\wofy\.platformio\penv\Scripts\pio.exe
+   [Success] Found PIO: PlatformIO Core, version 6.1.19
+
+Final Result: SUCCESS. Using smart path: C:\Users\wofy\.platformio\penv\Scripts\pio.exe

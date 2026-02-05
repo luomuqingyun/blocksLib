@@ -35,6 +35,8 @@ export interface AppConfig {
         autoCleanNoMatchRecent?: boolean;  // 自动清理不存在的最近项目
         projectHistoryLimit?: number;      // 最近项目列表上限
         recentProjects: string[];          // 最近打开的项目路径
+        favoriteLimit?: number;            // 常用板卡收藏上限
+        favoriteBoardsCache?: any[];       // 收藏板卡的数据缓存，用于秒开预览
     };
     serialSettings: {
         baudRate: number;                  // 波特率
@@ -135,13 +137,16 @@ export class ConfigService {
             const defaults = this.loadDefaults();
             const result = this.deepMerge(defaults, userConfig);
 
-            // 最终清理
+            // 最终清理 & 强制执行限制
             delete (result as any).recentProjects;
             delete (result as any).serialHistory;
             delete (result as any).historyLimit;
             delete (result as any).settings;
 
-            return result;
+            this.config = result; // 临时赋值以供 enforceLimits 使用
+            this.enforceLimits();
+
+            return this.config;
         } catch (e) {
             console.error('Failed to load config:', e);
             return this.loadDefaults();
@@ -156,7 +161,9 @@ export class ConfigService {
                 workDir: app.getPath('documents'),  // 默认工作目录
                 autoCleanNoMatchRecent: false,
                 projectHistoryLimit: 10,
-                recentProjects: []
+                favoriteLimit: 10,              // 收藏板卡上限
+                recentProjects: [],
+                favoriteBoardsCache: []         // 收藏板卡数据缓存
             },
             serialSettings: {
                 baudRate: 115200, dataBits: 8, stopBits: 1, parity: 'none',
@@ -270,11 +277,51 @@ export class ConfigService {
                 target = target[keys[i]];
             }
             target[keys[keys.length - 1]] = value;
-            target[keys[keys.length - 1]] = value;
         } else {
             (this.config as any)[key] = value;
         }
+
+        // 强制执行所有限制
+        this.enforceLimits();
+
         this.saveConfig();
+    }
+
+    /**
+     * 强制执行数值限制和数组长度限制
+     * 确保数据严格遵守配置文件定义的上限
+     */
+    private enforceLimits(): void {
+        const gen = this.config.general;
+        const ser = this.config.serialSettings;
+
+        // 1. 最近项目记录限制
+        if (gen) {
+            const histLimit = Math.max(1, Math.min(50, Number(gen.projectHistoryLimit) || 10));
+            gen.projectHistoryLimit = histLimit;
+            if (gen.recentProjects && gen.recentProjects.length > histLimit) {
+                // 最近项目是 unshift 进去的，保留前面的 (最新的)
+                gen.recentProjects = gen.recentProjects.slice(0, histLimit);
+            }
+
+            // 2. 收藏板卡上限
+            const favLimit = Math.max(1, Math.min(50, Number(gen.favoriteLimit) || 10));
+            gen.favoriteLimit = favLimit;
+            if (gen.favoriteBoardsCache && gen.favoriteBoardsCache.length > favLimit) {
+                // 收藏是 push 进去的，保留后面的 (最新的)
+                gen.favoriteBoardsCache = gen.favoriteBoardsCache.slice(-favLimit);
+            }
+        }
+
+        // 3. 串口发送历史上限
+        if (ser) {
+            const serLimit = Math.max(10, Math.min(1000, Number(ser.historyLimit) || 100));
+            ser.historyLimit = serLimit;
+            if (ser.serialHistory && ser.serialHistory.length > serLimit) {
+                // 串口历史是 push 进去的，保留后面的 (最新的)
+                ser.serialHistory = ser.serialHistory.slice(-serLimit);
+            }
+        }
     }
 
     /**

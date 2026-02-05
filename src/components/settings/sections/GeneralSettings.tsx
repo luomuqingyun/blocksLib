@@ -39,12 +39,25 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
 }) => {
     const { t } = useTranslation();
 
+    /** 
+     * 处理数值变更并进行范围钳制 
+     * @param key 配置键
+     * @param value 输入值
+     * @param min 最小值
+     * @param max 最大值
+     */
+    const handleClampedSave = (key: string, value: number, min: number, max: number) => {
+        const clamped = Math.max(min, Math.min(max, value));
+        handleSave(key, clamped);
+    };
+
     return (
         <div className="space-y-8">
             {/* 语言设置 */}
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
                     <Globe size={16} /> {t('settings.language')}
+                    <span className="text-[10px] text-blue-500 font-normal opacity-80">{t('settings.effectiveAfterRestart')}</span>
                 </label>
                 <select
                     value={config.general?.language || 'system'}
@@ -89,7 +102,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                     <input
                         type="number"
                         value={config.general?.projectHistoryLimit || 10}
-                        onChange={(e) => handleSave('general.projectHistoryLimit', Number(e.target.value))}
+                        onChange={(e) => handleClampedSave('general.projectHistoryLimit', Number(e.target.value), 1, 50)}
                         className="flex-1 bg-[#333] border border-slate-600 rounded px-3 py-2 text-slate-200 text-sm focus:border-blue-500 outline-none"
                         min="1"
                         max="50"
@@ -109,10 +122,13 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 <p className="text-xs text-slate-500">{t('settings.projectHistoryLimitDesc')}</p>
             </div>
 
-            {/* 自动清理无效历史项目开关 */}
+            {/* 自动清理无效历史项目开关 (移至此处与历史记录限制归口) */}
             <div className="flex items-center justify-between">
                 <div>
-                    <label className="text-sm font-medium text-slate-300 block">{t('settings.autoCleanNoMatchRecent', 'Auto-clean No Match History Projects')}</label>
+                    <label className="text-sm font-medium text-slate-300 block">
+                        {t('settings.autoCleanNoMatchRecent', 'Auto-clean No Match History Projects')}
+                        <span className="ml-2 text-[10px] text-blue-500 font-normal opacity-80">{t('settings.effectiveAfterRestart')}</span>
+                    </label>
                     <span className="text-xs text-slate-500">{t('settings.autoCleanNoMatchRecentDesc', 'Remove invalid projects from history on startup')}</span>
                 </div>
                 <input
@@ -121,6 +137,36 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                     onChange={e => handleSave('general.autoCleanNoMatchRecent', e.target.checked)}
                     className="w-5 h-5 bg-[#333] border-slate-600 rounded text-blue-600 focus:ring-blue-500"
                 />
+            </div>
+
+            {/* 常用板卡收藏上限 */}
+            <div className="space-y-3">
+                <label className="block text-sm font-medium text-slate-300">
+                    {t('settings.favoriteLimit', 'Favorite Board Limit')}
+                </label>
+                <div className="flex gap-2">
+                    <input
+                        type="number"
+                        value={config.general?.favoriteLimit || 10}
+                        onChange={(e) => handleClampedSave('general.favoriteLimit', Number(e.target.value), 1, 50)}
+                        className="flex-1 bg-[#333] border border-slate-600 rounded px-3 py-2 text-slate-200 text-sm focus:border-blue-500 outline-none"
+                        min="1"
+                        max="50"
+                    />
+                    <button
+                        onClick={async () => {
+                            if (confirm(t('settings.confirmClearFavorites', 'Are you sure you want to clear all favorite boards?'))) {
+                                await window.electronAPI.setConfig('general.favoriteBoardsCache', []);
+                                setConfig((prev: any) => ({ ...prev, general: { ...prev.general, favoriteBoardsCache: [] } }));
+                                alert(t('settings.favoritesCleared', 'All favorites cleared.'));
+                            }
+                        }}
+                        className="flex items-center gap-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50 px-4 py-2 rounded text-sm font-medium transition-all"
+                    >
+                        <Trash2 size={16} /> {t('settings.clearFavorites', 'Clear')}
+                    </button>
+                </div>
+                <p className="text-xs text-slate-500">{t('settings.favoriteLimitDesc', 'Maximum number of boards you can star')}</p>
             </div>
         </div>
     );

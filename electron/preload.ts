@@ -152,5 +152,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const subscription = (_: any, action: string, arg?: any) => callback(action, arg);
     ipcRenderer.on('menu-action', subscription);
     return () => ipcRenderer.removeListener('menu-action', subscription);
+  },
+
+  // Config Broadcaster
+  onConfigChanged: (callback: (key: string, value: any) => void) => {
+    const handler = (_event: any, data: { key: string, value: any }) => callback(data.key, data.value);
+    ipcRenderer.on('config-changed', handler);
+    return () => ipcRenderer.removeListener('config-changed', handler);
   }
 });

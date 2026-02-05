@@ -29,6 +29,7 @@ import { app, dialog } from 'electron';
 import { configService } from './ConfigService';
 import { generateIniConfig } from '../config/templates';
 import { variantGenerator, VariantData } from './VariantGenerator';
+import { pioService } from './PioService';
 
 /** 项目元数据接口 */
 export interface ProjectMetadata {
@@ -158,8 +159,9 @@ class ProjectService {
                 console.warn('[ProjectService] Failed to generate initial platformio.ini or patch', e);
             }
 
-            // 更新工作目录配置
-            configService.set('general.workDir', parentDir);
+            // [核心增强] 生成终端辅助脚本 (eb_terminal.ps1)
+            // 允许用户在没有添加 pio 到系统 PATH 的情况下，直接通过脚本进入预配置好的命令行环境
+            await pioService.generateTerminalHelper(projectPath);
 
             return { success: true, path: ebprojPath };
 

@@ -122,10 +122,19 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         code
     }), [currentFilePath, projectMetadata, isDirty, code]);
 
-    // 1. 初始化 (Initialize)
     useEffect(() => {
-        if (window.electronAPI) {
-            window.electronAPI.getWorkDir().then(setWorkDir);
+        if (!window.electronAPI) return;
+        window.electronAPI.getWorkDir().then(setWorkDir);
+
+        // [New] 监听工作目录变更广播
+        if (window.electronAPI.onConfigChanged) {
+            const unsubscribe = window.electronAPI.onConfigChanged((key, value) => {
+                if (key === 'general.workDir') {
+                    console.log('[FileSystemContext] Syncing workDir due to broadcast:', value);
+                    setWorkDir(value);
+                }
+            });
+            return unsubscribe;
         }
     }, []);
 

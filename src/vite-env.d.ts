@@ -107,6 +107,8 @@ interface ElectronAPI {
 
   // --- 菜单 ---
   onMenuAction: (callback: (action: string, arg?: any) => void) => () => void;
+  // --- 配置变更广播 ---
+  onConfigChanged: (callback: (key: string, value: any) => void) => () => void;
 }
 declare global {
   interface Window {

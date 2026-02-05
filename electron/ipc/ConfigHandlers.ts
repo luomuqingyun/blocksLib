@@ -28,24 +28,24 @@ import { configService } from '../services/ConfigService';
  * @param ipcMain Electron IPC 主模块
  * @param callbacks 回调函数集合 (用于语言切换时更新菜单)
  */
-export function registerConfigHandlers(ipcMain: IpcMain, callbacks: { onMenuUpdate: () => void }) {
-
+export function registerConfigHandlers(ipcMain: IpcMain, callbacks: {
+    onMenuUpdate: () => void,
+    onConfigChange?: (key: string, value: any) => void
+}) {
     // 获取配置 (key 可选，不传则返回全部配置)
     ipcMain.handle('config:get', (event, key?: string) => configService.get(key));
-
-    // 设置配置 (语言切换时触发菜单更新)
+    // 设置配置 (语言切换时触发菜单更新和广播)
     ipcMain.handle('config:set', (event, key: string, value: any) => {
         configService.set(key, value);
+
+        // 触发广播
+        if (callbacks.onConfigChange) {
+            callbacks.onConfigChange(key, value);
+        }
 
         // 语言切换时更新菜单
         if (key === 'general.language' || key === 'language') {
             callbacks.onMenuUpdate();
-        }
-
-        // 启用自动清理无效历史项目时，立即执行一次清理
-        if (key === 'general.autoCleanNoMatchRecent' && value === true) {
-            configService.validateRecentProjects();
-            callbacks.onMenuUpdate(); // 更新菜单中的最近项目列表
         }
 
         return true;
@@ -80,6 +80,12 @@ export function registerConfigHandlers(ipcMain: IpcMain, callbacks: { onMenuUpda
         });
         if (canceled || filePaths.length === 0) return null;
         configService.set('general.workDir', filePaths[0]);
+
+        // 触发广播
+        if (callbacks.onConfigChange) {
+            callbacks.onConfigChange('general.workDir', filePaths[0]);
+        }
+
         return filePaths[0];
     });
 

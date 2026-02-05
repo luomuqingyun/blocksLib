@@ -1,0 +1,50 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "name": "MyProject_wba50kg",
+    "boardId": "generic_stm32wba50kg",
+    "createdAt": 1770202577234,
+    "lastModified": 1770211943003,
+    "buildConfig": {
+      "envName": "STM32WBA50KG",
+      "platform": "ststm32",
+      "board": "generic_stm32wba50kg",
+      "framework": "arduino",
+      "cpu": "cortex-m33",
+      "extra_scripts": "post:fix_wba_build.py",
+      "local_patch": true
+    }
+  },
+  "blocks": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "arduino_entry_root",
+          "id": "default_entry_root",
+          "x": 50,
+          "y": 50,
+          "inputs": {
+            "LOOP_STACK": {
+              "block": {
+                "type": "arduino_digital_write",
+                "id": "=e?yr-ZM4lhFrEL[F`yM",
+                "fields": {
+                  "PIN": "PA0",
+                  "STATE": "HIGH"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "viewState": {
+      "scrollX": 743.4690933227539,
+      "scrollY": 308.5,
+      "scale": 1,
+      "viewWidth": 1940,
+      "viewHeight": 852
+    }
+  }
+}

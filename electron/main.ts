@@ -284,7 +284,12 @@ function createWindow() {
 function registerAllIpcs() {
     registerProjectHandlers(ipcMain, { onMenuUpdate: buildMenu });
     registerSerialHandlers(ipcMain);
-    registerConfigHandlers(ipcMain, { onMenuUpdate: buildMenu });
+    registerConfigHandlers(ipcMain, {
+        onMenuUpdate: buildMenu,
+        onConfigChange: (key, value) => {
+            mainWindow?.webContents.send('config-changed', { key, value });
+        }
+    });
     registerExtensionHandlers(ipcMain);
     registerBuildHandlers(ipcMain, getMainWindow);
     registerMarketplaceHandlers(ipcMain);

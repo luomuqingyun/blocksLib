@@ -76,6 +76,29 @@ export class PioService {
     }
 
     /**
+     * 获取系统 PIO 的潜在安装路径
+     */
+    /**
+     * 获取系统常见的 PlatformIO 安装路径 (智能发现)
+     */
+    private getPotentialSystemPioPaths(): string[] {
+        const userHome = process.env.USERPROFILE || process.env.HOME || '';
+        const paths: string[] = [];
+
+        if (process.platform === 'win32') {
+            // Windows 默认 Python 环境路径
+            paths.push(path.join(userHome, '.platformio', 'penv', 'Scripts', 'pio.exe'));
+        } else {
+            // Unix 类系统路径
+            paths.push(path.join(userHome, '.platformio', 'penv', 'bin', 'pio'));
+            paths.push('/usr/local/bin/pio');
+            paths.push('/usr/bin/pio');
+        }
+
+        return paths.filter(p => fs.existsSync(p));
+    }
+
+    /**
      * 检查环境，确定使用系统 PIO 还是便携版 PIO
      * @returns 环境检查结果
      */
@@ -83,59 +106,100 @@ export class PioService {
         this.isOnline = await this.checkInternet();
 
         return new Promise(async (resolve) => {
-            // 1. 优先尝试系统安装的 PIO
+            // 1. 首先尝试环境变量中的 pio
             exec('pio --version', async (error, stdout) => {
                 if (!error) {
                     this.mode = 'SYSTEM';
                     this.pioExe = 'pio';
-                    resolve({
+                    return resolve({
                         success: true,
                         message: `System PIO (${stdout.trim()}) - ${this.isOnline ? 'Online' : 'Offline'}`,
                         mode: 'System'
                     });
-                } else {
-                    // 2. 失败则回退到便携版 PIO
-                    if (this.portableExePath) {
-                        this.mode = 'PORTABLE';
-                        this.pioExe = this.portableExePath;
+                }
 
-                        exec(`"${this.pioExe}" --version`, { env: this.getEnv() }, (err, out) => {
-                            if (!err) {
-                                resolve({
-                                    success: true,
-                                    message: `Portable PIO (${out.trim()}) - ${this.isOnline ? 'Online' : 'Offline'}`,
-                                    mode: 'Portable'
-                                });
-                            } else {
-                                resolve({
-                                    success: false,
-                                    message: 'Portable Environment Corrupted',
-                                    mode: 'None'
-                                });
-                            }
+                // 2. 如果环境变量没有，尝试扫描常见安装路径 (智能发现)
+                const potentialPaths = this.getPotentialSystemPioPaths();
+                for (const p of potentialPaths) {
+                    try {
+                        const version = await new Promise<string>((res, rej) => {
+                            exec(`"${p}" --version`, (err, out) => err ? rej(err) : res(out.trim()));
                         });
-                    } else {
-                        resolve({
-                            success: false,
-                            message: 'PIO Not Found',
-                            mode: 'None'
+                        this.mode = 'SYSTEM';
+                        this.pioExe = p;
+                        return resolve({
+                            success: true,
+                            message: `Smart Detected PIO (${version}) - ${this.isOnline ? 'Online' : 'Offline'}`,
+                            mode: 'System'
                         });
+                    } catch (e) {
+                        // 某个路径无效，继续尝试下一个
                     }
+                }
+
+                // 3. 最后回退到便携版 PIO
+                if (this.portableExePath) {
+                    this.mode = 'PORTABLE';
+                    this.pioExe = this.portableExePath;
+
+                    exec(`"${this.pioExe}" --version`, { env: this.getEnv() }, (err, out) => {
+                        if (!err) {
+                            resolve({
+                                success: true,
+                                message: `Portable PIO (${out.trim()}) - ${this.isOnline ? 'Online' : 'Offline'}`,
+                                mode: 'Portable'
+                            });
+                        } else {
+                            resolve({
+                                success: false,
+                                message: 'Portable Environment Corrupted',
+                                mode: 'None'
+                            });
+                        }
+                    });
+                } else {
+                    resolve({
+                        success: false,
+                        message: 'PIO Not Found',
+                        mode: 'None'
+                    });
                 }
             });
         });
     }
 
     /**
-     * 获取环境变量
-     * 如果是便携模式，会设置 PLATFORMIO_CORE_DIR 等变量
+     * 构建子进程的环境变量
+     * 确保 pio 及其配套工具能够被正确发现
      */
     public getEnv(): NodeJS.ProcessEnv {
         const env = { ...process.env };
+        const sep = process.platform === 'win32' ? ';' : ':';
+
+        // 1. 如果 pioExe 是绝对路径（便携版或智能发现），确保其目录在 PATH 中
+        if (path.isAbsolute(this.pioExe)) {
+            const pioBinDir = path.dirname(this.pioExe);
+            const currentPath = env[process.platform === 'win32' ? 'Path' : 'PATH'] || '';
+
+            // 将 PIO 目录置于 PATH 最前面，确保子进程能找到配套工具（如 python, click 等）
+            if (!currentPath.includes(pioBinDir)) {
+                const pathKey = process.platform === 'win32' ? 'Path' : 'PATH';
+                env[pathKey] = `${pioBinDir}${sep}${currentPath}`;
+            }
+
+            // 如果是系统安装但不在 PATH（智能发现），显式设置 Core 目录
+            if (this.mode === 'SYSTEM') {
+                const userHome = process.env.USERPROFILE || process.env.HOME || '';
+                env['PLATFORMIO_CORE_DIR'] = path.join(userHome, '.platformio');
+            }
+        }
+
+        // 2. 处理便携模式的特定变量
         if (this.mode === 'PORTABLE') {
             env['PLATFORMIO_CORE_DIR'] = this.coreDir;
             env['PLATFORMIO_GLOBALLIB_DIR'] = path.join(this.coreDir, 'lib');
-            // 离线模式下，禁用自动更新和网络访问
+
+            // 离线模式限制
             if (!this.isOnline) {
                 env['PLATFORMIO_SETTING_CHECK_PLATFORMIO_INTERVAL'] = '999999';
                 env['PLATFORMIO_SETTING_CHECK_PLATFORMS_INTERVAL'] = '999999';
@@ -144,6 +208,7 @@ export class PioService {
                 env['PLATFORMIO_OFFLINE'] = '1';
             }
         }
+
         return env;
     }
 
@@ -322,6 +387,78 @@ export class PioService {
         } catch (e) {
             console.error('[PioService] Failed to scan variants', e);
             return [];
+        }
+    }
+
+    /**
+     * 为项目生成终端辅助脚本
+     * 允许用户在没有全局环境变量的情况下，直接使用终端操作 pio 命令
+     */
+    public async generateTerminalHelper(projectPath: string): Promise<void> {
+        try {
+            await this.checkEnvironment();
+            const env = this.getEnv();
+            const pioBinDir = path.isAbsolute(this.pioExe) ? path.dirname(this.pioExe) : '';
+            const coreDir = env['PLATFORMIO_CORE_DIR'] || '';
+
+            // 1. 生成 PowerShell 脚本 (Windows)
+            const ps1Path = path.join(projectPath, 'eb_terminal.ps1');
+            let ps1Content = `# EmbedBlocks Terminal Helper\n`;
+            ps1Content += `$Host.UI.RawUI.WindowTitle = "EmbedBlocks CLI - ${path.basename(projectPath)}"\n\n`;
+            ps1Content += `# 自动跳转到项目目录\n`;
+            ps1Content += `Set-Location -Path $PSScriptRoot\n\n`;
+            ps1Content += `# 设置环境变量\n`;
+            if (pioBinDir) {
+                ps1Content += `$env:Path = "${pioBinDir};" + $env:Path\n`;
+            }
+            if (coreDir) {
+                ps1Content += `$env:PLATFORMIO_CORE_DIR = "${coreDir}"\n`;
+            }
+            ps1Content += `\n# 欢迎信息 (Bilingual)\n`;
+            ps1Content += `Write-Host "--------------------------------------------------" -ForegroundColor Cyan\n`;
+            ps1Content += `Write-Host "   EmbedBlocks CLI Terminal Ready" -ForegroundColor Cyan\n`;
+            ps1Content += `Write-Host "   PIO: ${this.pioExe}" -ForegroundColor Gray\n`;
+            ps1Content += `Write-Host "--------------------------------------------------" -ForegroundColor Cyan\n`;
+            ps1Content += `Write-Host " [CN] 你现在可以运行 'pio run', 'pio run -t upload' 等命令"\n`;
+            ps1Content += `Write-Host " [EN] You can now run 'pio run', 'pio run -t upload', etc."\n\n`;
+            ps1Content += `Write-Host "--------------------------------------------------" -ForegroundColor Cyan\n`;
+            ps1Content += `Write-Host " TIPS: 如果此窗口点击即消失，请改用双击 'eb_terminal.bat' 运行。" -ForegroundColor Yellow\n`;
+            ps1Content += `Write-Host " TIPS: If this window closes immediately, please double-click 'eb_terminal.bat'." -ForegroundColor Yellow\n`;
+
+            await fs.promises.writeFile(ps1Path, ps1Content);
+
+            // 同时生成一个简单的 .bat 引导文件，方便 Windows 用户直接双击
+            const batPath = path.join(projectPath, 'eb_terminal.bat');
+            const batContent = `@echo off\ntitle EmbedBlocks CLI - ${path.basename(projectPath)}\n` +
+                `cd /d "%~dp0"\n` +
+                `echo [EmbedBlocks] Starting development environment...\n` +
+                `powershell.exe -NoExit -ExecutionPolicy Bypass -File "%~dp0eb_terminal.ps1"\n`;
+            await fs.promises.writeFile(batPath, batContent);
+
+            // 2. 生成 Shell 脚本 (macOS/Linux)
+            const shPath = path.join(projectPath, 'eb_terminal.sh');
+            const unixBinDir = pioBinDir.replace(/\\/g, '/');
+            const unixCoreDir = coreDir.replace(/\\/g, '/');
+
+            let shContent = `#!/bin/bash\n`;
+            shContent += `cd "$(dirname "$0")"\n`; // 自动跳转到脚本所在目录
+            shContent += `export PATH="${unixBinDir}:$PATH"\n`;
+            if (coreDir) shContent += `export PLATFORMIO_CORE_DIR="${unixCoreDir}"\n`;
+            shContent += `echo "--------------------------------------------------"\n`;
+            shContent += `echo "   EmbedBlocks CLI Terminal Ready"\n`;
+            shContent += `echo "   PIO Path: ${this.pioExe}"\n`;
+            shContent += `echo "--------------------------------------------------"\n`;
+            shContent += `echo " [CN] 你现在可以在此终端运行 pio 命令"\n`;
+            shContent += `echo " [EN] You can now run pio commands in this terminal"\n`;
+            shContent += `echo "--------------------------------------------------"\n`;
+            shContent += `exec $SHELL\n`;
+
+            await fs.promises.writeFile(shPath, shContent);
+            try { await fs.promises.chmod(shPath, 0o755); } catch (e) { } // 赋予可执行权限
+
+            console.log(`[PioService] Generated terminal helpers in: ${projectPath}`);
+        } catch (e) {
+            console.error('[PioService] Failed to generate terminal helper', e);
         }
     }
 }

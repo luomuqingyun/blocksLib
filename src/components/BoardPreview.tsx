@@ -142,7 +142,9 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
 
     // 判断逻辑
     const hasImages = !!(images?.board || images?.pinmap);
-    const canRenderChip = pinCount > 0;
+    // [FIX] 解决“加载延时”视觉差：如果标识为 STM32 芯片，即使后台数据库未加载完，也先行使用默认参数渲染，消除空白感
+    const isSTM32 = (mcu?.toUpperCase().startsWith('STM32') || name.toUpperCase().startsWith('STM32'));
+    const canRenderChip = pinCount > 0 || (!!mcu && !!packageType && packageType !== 'Unknown') || isSTM32;
 
     return (
         <div className={`flex flex-col h-full bg-[#252526] rounded-lg border border-slate-700 overflow-hidden ${className}`}>
@@ -165,7 +167,7 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                             src={activeImage!}
                             alt={name}
                             onLoad={() => setIsImgLoading(false)}
-                            className={`max-h-full max-w-full object-contain transition-all duration-500 ${isImgLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'} group-hover:scale-105`}
+                            className={`max-h-full max-w-full object-contain transition-opacity duration-300 ${isImgLoading ? 'opacity-0' : 'opacity-100'} group-hover:scale-105`}
                             onError={() => { setImgError(true); setIsImgLoading(false); }}
                         />
 

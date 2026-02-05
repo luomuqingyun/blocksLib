@@ -74,85 +74,144 @@ export const NewProjectModal: React.FC = () => {
     const [stm32Data, setStm32Data] = useState<any>({ STM32: {} });
     const [isStm32Loading, setIsStm32Loading] = useState(false);
 
-    useEffect(() => {
-        if (isOpen) {
-            // 1. 初始化保存目录
-            if (workDir && !parentDir) {
-                setParentDir(workDir);
-            }
-
-            // 2. 默认选择 Arduino Uno 板卡 (如果当前未选择)
-            if (!selectedBoardId) {
-                const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
-                if (uno) {
-                    handleSelectBoard(uno);
-                }
-            }
-
-            // [OPTIMIZATION] 异步加载 STM32 数据
-            const loadData = async () => {
-                const cached = boardRepository.getSTM32Boards();
-                if (Object.keys(cached.STM32).length > 0) {
-                    setStm32Data(cached);
-                    return;
-                }
-
-                setIsStm32Loading(true);
-                try {
-                    const data = await boardRepository.loadSTM32Boards();
-                    setStm32Data(data);
-                } catch (e) {
-                    console.error("Failed to load STM32 boards:", e);
-                } finally {
-                    setIsStm32Loading(false);
-                }
-            };
-            loadData();
-
-            // 3. 重置位置到中心
-            setPos({ x: 0, y: 0 });
-        }
-    }, [isOpen, workDir]); // 仅在打开弹窗或工作目录变动时触发检查/加载
-
     // 搜索与收藏状态
     const [searchTerm, setSearchTerm] = useState('');
-    const [favorites, setFavorites] = useState<Set<string>>(() => {
-        const saved = localStorage.getItem('favorite_boards');
-        return new Set(saved ? JSON.parse(saved) : []);
-    });
-
-    // 获取配置 (为了读取 maxFavorites) - 简单期间直接读取 localStorage 或默认
-    // 理想情况是从 SettingsContext 获取，但这里简化直接读配置以减少依赖变更
-    const getMaxFavorites = () => {
-        try {
-            const cfg = JSON.parse(localStorage.getItem('app_settings') || '{}');
-            return cfg.general?.maxFavorites || 5;
-        } catch {
-            return 5;
-        }
-    };
-
-    // 切换收藏
-    const toggleFavorite = (boardId: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        const newSet = new Set(favorites);
-        if (newSet.has(boardId)) {
-            newSet.delete(boardId);
-        } else {
-            if (newSet.size >= getMaxFavorites()) {
-                alert(`最多只能收藏 ${getMaxFavorites()} 个常用板卡。可以在设置中修改此限制。`);
-                return;
-            }
-            newSet.add(boardId);
-        }
-        setFavorites(newSet);
-        localStorage.setItem('favorite_boards', JSON.stringify(Array.from(newSet)));
-    };
+    const [favorites, setFavorites] = useState<Set<string>>(new Set()); // 收藏的板卡 ID 集合 (用于 UI 显示星星)
+    const [favoriteLimit, setFavoriteLimit] = useState(10);             // 收藏上限
+    const [favoriteCache, setFavoriteCache] = useState<any[]>([]);      // 收藏板卡的元数据缓存 (用于秒开预览)
 
     // 窗口拖拽位置状态
     const [pos, setPos] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+    // [FIX] 统一初始化逻辑：优先加载收藏，设置默认选中板卡
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const initModal = async () => {
+            // 1. 重置基础状态
+            setProjectName(isSaveAs ? (projectMetadata?.name || 'MyProject_Copy') : 'MyProject');
+            setSearchTerm('');
+            setPos({ x: 0, y: 0 });
+
+            if (workDir) setParentDir(workDir);
+
+            // 2. 加载收藏夹数据
+            let currentCache: any[] = [];
+            if (window.electronAPI) {
+                const limit = await window.electronAPI.getConfig('general.favoriteLimit') || 10;
+                currentCache = await window.electronAPI.getConfig('general.favoriteBoardsCache') || [];
+                setFavoriteLimit(limit);
+                setFavoriteCache(currentCache);
+                setFavorites(new Set(currentCache.map((b: any) => b.id)));
+            }
+
+            // 3. 决定初始选中的板卡 (逻辑回归简单化：一律默认选中 standard 里的 uno，彻底解决抖动)
+            const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
+            if (uno) {
+                setSelectedBoardId('uno');
+                setSelectedBoardData(uno);
+            }
+
+            // 4. 异步加载 STM32 数据
+            const loadData = async () => {
+                const cached = boardRepository.getSTM32Boards();
+                if (Object.keys(cached.STM32).length > 0) {
+                    setStm32Data(cached);
+                } else {
+                    setIsStm32Loading(true);
+                    try {
+                        const data = await boardRepository.loadSTM32Boards();
+                        setStm32Data(data);
+                    } catch (e) {
+                        console.error("Failed to load STM32 boards:", e);
+                    } finally {
+                        setIsStm32Loading(false);
+                    }
+                }
+            };
+            loadData();
+        };
+
+        initModal();
+    }, [isOpen]);
+
+    // [REMOVED] 移除了原有的 metadata 同步 Effect，防止后台加载完成导致 UI 抖动 (以静制动)
+
+    // [New] 监听 Electron 发出的配置变更广播
+    useEffect(() => {
+        if (!window.electronAPI || !window.electronAPI.onConfigChanged) return;
+
+        const unsubscribe = window.electronAPI.onConfigChanged((key) => {
+            // 如果变更的是收藏列表或上限，立即刷新
+            if (key.startsWith('general.favorite')) {
+                console.log('[NewProjectModal] Syncing due to config broadcast:', key);
+                const refresh = async () => {
+                    const limit = await window.electronAPI.getConfig('general.favoriteLimit') || 10;
+                    const cache = await window.electronAPI.getConfig('general.favoriteBoardsCache') || [];
+                    setFavoriteLimit(limit);
+                    setFavoriteCache(cache);
+                    setFavorites(new Set(cache.map((b: any) => b.id)) as Set<string>);
+                };
+                refresh();
+            }
+        });
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, []);
+
+    /**
+     * 切换板卡的收藏状态
+     * 收藏后的元数据会存入软件缓存，即使 STM32 数据包没加载完也能显示
+     */
+    const toggleFavorite = async (board: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const boardId = board.id;
+        const newFavorites = new Set(favorites);
+        let newCache = [...favoriteCache];
+
+        if (newFavorites.has(boardId)) {
+            // 取消收藏
+            newFavorites.delete(boardId);
+            newCache = newCache.filter(b => b.id !== boardId);
+        } else {
+            // 添加收藏
+            if (newFavorites.size >= favoriteLimit) {
+                alert(t('settings.favoriteLimitReached', { limit: favoriteLimit }));
+                return;
+            }
+            newFavorites.add(boardId);
+
+            // [OPTIMIZATION] 存入尽可能完整的元数据。
+            // 之前的“最小化”数据会导致秒开时预览图信息不足（如缺少引脚图定义）。
+            newCache.push({
+                ...board,
+                // 显式保留核心字段，防止对象解构丢失重要元数据
+                id: board.id,
+                name: board.name,
+                mcu: board.mcu,
+                package: board.package,
+                pinCount: board.pinCount,
+                pinMap: board.pinMap,
+                pin_options: board.pin_options,
+                specs: board.specs,
+                description: board.description,
+                family: board.family,
+                variant: board.variant
+            });
+        }
+
+        setFavorites(newFavorites);
+        setFavoriteCache(newCache);
+
+        // 同步到软件配置文件
+        if (window.electronAPI) {
+            await window.electronAPI.setConfig('general.favoriteBoardsCache', newCache);
+        }
+    };
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -181,7 +240,14 @@ export const NewProjectModal: React.FC = () => {
      * 选择板卡时的处理
      * @param board 板卡数据对象
      */
+    /**
+     * 选择板卡时的处理
+     * [OPTIMIZATION] 统一设置 ID 和数据，并在切换时重置预览区域的相关瞬态，防止视觉抖动。
+     */
     const handleSelectBoard = (board: any) => {
+        // 如果点击的是当前已选中的，则不触发更新，减少无谓的重绘
+        if (selectedBoardId === board.id) return;
+
         setSelectedBoardId(board.id);
         setSelectedBoardData(board);
     };
@@ -228,11 +294,11 @@ export const NewProjectModal: React.FC = () => {
     // ----- 渲染部分辅助函数 -----
 
     // Helper: 渲染星星图标
-    const renderStar = (boardId: string) => {
-        const isFav = favorites.has(boardId);
+    const renderStar = (board: any) => {
+        const isFav = favorites.has(board.id);
         return (
             <button
-                onClick={(e) => toggleFavorite(boardId, e)}
+                onClick={(e) => toggleFavorite(board, e)}
                 className={`p-1 rounded hover:bg-slate-700 transition-colors ${isFav ? 'text-yellow-400' : 'text-slate-600 hover:text-slate-400'}`}
                 title={isFav ? "取消收藏" : "收藏"}
             >
@@ -265,31 +331,17 @@ export const NewProjectModal: React.FC = () => {
                     <span className="text-sm truncate font-medium">{board.name || board.id}</span>
                 </div>
             </div>
-            {renderStar(board.id)}
+            {renderStar(board)}
         </div>
     );
 
     // 渲染收藏夹
+    /**
+     * 渲染收藏夹列表
+     * [OPTIMIZATION] 直接使用 favoriteCache 渲染，实现秒开显示，不再等待 stm32Data 加载
+     */
     const renderFavorites = () => {
-        if (favorites.size === 0) return null;
-
-        // 查找所有被收藏的板卡数据
-        const favBoards: any[] = [];
-        const findBoard = (list: any) => {
-            Object.values(list).forEach((val: any) => {
-                if (Array.isArray(val)) {
-                    val.forEach(b => {
-                        if (favorites.has(b.id)) favBoards.push(b);
-                    });
-                } else if (typeof val === 'object') {
-                    findBoard(val);
-                }
-            });
-        };
-        findBoard(standardData);
-        findBoard(stm32Data);
-
-        if (favBoards.length === 0) return null;
+        if (favoriteCache.length === 0) return null;
 
         return (
             <div className="mb-4">
@@ -298,7 +350,7 @@ export const NewProjectModal: React.FC = () => {
                     Favorites
                 </h3>
                 <div className="space-y-1">
-                    {favBoards.map(renderBoardItem)}
+                    {favoriteCache.map(renderBoardItem)}
                 </div>
                 <div className="h-px bg-slate-700/50 my-2 mx-2"></div>
             </div>
@@ -489,7 +541,7 @@ export const NewProjectModal: React.FC = () => {
                                     value={projectName}
                                     onChange={(e) => { setProjectName(e.target.value); setErrorMessage(null); }}
                                     className="w-full bg-[#2a2a2a] border border-slate-600 rounded px-2 py-1.5 text-slate-200 text-sm focus:border-blue-500 outline-none"
-                                    placeholder="MyNewRobot"
+                                    placeholder={t('dialog.enterProjectName')}
                                     spellCheck={false}
                                 />
                             </div>
@@ -515,12 +567,10 @@ export const NewProjectModal: React.FC = () => {
                                 <button
                                     onClick={() => {
                                         setActiveTab('standard');
-                                        // 切换回标准模式时，自动选中 Uno 作为起点
-                                        const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
-                                        if (uno) handleSelectBoard(uno);
-                                        else {
-                                            setSelectedBoardId('');
-                                            setSelectedBoardData(null);
+                                        // 切换回标准模式时，如果没有当前选择或者当前选择是高级板卡，则默认选中 Uno
+                                        if (!selectedBoardId || selectedBoardId.includes('stm32') || selectedBoardId.includes('f4') || selectedBoardId.includes('f1')) {
+                                            const uno = standardData['Arduino']?.find((b: any) => b.id === 'uno');
+                                            if (uno) handleSelectBoard(uno);
                                         }
                                     }}
                                     className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'standard' ? 'bg-[#1e1e1e] text-blue-400 border-b-2 border-blue-500' : 'bg-[#252526] text-slate-500 hover:text-slate-300'}`}
@@ -530,9 +580,12 @@ export const NewProjectModal: React.FC = () => {
                                 <button
                                     onClick={() => {
                                         setActiveTab('advanced');
-                                        // 切换到高级模式时，清空选择，以显示 ST Logo 占位符
-                                        setSelectedBoardId('');
-                                        setSelectedBoardData(null);
+                                        // 切换到高级模式时，如果当前选择不是高级板卡，则清空选择以显示 ST Logo 占位符
+                                        // (除非未来我们想在这里也默认选一个 F103)
+                                        if (!selectedBoardId || !selectedBoardId.includes('stm32') && !selectedBoardId.includes('f4') && !selectedBoardId.includes('f1')) {
+                                            setSelectedBoardId('');
+                                            setSelectedBoardData(null);
+                                        }
                                     }}
                                     className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'advanced' ? 'bg-[#1e1e1e] text-purple-400 border-b-2 border-purple-500' : 'bg-[#252526] text-slate-500 hover:text-slate-300'}`}
                                 >
@@ -589,6 +642,7 @@ export const NewProjectModal: React.FC = () => {
                         {selectedBoardData ? (
                             <>
                                 <BoardPreview
+                                    key={selectedBoardId}
                                     name={selectedBoardData.name || selectedBoardData.id}
                                     mcu={selectedBoardData.mcu}
                                     packageType={selectedBoardData.package}
@@ -596,7 +650,7 @@ export const NewProjectModal: React.FC = () => {
                                     pinMap={selectedBoardData.pinMap}
                                     pins={selectedBoardData.pin_options?.digital?.map((p: any) => Array.isArray(p) ? p[0] : p)}
                                     description={selectedBoardData.description || t('board.noDescription')}
-                                    specs={selectedBoardData.specs} // e.g. "32k Flash"
+                                    specs={selectedBoardData.specs}
                                     images={selectedBoardData.images}
                                     pageUrl={selectedBoardData.page_url}
                                     className="flex-1 shadow-lg"
@@ -606,17 +660,20 @@ export const NewProjectModal: React.FC = () => {
                             <div className="flex-1 flex flex-col items-center justify-center text-slate-600 border border-slate-700 border-dashed rounded-lg bg-[#252526]/50 select-none">
                                 {activeTab === 'advanced' ? (
                                     <>
-                                        {/* ST Logo 通用占位符 */}
-                                        <div className="w-24 h-24 bg-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-blue-900/20">
-                                            <span className="text-white font-bold text-4xl italic tracking-tighter">ST</span>
+                                        {/* ST Logo 通用占位符 (更精致的样式) */}
+                                        <div className="w-20 h-20 bg-[#03234b] rounded-xl flex items-center justify-center mb-6 shadow-xl border border-blue-500/20 rotate-3 hover:rotate-0 transition-transform duration-500">
+                                            <span className="text-white font-black text-4xl italic tracking-tighter">ST</span>
                                         </div>
-                                        <h3 className="text-xl font-bold text-slate-200 mb-1">STM32 系列</h3>
-                                        <span className="text-sm">选择芯片以查看详情</span>
+                                        <h3 className="text-lg font-bold text-slate-200 mb-1">STM32 / Advanced</h3>
+                                        <span className="text-sm opacity-60">请在左侧列表中选择芯片系列</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Cpu size={48} className="mb-2 opacity-50" />
-                                        <span className="text-sm">选择板卡以查看详情</span>
+                                        <div className="w-20 h-20 bg-teal-900/20 rounded-full flex items-center justify-center mb-6 border border-teal-500/20">
+                                            <Cpu size={40} className="text-teal-500/40" />
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-200 mb-1">Standard Boards</h3>
+                                        <span className="text-sm opacity-60">请选择一个标准板卡开始您的项目</span>
                                     </>
                                 )}
                             </div>
@@ -652,7 +709,7 @@ export const NewProjectModal: React.FC = () => {
                     </button>
                 </div>
             </div>
-        </BaseModal>
+        </BaseModal >
     );
 };
 

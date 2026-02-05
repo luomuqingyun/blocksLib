@@ -149,6 +149,12 @@ export const generateIniConfig = (template: PlatformIOTemplate): string => {
     if (useLocalPatch) {
         config += `board_build.variants_dir = variants\n`;
         config += `board_build.variant = eb_custom_variant\n`;
+
+        // [WBA Fix] 针对 STM32WBA 系列，自动注入构建拦截脚本以解决驱动识别错误问题
+        // 只有当 template 中没有手动定义 extra_scripts 时才自动添加
+        if (template.board.toLowerCase().includes('wba') && !template['extra_scripts']) {
+            config += `extra_scripts = post:fix_wba_build.py\n`;
+        }
     }
 
     // 3. 添加其他可选配置项 (如 build_flags, lib_deps 等)
