@@ -56,7 +56,6 @@ interface FileSystemContextType {
     setCode: (code: string) => void;
     projectMetadata: ProjectMetadata | null;
     updateProjectConfig: (config: ProjectBuildConfig) => void;
-    updateProjectBoard: (boardId: string) => void;
     workDir: string;
     blocklyRef: React.RefObject<BlocklyWrapperHandle>;
 
@@ -145,27 +144,6 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         markWorkspaceDirty();
     }, [projectMetadata, markWorkspaceDirty]);
 
-    const updateProjectBoard = useCallback((boardId: string) => {
-        if (!projectMetadata) return;
-        const newBoardConfig = BoardRegistry.get(boardId);
-        if (!newBoardConfig) return;
-
-        setProjectMetadata(prev => {
-            if (!prev) return null;
-            const currentConfig = prev.buildConfig || {};
-            const template = newBoardConfig.build;
-            const newConfig: ProjectBuildConfig = {
-                ...currentConfig,
-                envName: template.envName,
-                platform: template.platform,
-                board: template.board,
-                framework: template.framework,
-                upload_protocol: undefined,
-            };
-            return { ...prev, boardId, buildConfig: newConfig };
-        });
-        markWorkspaceDirty();
-    }, [projectMetadata, markWorkspaceDirty]);
 
     // 3. 引入业务逻辑 Hooks (Inject Business Logic)
 
@@ -280,7 +258,6 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         currentFilePath: currentFilePath || undefined,
         projectMetadata,        // 项目元数据 (如开发板和编译配置)
         updateProjectConfig,    // 更新编译配置
-        updateProjectBoard,     // 更新选中的开发板
         workDir,                // 当前工作目录
         blocklyRef,             // Blockly 包装器引用
         isDirty,                // 工作区是否有未保存的更改

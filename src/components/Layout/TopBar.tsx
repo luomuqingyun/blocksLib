@@ -17,7 +17,7 @@ import { Board } from '../../types/board';
 import {
     FilePlus, FolderOpen, Save, SaveAll, FileCode,
     Settings, RefreshCw, Play, Upload, Puzzle, FileInput, X, Sliders,
-    Sun, Moon, Grid3X3
+    Sun, Moon, Grid3X3, Box, Cpu
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BoardRegistry } from '../../registries/BoardRegistry';
@@ -25,7 +25,6 @@ import { boardRepository } from '../../data/BoardRepository';
 import { useBoards } from '../../hooks/useBoards';
 import { useToolbarActions } from '../../hooks/useToolbarActions';
 import { getI18nString } from '../../utils/i18n_utils';
-import { BoardSelector } from './BoardSelector';
 
 export const TopBar: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -116,21 +115,30 @@ export const TopBar: React.FC = () => {
 
             <div className="h-5 w-px bg-[#3e3e42] mx-1"></div>
 
-            {/* 硬件配置组: 串口选择和开发板选择 */}
-            <div className="flex items-center gap-3 flex-1 overflow-hidden">
+            {/* 硬件配置组: 串口选择和开发板显示 */}
+            <div className="flex items-center gap-3">
                 {/* 串口端口选择器 */}
-                <div className="flex items-center gap-2 min-w-[120px] max-w-[200px]">
+                <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-500 font-mono whitespace-nowrap hidden xl:inline">{t('app.port')}:</span>
-                    <div className="relative flex-1">
+                    <div className="relative w-fit group">
+                        {/* 测量用的隐藏文本 (Measuring Span) - 强制容器宽度与当前选中内容一致 */}
+                        <div className="invisible px-2 py-1.5 text-xs font-medium whitespace-nowrap min-w-[80px] max-w-[300px]">
+                            {(() => {
+                                const p = serial.ports.find(p => p.path === serial.selectedPort);
+                                return p ? `${p.friendlyName || p.path} (${p.manufacturer || 'Unknown'})` : (serial.selectedPort || '');
+                            })()}
+                            {/* 为右侧自定义箭头预留空间 */}
+                            <span className="inline-block w-6"></span>
+                        </div>
+
+                        {/* 实际的选择框 - 绝对定位覆盖在测量层之上 */}
                         <select
-                            className="w-full bg-[#333] hover:bg-[#3c3c3c] text-xs text-slate-200 rounded px-2 py-1.5 outline-none border border-transparent focus:border-blue-500 transition-colors appearance-none cursor-pointer truncate pr-6"
+                            className="absolute inset-0 w-full h-full bg-[#333] hover:bg-[#3c3c3c] text-xs text-slate-200 rounded px-2 py-1.5 outline-none border border-transparent focus:border-blue-500 transition-colors appearance-none cursor-pointer pr-8 whitespace-nowrap"
                             value={serial.selectedPort}
                             onChange={(e) => serial.setSelectedPort(e.target.value)}
-                            title={t('dialog.selectPort')}
                         >
-                            <option value="">{t('dialog.selectPort')}</option>
                             {serial.ports.map(port => (
-                                <option key={port.path} value={port.path}>
+                                <option key={port.path} value={port.path} className="bg-[#252526]">
                                     {port.friendlyName || port.path} ({port.manufacturer || 'Unknown'})
                                 </option>
                             ))}
@@ -146,19 +154,25 @@ export const TopBar: React.FC = () => {
                     </button>
                 </div>
 
-                {/* 开发板选择器 */}
-                <div className="flex items-center gap-2 min-w-[120px]">
-                    <span className="text-xs text-slate-500 font-mono whitespace-nowrap hidden xl:inline">{t('app.board')}:</span>
-                    <BoardSelector
-                        selectedId={build.selectedBoard}
-                        onSelect={(newBoardId) => {
-                            if (project.projectMetadata) {
-                                project.updateProjectBoard(newBoardId);
-                            }
-                            build.setSelectedBoard(newBoardId);
-                        }}
-                        isProjectActive={!!project.projectMetadata}
-                    />
+                {/* 开发板显示 (只读，项目内不建议切换以保证环境稳定性) */}
+                <div className="flex items-center gap-2 px-2 py-1.5 bg-[#333]/50 rounded border border-white/5 text-slate-400 cursor-default">
+                    <span className="text-xs font-mono whitespace-nowrap hidden xl:inline">{t('app.board')}:</span>
+                    <div className="flex items-center gap-2">
+                        {(() => {
+                            const board = BoardRegistry.get(build.selectedBoard);
+                            const family = board?.family || 'unknown';
+                            return (
+                                <>
+                                    {family === 'arduino' ? <Box size={14} className="text-teal-400 opacity-70" /> :
+                                        family === 'esp32' ? <Box size={14} className="text-orange-400 opacity-70" /> :
+                                            <Cpu size={14} className="text-blue-400 opacity-70" />}
+                                    <span className="text-xs font-semibold whitespace-nowrap">
+                                        {board ? getI18nString(board.name, i18n.language) : build.selectedBoard}
+                                    </span>
+                                </>
+                            );
+                        })()}
+                    </div>
                 </div>
             </div>
 

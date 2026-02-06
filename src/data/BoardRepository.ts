@@ -96,8 +96,13 @@ class BoardRepositoryImpl implements BoardRepository {
                 let category = defaultCategory;
 
                 if (!category) {
-                    // 对于 standard 目录，提取一级子目录作为分类名 (parts[5])
-                    category = parts[5];
+                    // 鲁棒路径解析: 寻找 standard 目录后的第一个段作为分类
+                    const standardIndex = parts.indexOf('standard');
+                    if (standardIndex !== -1 && parts.length > standardIndex + 1) {
+                        category = parts[standardIndex + 1];
+                    } else {
+                        category = 'other';
+                    }
                 }
 
                 // 格式化分类显示名 (首字母大写，修正 ESP 等缩写)
@@ -205,9 +210,12 @@ class BoardRepositoryImpl implements BoardRepository {
             }
 
             loadedModules.forEach(({ path, mod }) => {
-                // 路径结构: /src/data/boards/stm32/[Series]/[mcu].json
+                // 路径结构: .../stm32/[Series]/[mcu].json
                 const parts = path.split('/');
-                const series = parts[5]; // 例如: STM32F4
+                const stm32Index = parts.indexOf('stm32');
+                const series = (stm32Index !== -1 && parts.length > stm32Index + 1)
+                    ? parts[stm32Index + 1]
+                    : 'Unknown';
 
                 const rawBoard = mod.default || mod;
 

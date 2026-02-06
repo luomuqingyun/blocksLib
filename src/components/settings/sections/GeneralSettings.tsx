@@ -53,43 +53,46 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
 
     return (
         <div className="space-y-8">
-            {/* 外观设置 (Appearance) */}
-            <div className="space-y-6 bg-slate-800/20 p-4 rounded-lg border border-slate-700/50">
-                <h3 className="text-sm font-semibold text-blue-400 flex items-center gap-2 mb-4">
+            {/* 外观与工作区设置 (Appearance & Workspace) */}
+            <div className="space-y-4">
+                <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
                     <Monitor size={16} /> {t('settings.appearance')}
-                </h3>
+                </label>
 
-                {/* 主题切换 */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-xs text-slate-400">{t('settings.theme')}</label>
+                <div className="space-y-4 ml-6">
+                    {/* 主题模式 */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <label className="text-sm font-medium text-slate-300 block">{t('settings.theme')}</label>
+                            <span className="text-xs text-slate-500">{t('settings.themeDesc')}</span>
+                        </div>
                         <select
                             value={config.appearance?.theme || 'dark'}
                             onChange={(e) => handleSave('appearance.theme', e.target.value)}
-                            className="w-full bg-[#333] border border-slate-600 rounded px-3 py-2 text-slate-200 text-sm focus:border-blue-500 outline-none"
+                            className="bg-[#333] border border-slate-600 rounded px-2 py-1 text-slate-200 text-sm focus:border-blue-500 outline-none"
                         >
                             <option value="dark">{t('settings.themeDeep')}</option>
                             <option value="light">{t('settings.themeLight')}</option>
                         </select>
                     </div>
 
-                    {/* 栅格开关 */}
-                    <div className="space-y-2">
-                        <label className="text-xs text-slate-400">{t('settings.showGrid')}</label>
-                        <div className="flex items-center h-[38px]">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={config.appearance?.showGrid ?? true}
-                                    onChange={(e) => handleSave('appearance.showGrid', e.target.checked)}
-                                    className="sr-only peer"
-                                />
-                                <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            </label>
+                    {/* 栅格显示 */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <label className="text-sm font-medium text-slate-300 block">{t('settings.showGrid')}</label>
+                            <span className="text-xs text-slate-500">{t('settings.gridDesc', 'Toggle workspace background grid marks')}</span>
                         </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={config.appearance?.showGrid ?? true}
+                                onChange={(e) => handleSave('appearance.showGrid', e.target.checked)}
+                                className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
                     </div>
                 </div>
-                <p className="text-xs text-slate-500 mt-2">{t('settings.themeDesc')}</p>
             </div>
 
             {/* 语言设置 */}

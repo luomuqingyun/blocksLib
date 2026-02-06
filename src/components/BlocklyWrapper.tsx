@@ -121,8 +121,10 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   /** 是否钉住工具箱 (不自动关闭) */
   const [isToolboxPinned, setIsToolboxPinned] = useState(false);
-  /** 当前主题 (默认使用深色以对齐 EmbedBlocks 视觉风格) */
-  const [currentTheme, setCurrentTheme] = useState(DarkTheme);
+  /** 当前主题 (根据配置智能初始化，防止闪屏) */
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    return config.appearance?.theme === 'light' ? LightTheme : DarkTheme;
+  });
   /** 变量/积木块重命名弹窗状态 */
   const [promptState, setPromptState] = useState<{ isOpen: boolean; message: string; defaultValue: string; callback: ((value: string | null) => void) | null; }>({ isOpen: false, message: '', defaultValue: '', callback: null });
 
@@ -405,6 +407,10 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
 
     console.log('[BlocklyWrapper] 注入工作区 (每个项目只应发生一次)');
     setIsInjecting(true);
+    // [FIX] 动态计算初始栅格配置，防止从默认灰白色闪烁到自定义颜色
+    const initialShowGrid = config.appearance?.showGrid !== false;
+    const initialGridColour = (currentTheme as any).getComponentStyle ? currentTheme.getComponentStyle('gridColour') : '#475569';
+
     workspaceRef.current = Blockly.inject(editorRef.current, {
       toolbox: toolboxConfiguration || { kind: 'categoryToolbox', contents: [] },
       theme: currentTheme,
@@ -414,7 +420,12 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
       contextMenu: true, // 右键菜单
       move: { scrollbars: true, drag: true, wheel: false },
       zoom: { controls: true, wheel: true, startScale: 1.0, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2 },
-      grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
+      grid: {
+        spacing: initialShowGrid ? 20 : 0,
+        length: 3,
+        colour: initialGridColour,
+        snap: true
+      },
       renderer: 'geras'
     });
 
@@ -682,8 +693,11 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
       {/* Blockly 编辑器挂载容器 */}
       <div
         ref={editorRef}
-        className="w-full h-full bg-[#1e1e1e]" // 默认使用深色背景，防止白闪
-        style={{ minHeight: '400px' }}
+        className="w-full h-full"
+        style={{
+          minHeight: '400px',
+          backgroundColor: config.appearance?.theme === 'light' ? '#ffffff' : '#1e1e1e'
+        }}
       />
 
       {/* [NEW] 内部加载遮罩：仅在首次 Blockly 注入过程中显示，切换项目时复用不重显 */}

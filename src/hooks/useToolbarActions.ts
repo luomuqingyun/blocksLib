@@ -44,7 +44,6 @@ interface ProjectState {
     closeProject: () => void;
     exportCode: () => void;
     importBlocklyJson: () => void;
-    updateProjectBoard: (boardId: string) => void;
 }
 
 /**
@@ -52,7 +51,6 @@ interface ProjectState {
  */
 interface BuildState {
     selectedBoard: string;
-    setSelectedBoard: (boardId: string) => void;
     buildProject: () => Promise<void>;
     uploadProject: (port: string) => Promise<void>;
 }
@@ -101,14 +99,14 @@ export function useToolbarActions(): ToolbarActionsResult {
     const {
         newProject, openProject, saveProject, saveProjectAs,
         exportCode, importBlocklyJson, projectMetadata,
-        closeProject, updateProjectBoard
+        closeProject
     } = useFileSystem();
 
     // UI Context: 控制各类设置与扩展模态框的显示
     const { setIsSettingsOpen, setIsExtensionsOpen, setIsProjectSettingsOpen } = useUI();
 
     // 编译构建 Context: 管理目标板卡、执行编译及上传任务
-    const { selectedBoard, setSelectedBoard, buildProject, uploadProject, config, setConfig } = useBuild();
+    const { selectedBoard, buildProject, uploadProject, config, setConfig } = useBuild();
 
     const updateConfig = useCallback(async (key: string, value: any) => {
         await window.electronAPI.setConfig(key, value);
@@ -160,12 +158,10 @@ export function useToolbarActions(): ToolbarActionsResult {
             closeProject,
             exportCode,
             importBlocklyJson,
-            updateProjectBoard,
         },
         // 编译上传模块
         build: {
             selectedBoard,
-            setSelectedBoard,
             buildProject,
             uploadProject,
             config,

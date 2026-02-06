@@ -30,7 +30,6 @@ interface BuildContextType {
     /** 当前选中的开发板 ID */
     selectedBoard: string;
     /** 设置选中开发板 */
-    setSelectedBoard: (boardId: string) => void;
     /** 编译/上传输出的实时日志流 */
     logs: string[];
     /** 是否正处于编译或上传过程中 */
@@ -47,7 +46,7 @@ interface BuildContextType {
 const BuildContext = createContext<BuildContextType | undefined>(undefined);
 
 export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { code, currentFilePath, projectMetadata, updateProjectBoard } = useFileSystem();
+    const { code, currentFilePath, projectMetadata } = useFileSystem();
     const { setActiveTab } = useUI();
     const { isConnected: isSerialConnected, selectedPort: serialPort, toggleSerial } = useSerial();
 
@@ -75,13 +74,6 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     }, [projectMetadata?.boardId, selectedBoard]);
 
-    /** 设置当前选中的开发板 */
-    const setSelectedBoard = useCallback((boardId: string) => {
-        // 1. 更新本地状态，以便 UI 立即响应
-        _setLocalSelectedBoard(boardId);
-        // 2. 同步更新项目元数据 (实现持久化保存)
-        updateProjectBoard(boardId);
-    }, [updateProjectBoard]);
 
     /** 获取项目根目录 (基于当前文件路径) */
     const getProjectRoot = () => {
@@ -246,7 +238,7 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [setActiveTab]);
 
     const value = {
-        selectedBoard, setSelectedBoard,
+        selectedBoard,
         logs,
         isBuilding,
         buildProject,

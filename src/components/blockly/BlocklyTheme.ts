@@ -68,7 +68,7 @@ export const LightTheme = Blockly.Theme.defineTheme('embed_light', {
         scrollbarOpacity: 0.4,
         cursorColour: '#000000',
         // @ts-ignore
-        gridColour: '#e2e8f0'
+        gridColour: '#475569'
     },
     fontStyle: { family: 'Inter, sans-serif', weight: '500', size: 13 }
 });
