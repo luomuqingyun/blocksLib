@@ -3,12 +3,20 @@
 # 用法: .\scripts\sync_repos.ps1
 
 # --- 初始化环境 ---
-# 确保脚本始终在项目根目录下运行
-$ScriptDir = $PSScriptRoot
-$ProjectRoot = Split-Path $ScriptDir -Parent
-if ($ProjectRoot -ne (Get-Location).Path) {
-    Write-Host ">>>以此目录为根目录运行: $ProjectRoot" -ForegroundColor Gray
+# 自动查找项目根目录 (含有 .gitignore 的目录)
+$CurrentDir = $PSScriptRoot
+while ($CurrentDir -and -not (Test-Path (Join-Path $CurrentDir ".gitignore"))) {
+    $ParentDir = Split-Path $CurrentDir -Parent
+    if ($ParentDir -eq $CurrentDir) { break }
+    $CurrentDir = $ParentDir
+}
+
+if (Test-Path (Join-Path $CurrentDir ".gitignore")) {
+    $ProjectRoot = $CurrentDir
+    Write-Host ">>> 识别项目根目录: $ProjectRoot" -ForegroundColor Gray
     Set-Location $ProjectRoot
+} else {
+    Write-Warning "无法识别项目根目录，请确保在 EmbedBlocks Studio 项目内运行。"
 }
 
 # --- 配置 ---
