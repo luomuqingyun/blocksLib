@@ -28,6 +28,7 @@ import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, us
 import * as Blockly from 'blockly';
 import { CustomBackpack } from './blockly/CustomBackpack';
 import { useTranslation } from 'react-i18next';
+// import { Focus } from 'lucide-react';
 // import { createUseStyles } from 'react-jss'; // Removed
 import { arduinoGenerator } from '../generators/arduino-base';
 import { initAllModules, refreshBlockDefinitions } from '../modules/index';
@@ -67,8 +68,6 @@ interface BlocklyWrapperProps {
   onXmlLoaded?: () => void;
   /** UI 变更回调 (如缩放、平移) */
   onUiChange?: () => void;
-  /** 视口变更回调 (用于视图持久化) */
-  onViewportChange?: (viewState: { scrollX: number; scrollY: number; scale: number }) => void;
   /** 当前打开的文件路径 */
   currentFilePath?: string | null;
   /** 工具箱配置数据 */
@@ -82,6 +81,8 @@ export interface BlocklyWrapperHandle {
   loadXml: (state: string) => void;   // 加载工作区状态
   resize: () => void;                 // 强制重绘/调整大小
   clear: () => void;                  // 清空工作区
+  centerOnBlocks: () => void;         // 将积木居中
+  resetCentering: () => void;         // 重置对齐标志位 (用于切换项目)
 }
 
 // ------------------------------------------------------------------
@@ -143,7 +144,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   /** 注册表版本 (用于触发依赖于 BoardRegistry 的 Effect) */
   const [registryVersion, setRegistryVersion] = useState(0);
   /** [NEW] 是否内部加载中 (Blockly 注入过程) */
-  const [isInjecting, setIsInjecting] = useState(true);
+  const [isInjecting, setIsInjecting] = useState(false);
 
   // 监听配置变更或工作区就绪，以同步外观设置
   useEffect(() => {
@@ -248,11 +249,13 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   const isReadyForEditsRef = useRef(false);
   useEffect(() => { isReadyForEditsRef.current = isReadyForEdits; }, [isReadyForEdits]);
 
-  const onViewportChangeRef = useRef(props.onViewportChange);
+  const onUiChangeRef = useRef(onUiChange);
   useEffect(() => {
-    onViewportChangeRef.current = props.onViewportChange;
-  }, [props.onViewportChange]);
+    onUiChangeRef.current = onUiChange;
+  }, [onUiChange]);
 
+  // 为 ResizeObserver 缓存 attemptViewRestore 的最新引用，避免闭包过时
+  const attemptViewRestoreRef = useRef<any>(null);
   // --- 性能优化与状态追踪 Refs (移至顶层以符合 Hook 规则) ---
   const codeGenTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isDraggingRef = useRef(false);
@@ -272,7 +275,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   }, [workspaceRef]);
 
   // 1. Hook: 工作区持久化 (加载/保存 XML/JSON)
-  const { loadWorkspaceState, saveWorkspaceState, attemptViewRestore, ensureDefaultBlocks, isDisposed } = useWorkspacePersistence(
+  const { loadWorkspaceState, saveWorkspaceState, attemptViewRestore, ensureDefaultBlocks, centerOnBlocks, resetCentering, isDisposed } = useWorkspacePersistence(
     workspaceRef,
     props.currentFilePath,
     (ready) => {
@@ -297,6 +300,8 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
     isReadyForEditsRef,
     refreshDynamicFlyout
   );
+
+  useEffect(() => { attemptViewRestoreRef.current = attemptViewRestore; }, [attemptViewRestore]);
 
 
 
@@ -346,7 +351,9 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
     getXml: saveWorkspaceState,
     loadXml: loadWorkspaceState,
     resize: () => { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current); },
-    clear: () => { if (workspaceRef.current) workspaceRef.current.clear(); }
+    clear: () => { if (workspaceRef.current) workspaceRef.current.clear(); },
+    centerOnBlocks: centerOnBlocks,
+    resetCentering: resetCentering
   }));
 
   // ========== Effect: 系统主题同步 ==========
@@ -506,16 +513,22 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
     workspaceRef.current.addChangeListener(onWorkspaceChange);
 
     /**
-     * UI 变更监听 (缩放/平移)
+     * UI 变更监听 (如选中的积木改变等)
      */
     const uiListener = (event: any) => {
-      if (event.type === Blockly.Events.VIEWPORT_CHANGE) {
-        if (onViewportChangeRef.current && isReadyForEditsRef.current) {
-          onViewportChangeRef.current({
-            scrollX: workspaceRef.current?.scrollX || 0,
-            scrollY: workspaceRef.current?.scrollY || 0,
-            scale: workspaceRef.current?.scale || 1
-          });
+      // 积木块改变颜色、标注等 UI 事件
+      const uiEvents = [
+        Blockly.Events.SELECTED,
+        Blockly.Events.CLICK,
+        Blockly.Events.BUBBLE_OPEN,
+        Blockly.Events.TRASHCAN_OPEN,
+        Blockly.Events.TOOLBOX_ITEM_SELECT,
+        Blockly.Events.THEME_CHANGE
+      ];
+
+      if (uiEvents.includes(event.type) || event.type === Blockly.Events.UI) {
+        if (onUiChangeRef.current) {
+          onUiChangeRef.current();
         }
       }
     };
@@ -570,9 +583,12 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
       resizeTimer = setTimeout(() => {
         if (workspaceRef.current) {
           Blockly.svgResize(workspaceRef.current);
-          attemptViewRestore();
+          // 只有在尚未就绪（加载/首次对齐阶段）时，才在 Resize 时执行视图恢复
+          if (!isReadyForEditsRef.current) {
+            attemptViewRestoreRef.current?.();
+          }
         }
-      }, 50); // 防抖处理
+      }, 80); // 略微增加防抖时间
     });
     if (editorRef.current) {
       observer.observe(editorRef.current);
@@ -609,32 +625,38 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
     }
   }, [toolboxConfiguration]);
 
-  // ========== Effect: 处理延迟的 initialXml 更新 ==========
-  // 修复在某些情况下 initialXml 在挂载后才到达的问题
+  // ========== Effect: 项目切换感知与加载 (Instant Switching) ==========
+  // 当文件路径或初始代码改变时，触发状态合并，重置对齐标记，并加载新内容
   useEffect(() => {
-    if (workspaceRef.current && props.initialXml && isReadyForEdits && !initialXmlLoadedRef.current) {
-      console.log('[BlocklyWrapper] 检测到延迟的 initialXml，正在加载...', props.initialXml?.substring(0, 100));
+    if (!workspaceRef.current) return;
+
+    console.log('[BlocklyWrapper] Project context changed, applying new state:', props.currentFilePath);
+
+    // 1. 重置加载状态标记
+    initialXmlLoadedRef.current = false;
+    // 2. 重置对齐标志 (允许新项目完成一次自动对齐)
+    resetCentering();
+
+    // 3. 如果已有 initialXml，立即执行加载
+    if (props.initialXml) {
+      console.log('[BlocklyWrapper] Loading new project XML/JSON...');
       loadWorkspaceState(props.initialXml);
       initialXmlLoadedRef.current = true;
 
-      // 加载后触发代码生成
+      // 触发一次代码生成
       setTimeout(() => {
-        if (workspaceRef.current) {
-          try {
-            const code = arduinoGenerator.workspaceToCode(workspaceRef.current);
-            onCodeChangeRef.current(code);
-          } catch (e) {
-            console.error("[BlocklyWrapper] 延迟代码生成失败:", e);
-          }
+        if (workspaceRef.current && !isDisposed.current) {
+          triggerCodeGeneration();
         }
-      }, 200);
+      }, 100);
+    } else {
+      // 新项目 (无 XML)，直接就绪
+      console.log('[BlocklyWrapper] New project (empty), setting ready.');
+      setIsReadyForEdits(true);
+      if (props.onXmlLoaded) props.onXmlLoaded();
+      triggerCodeGeneration();
     }
-  }, [props.initialXml, isReadyForEdits, loadWorkspaceState]);
-
-  // 当文件路径变化时重置标记 (视为新项目界面加载)
-  useEffect(() => {
-    initialXmlLoadedRef.current = false;
-  }, [props.currentFilePath]);
+  }, [props.currentFilePath, props.initialXml, loadWorkspaceState, resetCentering, triggerCodeGeneration]);
 
 
   /** 处理重命名对话框确认 */
@@ -664,8 +686,8 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
         style={{ minHeight: '400px' }}
       />
 
-      {/* [NEW] 内部加载遮罩：在 Blockly 还没注入口/加载完积木前显示 */}
-      {isInjecting && (
+      {/* [NEW] 内部加载遮罩：仅在首次 Blockly 注入过程中显示，切换项目时复用不重显 */}
+      {(isInjecting && !workspaceInstance) && (
         <div className="absolute inset-0 z-[50] flex items-center justify-center bg-[#1e1e1e]">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />

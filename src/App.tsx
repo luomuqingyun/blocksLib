@@ -19,8 +19,9 @@ import { AppInitializer } from './services/AppInitializer';
 import { setBlocklyLocale } from './locales/setupBlocklyLocales';
 import i18next from 'i18next';
 
-// [OPTIMIZATION] 延迟加载重型组件和弹窗，显著提升启动速度
-const AppContent = lazy(() => import('./components/AppContent').then(m => ({ default: m.AppContent })));
+import { AppContent } from './components/AppContent';
+
+// [OPTIMIZATION] 延迟加载非核心重型组件，显著提升启动速度
 const NewProjectModal = lazy(() => import('./components/NewProjectModal').then(m => ({ default: m.NewProjectModal })));
 const SettingsModal = lazy(() => import('./components/SettingsModal').then(m => ({ default: m.SettingsModal })));
 const ExtensionsModal = lazy(() => import('./components/ExtensionsModal').then(m => ({ default: m.ExtensionsModal })));
@@ -123,7 +124,6 @@ function AppInner() {
       const lang = i18next.language || 'zh';
 
       Promise.all([
-        import('./components/AppContent'),
         import('./components/NewProjectModal'),
         import('./components/SettingsModal'),
         setBlocklyLocale(lang)
@@ -151,9 +151,7 @@ function AppInner() {
             onRefreshRecent={refreshRecent}
           />
         ) : (
-          <Suspense fallback={<LoadingOverlay />}>
-            <AppContent key={currentFilePath} />
-          </Suspense>
+          <AppContent />
         )}
       </div>
       <GlobalListeners />

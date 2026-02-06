@@ -29,8 +29,10 @@ export const useWorkspacePersistence = (
     setIsReadyForEdits: (ready: boolean) => void,
     onXmlLoaded?: () => void
 ) => {
-    // 待恢复的视图状态 (滚动位置、缩放比例)
-    const pendingViewState = useRef<{ scrollX: number; scrollY: number; scale: number } | null>(null);
+    // 是否需要待执行自动居中 (Scratch 风格)
+    const pendingCenter = useRef(false);
+    // 是否在本生命周期中已经完成过初次对齐
+    const hasRestored = useRef(false);
     // 工作区是否已销毁标志 (防止异步操作在销毁后执行)
     const isDisposed = useRef(false);
 
@@ -68,35 +70,71 @@ export const useWorkspacePersistence = (
      * @param retries 剩余重试次数
      */
     const attemptViewRestore = useCallback((retries = 5) => {
-        const vs = pendingViewState.current;
-        if (!vs || !workspaceRef.current) return;
+        if (!workspaceRef.current || isDisposed.current) return;
+
+        // 如果已经对齐过，或者没有对齐任务，直接退出
+        if (hasRestored.current || !pendingCenter.current) return;
 
         const metrics = workspaceRef.current.getMetrics();
-        // 检查工作区是否已有有效尺寸
+        // 检查工作区是否已有有效尺寸 (宽度高度大于 0 说明已渲染)
         if (metrics && metrics.viewWidth > 0 && metrics.viewHeight > 0) {
-            workspaceRef.current.setScale(vs.scale); // 恢复缩放比例
+            console.log('[attemptViewRestore] Workspace ready, performing Scratch-style center...');
+
+            // [关键优化] 立即标记已对齐，防止重叠触发
+            hasRestored.current = true;
+            pendingCenter.current = false;
+
+            // 执行居中
+            Blockly.svgResize(workspaceRef.current);
+            workspaceRef.current.scrollCenter();
+
+            // [关键加固] 居中后进行一小段时间的稳定化锁定 (缩短为 100ms)
             setTimeout(() => {
                 if (workspaceRef.current && !isDisposed.current) {
                     Blockly.svgResize(workspaceRef.current);
-                    workspaceRef.current.translate(vs.scrollX, vs.scrollY); // 恢复滚动位置
-                    setTimeout(() => {
-                        if (!isDisposed.current) {
-                            setIsReadyForEdits(true);
-                            if (onXmlLoaded) onXmlLoaded();
-                        }
-                    }, 300);
+                    setIsReadyForEdits(true);
+                    if (onXmlLoaded) onXmlLoaded();
+                    console.log('[attemptViewRestore] Centering stabilized.');
                 }
             }, 100);
-            pendingViewState.current = null;
         } else if (retries > 0) {
-            // 工作区未就绪，延迟重试
+            // 工作区未就绪 (例如处于隐藏状态或布局中)，延迟重试 (100ms)
             setTimeout(() => attemptViewRestore(retries - 1), 100);
         } else {
-            // 重试耗尽，直接设置就绪状态
+            // 重试耗尽，避免死锁
+            console.warn('[attemptViewRestore] Max retries reached');
+            hasRestored.current = true;
+            pendingCenter.current = false;
             setIsReadyForEdits(true);
             if (onXmlLoaded) onXmlLoaded();
         }
     }, [workspaceRef, setIsReadyForEdits, onXmlLoaded]);
+    /**
+     * 将工作区视角居中对齐到现有的积木块 (类似 Scratch 行为)
+     * 使用 scrollCenter 确保所有积木处于视口中心
+     */
+    const centerOnBlocks = useCallback(() => {
+        if (!workspaceRef.current) return;
+        console.log('[useWorkspacePersistence] Centering workspace on blocks...');
+        try {
+            // 确保同步最新的 SVG 尺寸
+            Blockly.svgResize(workspaceRef.current);
+            // Blockly 12+ 推荐的居中对齐方式
+            workspaceRef.current.scrollCenter();
+        } catch (e) {
+            console.warn('[useWorkspacePersistence] Failed to center workspace:', e);
+        }
+    }, [workspaceRef]);
+
+    /**
+     * 重置对齐标志位
+     * 在切换项目但复用同一个实例时调用，以允许新项目执行一次自动对齐
+     */
+    const resetCentering = useCallback(() => {
+        hasRestored.current = false;
+        pendingCenter.current = false;
+        console.log('[WorkspacePersistence] Centering flag reset for new project.');
+    }, []);
 
     /**
      * 加载工作区状态
@@ -111,7 +149,7 @@ export const useWorkspacePersistence = (
         // [关键修复] 如果 stateStr 为空，也不能直接 return
         // 必须确保默认积木加载并通知外界完成，否则会导致加载锁死锁
         if (!stateStr) {
-            console.log('[loadWorkspaceState] Empty stateStr, ensuring default blocks...');
+            console.log('[loadWorkspaceState] Empty stateStr, ensuring default blocks and auto-centering...');
             Blockly.Events.disable();
             try {
                 workspaceRef.current.clear();
@@ -119,8 +157,9 @@ export const useWorkspacePersistence = (
             } finally {
                 Blockly.Events.enable();
             }
-            setIsReadyForEdits(true);
-            if (onXmlLoaded) onXmlLoaded();
+            // 进入居中逻辑
+            pendingCenter.current = true;
+            attemptViewRestore();
             return;
         }
 
@@ -131,63 +170,60 @@ export const useWorkspacePersistence = (
                 workspaceRef.current.clear();
                 const xmlDom = Blockly.utils.xml.textToDom(stateStr);
                 Blockly.Xml.domToWorkspace(xmlDom, workspaceRef.current);
+                // [关键修复] XML 加载也需要进入居中/恢复流程
+                pendingCenter.current = true;
+                Blockly.svgResize(workspaceRef.current);
+                attemptViewRestore();
             } else {
                 // JSON 格式 (新版)
                 console.log('[loadWorkspaceState] Loading JSON format');
                 const state = JSON.parse(stateStr);
-                console.log('[loadWorkspaceState] Parsed state keys:', Object.keys(state));
-                console.log('[loadWorkspaceState] state.blocks type:', typeof state.blocks);
-                console.log('[loadWorkspaceState] state.blocks.blocks type:', typeof state.blocks?.blocks);
-                console.log('[loadWorkspaceState] Blocks count:', state.blocks?.blocks?.length);
 
-                let savedViewState = state.viewState;
+                // [MODIFIED] 彻底移除对 viewState 的读取，不再使用缓存位置
+                // 如果 state 中有 viewState 字段，忽略它
 
-                // 尝试从本地存储读取视图状态 (优先级更高)
-                if (currentFilePath) {
-                    try {
-                        const normalizedPath = currentFilePath.replace(/\\/g, '/').toLowerCase();
-                        const localKey = `viewstate:${normalizedPath}`;
-                        const localData = localStorage.getItem(localKey);
-                        if (localData) {
-                            savedViewState = JSON.parse(localData);
-                        }
-                    } catch (e) { }
+                // --- 鲁棒性解包逻辑 (Robust Unfolding) ---
+                let blocksState = state;
+
+                // 1. 如果是项目文件封装格式 { metadata, blocks: { ... } }
+                if (state.metadata && state.blocks) {
+                    blocksState = state.blocks;
                 }
 
-                // 保存视图状态以便后续恢复
-                if (savedViewState) {
-                    pendingViewState.current = savedViewState;
-                    delete state.viewState;
+                // 2. 补全 Workspace 序列化包裹
+                // Blockly.serialization.workspaces.load 期望顶级 key 对应 serializer (如 'blocks')
+                let finalState: any = {};
+                if (Array.isArray(blocksState)) {
+                    // 数组格式: [...] -> { blocks: { blocks: [...] } }
+                    finalState = { blocks: { blocks: blocksState } };
+                } else if (blocksState.blocks && Array.isArray(blocksState.blocks)) {
+                    // 积木状态格式: { blocks: [...] } -> { blocks: { blocks: [...] } }
+                    finalState = { blocks: blocksState };
+                } else if (blocksState.blocks && blocksState.blocks.blocks) {
+                    // 标准工作区格式: { blocks: { blocks: [...] } }
+                    finalState = blocksState;
+                } else {
+                    // 兜底补包
+                    finalState = blocksState.blocks ? blocksState : { blocks: blocksState };
                 }
-                // 处理旧格式: blocks 是数组而非对象
-                let stateToLoad = state;
-                if (state && Array.isArray(state.blocks)) {
-                    console.log('[loadWorkspaceState] Wrapping state.blocks in { blocks: state }');
-                    stateToLoad = { blocks: state };
-                }
-                console.log('[loadWorkspaceState] Final stateToLoad keys:', Object.keys(stateToLoad));
 
                 // 清空并加载新状态
-                // [关键修复] 加载期间禁用事件流，防止触发外界的 onChangeListener 分发“空状态”
                 Blockly.Events.disable();
                 try {
                     workspaceRef.current.clear();
-                    console.log('[loadWorkspaceState] Workspace cleared, loading state...');
-                    Blockly.serialization.workspaces.load(stateToLoad, workspaceRef.current);
-                    console.log('[loadWorkspaceState] State loaded, blocks count:', workspaceRef.current.getAllBlocks().length);
-                    // 确保默认积木块存在 (如果加载的是空文件)
+                    console.log('[loadWorkspaceState] Loading state (Robust Mode)...');
+                    Blockly.serialization.workspaces.load(finalState, workspaceRef.current);
                     ensureDefaultBlocks();
                 } finally {
                     Blockly.Events.enable();
                 }
 
-                if (pendingViewState.current) {
+                // 统一进入异步居中流程（仅限本次 mount 后尚未居中的情况）
+                if (!hasRestored.current) {
+                    pendingCenter.current = true;
                     Blockly.svgResize(workspaceRef.current);
                     attemptViewRestore();
                 } else {
-                    // [FIX] When no viewState to restore, we must still set isReadyForEdits
-                    // Otherwise code generation never triggers!
-                    console.log('[loadWorkspaceState] No viewState, setting isReadyForEdits=true directly');
                     setIsReadyForEdits(true);
                     if (onXmlLoaded) onXmlLoaded();
                 }
@@ -205,19 +241,9 @@ export const useWorkspacePersistence = (
      */
     const saveWorkspaceState = useCallback(() => {
         if (!workspaceRef.current) return '';
-        // 序列化积木块状态
-        const rawState = Blockly.serialization.workspaces.save(workspaceRef.current);
-        // 获取当前视图状态
-        const metrics = workspaceRef.current.getMetrics();
-        const viewState = {
-            scrollX: workspaceRef.current.scrollX,
-            scrollY: workspaceRef.current.scrollY,
-            scale: workspaceRef.current.scale,
-            viewWidth: metrics ? metrics.viewWidth : 0,
-            viewHeight: metrics ? metrics.viewHeight : 0
-        };
-        // 合并积木块状态和视图状态
-        return JSON.stringify({ ...rawState, viewState });
+        // [MODIFED] 只保存积木数据，不再保存视口坐标
+        const state = Blockly.serialization.workspaces.save(workspaceRef.current);
+        return JSON.stringify(state);
     }, [workspaceRef]);
 
     return {
@@ -225,6 +251,8 @@ export const useWorkspacePersistence = (
         saveWorkspaceState,
         attemptViewRestore,
         ensureDefaultBlocks,
+        centerOnBlocks,
+        resetCentering,
         isDisposed
     };
 };

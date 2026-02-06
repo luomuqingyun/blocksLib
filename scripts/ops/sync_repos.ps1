@@ -113,18 +113,19 @@ Clear-Host
 Write-Host "=========================================="
 Write-Host "   EmbedBlocks 仓库同步工具"
 Write-Host "=========================================="
-Write-Host "1. 仅更新 blocksLib (插件库)"
-Write-Host "2. 仅更新 主项目 (EmbedBlocks Studio)"
+Write-Host "1. 仅更新 主项目 (EmbedBlocks Studio)"
+Write-Host "2. 仅更新 blocksLib (插件库)"
 Write-Host "3. 联合更新 (先更新插件库，再更新主项目)"
 
 Write-Host "Q. 退出"
 Write-Host "=========================================="
 
-$choice = Read-Host "请选择操作 [1-3, Q]"
+$choice = Read-Host "请选择操作 [1-3, Q/q] (默认: 1)"
+if ([string]::IsNullOrWhiteSpace($choice)) { $choice = "1" }
 
 switch ($choice) {
-    "1" { Update-BlocksLib }
-    "2" { Update-MainRepo }
+    "1" { Update-MainRepo }
+    "2" { Update-BlocksLib }
     "3" { 
         Update-BlocksLib
         # 等待一小会儿确保文件系统同步
@@ -133,6 +134,7 @@ switch ($choice) {
     }
 
     "Q" { exit }
+    "q" { exit }
     Default { Write-Warning "无效选择" }
 }
 

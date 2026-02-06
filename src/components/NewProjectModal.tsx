@@ -93,6 +93,7 @@ export const NewProjectModal: React.FC = () => {
             // 1. 重置基础状态
             setProjectName(isSaveAs ? (projectMetadata?.name || 'MyProject_Copy') : 'MyProject');
             setSearchTerm('');
+            setActiveTab('standard');
             setPos({ x: 0, y: 0 });
 
             if (workDir) setParentDir(workDir);

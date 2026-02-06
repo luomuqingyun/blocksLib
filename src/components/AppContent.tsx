@@ -70,31 +70,12 @@ export function AppContent() {
         }
     }, []); // 真正的引用稳定回调
 
-    // 处理视口变更（缩放、滚动位置）并保存到本地存储 - 已记忆化并添加防抖处理
-    const viewportTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-    const handleViewportChange = useCallback((vs: { scrollX: number, scrollY: number, scale: number }) => {
-        if (currentFilePath) {
-            // 使用防抖处理 (500ms)，避免高频写入 localStorage
-            if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
-            viewportTimerRef.current = setTimeout(() => {
-                try {
-                    const normalizedPath = currentFilePath.replace(/\\/g, '/').toLowerCase();
-                    const key = `viewstate:${normalizedPath}`;
-                    console.log('[AppContent] Saving view state to localStorage (debounced):', key);
-                    localStorage.setItem(key, JSON.stringify({ ...vs, timestamp: Date.now() }));
-                } catch (e) {
-                    // 静默忽略存储错误
-                }
-            }, 500);
-        }
-    }, [currentFilePath]);
-
-    // 组件卸载时清理定时器
-    useEffect(() => {
-        return () => {
-            if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
-        };
-    }, []);
+    // 为 BlocklyWrapper 的 onXmlLoaded 提供稳定的回调
+    const handleXmlLoaded = useCallback(() => {
+        clearPendingXml();
+        setIsLoading(false);
+        console.log('[AppContent] Project loaded and lock released.');
+    }, [clearPendingXml, setIsLoading]);
 
     // 当 activeTab 改变时触发 Blockly 调整大小（ResizeObserver 负责处理面板宽度）
     useEffect(() => {
@@ -120,12 +101,7 @@ export function AppContent() {
                                     selectedBoard={selectedBoard}
                                     initialCode=""
                                     initialXml={pendingXml}
-                                    onXmlLoaded={() => {
-                                        clearPendingXml();
-                                        setIsLoading(false);
-                                        console.log('[AppContent] Project loaded and lock released.');
-                                    }}
-                                    onViewportChange={handleViewportChange}
+                                    onXmlLoaded={handleXmlLoaded}
                                     currentFilePath={currentFilePath}
                                     onUiChange={undefined}
                                 />
