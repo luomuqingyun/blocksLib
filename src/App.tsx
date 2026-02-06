@@ -15,6 +15,9 @@ import { Toast } from './components/Toast';
 import { ExtensionRegistry } from './registries/ExtensionRegistry';
 import { DiagnosticOverlay } from './components/DiagnosticOverlay';
 import { useAppController } from './hooks/useAppController';
+import { AppInitializer } from './services/AppInitializer';
+import { setBlocklyLocale } from './locales/setupBlocklyLocales';
+import i18next from 'i18next';
 
 // [OPTIMIZATION] 延迟加载重型组件和弹窗，显著提升启动速度
 const AppContent = lazy(() => import('./components/AppContent').then(m => ({ default: m.AppContent })));
@@ -82,6 +85,7 @@ function AppInner() {
     }
   };
 
+  // 组件挂载时执行全局初始化 (已移至 App.tsx 处理)
   useEffect(() => {
     refreshRecent();
   }, [currentFilePath]);
@@ -106,6 +110,30 @@ function AppInner() {
     ExtensionRegistry.ensureInitialized().then(() => {
       const end = performance.now();
       console.log(`[App] ExtensionRegistry.init: ${(end - start).toFixed(2)}ms`);
+
+      // [OPTIMIZATION] 静默预加载重型组件与引擎引擎 (Background Pre-warming)
+      // 在欢迎界面闲置时，提前触发 AppContent、模态框加载以及引擎初始化
+      console.log('[App] Starting background pre-warming...');
+      const preloadStart = performance.now();
+
+      // 1. 初始化模块注册表 (Blockly Definitions)
+      AppInitializer.initialize();
+
+      // 2. 预加载代码块和多语言
+      const lang = i18next.language || 'zh';
+
+      Promise.all([
+        import('./components/AppContent'),
+        import('./components/NewProjectModal'),
+        import('./components/SettingsModal'),
+        setBlocklyLocale(lang)
+      ]).then(() => {
+        const preloadEnd = performance.now();
+        console.log(`[App] Background pre-warming complete in ${(preloadEnd - preloadStart).toFixed(2)}ms.`);
+      }).catch(err => {
+        console.warn('[App] Pre-warming deferred or failed (non-critical):', err);
+      });
+
     }).catch(err => {
       console.error('[AppInner] Failed to initialize ExtensionRegistry:', err);
     });

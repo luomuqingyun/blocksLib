@@ -35,10 +35,13 @@ interface BuildContextType {
     logs: string[];
     /** 是否正处于编译或上传过程中 */
     isBuilding: boolean;
-    /** 异步触发项目编译 */
     buildProject: () => Promise<void>;
     /** 异步触发项目上传至指定端口 */
     uploadProject: (selectedPort: string) => Promise<void>;
+    /** 全局配置对象 */
+    config: any;
+    /** 更新全局配置的状态更新器 */
+    setConfig: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const BuildContext = createContext<BuildContextType | undefined>(undefined);
@@ -52,6 +55,16 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [selectedBoard, _setLocalSelectedBoard] = useState('uno');
     const [logs, setLogs] = useState<string[]>([]);
     const [isBuilding, setIsBuilding] = useState(false);
+    const [config, setConfig] = useState<any>({});
+
+    // ========== Effect: 初始化加载全局配置 ==========
+    useEffect(() => {
+        const loadConfig = async () => {
+            const cfg = await window.electronAPI.getConfig();
+            setConfig(cfg);
+        };
+        loadConfig();
+    }, []);
 
     // ========== Effect: 加载项目时同步元数据中的开发板 ==========
     useEffect(() => {
@@ -237,7 +250,9 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         logs,
         isBuilding,
         buildProject,
-        uploadProject
+        uploadProject,
+        config,
+        setConfig
     };
 
     return (

@@ -25,6 +25,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSerial } from '../../../contexts/SerialContext';
+// 引入拆分的设置逻辑和分区组件
+import { useBuild } from '../../../contexts/BuildContext';
 
 /**
  * 设置逻辑管理 Hook
@@ -35,16 +37,12 @@ import { useSerial } from '../../../contexts/SerialContext';
 export const useSettingsLogic = (isOpen: boolean, onClose: () => void) => {
     const { t, i18n } = useTranslation();
     const { reloadHistory } = useSerial();
+    const { config, setConfig } = useBuild();
 
     // ========== 状态管理 ==========
     const [activeTab, setActiveTab] = useState('general');      // 当前活动的标签页
     const [isJsonMode, setIsJsonMode] = useState(false);        // 是否为 JSON 编辑模式
     const [jsonContent, setJsonContent] = useState('');         // JSON 编辑器内容
-    const [config, setConfig] = useState<any>({                 // 配置对象
-        general: { language: 'system', workDir: '' },
-        historyLimit: 100,
-        toolbox: { hiddenCategories: [] }
-    });
     const [jsonError, setJsonError] = useState<string | null>(null); // JSON 解析错误
 
     /**

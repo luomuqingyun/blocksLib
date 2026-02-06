@@ -28,7 +28,7 @@
 import { app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { exec, spawn } from 'child_process';
+import { exec, spawn, execSync } from 'child_process';
 import * as dns from 'dns';
 // 引入板级配置模板和 INI 生成工具
 import { generateIniConfig } from '../config/templates';
@@ -401,9 +401,38 @@ export class PioService {
             const pioBinDir = path.isAbsolute(this.pioExe) ? path.dirname(this.pioExe) : '';
             const coreDir = env['PLATFORMIO_CORE_DIR'] || '';
 
+            // [NEW] 检测系统中是否存在 pwsh (PowerShell 7)
+            let powershellExe = 'powershell.exe';
+            try {
+                // 1. 优先尝试通过 where 命令在 PATH 中查找 (最通用)
+                const stdout = execSync('where.exe pwsh', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+                if (stdout) {
+                    const foundPath = stdout.split('\r\n')[0].trim() || stdout.split('\n')[0].trim();
+                    if (foundPath && fs.existsSync(foundPath)) {
+                        powershellExe = `"${foundPath}"`;
+                    }
+                }
+            } catch (e) {
+                // 2. 失败后回退到硬编码路径探测 (针对未加入 PATH 的情况)
+                const commonPaths = [
+                    'D:\\Program Files\\PowerShell\\7\\pwsh.exe',
+                    'C:\\Program Files\\PowerShell\\7\\pwsh.exe',
+                    'D:\\Program Files\\PowerShell\\7-preview\\pwsh.exe',
+                    'C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe',
+                ];
+                for (const p of commonPaths) {
+                    if (fs.existsSync(p)) {
+                        powershellExe = `"${p}"`;
+                        break;
+                    }
+                }
+            }
+
             // 1. 生成 PowerShell 脚本 (Windows)
             const ps1Path = path.join(projectPath, 'eb_terminal.ps1');
             let ps1Content = `# EmbedBlocks Terminal Helper\n`;
+            // [ENCODING] 强制 UTF-8 编码环境，防止乱码
+            ps1Content += `$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding\n`;
             ps1Content += `$Host.UI.RawUI.WindowTitle = "EmbedBlocks CLI - ${path.basename(projectPath)}"\n\n`;
             ps1Content += `# 自动跳转到项目目录\n`;
             ps1Content += `Set-Location -Path $PSScriptRoot\n\n`;
@@ -425,14 +454,16 @@ export class PioService {
             ps1Content += `Write-Host " TIPS: 如果此窗口点击即消失，请改用双击 'eb_terminal.bat' 运行。" -ForegroundColor Yellow\n`;
             ps1Content += `Write-Host " TIPS: If this window closes immediately, please double-click 'eb_terminal.bat'." -ForegroundColor Yellow\n`;
 
-            await fs.promises.writeFile(ps1Path, ps1Content);
+            // [ENCODING] 关键：写入带 UTF-8 BOM 的文件 (\ufeff)，确保 PowerShell 5.1 正确识别中文
+            const ps1Buffer = Buffer.concat([Buffer.from('\ufeff', 'utf-8'), Buffer.from(ps1Content, 'utf-8')]);
+            await fs.promises.writeFile(ps1Path, ps1Buffer);
 
             // 同时生成一个简单的 .bat 引导文件，方便 Windows 用户直接双击
             const batPath = path.join(projectPath, 'eb_terminal.bat');
             const batContent = `@echo off\ntitle EmbedBlocks CLI - ${path.basename(projectPath)}\n` +
                 `cd /d "%~dp0"\n` +
                 `echo [EmbedBlocks] Starting development environment...\n` +
-                `powershell.exe -NoExit -ExecutionPolicy Bypass -File "%~dp0eb_terminal.ps1"\n`;
+                `${powershellExe} -NoExit -ExecutionPolicy Bypass -File "%~dp0eb_terminal.ps1"\n`;
             await fs.promises.writeFile(batPath, batContent);
 
             // 2. 生成 Shell 脚本 (macOS/Linux)
@@ -456,7 +487,7 @@ export class PioService {
             await fs.promises.writeFile(shPath, shContent);
             try { await fs.promises.chmod(shPath, 0o755); } catch (e) { } // 赋予可执行权限
 
-            console.log(`[PioService] Generated terminal helpers in: ${projectPath}`);
+            console.log(`[PioService] Generated terminal helpers in: ${projectPath} (Using: ${powershellExe})`);
         } catch (e) {
             console.error('[PioService] Failed to generate terminal helper', e);
         }

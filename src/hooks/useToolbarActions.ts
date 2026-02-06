@@ -72,7 +72,7 @@ interface UIActions {
 export interface ToolbarActionsResult {
     serial: SerialState;
     project: ProjectState;
-    build: BuildState;
+    build: BuildState & { config: any; updateConfig: (key: string, value: any) => void };
     ui: UIActions;
 }
 
@@ -108,7 +108,27 @@ export function useToolbarActions(): ToolbarActionsResult {
     const { setIsSettingsOpen, setIsExtensionsOpen, setIsProjectSettingsOpen } = useUI();
 
     // 编译构建 Context: 管理目标板卡、执行编译及上传任务
-    const { selectedBoard, setSelectedBoard, buildProject, uploadProject } = useBuild();
+    const { selectedBoard, setSelectedBoard, buildProject, uploadProject, config, setConfig } = useBuild();
+
+    const updateConfig = useCallback(async (key: string, value: any) => {
+        await window.electronAPI.setConfig(key, value);
+        setConfig((prev: any) => {
+            const newState = { ...prev };
+            if (key.includes('.')) {
+                const keys = key.split('.');
+                let target = newState;
+                for (let i = 0; i < keys.length - 1; i++) {
+                    if (!target[keys[i]]) target[keys[i]] = {};
+                    target = target[keys[i]];
+                }
+                target[keys[keys.length - 1]] = value;
+            } else {
+                newState[key] = value;
+            }
+            return newState;
+        });
+        window.dispatchEvent(new Event('embedblocks:config-updated'));
+    }, [setConfig]);
 
     // 2. UI 操作包装 (使用 useCallback 确保引用稳定)
 
@@ -148,6 +168,8 @@ export function useToolbarActions(): ToolbarActionsResult {
             setSelectedBoard,
             buildProject,
             uploadProject,
+            config,
+            updateConfig
         },
         // UI 交互模块
         ui: {

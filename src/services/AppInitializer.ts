@@ -27,7 +27,6 @@ class AppInitializerService {
      */
     public initialize() {
         if (this.initialized) {
-            console.warn('[AppInitializer] Application already initialized.');
             return;
         }
 

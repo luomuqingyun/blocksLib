@@ -40,7 +40,9 @@ export const DarkTheme = Blockly.Theme.defineTheme('embed_dark', {
         insertionMarkerColour: '#3b82f6',         // 插入标记颜色
         insertionMarkerOpacity: 0.3,
         scrollbarOpacity: 0.4,
-        cursorColour: '#d0d0d0'                   // 光标颜色
+        cursorColour: '#d0d0d0',                  // 光标颜色
+        // @ts-ignore
+        gridColour: '#475569'                     // [NEW] 栅格颜色 (灰白色，保证可见度)
     },
     fontStyle: { family: 'Inter, sans-serif', weight: '500', size: 13 },
     startHats: true  // 启用帧头样式
@@ -64,7 +66,9 @@ export const LightTheme = Blockly.Theme.defineTheme('embed_light', {
         insertionMarkerColour: '#3b82f6',
         insertionMarkerOpacity: 0.3,
         scrollbarOpacity: 0.4,
-        cursorColour: '#000000'
+        cursorColour: '#000000',
+        // @ts-ignore
+        gridColour: '#e2e8f0'
     },
     fontStyle: { family: 'Inter, sans-serif', weight: '500', size: 13 }
 });

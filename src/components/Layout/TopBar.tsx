@@ -16,7 +16,8 @@ import React from 'react';
 import { Board } from '../../types/board';
 import {
     FilePlus, FolderOpen, Save, SaveAll, FileCode,
-    Settings, RefreshCw, Play, Upload, Puzzle, FileInput, X, Sliders
+    Settings, RefreshCw, Play, Upload, Puzzle, FileInput, X, Sliders,
+    Sun, Moon, Grid3X3
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BoardRegistry } from '../../registries/BoardRegistry';
@@ -32,6 +33,7 @@ export const TopBar: React.FC = () => {
 
     // 使用聚合 Hook 替代 4 个独立 Context 调用 (串口、项目、构建、UI)
     const { serial, project, build, ui } = useToolbarActions();
+    const config = build.config;
 
     /**
      * 处理上传逻辑
@@ -83,6 +85,33 @@ export const TopBar: React.FC = () => {
                 <button onClick={ui.openExtensions} className="p-1.5 hover:bg-[#37373d] rounded-md text-slate-400 hover:text-slate-100 transition-all" title={t('app.extensions') || "Extensions"}><Puzzle size={18} /></button>
                 <button onClick={ui.openProjectSettings} className="p-1.5 hover:bg-[#37373d] rounded-md text-slate-400 hover:text-slate-100 transition-all" title={t('settings.projectSettings') || "Project Settings"}><Sliders size={18} /></button>
                 <button onClick={ui.openSettings} className="p-1.5 hover:bg-[#37373d] rounded-md text-slate-400 hover:text-slate-100 transition-all" title={t('app.settings')}><Settings size={18} /></button>
+                <div className="h-5 w-px bg-[#3e3e42] mx-1"></div>
+
+                {/* [NEW] 快捷外观设置组 */}
+                <div className="flex items-center gap-1 bg-black/20 rounded-lg px-1 py-0.5 border border-white/5">
+                    {/* 主题切换按钮 */}
+                    <button
+                        onClick={() => {
+                            const newTheme = config.appearance?.theme === 'light' ? 'dark' : 'light';
+                            build.updateConfig('appearance.theme', newTheme);
+                        }}
+                        className={`p-1.5 rounded-md transition-all ${config.appearance?.theme === 'light' ? 'text-orange-400 hover:bg-orange-400/10' : 'text-blue-400 hover:bg-blue-400/10'}`}
+                        title={t('settings.theme')}
+                    >
+                        {config.appearance?.theme === 'light' ? <Sun size={16} /> : <Moon size={16} />}
+                    </button>
+                    {/* 栅格切换按钮 */}
+                    <button
+                        onClick={() => {
+                            const newGrid = !(config.appearance?.showGrid ?? true);
+                            build.updateConfig('appearance.showGrid', newGrid);
+                        }}
+                        className={`p-1.5 rounded-md transition-all ${config.appearance?.showGrid !== false ? 'text-slate-200 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-800'}`}
+                        title={t('settings.showGrid')}
+                    >
+                        <Grid3X3 size={16} />
+                    </button>
+                </div>
             </div>
 
             <div className="h-5 w-px bg-[#3e3e42] mx-1"></div>

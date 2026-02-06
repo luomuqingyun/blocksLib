@@ -41,3 +41,6 @@ ide/
 scripts/generated/*.json
 scripts/generated/*.js
 scripts/deprecated/
+
+# 测试项目
+test

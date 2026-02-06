@@ -47,6 +47,7 @@ import { useBlocklyShortcuts } from './blockly/hooks/useBlocklyShortcuts';
 import { useWorkspacePersistence } from './blockly/hooks/useWorkspacePersistence';
 import { useBlocklyDynamicToolbox } from './blockly/hooks/useBlocklyDynamicToolbox';
 import { useBlocklyValidation } from './blockly/hooks/useBlocklyValidation';
+import { useBuild } from '../contexts/BuildContext';
 
 
 // ------------------------------------------------------------------
@@ -109,6 +110,8 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   const { showNotification, activeTab } = useUI();
   // 多语言翻译
   const { i18n } = useTranslation();
+  // 全局配置 (用于同步外观设置)
+  const { config } = useBuild();
 
   // --- 内部状态 ---
   /** 搜索模式: 工作区 或 工具箱 */
@@ -117,8 +120,8 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   /** 是否钉住工具箱 (不自动关闭) */
   const [isToolboxPinned, setIsToolboxPinned] = useState(false);
-  /** 当前主题 (跟随系统或切换) */
-  const [currentTheme, setCurrentTheme] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches ? DarkTheme : LightTheme);
+  /** 当前主题 (默认使用深色以对齐 EmbedBlocks 视觉风格) */
+  const [currentTheme, setCurrentTheme] = useState(DarkTheme);
   /** 变量/积木块重命名弹窗状态 */
   const [promptState, setPromptState] = useState<{ isOpen: boolean; message: string; defaultValue: string; callback: ((value: string | null) => void) | null; }>({ isOpen: false, message: '', defaultValue: '', callback: null });
 
@@ -139,6 +142,98 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   const [isReadyForEdits, setIsReadyForEdits] = useState(false);
   /** 注册表版本 (用于触发依赖于 BoardRegistry 的 Effect) */
   const [registryVersion, setRegistryVersion] = useState(0);
+  /** [NEW] 是否内部加载中 (Blockly 注入过程) */
+  const [isInjecting, setIsInjecting] = useState(true);
+
+  // 监听配置变更或工作区就绪，以同步外观设置
+  useEffect(() => {
+    const workspace = workspaceRef.current;
+    if (!workspace) return;
+
+    // 1. 同步主题
+    const targetTheme = config.appearance?.theme === 'light' ? LightTheme : DarkTheme;
+    if (workspace.getTheme().name !== targetTheme.name) {
+      console.log(`[BlocklyWrapper] Switching theme to: ${targetTheme.name}`);
+      setCurrentTheme(targetTheme);
+      workspace.setTheme(targetTheme);
+    }
+
+    // 2. 同步栅格显示与颜色
+    const showGrid = config.appearance?.showGrid !== false;
+    const grid = workspace.getGrid();
+    if (grid) {
+      // 这里的逻辑是：如果启用则设为 20，不启用则设为 0（彻底隐藏）
+      const targetSpacing = showGrid ? 20 : 0;
+      const gridColour = targetTheme.getComponentStyle('gridColour') || '#FF0000';
+
+      console.log('[BlocklyWrapper] Grid Sync Details:', {
+        showGrid,
+        targetSpacing,
+        gridColour,
+        workspaceOptions: workspace.options.gridOptions
+      });
+
+      // 更新 Options 同步 (基础设置)
+      workspace.options.gridOptions.spacing = targetSpacing;
+      workspace.options.gridOptions.enabled = showGrid;
+      workspace.options.gridOptions.colour = gridColour;
+
+      // [MONKEYPATCH REDUX] 劫持 grid.update 方法
+      // 只有这样才能确保在缩放和移动时，自定义颜色和间距不被 Blockly 内部逻辑覆盖
+      if (!(grid as any)._isPatched) {
+        const originalUpdate = grid.update;
+        grid.update = function (scale: number) {
+          // 每次更新前确保 Options 是最新的 (单一事实来源)
+          this.spacing_ = workspace.options.gridOptions.spacing;
+          this.colour_ = workspace.options.gridOptions.colour;
+
+          originalUpdate.call(this, scale);
+
+          // [AGGRESSIVE DOM SYNC] 暴力注入 SVG 属性
+          // 检查所有可能的模式元素属性名 (Blockly 12 及其变体)
+          const pattern = (this as any).gridPattern_ || (this as any).pattern || (this as any).pattern_;
+          if (pattern) {
+            // 查找所有可能的视觉元素
+            const elements = pattern.querySelectorAll('circle, line, path');
+            elements.forEach((v: any) => {
+              // 强制颜色
+              v.setAttribute('fill', this.colour_);
+              v.setAttribute('stroke', this.colour_);
+              // 强制可见性
+              v.setAttribute('visibility', this.spacing_ > 0 ? 'visible' : 'hidden');
+              // 冗余保险：如果 spacing 为 0，彻底透明
+              if (this.spacing_ === 0) {
+                v.setAttribute('opacity', '0');
+              } else {
+                v.setAttribute('opacity', '1');
+              }
+            });
+          }
+        };
+        (grid as any)._isPatched = true;
+      }
+
+      // 立即触发应用
+      // 兼容某些版本的 grid.setSpacing
+      if (typeof grid.setSpacing === 'function') {
+        grid.setSpacing(targetSpacing);
+      }
+      grid.update(workspace.scale);
+
+      // 视觉兜底：立即执行一次全量注入
+      const forcePattern = (grid as any).gridPattern_ || (grid as any).pattern || (grid as any).pattern_;
+      if (forcePattern) {
+        forcePattern.querySelectorAll('circle, line, path').forEach((v: any) => {
+          v.setAttribute('fill', gridColour);
+          v.setAttribute('stroke', gridColour);
+          v.setAttribute('visibility', showGrid ? 'visible' : 'hidden');
+          v.setAttribute('opacity', showGrid ? '1' : '0');
+        });
+      }
+
+      Blockly.svgResize(workspace);
+    }
+  }, [workspaceInstance, config.appearance?.theme, config.appearance?.showGrid]);
 
   // 监听注册表变更
   useEffect(() => {
@@ -148,10 +243,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
       setRegistryVersion(v => v + 1);
     });
   }, []);
-  // 组件挂载时执行全局初始化
-  useEffect(() => {
-    AppInitializer.initialize();
-  }, []);
+  // 组件挂载时执行全局初始化 (已移至 App.tsx 处理)
 
   const isReadyForEditsRef = useRef(false);
   useEffect(() => { isReadyForEditsRef.current = isReadyForEdits; }, [isReadyForEdits]);
@@ -183,7 +275,10 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   const { loadWorkspaceState, saveWorkspaceState, attemptViewRestore, ensureDefaultBlocks, isDisposed } = useWorkspacePersistence(
     workspaceRef,
     props.currentFilePath,
-    setIsReadyForEdits,
+    (ready) => {
+      setIsReadyForEdits(ready);
+      if (ready) setIsInjecting(false);
+    },
     props.onXmlLoaded
   );
 
@@ -302,6 +397,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
     hasInjectedRef.current = true; // 标记已注入，防止重复操作
 
     console.log('[BlocklyWrapper] 注入工作区 (每个项目只应发生一次)');
+    setIsInjecting(true);
     workspaceRef.current = Blockly.inject(editorRef.current, {
       toolbox: toolboxConfiguration || { kind: 'categoryToolbox', contents: [] },
       theme: currentTheme,
@@ -339,6 +435,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
     } else {
       console.log('[BlocklyWrapper] 无 initialXml (新项目)，设置准备就绪并触发代码生成...');
       setIsReadyForEdits(true);
+      setIsInjecting(false);
       if (props.onXmlLoaded) props.onXmlLoaded();
       // [FIX] 对于没有 initialXml 的新项目，延迟触发初始代码生成
       // 避免 useEffect 在就绪前运行导致空代码
@@ -456,7 +553,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
     };
     workspaceRef.current.addChangeListener(singletonEnforcer);
 
-    // 绑定其他分类回调和监听器
+    // 绑定其他分类回调 and 监听器
     workspaceRef.current.addChangeListener(handleToolboxItemSelect);
     workspaceRef.current.addChangeListener(handleValidationEvent);
 
@@ -552,10 +649,30 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   };
 
   // ========== 渲染组件界面 ==========
+  const containerClasses = [
+    "relative w-full h-full",
+    config.appearance?.theme === 'light' ? "theme-light" : "theme-dark",
+    (config.appearance?.showGrid === false) ? "grid-hidden" : ""
+  ].join(' ');
+
   return (
-    <div className="relative w-full h-full">
+    <div className={containerClasses}>
       {/* Blockly 编辑器挂载容器 */}
-      <div ref={editorRef} className="w-full h-full bg-slate-50 dark:bg-slate-900" style={{ minHeight: '400px' }} />
+      <div
+        ref={editorRef}
+        className="w-full h-full bg-[#1e1e1e]" // 默认使用深色背景，防止白闪
+        style={{ minHeight: '400px' }}
+      />
+
+      {/* [NEW] 内部加载遮罩：在 Blockly 还没注入口/加载完积木前显示 */}
+      {isInjecting && (
+        <div className="absolute inset-0 z-[50] flex items-center justify-center bg-[#1e1e1e]">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+            <span className="text-sm text-slate-500 animate-pulse font-medium">Initializing Blocks...</span>
+          </div>
+        </div>
+      )}
 
       {/* 钉住工具箱悬浮按钮 */}
       <button
@@ -564,7 +681,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
         className={`absolute bottom-8 left-4 p-3 rounded-full shadow-xl transition-all ${isToolboxPinned ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'}`}
         title={isToolboxPinned ? (Blockly.Msg.ARD_WS_UNPIN || "取消钉住工具箱") : (Blockly.Msg.ARD_WS_PIN || "钉住工具箱")}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg xmlns="http://www.w3.org/2000/round" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="12" y1="17" x2="12" y2="22"></line>
           <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
         </svg>
