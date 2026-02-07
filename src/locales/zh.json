@@ -178,7 +178,8 @@
     },
     "newProject": {
         "cantFindBoard": "找不到您的板子？",
-        "importNow": "从插件中添加"
+        "importNow": "从插件中添加",
+        "selectBoardOrChip": "请在列表中选择板卡或芯片型号"
     },
     "settings": {
         "title": "设置",

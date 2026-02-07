@@ -165,7 +165,8 @@
     },
     "newProject": {
         "cantFindBoard": "Can't find your board?",
-        "importNow": "Import From Extension"
+        "importNow": "Import From Extension",
+        "selectBoardOrChip": "Please select a board or chip model from the list"
     },
     "settings": {
         "title": "Settings",

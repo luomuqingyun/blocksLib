@@ -419,10 +419,12 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
       // @ts-ignore
       contextMenu: true, // 右键菜单
       move: { scrollbars: true, drag: true, wheel: false },
-      zoom: { controls: true, wheel: true, startScale: 1.0, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2 },
+      // zoom: { controls: true, wheel: true, startScale: 1.0, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2 },
+      zoom: { controls: true, wheel: true, startScale: 1.0, maxScale: 4.0, minScale: 0.2, scaleSpeed: 1.1 },
       grid: {
         spacing: initialShowGrid ? 20 : 0,
-        length: 3,
+        // length: 3,
+        length: 1,
         colour: initialGridColour,
         snap: true
       },

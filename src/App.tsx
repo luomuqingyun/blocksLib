@@ -71,6 +71,7 @@ const GlobalListeners = () => {
 
 function AppInner() {
   const { currentFilePath } = useFileSystem();
+  const { config } = useBuild();
   const { setIsNewProjectOpen, setIsSettingsOpen, setIsExtensionsOpen } = useUI();
   const [recentProjects, setRecentProjects] = useState<string[]>([]);
 
@@ -139,8 +140,10 @@ function AppInner() {
     });
   }, []);
 
+  const themeClass = config.appearance?.theme === 'light' ? 'theme-light' : 'theme-dark';
+
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#1e1e1e] text-slate-300 overflow-hidden">
+    <div className={`h-screen w-screen flex flex-col bg-[#1e1e1e] text-slate-300 overflow-hidden ${themeClass}`}>
       <div className="flex-1 flex overflow-hidden">
         {!currentFilePath ? (
           <WelcomeScreen

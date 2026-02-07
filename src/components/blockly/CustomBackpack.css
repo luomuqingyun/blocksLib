@@ -1,268 +1,322 @@
-/* Custom Backpack Styles */
+/**
+ * ============================================================
+ * 自定义背包样式表 (Custom Backpack Stylesheet)
+ * ============================================================
+ * 
+ * 包含背包按钮、勋章、面板列表项及拖拽交互状态的样式定义。
+ * 
+ * @file src/components/blockly/CustomBackpack.css
+ */
 
-.custom-backpack {
-    position: absolute;
-    bottom: 250px;
-    right: 14px;
-    z-index: 50;
-}
-
+/* --- 背包触发按钮 --- */
 .custom-backpack-btn {
     width: 36px;
+    /* 固定宽度 36px */
     height: 36px;
+    /* 固定高度 36px */
     border: none;
+    /* 移除默认边框 */
     border-radius: 4px;
+    /* 微圆角限定 */
     background: transparent;
+    /* 默认背景透明 */
     cursor: pointer;
+    /* 鼠标悬停显示手型 */
     display: flex;
+    /* 使用 Flex 布局居中图标 */
     align-items: center;
+    /* 垂直居中 */
     justify-content: center;
+    /* 水平居中 */
     color: #9ca3af;
+    /* 默认淡灰色图标 */
     transition: all 0.2s ease;
+    /* 所有属性添加 0.2s 平滑过渡 */
     position: relative;
+    /* 为内部的小红点勋章提供定位基准 */
     opacity: 0.5;
+    /* 默认半透明状态，降低视觉干扰 */
 }
 
+/* --- 交互状态反馈 --- */
 .custom-backpack-btn:hover {
-    opacity: 0.8;
-    color: #6b7280;
-    background: rgba(0, 0, 0, 0.05);
+    background: #f3f4f6;
+    /* 悬停时背景变淡灰色 */
+    color: #4b5563;
+    /* 图标颜色变得更深、更清晰 */
+    opacity: 1;
+    /* 悬停时变为完全不透明 */
+}
+
+.custom-backpack-btn:active {
+    background: #e5e7eb;
+    /* 点击瞬间背景进一步加深 */
+    transform: scale(0.95);
+    /* 产生微弱的按下缩放反馈 */
 }
 
 .custom-backpack-btn.active {
-    opacity: 1;
+    background: #eff6ff;
+    /* 面板展开时的激活态背景（淡蓝色） */
     color: #3b82f6;
-}
-
-.custom-backpack-btn.has-items {
-    opacity: 0.7;
-    color: #6b7280;
-}
-
-/* Drag over - highlight when dragging block over */
-.custom-backpack-btn.drag-over {
+    /* 激活态图标变为品牌蓝 */
     opacity: 1;
-    color: #22c55e;
-    background: rgba(34, 197, 94, 0.15);
-    transform: scale(1.2);
-    box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+    /* 保持完全不透明 */
 }
 
-.custom-backpack-btn svg {
-    width: 24px;
-    height: 24px;
+/* --- 拖拽目标状态 (Drag Over) --- */
+.custom-backpack-btn.drag-over {
+    background: #dcfce7;
+    /* 当积木拖到背包上时，背景变为淡绿色，提示“可放入” */
+    color: #16a34a;
+    /* 图标变绿 */
+    transform: scale(1.1);
+    /* 稍微放大，增强视觉吸引力 */
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    /* 绿色发光外边框 */
 }
 
+/* --- 数量勋章 (Badge) --- */
 .custom-backpack-badge {
     position: absolute;
-    top: -2px;
-    right: -2px;
-    min-width: 14px;
-    height: 14px;
-    padding: 0 3px;
-    border-radius: 7px;
+    /* 绝对定位在按钮右上角 */
+    top: 2px;
+    right: 2px;
     background: #ef4444;
-    color: #ffffff;
-    font-size: 9px;
-    font-weight: 600;
+    /* 警告红背景 */
+    color: white;
+    /* 纯白文字 */
+    font-size: 10px;
+    /* 极小号字体 */
+    min-width: 14px;
+    /* 最小宽度，确保一位数时也是圆形 */
+    height: 14px;
+    border-radius: 7px;
+    /* 圆形造型 */
     display: flex;
+    /* 内容居中 */
     align-items: center;
     justify-content: center;
+    padding: 0 2px;
+    /* 侧边留白 */
+    font-weight: bold;
+    /* 粗体数字 */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    /* 勋章小投影，增加层次 */
 }
 
-/* Panel */
+/* --- 背包项列表面板 --- */
 .custom-backpack-panel {
     position: absolute;
-    bottom: 50px;
+    /* 相对于按钮提供定位 */
+    bottom: 45px;
+    /* 出现在按钮上方 */
     right: 0;
     width: 280px;
-    max-height: 350px;
-    background: #ffffff;
+    /* 固定宽度 280px */
+    background: white;
+    /* 纯白面板背景 */
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    animation: backpackSlideIn 0.2s ease-out;
-}
-
-@keyframes backpackSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.custom-backpack-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 14px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    font-weight: 600;
-    font-size: 14px;
-    color: #1e293b;
-}
-
-.custom-backpack-count {
-    font-size: 12px;
-    color: #94a3b8;
-    font-weight: 400;
-    flex: 1;
-}
-
-.custom-backpack-clear {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 14px;
-    opacity: 0.5;
-    transition: opacity 0.2s;
-}
-
-.custom-backpack-clear:hover {
-    opacity: 1;
-}
-
-/* Empty state */
-.custom-backpack-empty {
-    padding: 30px 20px;
-    text-align: center;
-    color: #94a3b8;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.custom-backpack-empty small {
-    color: #cbd5e1;
-}
-
-/* Items list */
-.custom-backpack-list {
-    list-style: none;
-    margin: 0;
+    /* 现代圆角风格 */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    /* 复合大投影 */
+    border: 1px solid #f3f4f6;
+    /* 极细浅色边框 */
     padding: 8px;
-    max-height: 280px;
+    /* 面板内留白 */
+    z-index: 1000;
+    /* 确保在工作区所有元素之上 */
+    display: flex;
+    /* 垂直排列内容 */
+    flex-direction: column;
+    max-height: 400px;
+    /* 列表区限高，防止过长 */
+}
+
+.custom-backpack-title {
+    padding: 8px 12px;
+    /* 标题内间距 */
+    font-size: 14px;
+    /* 字号 */
+    font-weight: 600;
+    /* 粗体 */
+    color: #1f2937;
+    /* 深蓝灰文字 */
+    border-bottom: 1px solid #f3f4f6;
+    /* 底部定界线 */
+    margin-bottom: 4px;
+    /* 与下方列表的间距 */
+}
+
+/* --- 背包项列表样式 --- */
+.custom-backpack-list {
     overflow-y: auto;
+    /* 纵向溢出后显示滚动条 */
+    flex: 1;
+    /* 占据剩余空间 */
+    padding-right: 4px;
+    /* 预留滚动条空间 */
 }
 
 .custom-backpack-item {
     display: flex;
+    /* 横向排列：图标 + 信息 + 删除 */
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    margin-bottom: 4px;
+    padding: 10px;
+    /* 列表项内间距 */
     border-radius: 8px;
-    background: #f8fafc;
-    transition: background 0.1s ease;
-}
-
-.custom-backpack-item:last-child {
-    margin-bottom: 0;
+    /* 列表项圆角 */
+    cursor: pointer;
+    /* 点击手型 */
+    transition: background 0.2s;
+    /* 背景切换动效 */
+    margin-bottom: 4px;
+    /* 项与项之间的间距 */
 }
 
 .custom-backpack-item:hover {
-    background: #e2e8f0;
+    background: #f9fafb;
+    /* 悬停时显示极淡灰色背景 */
 }
 
-.custom-backpack-item-content {
-    flex: 1;
-    min-width: 0;
-    cursor: pointer;
+.custom-backpack-item-icon {
+    width: 32px;
+    /* 缩略图标容器 */
+    height: 32px;
+    background: #f3f4f6;
+    /* 图标默认底色 */
+    border-radius: 6px;
+    /* 图标圆角 */
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    /* 居中内容 */
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    /* 与右侧文字信息的间距 */
+    color: #6b7280;
+    /* 图标默认颜色 */
 }
 
-.custom-backpack-item-preview {
+.custom-backpack-item-info {
+    flex: 1;
+    /* 占据中间剩余空间 */
+    overflow: hidden;
+    /* 裁剪超长文字 */
+}
+
+.custom-backpack-item-name {
     font-size: 13px;
+    /* 积木名称字号 */
     font-weight: 500;
-    color: #1e293b;
+    /* 中等粗细 */
+    color: #374151;
+    /* 文字颜色 */
     white-space: nowrap;
+    /* 强制单行 */
     overflow: hidden;
     text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    /* 文本过长显示省略号 */
 }
 
-.chain-badge {
-    display: inline-flex;
+.custom-backpack-item-date {
+    font-size: 11px;
+    /* 日期字号 */
+    color: #9ca3af;
+    /* 淡灰色日期 */
+    margin-top: 1px;
+}
+
+/* --- 删除按钮 --- */
+.custom-backpack-item-delete {
+    width: 28px;
+    /* 正方形点击区域 */
+    height: 28px;
+    display: flex;
+    /* 居中删除图标 */
     align-items: center;
     justify-content: center;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 8px;
-    background: #3b82f6;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 600;
-    flex-shrink: 0;
-}
-
-.custom-backpack-item-type {
-    font-size: 10px;
-    color: #94a3b8;
-    font-family: ui-monospace, monospace;
-}
-
-.custom-backpack-item-remove {
-    width: 24px;
-    height: 24px;
-    border: none;
+    border-radius: 14px;
+    /* 圆形背景 */
     background: transparent;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    color: #94a3b8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.1s ease;
+    /* 默认背景透明 */
+    color: #d1d5db;
+    /* 默认淡灰颜色 */
+    transition: all 0.2s;
+    /* 交互反馈过渡 */
 }
 
-.custom-backpack-item-remove:hover {
-    background: #fef2f2;
+.custom-backpack-item-delete:hover {
+    background: #fee2e2;
+    /* 悬停变浅红背景 */
     color: #ef4444;
+    /* 图标变亮红色 */
 }
 
-/* Dark theme */
-@media (prefers-color-scheme: dark) {
-    .custom-backpack-btn {
-        background: rgba(30, 41, 59, 0.9);
-        color: #94a3b8;
-    }
+/* --- 空状态提示 --- */
+.custom-backpack-empty {
+    padding: 40px 20px;
+    /* 增加留白 */
+    text-align: center;
+    /* 居中对齐 */
+    font-size: 13px;
+    /* 字号 */
+    color: #9ca3af;
+    /* 淡灰色 */
+}
 
-    .custom-backpack-btn:hover {
-        background: #334155;
-        color: #f1f5f9;
-    }
+/* --- 深色模式主题适配 (由 .theme-dark 类名驱动) --- */
+.theme-dark .custom-backpack-btn:hover {
+    background: #374151;
+    /* 面板内部深蓝灰按钮悬停色 */
+    color: #e5e7eb;
+}
 
-    .custom-backpack-panel {
-        background: #1e293b;
-    }
+.theme-dark .custom-backpack-btn.active {
+    background: #1e3a8a;
+    /* 深色模式下的活动蓝 */
+    color: #60a5fa;
+}
 
-    .custom-backpack-header {
-        background: #0f172a;
-        border-color: #334155;
-        color: #f1f5f9;
-    }
+.theme-dark .custom-backpack-btn.drag-over {
+    background: #064e3b;
+    /* 深色模式下的拖入深绿背景 */
+    color: #4ade80;
+}
 
-    .custom-backpack-item {
-        background: #0f172a;
-    }
+.theme-dark .custom-backpack-panel {
+    background: #1f2937;
+    /* 深色面板背景（蓝黑色） */
+    border-color: #374151;
+    /* 深色分割线及边框 */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    /* 增强阴影深度 */
+}
 
-    .custom-backpack-item:hover {
-        background: #334155;
-    }
+.theme-dark .custom-backpack-title {
+    color: #f3f4f6;
+    /* 面板标题变白 */
+    border-bottom-color: #374151;
+    /* 分割线变暗 */
+}
 
-    .custom-backpack-item-preview {
-        color: #f1f5f9;
-    }
+.theme-dark .custom-backpack-item:hover {
+    background: #374151;
+    /* 列表项悬停变浅蓝黑 */
+}
+
+.theme-dark .custom-backpack-item-icon {
+    background: #111827;
+    /* 图标底座变深黑 */
+    color: #9ca3af;
+}
+
+.theme-dark .custom-backpack-item-name {
+    color: #e5e7eb;
+    /* 积木名称文字变白 */
+}
+
+.theme-dark .custom-backpack-item-delete:hover {
+    background: #7f1d1d;
+    /* 删除按钮悬停变为深红 */
+    color: #fca5a5;
 }

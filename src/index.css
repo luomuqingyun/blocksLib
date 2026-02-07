@@ -1,183 +1,332 @@
+/**
+ * ============================================================
+ * 全局样式表 (Global Stylesheet)
+ * ============================================================
+ * 
+ * 包含基础样式、Tailwind 指令、全局组件外观优化及动画定义。
+ * 
+ * @file src/index.css
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 自定义滚动条样式 (可选，为了更好看) */
-.custom-scrollbar::-webkit-scrollbar {
+/* --- 自定义滚动条样式 (深色模式驱动) --- */
+.theme-dark .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
+  /* 竖向滚动条宽度 8px */
   height: 8px;
+  /* 横向滚动条高度 8px */
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #1e1e1e; 
+
+.theme-dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #1e1e1e;
+  /* 滚动条轨道颜色（深灰黑） */
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #475569; 
+
+.theme-dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #475569;
+  /* 滚动条滑块颜色（中蓝灰） */
   border-radius: 4px;
+  /* 滑块圆角处理 */
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #64748b; 
+
+.theme-dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+  /* 滑块悬停时颜色加深 */
 }
 
 /* 自动隐藏滚动条 - 只在悬停/滚动时显示 */
 .auto-hide-scrollbar {
   scrollbar-width: thin;
+  /* Firefox: 使用细滚动条 */
   scrollbar-color: transparent transparent;
+  /* Firefox: 默认完全透明 */
 }
+
 .auto-hide-scrollbar:hover {
   scrollbar-color: #475569 transparent;
+  /* Firefox: 悬停时显示滑块颜色 */
 }
+
 .auto-hide-scrollbar::-webkit-scrollbar {
   width: 6px;
+  /* Webkit: 滚动条宽度 6px */
   height: 6px;
 }
+
 .auto-hide-scrollbar::-webkit-scrollbar-track {
   background: transparent;
+  /* Webkit: 轨道默认透明 */
 }
+
 .auto-hide-scrollbar::-webkit-scrollbar-thumb {
   background: transparent;
+  /* Webkit: 滑块默认透明 */
   border-radius: 3px;
+  /* 滑块圆角 */
   transition: background 0.2s ease;
+  /* 滑块背景切换平滑过渡 */
 }
+
 .auto-hide-scrollbar:hover::-webkit-scrollbar-thumb {
   background: #475569;
+  /* Webkit: 容器悬停时显示滑块 */
 }
+
 .auto-hide-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #64748b;
+  /* Webkit: 滑块自身悬停时加深 */
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
+  /* 强制占据全屏高度 */
   margin: 0;
+  /* 移除默认外边距 */
   padding: 0;
-  overflow: hidden; /* 防止 Electron 出现双滚动条 */
+  /* 移除默认内边距 */
+  overflow: hidden;
+  /* 禁用顶层滚动，防止 Electron 窗口出现双滚动条 */
 }
 
-/* Blockly Toolbox Label Improvements */
+/* --- Blockly 工具箱标签优化 (Toolbox Label) --- */
 .blocklyFlyoutLabelText {
-  fill: #818cf8 !important; /* Indigo color for visibility */
+  fill: #818cf8 !important;
+  /* 使用 Indigo 色调，确保在深色背景下有足够的对比度 */
   font-weight: 800 !important;
+  /* 极粗体，突出分类标题 */
   font-size: 14px !important;
+  /* 分类标题字号 */
   text-transform: uppercase;
+  /* 强制大写，符合现代设计语言 */
   letter-spacing: 0.1em;
+  /* 增加字间距，提升专业感 */
   font-family: 'Inter', sans-serif;
+  /* 使用标准系统字体 */
   opacity: 0.9;
+  /* 略微透明，减少视觉侵略性 */
 }
 
 .blocklyFlyoutLabel:hover .blocklyFlyoutLabelText {
   fill: #a5b4fc !important;
+  /* 悬停时提亮颜色 */
   opacity: 1;
+  /* 悬停时完全不透明 */
 }
 
-/* --- Markdown Rendering Styles --- */
+/* --- Markdown 渲染样式库 (Markdown Rendering) --- */
 .markdown-body {
   color: #cad3f5;
+  /* 正文文本颜色（淡蓝灰） */
   line-height: 1.6;
+  /* 行高 1.6，优化长文本阅读体验 */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  /* 标准文档字体栈 */
   padding: 2rem;
+  /* 容器内边距，提供留白 */
 }
 
 .markdown-body h1 {
   font-size: 2em;
+  /* 一级标题字号 */
   font-weight: 700;
+  /* 粗体 */
   border-bottom: 2px solid #363a4f;
+  /* 底部粗分割线，界定章节 */
   padding-bottom: 0.5rem;
+  /* 标题与分割线间距 */
   margin-top: 2rem;
+  /* 顶部留白 */
   margin-bottom: 1.5rem;
+  /* 底部留白 */
   color: #fff;
+  /* 标题使用纯白色 */
 }
 
 .markdown-body h2 {
   font-size: 1.5em;
+  /* 二级标题字号 */
   font-weight: 600;
+  /* 中粗体 */
   border-bottom: 1px solid #363a4f;
+  /* 底部细分割线 */
   padding-bottom: 0.3rem;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
-  color: #f5bde6; /* Pink accent */
+  color: #f5bde6;
+  /* 粉色强调色 */
 }
 
 .markdown-body h3 {
   font-size: 1.25em;
+  /* 三级标题字号 */
   font-weight: 600;
+  /* 中粗体 */
   margin-top: 1.2rem;
   margin-bottom: 0.8rem;
-  color: #8bd5ca; /* Teal accent */
+  color: #8bd5ca;
+  /* 青色强调色 */
 }
 
 .markdown-body p {
   margin-bottom: 1rem;
+  /* 段落间距 */
 }
 
-.markdown-body ul, .markdown-body ol {
+.markdown-body ul,
+.markdown-body ol {
   padding-left: 2rem;
+  /* 列表左侧缩进，留出序号/圆点空间 */
   margin-bottom: 1rem;
 }
 
 .markdown-body li {
   margin-bottom: 0.4rem;
+  /* 列表项之间的间距 */
 }
 
 .markdown-body blockquote {
   border-left: 4px solid #818cf8;
+  /* 左侧引用条颜色 */
   padding: 0.5rem 1rem;
+  /* 引用块内边距 */
   background: rgba(129, 140, 248, 0.05);
+  /* 引用块浅蓝背景 */
   margin-bottom: 1rem;
   font-style: italic;
+  /* 斜体，体现引用感 */
   color: #a5b4fc;
+  /* 引用文字颜色 */
 }
 
 .markdown-body code {
   background: rgba(129, 140, 248, 0.1);
+  /* 行内代码块浅色背景 */
   padding: 0.2rem 0.4rem;
+  /* 代码文字内间距 */
   border-radius: 4px;
+  /* 代码块微圆角 */
   font-family: "JetBrains Mono", monospace;
+  /* 使用 JetBrains Mono 提升代码可读性 */
   font-size: 0.9em;
+  /* 代码字体略小于正文 */
   color: #f5bde6;
+  /* 代码文字颜色（粉色） */
 }
 
 .markdown-body pre {
   background: #181926;
+  /* 代码块容器背景（深色） */
   padding: 1rem;
+  /* 代码块内边距 */
   border-radius: 8px;
+  /* 容器大圆角 */
   overflow-x: auto;
+  /* 横向溢出时显示滚动条 */
   margin-bottom: 1.5rem;
+  /* 底部留白 */
   border: 1px solid #363a4f;
+  /* 容器细边框 */
 }
 
 .markdown-body pre code {
   background: none;
+  /* 块级代码内部不再重复背景 */
   padding: 0;
+  /* 清除多余边距 */
   color: #cad3f5;
+  /* 块级代码默认文字色 */
 }
 
 .markdown-body hr {
   height: 2px;
+  /* 水平分割线高度 */
   background: #363a4f;
+  /* 分割线颜色 */
   border: none;
+  /* 移除默认边框线 */
   margin: 2rem 0;
+  /* 分割线上下间距 */
 }
 
 .markdown-body table {
   width: 100%;
+  /* 表格撑满容器宽度 */
   border-collapse: collapse;
+  /* 合并表格边框 */
   margin-bottom: 1.5rem;
+  /* 表格底部留白 */
   background: rgba(255, 255, 255, 0.02);
+  /* 极淡背景色，提升表格轮廓感 */
   border-radius: 8px;
+  /* 表格整体圆角 */
   overflow: hidden;
+  /* 确保内容不超出圆角边缘 */
 }
 
-.markdown-body th, .markdown-body td {
+.markdown-body th,
+.markdown-body td {
   border: 1px solid #363a4f;
+  /* 单元格边框线 */
   padding: 0.75rem 1rem;
+  /* 单元格内容间距 */
   text-align: left;
+  /* 文字左对齐 */
 }
 
 .markdown-body th {
   background: #24273a;
+  /* 表头深色背景 */
   color: #fff;
+  /* 表头文字全白 */
   font-weight: 600;
+  /* 加粗 */
 }
 
 .markdown-body strong {
   color: #fff;
+  /* 加粗文字统一提亮为纯白 */
+}
+
+/* --- 占位符动效 (Placeholder Animations) --- */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+    /* 起始位置：原位，向左微旋 3度 */
+  }
+
+  50% {
+    transform: translateY(-6px) rotate(-1deg);
+    /* 升高 6px，旋转幅度减小 */
+  }
+}
+
+@keyframes float-reverse {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(3deg);
+    /* 起始位置：原位，向右微旋 3度 */
+  }
+
+  50% {
+    transform: translateY(-6px) rotate(5deg);
+    /* 升高 6px，向右旋转幅度增大 */
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+  /* 4秒一个周期，缓入缓出，循环往复 */
+}
+
+.animate-float-reverse {
+  animation: float-reverse 4s ease-in-out infinite;
+  /* 4秒一个周期，镜像动画 */
 }
