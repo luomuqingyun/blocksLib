@@ -4,107 +4,105 @@
  * ============================================================
  * 
  * 核心职责:
- * 1. 修补 Blockly 的 ShortcutRegistry，防止键盘事件被错误拦截
+ * 1. 安全地修补 Blockly 的 ShortcutRegistry，防止键盘事件被错误拦截
  * 2. 管理搜索快捷键 (Ctrl+F / Ctrl+Shift+F)
  * 
- * 输入保护策略:
- * - 多层次检测当前焦点元素是否为可编辑区域
- * - 涵盖所有已知的输入场景 (INPUT, TEXTAREA, SELECT, contenteditable, Monaco, etc.)
- * - 特别处理对话框和模态框内的输入
+ * 安全策略:
+ * - 单例模式: 保证全局 Patch 只执行一次，避免 React 重渲染副作用
+ * - 精准判定: 使用 e.target 而非 activeElement，避免焦点切换时序问题
+ * - 白名单放行: 明确识别 Blockly 内部输入 (FieldInput)，确保其功能正常
  * 
  * @file src/components/blockly/hooks/useBlocklyShortcuts.ts
  * @module EmbedBlocks/Frontend/Hooks
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import * as Blockly from 'blockly';
 
-/**
- * 全面检测当前焦点元素是否为可编辑区域
- * 这是防止输入问题的核心函数
- * 
- * @param el 当前焦点元素
- * @returns 是否为非 Blockly 的可编辑区域
- */
-const isActiveElementEditable = (el: Element | null): boolean => {
-    if (!el) return false;
+/** 全局 Patch 状态标记 (防止重复 Patch) */
+let isBlocklyPatched = false;
+/** 原始的 onKeyDown 处理器引用 */
+let originalOnKeyDown: any = null;
 
-    const htmlEl = el as HTMLElement;
+/**
+ * 检测目标元素是否为外部可编辑区域 (需阻止 Blockly 处理)
+ * 
+ * @param target 事件目标元素
+ * @returns true=外部输入(需拦截), false=非输入或Blockly内部输入(放行)
+ */
+const isExternalEditable = (target: EventTarget | null): boolean => {
+    if (!target || !(target instanceof Element)) return false;
+
+    const el = target as HTMLElement;
     const tagName = el.tagName.toUpperCase();
 
-    // 1. 标准表单输入元素
-    if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT') {
-        return true;
-    }
+    // 1. [关键] 首先排除 Blockly 内部输入组件
+    // FieldInput (数字/文本输入)
+    if (el.classList.contains('blocklyHtmlInput') || el.closest('.blocklyHtmlInput')) return false;
+    // 下拉菜单/颜色选择器等 Widget
+    if (el.closest('.blocklyWidgetDiv')) return false;
+    // 上下文菜单
+    if (el.closest('.blocklyContextMenu')) return false;
+    // 工具提示
+    if (el.closest('.blocklyTooltipDiv')) return false;
 
-    // 2. contenteditable 元素
-    if (htmlEl.isContentEditable) {
-        return true;
-    }
+    // 2. 检测具体的外部输入特征
+    // 搜索组件输入框 (明确拦截)
+    if (el.classList.contains('unified-search-input') || el.closest('.unified-search-input')) return true;
 
-    // 3. ARIA role 为文本输入的元素
+    // 标准表单元素
+    if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT') return true;
+
+    // 内容可编辑区域
+    if (el.isContentEditable) return true;
+
+    // Monaco Editor
+    if (el.closest('.monaco-editor')) return true;
+
+    // 自定义输入保护
+    if (el.dataset?.inputProtect === 'true' || el.closest('[data-input-protect="true"]')) return true;
+
+    // ARIA roles
     const role = el.getAttribute('role');
-    if (role === 'textbox' || role === 'searchbox' || role === 'combobox') {
-        return true;
-    }
-
-    // 4. Monaco Editor 内部元素
-    if (el.closest('.monaco-editor')) {
-        return true;
-    }
-
-    // 5. 对话框/模态框内的元素 (通常需要键盘输入)
-    if (el.closest('[role="dialog"]') || el.closest('[role="alertdialog"]')) {
-        // 在对话框内，检查是否是可交互元素
-        if (tagName === 'BUTTON' || el.closest('button')) {
-            return false; // 按钮不需要阻止快捷键
-        }
-        return true; // 其他对话框内元素默认保护
-    }
-
-    // 6. 自定义输入组件标记 (data-input-protect)
-    if (htmlEl.dataset?.inputProtect === 'true' || el.closest('[data-input-protect="true"]')) {
-        return true;
-    }
-
-    // 7. 搜索组件内的输入
-    if (el.closest('.unified-search-container') || el.closest('.search-input')) {
-        return true;
-    }
+    if (role === 'textbox' || role === 'searchbox' || role === 'combobox') return true;
 
     return false;
 };
 
 /**
- * 检测是否为 Blockly 内部输入元素
- * 
- * @param el 当前焦点元素
- * @returns 是否为 Blockly 内部输入
+ * 执行全局安全性 Patch
+ * 仅在模块首次加载或首次调用 hook 时执行一次
  */
-const isBlocklyInput = (el: Element | null): boolean => {
-    if (!el) return false;
+const applyGlobalPatch = () => {
+    if (isBlocklyPatched) return;
 
-    // Blockly 的 HTML 输入框 (字段编辑器)
-    if (el.classList.contains('blocklyHtmlInput')) {
-        return true;
+    try {
+        // @ts-ignore - Accessing internal registry
+        const registry = Blockly.ShortcutRegistry.registry;
+
+        // 保存原始引用
+        if (!originalOnKeyDown) {
+            originalOnKeyDown = registry.onKeyDown;
+        }
+
+        // 注入新的处理器
+        registry.onKeyDown = function (workspace: any, e: KeyboardEvent) {
+            // 使用 e.target 进行精准判定
+            if (isExternalEditable(e.target)) {
+                // 如果是外部输入，直接返回 false，阻止 Blockly 处理该事件
+                // 这样事件可以继续冒泡或被原生输入框消费
+                return false;
+            }
+
+            // 否则，调用原始处理器 (处理积木删除、撤销等快捷键)
+            return originalOnKeyDown.call(this, workspace, e);
+        };
+
+        isBlocklyPatched = true;
+        console.log('[useBlocklyShortcuts] Global Blockly shortcut patch applied successfully.');
+    } catch (e) {
+        console.error('[useBlocklyShortcuts] Failed to patch Blockly shortcuts:', e);
     }
-
-    // Blockly 的 Widget 容器 (下拉菜单、颜色选择器等)
-    if (el.closest('.blocklyWidgetDiv')) {
-        return true;
-    }
-
-    // Blockly 的工具提示
-    if (el.closest('.blocklyTooltipDiv')) {
-        return true;
-    }
-
-    // Blockly 的上下文菜单
-    if (el.closest('.blocklyContextMenu')) {
-        return true;
-    }
-
-    return false;
 };
 
 /**
@@ -117,37 +115,29 @@ export const useBlocklyShortcuts = (
     setSearchMode: (mode: 'workspace' | 'toolbox') => void,
     setIsSearchVisible: (visible: boolean) => void
 ) => {
+    // 使用 ref 确保这些回调在闭包中是最新的，虽然 effect 只运行一次
+    const handlersRef = useRef({ setSearchMode, setIsSearchVisible });
     useEffect(() => {
-        // @ts-ignore - Blockly 类型定义不完整
-        const registry = Blockly.ShortcutRegistry.registry;
-        const originalOnKeyDown = registry.onKeyDown;
+        handlersRef.current = { setSearchMode, setIsSearchVisible };
+    }, [setSearchMode, setIsSearchVisible]);
 
-        /**
-         * 1. 修补 ShortcutRegistry.onKeyDown
-         * 
-         * 核心逻辑: 当焦点在非 Blockly 的可编辑区域时，跳过 Blockly 的快捷键处理
-         */
-        registry.onKeyDown = function (workspace: any, e: KeyboardEvent) {
-            const el = document.activeElement;
-
-            // 如果当前焦点在可编辑区域，且不是 Blockly 内部输入
-            if (isActiveElementEditable(el) && !isBlocklyInput(el)) {
-                // 跳过 Blockly 的快捷键处理，让事件正常传递
-                return false;
-            }
-
-            // 否则，调用原始的 Blockly 快捷键处理
-            return originalOnKeyDown.call(this, workspace, e);
-        };
+    useEffect(() => {
+        // 1. 确保 Patch 已应用 (幂等操作)
+        applyGlobalPatch();
 
         /**
          * 2. 全局搜索快捷键监听器 (Ctrl+F, Ctrl+Shift+F)
+         * 使用 capture=true 确保在任何其他处理之前捕获
          */
         const searchShortcuts = (event: KeyboardEvent) => {
-            const el = document.activeElement;
+            // 如果焦点在外部输入框中，且不是我们自己的搜索框 (防止在搜索框内按 Ctrl+F 导致重置)
+            // 通常我们希望 Ctrl+F 总是能唤起搜索，除非用户正在打字且不希望被打断
+            // 这里保留原逻辑：如果在任何输入框内，不触发 (除非是 ReadOnly)
 
-            // 如果当前焦点在可编辑区域（非 Blockly），不触发搜索
-            if (isActiveElementEditable(el) && !isBlocklyInput(el)) {
+            // 修正：Blockly 内部输入框也应该能唤起搜索
+            const target = event.target as Element;
+            // 如果是外部输入框 (非Blockly)，则不触发快捷键，以免干扰正常输入 (如在 Monaco 中查找)
+            if (isExternalEditable(target)) {
                 return;
             }
 
@@ -155,27 +145,25 @@ export const useBlocklyShortcuts = (
             if ((event.ctrlKey || event.metaKey) && event.key === 'f' && !event.shiftKey) {
                 event.preventDefault();
                 event.stopPropagation();
-                setSearchMode('workspace');
-                setIsSearchVisible(true);
+                handlersRef.current.setIsSearchVisible(true);
+                handlersRef.current.setSearchMode('workspace');
             }
 
             // Ctrl+Shift+F -> 工具箱搜索
-            if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'F') {
+            if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'F' || event.key === 'f')) {
                 event.preventDefault();
                 event.stopPropagation();
-                setSearchMode('toolbox');
-                setIsSearchVisible(true);
+                handlersRef.current.setIsSearchVisible(true);
+                handlersRef.current.setSearchMode('toolbox');
             }
         };
 
-        // 使用 capture 阶段确保优先处理
         document.addEventListener('keydown', searchShortcuts, true);
 
-        // 清理函数
         return () => {
             document.removeEventListener('keydown', searchShortcuts, true);
-            // 恢复原始的 onKeyDown
-            registry.onKeyDown = originalOnKeyDown;
+            // 注意：我们不移除 global patch，因为它是全局单例的，移除可能导致其他组件出问题
+            // 且 Blockly 实例通常贯穿整个应用生命周期
         };
-    }, [setSearchMode, setIsSearchVisible]);
+    }, []);
 };

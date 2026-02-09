@@ -17,6 +17,10 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css'; // Tailwind CSS 样式，必须引入
 import './i18n'; // 国际化配置初始化
+import { InputLogger } from './services/InputLoggerService';
+
+// [DEBUG] 初始化全过程交互诊断记录器
+InputLogger.init();
 
 
 const rootElement = document.getElementById('root');

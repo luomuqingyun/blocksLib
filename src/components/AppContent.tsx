@@ -97,6 +97,7 @@ export function AppContent() {
                                 <BlocklyWrapper
                                     ref={blocklyRef}
                                     onCodeChange={handleBlocklyCodeChange}
+                                    onModelChange={markWorkspaceDirtyRef.current}  // [NEW] 绑定模型变更回调
                                     toolboxConfiguration={toolboxConfig}
                                     selectedBoard={selectedBoard}
                                     initialCode=""

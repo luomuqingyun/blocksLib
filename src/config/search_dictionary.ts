@@ -22,9 +22,9 @@
 
 export const BILINGUAL_MAP: Record<string, string[]> = {
     // --- 1. Basic Programming ---
-    'setup': ['初始化', '设置'],
+    'setup': ['初始化'],
     'loop': ['循环', '重复'],
-    'if': ['如果', '条件', '判断', '假如', '若'],
+    'if': ['如果'],
     'else': ['否则', '如果不'],
     'while': ['当', '循环', '满足', '直到'],
     'for': ['循环', '计次', '遍历'],
