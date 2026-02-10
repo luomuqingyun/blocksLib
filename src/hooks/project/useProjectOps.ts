@@ -240,7 +240,6 @@ export const useProjectOps = (props: ProjectOpsProps) => {
         }
 
         if (!currentFilePath) {
-            setIsNewProjectOpen(true);
             return;
         }
 

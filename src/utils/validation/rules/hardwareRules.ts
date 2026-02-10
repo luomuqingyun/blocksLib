@@ -17,7 +17,7 @@ const PIN_FIELD_NAMES = [
 /**
  * 全局规则：防止多个积木占用同一个硬件引脚。
  */
-export const checkPinConflict: ValidationRule = (block) => {
+export const checkPinConflict: ValidationRule = (block, context) => {
     if (!block.workspace) return null;
 
     // 1. 识别当前积木所使用的全部引脚
@@ -43,8 +43,9 @@ export const checkPinConflict: ValidationRule = (block) => {
         // 跳过自身
         if (otherBlock.id === block.id) continue;
 
-        // 跳过已禁用的积木或位于工具栏预览中的积木
-        if (otherBlock.isEnabled() === false || otherBlock.isInFlyout) continue;
+        // 跳过位于工具栏预览中的积木
+        // 注意：不跳过已禁用的积木，因为由于校验失败而禁用的积木依然占用引脚资源
+        if (otherBlock.isInFlyout) continue;
 
         for (const otherInput of otherBlock.inputList) {
             for (const otherField of otherInput.fieldRow) {
@@ -54,6 +55,15 @@ export const checkPinConflict: ValidationRule = (block) => {
                     // 检查是否存在引脚编号重叠
                     const conflict = usedPins.find(p => p.value === otherVal);
                     if (conflict) {
+                        // [关键优化] 责任归属判定 (Responsibility Attribution):
+                        // 如果当前积木(block)不是触发者(trigger)，而对方(otherBlock)是触发者，
+                        // 则当前积木应当“让位”，由对方去显示警告信息，避免出现“我没动却报错”的挫败感。
+                        if (context?.triggerBlockId &&
+                            block.id !== context.triggerBlockId &&
+                            otherBlock.id === context.triggerBlockId) {
+                            continue; // 跳过此冲突，由对方去承担校验失败的责任
+                        }
+
                         // 发现冲突：将引脚占用的具体积木名称反馈给用户
                         const otherBlockName = otherBlock.type.replace(/_/g, ' ');
                         const pinName = conflict.value;

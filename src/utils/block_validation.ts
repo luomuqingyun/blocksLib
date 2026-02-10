@@ -20,7 +20,7 @@ import { checkMissingInputs, checkOrphanOutput } from './validation/rules/coreRu
 import { checkArduinoParamDef, checkCStructDefine, checkCEnumDefine } from './validation/rules/contextRules';
 import { checkGlobalScope, checkSingletonEntry } from './validation/rules/globalRules';
 import { checkPinConflict } from './validation/rules/hardwareRules';
-import { ValidationRule } from './validation/types';
+import { ValidationRule, ValidationContext } from './validation/types';
 
 
 // 按优先级顺序执行的校验规则注册表
@@ -40,7 +40,7 @@ const VALIDATION_RULES: ValidationRule[] = [
  * 综合积木校验协调器 (Comprehensive Block Validator)
  * 编排并执行多个专门的校验规则，并将结果反馈到积木的 UI 状态中。
  */
-export const validateBlock = (block: any) => {
+export const validateBlock = (block: any, context?: ValidationContext) => {
     if (!block) return;
 
     // 环境检查：如果积木位于侧边栏预览、修改器窗口或正在被拖拽，则跳过校验
@@ -61,7 +61,7 @@ export const validateBlock = (block: any) => {
     // 执行规则链
     let warningText = null;
     for (const rule of VALIDATION_RULES) {
-        warningText = rule(block);
+        warningText = rule(block, context);
         if (warningText) break; // 优先级：返回第一个发现的错误
     }
 
@@ -75,22 +75,33 @@ export const validateBlock = (block: any) => {
 
     // 状态更新：仅在警告文本发生变化时更新，以优化性能
     if (previousWarning !== warningText) {
-        block.setWarningText(warningText);
+        // [FIX] 核心安全拦截：如果用户正在输入该积木的值，禁止更新警告文本。
+        // 因为 setWarningText 会改变积木 DOM 结构，导致 HTML 编辑器销毁或焦点丢失。
+        const isEditing = block.isEditing && block.isEditing();
+        if (!isEditing) {
+            block.setWarningText(warningText);
+        }
     }
 
     // 如果存在警告信息，则将积木置为禁用状态（灰色）
     if (warningText) {
         if (isMainWorkspace && typeof block.setDisabledReason === 'function') {
-            // 通过 'validation_error' 理由禁用，方便后续根据理由重新启用
-            block.setDisabledReason(true, 'validation_error');
+            const isEditing = block.isEditing && block.isEditing();
+            if (!isEditing) {
+                // 通过 'validation_error' 理由禁用，方便后续根据理由重新启用
+                block.setDisabledReason(true, 'validation_error');
+            }
         }
     } else {
         // 校验通过：清除所有警告及禁用状态
-        if (typeof block.setWarningText === 'function') {
-            block.setWarningText(null);
-        }
-        if (typeof block.setDisabledReason === 'function') {
-            block.setDisabledReason(false, 'validation_error');
+        const isEditing = block.isEditing && block.isEditing();
+        if (!isEditing) {
+            if (typeof block.setWarningText === 'function') {
+                block.setWarningText(null);
+            }
+            if (typeof block.setDisabledReason === 'function') {
+                block.setDisabledReason(false, 'validation_error');
+            }
         }
     }
 };

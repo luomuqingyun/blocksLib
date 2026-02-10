@@ -31,6 +31,7 @@ export const useBlocklyValidation = (
     onRefreshDynamicFlyout: () => void
 ) => {
     const validationTimer = useRef<NodeJS.Timeout | null>(null);
+    const lastTriggerBlockIdRef = useRef<string | null>(null);
 
     /**
      * 执行积木块验证
@@ -38,9 +39,16 @@ export const useBlocklyValidation = (
     const runValidation = useCallback(() => {
         if (workspaceRef.current) {
             try {
+                const triggerId = lastTriggerBlockIdRef.current;
                 const blocks = workspaceRef.current.getAllBlocks(false);
-                blocks.forEach((block: any) => validateBlock(block));
+
+                // 执行校验，并带上触发者上下文
+                blocks.forEach((block: any) => validateBlock(block, { triggerBlockId: triggerId || undefined }));
+
                 onRefreshDynamicFlyout();
+
+                // 校验完成后重置触发者，避免干扰下一次无关校验
+                lastTriggerBlockIdRef.current = null;
             } catch (e) {
                 console.error("[BlocklyValidation] Error during validation:", e);
             }
@@ -74,6 +82,7 @@ export const useBlocklyValidation = (
             // [关键优化] 字段值变更时使用更长的延迟
             // 这是用户正在输入的关键时刻，需要保护焦点
             if (element === 'field') {
+                lastTriggerBlockIdRef.current = event.blockId;
                 if (validationTimer.current) clearTimeout(validationTimer.current);
                 // 使用 800ms 的长延迟，让用户有足够时间完成输入
                 validationTimer.current = setTimeout(runValidation, 800);
@@ -95,9 +104,18 @@ export const useBlocklyValidation = (
             event.type === 'create' ||
             event.type === 'delete';
 
-        if (needsValidation) {
+        if (needsValidation ||
+            event.type === Blockly.Events.BUBBLE_OPEN ||
+            event.type === Blockly.Events.CLICK ||
+            event.type === Blockly.Events.SELECTED) {
+
+            // 记录触发者 ID (move/change/create 等事件通常包含 blockId)
+            if (event.blockId) {
+                lastTriggerBlockIdRef.current = event.blockId;
+            }
+
             if (validationTimer.current) clearTimeout(validationTimer.current);
-            // 结构变更使用短延迟
+            // 结构变更或 UI 关闭触发检查
             validationTimer.current = setTimeout(runValidation, 200);
         }
     }, [workspaceRef, isReadyForEditsRef, runValidation]);

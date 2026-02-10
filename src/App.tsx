@@ -13,7 +13,6 @@ import { BuildProvider, useBuild } from './contexts/BuildContext';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { Toast } from './components/Toast';
 import { ExtensionRegistry } from './registries/ExtensionRegistry';
-import { DiagnosticOverlay } from './components/DiagnosticOverlay';
 import { useAppController } from './hooks/useAppController';
 import { AppInitializer } from './services/AppInitializer';
 import { setBlocklyLocale } from './locales/setupBlocklyLocales';
@@ -74,6 +73,7 @@ function AppInner() {
   const { config } = useBuild();
   const { setIsNewProjectOpen, setIsSettingsOpen, setIsExtensionsOpen } = useUI();
   const [recentProjects, setRecentProjects] = useState<string[]>([]);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   console.log('[AppInner] Rendering - filePath:', currentFilePath);
 
@@ -131,12 +131,16 @@ function AppInner() {
       ]).then(() => {
         const preloadEnd = performance.now();
         console.log(`[App] Background pre-warming complete in ${(preloadEnd - preloadStart).toFixed(2)}ms.`);
+        // [FIX] 只有在所有预热和初始化完成后才关闭加载层
+        setIsInitializing(false);
       }).catch(err => {
         console.warn('[App] Pre-warming deferred or failed (non-critical):', err);
+        setIsInitializing(false);
       });
 
     }).catch(err => {
       console.error('[AppInner] Failed to initialize ExtensionRegistry:', err);
+      setIsInitializing(false);
     });
   }, []);
 
@@ -144,19 +148,23 @@ function AppInner() {
 
   return (
     <div className={`h-screen w-screen flex flex-col bg-[#1e1e1e] text-slate-300 overflow-hidden ${themeClass}`}>
-      <div className="flex-1 flex overflow-hidden">
-        {!currentFilePath ? (
-          <WelcomeScreen
-            onNewProject={() => setIsNewProjectOpen(true)}
-            onOpenConfig={() => setIsSettingsOpen(true)}
-            onOpenExtensions={() => setIsExtensionsOpen(true)}
-            recentProjects={recentProjects}
-            onRefreshRecent={refreshRecent}
-          />
-        ) : (
-          <AppContent />
-        )}
-      </div>
+      {isInitializing ? (
+        <LoadingOverlay />
+      ) : (
+        <div className="flex-1 flex overflow-hidden">
+          {!currentFilePath ? (
+            <WelcomeScreen
+              onNewProject={() => setIsNewProjectOpen(true)}
+              onOpenConfig={() => setIsSettingsOpen(true)}
+              onOpenExtensions={() => setIsExtensionsOpen(true)}
+              recentProjects={recentProjects}
+              onRefreshRecent={refreshRecent}
+            />
+          ) : (
+            <AppContent />
+          )}
+        </div>
+      )}
       <GlobalListeners />
       <Toast />
     </div>
@@ -170,7 +178,6 @@ function App() {
         <SerialProvider>
           <BuildProvider>
             <AppInner />
-            <DiagnosticOverlay />
           </BuildProvider>
         </SerialProvider>
       </FileSystemProvider>

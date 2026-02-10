@@ -148,6 +148,10 @@ class ExtensionRegistryService {
             try {
                 this.extensions = await window.electronAPI.extensionsList();
                 console.log('Extensions loaded:', this.extensions);
+
+                // [FIX] 确保所有硬件注册表已就绪
+                await BoardRegistry.waitReady();
+
                 await this.loadResources();
 
                 // 当语言变更时重新加载资源以更新本地化字符串

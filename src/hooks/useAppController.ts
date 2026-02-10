@@ -113,12 +113,6 @@ export const useAppController = () => {
                     openAbout(result.content);
                     break;
                 }
-
-                // --- 开发辅助 ---
-                case 'toggle-diag':
-                    // 切换诊断信息悬浮窗（通过事件广播）
-                    window.dispatchEvent(new CustomEvent('toggle-diagnostic-overlay'));
-                    break;
             }
         });
 

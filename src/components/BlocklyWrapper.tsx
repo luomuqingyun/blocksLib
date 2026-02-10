@@ -35,6 +35,7 @@ import { initAllModules, refreshBlockDefinitions } from '../modules/index';
 import { PromptModal } from './PromptModal';
 import { constructVariablesToolbox, constructTypesToolbox, constructToolsToolbox } from '../utils/toolbox/ToolboxConstructor';
 import { validateBlock } from '../utils/block_validation';
+import { ConfirmModal } from './ConfirmModal';
 
 import { setBlocklyLocale } from '../locales/setupBlocklyLocales';
 import { BoardRegistry } from '../registries/BoardRegistry';
@@ -129,6 +130,8 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   });
   /** 变量/积木块重命名弹窗状态 */
   const [promptState, setPromptState] = useState<{ isOpen: boolean; message: string; defaultValue: string; callback: ((value: string | null) => void) | null; }>({ isOpen: false, message: '', defaultValue: '', callback: null });
+  /** 确认弹窗状态 */
+  const [confirmState, setConfirmState] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: (() => void) | null; onCancel: (() => void) | null; type?: 'danger' | 'warning' | 'info'; }>({ isOpen: false, title: '', message: '', onConfirm: null, onCancel: null });
 
   /** 代码变更回调引用 (同步到 Ref 避免 Effect 频繁依赖) */
   const onCodeChangeRef = useRef(onCodeChange);
@@ -337,6 +340,23 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
       setPromptState({ isOpen: true, message, defaultValue, callback });
     });
 
+    // 设置自定义确认对话框代理
+    Blockly.dialog.setConfirm((message: string, callback: (confirmed: boolean) => void) => {
+      setConfirmState({
+        isOpen: true,
+        title: Blockly.Msg.ARD_SYS_CONFIRM || "Confirm",
+        message: message,
+        onConfirm: () => {
+          callback(true);
+          setConfirmState(prev => ({ ...prev, isOpen: false }));
+        },
+        onCancel: () => {
+          callback(false);
+          setConfirmState(prev => ({ ...prev, isOpen: false }));
+        }
+      });
+    });
+
     if (!editorRef.current || workspaceRef.current || !isLocaleLoaded || hasInjectedRef.current) return;
     hasInjectedRef.current = true; // 标记已注入，防止重复操作
 
@@ -485,6 +505,51 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
     };
     workspaceRef.current.addChangeListener(singletonEnforcer);
 
+    // [NEW] 入口积木删除保护：拦截删除事件并弹出确认
+    const deletionGuarantor = (event: any) => {
+      if (!workspaceRef.current || isDraggingRef.current) return;
+
+      // 我们在拦截删除时需要非常小心，Blockly 的删除事件是不可撤销的拦截
+      // 更好的方式是利用 Blockly 的 Delete 事件并结合撤销
+      if (event.type === Blockly.Events.BLOCK_DELETE) {
+        const isEntryBlock = event.ids?.some((id: string) => {
+          // 注意：BLOCK_DELETE 发生时积木已经从 workspace 移除，我们需要通过 event.oldXml (如果有) 
+          // 或者在事件触发前记录。但更简单的是，如果是 Entry Root，它在 group 中被删除
+          // 我们检测被删除的积木列表中是否有 entry_root
+          return event.oldXml && event.oldXml.getAttribute('type') === 'arduino_entry_root';
+        }) || (event.oldJson && event.oldJson.type === 'arduino_entry_root');
+
+        if (isEntryBlock) {
+          // 立即触发撤销以找回积木
+          Blockly.Events.setGroup(false);
+          workspaceRef.current.undo(false);
+
+          // 弹出确认框
+          setConfirmState({
+            isOpen: true,
+            title: i18n.t('dialog.confirmDeleteTitle') || "确认删除",
+            message: i18n.t('dialog.confirmDeleteEntry') || "确定要删除入口积木吗？这将清除所有程序逻辑。",
+            type: 'danger',
+            onConfirm: () => {
+              // 用户确认删除：临时移除监听器执行删除
+              workspaceRef.current.removeChangeListener(deletionGuarantor);
+              const block = workspaceRef.current.getBlocksByType('arduino_entry_root', false)[0];
+              if (block) block.dispose(false);
+              setConfirmState(prev => ({ ...prev, isOpen: false }));
+              // 稍后重新绑定 (防止递归)
+              setTimeout(() => {
+                if (workspaceRef.current) workspaceRef.current.addChangeListener(deletionGuarantor);
+              }, 100);
+            },
+            onCancel: () => {
+              setConfirmState(prev => ({ ...prev, isOpen: false }));
+            }
+          });
+        }
+      }
+    };
+    workspaceRef.current.addChangeListener(deletionGuarantor);
+
     workspaceRef.current.addChangeListener(handleToolboxItemSelect);
     workspaceRef.current.addChangeListener(handleValidationEvent);
 
@@ -516,6 +581,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
         workspaceRef.current.removeChangeListener(onWorkspaceChange);
         workspaceRef.current.removeChangeListener(uiListener);
         workspaceRef.current.removeChangeListener(singletonEnforcer);
+        workspaceRef.current.removeChangeListener(deletionGuarantor);
         workspaceRef.current.removeChangeListener(handleToolboxItemSelect);
         workspaceRef.current.removeChangeListener(handleValidationEvent);
         workspaceRef.current.dispose();
@@ -625,6 +691,16 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
 
       {/* 变量/积木重命名模态框 */}
       <PromptModal isOpen={promptState.isOpen} title={promptState.message} defaultValue={promptState.defaultValue} onConfirm={handlePromptConfirm} onClose={handlePromptClose} />
+
+      {/* 通用确认模态框 */}
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        message={confirmState.message}
+        type={confirmState.type}
+        onConfirm={confirmState.onConfirm || (() => { })}
+        onClose={confirmState.onCancel || (() => { })}
+      />
 
       {/* 统一搜索组件 (工作区搜索/工具箱搜索) */}
       <UnifiedSearch

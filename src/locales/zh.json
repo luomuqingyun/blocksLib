@@ -174,7 +174,9 @@
         "unsavedChangesTitle": "未保存的更改",
         "unsavedChangesDesc": "项目中有未保存的更改，是否在关闭前保存？",
         "confirmUninstall": "确定要卸载扩展 \"{{name}}\" 吗？",
-        "importSuccess": "扩展 \"{{name}}\" 导入成功！"
+        "importSuccess": "扩展 \"{{name}}\" 导入成功！",
+        "confirmDeleteTitle": "确认删除",
+        "confirmDeleteEntry": "确定要删除入口积木吗？这将清除所有程序逻辑及配置。"
     },
     "newProject": {
         "cantFindBoard": "找不到您的板子？",

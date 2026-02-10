@@ -100,6 +100,15 @@ class BoardRegistryService {
     }
 
     /**
+     * [NEW] 异步等待注册表完全就绪 (包括背景加载的板卡)
+     */
+    public async waitReady(): Promise<void> {
+        this.ensureInitialized();
+        // 等待正在进行的 STM32 加载完成
+        await boardRepository.loadSTM32Boards();
+    }
+
+    /**
      * 设置当前选中的开发板 ID
      * @param id 开发板 ID
      */

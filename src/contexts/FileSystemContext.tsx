@@ -268,8 +268,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         openProject,             // 打开项目
         saveProject,             // 保存项目
         saveProjectAs: async () => {
-            if (!currentFilePath) setIsNewProjectOpen(true);
-            else setIsSaveAsOpen(true);
+            if (currentFilePath) setIsSaveAsOpen(true);
         },
         performSaveAs,           // 执行另存为操作
         exportCode,              // 导出代码

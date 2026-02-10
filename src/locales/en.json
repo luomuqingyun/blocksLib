@@ -161,7 +161,9 @@
         "cancel": "Cancel",
         "create": "Create",
         "confirmUninstall": "Are you sure you want to uninstall \"{{name}}\"?",
-        "importSuccess": "Extension \"{{name}}\" imported successfully!"
+        "importSuccess": "Extension \"{{name}}\" imported successfully!",
+        "confirmDeleteTitle": "Confirm Deletion",
+        "confirmDeleteEntry": "Are you sure you want to delete the Entry Root block? This will clear all program logic and configurations."
     },
     "newProject": {
         "cantFindBoard": "Can't find your board?",

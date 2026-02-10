@@ -65,7 +65,6 @@ function loadLocales() {
                 window: "Window", minimize: "Minimize", close: "Close",
                 help: "Help", about: "About",
                 settings: "Preferences...",
-                diag: "Keyboard Diagnostics",
                 userGuide: "User Guide",
                 pluginGuide: "Plugin Development Guide"
             },
@@ -76,7 +75,6 @@ function loadLocales() {
                 window: "窗口", minimize: "最小化", close: "关闭",
                 help: "帮助", about: "关于",
                 settings: "设置...",
-                diag: "键盘诊断工具",
                 userGuide: "用户手册",
                 pluginGuide: "插件开发指南"
             }
@@ -153,8 +151,6 @@ function buildMenu() {
             submenu: [
                 { label: getT('userGuide'), click: () => mainWindow?.webContents.send('menu-action', 'help-user-guide') },
                 { label: getT('pluginGuide'), click: () => mainWindow?.webContents.send('menu-action', 'help-plugin-guide') },
-                { type: 'separator' },
-                { label: getT('diag'), accelerator: 'CmdOrCtrl+Alt+Shift+D', click: () => mainWindow?.webContents.send('menu-action', 'toggle-diag') },
                 { type: 'separator' },
                 { label: getT('about'), click: () => mainWindow?.webContents.send('menu-action', 'help-about') }
             ]
@@ -282,7 +278,12 @@ function createWindow() {
 // ============================================================
 
 function registerAllIpcs() {
-    registerProjectHandlers(ipcMain, { onMenuUpdate: buildMenu });
+    registerProjectHandlers(ipcMain, {
+        onMenuUpdate: buildMenu,
+        onConfigChange: (key, value) => {
+            mainWindow?.webContents.send('config-changed', { key, value });
+        }
+    });
     registerSerialHandlers(ipcMain);
     registerConfigHandlers(ipcMain, {
         onMenuUpdate: buildMenu,

@@ -31,7 +31,10 @@ import { configService } from '../services/ConfigService';
  * @param ipcMain Electron IPC 主模块
  * @param callbacks 回调函数集合，包含菜单更新回调
  */
-export function registerProjectHandlers(ipcMain: IpcMain, callbacks: { onMenuUpdate: () => void }) {
+export function registerProjectHandlers(ipcMain: IpcMain, callbacks: {
+    onMenuUpdate: () => void,
+    onConfigChange?: (key: string, value: any) => void
+}) {
 
     // =========================================================
     // 创建项目 (Create Project)
@@ -60,7 +63,15 @@ export function registerProjectHandlers(ipcMain: IpcMain, callbacks: { onMenuUpd
 
     // 保存项目
     ipcMain.handle('project:save', async (event, path, data) => {
-        return await projectService.saveProject(path, data);
+        const result = await projectService.saveProject(path, data);
+        if (result.success) {
+            const updatedRecent = configService.addRecentProject(path);
+            if (callbacks.onConfigChange) {
+                callbacks.onConfigChange('general.recentProjects', updatedRecent);
+            }
+            callbacks.onMenuUpdate();
+        }
+        return result;
     });
 
     // 打开项目对话框 (用户选择 .ebproj 文件)
@@ -75,7 +86,15 @@ export function registerProjectHandlers(ipcMain: IpcMain, callbacks: { onMenuUpd
 
     // 通过路径打开项目 (用于最近项目列表)
     ipcMain.handle('project:open-path', async (event, path) => {
-        return await projectService.openProject(path);
+        const result = await projectService.openProject(path);
+        if (!result.error && !result.cancelled && result.projectPath) {
+            const updatedRecent = configService.addRecentProject(result.projectPath);
+            if (callbacks.onConfigChange) {
+                callbacks.onConfigChange('general.recentProjects', updatedRecent);
+            }
+            callbacks.onMenuUpdate();
+        }
+        return result;
     });
 
     // ==================== 备份操作 ====================
