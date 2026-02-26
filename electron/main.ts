@@ -26,6 +26,11 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { configService } from './services/ConfigService';
 
+// [FIX] 彻底解决 Windows 环境下，由于 Chromium GPU Composition (硬件加速合成) 导致
+// 带有 backdrop-filter: blur 或透明度的弹窗在使用 Alt+A (微信截图 / Snipaste) 时消失的问题。
+// 必须在 app.whenReady() 之前调用。
+app.disableHardwareAcceleration();
+
 // ============================================================
 // 导入 IPC 处理器模块 (Import IPC Handler Modules)
 // 每个模块负责一类 IPC 请求的处理

@@ -72,17 +72,28 @@ export interface LoadedExtension {
     hasGenerators: boolean;      // 是否包含代码生成器
     hasLibraries: boolean;       // 是否包含 C++ 库
     languages: string[];         // 支持的语言列表 (如 ['zh', 'en'])
+
+    // [性能优化] 缓存的文件内容，以便前端瞬间读取，消除海量 IPC 调用
+    boardContents?: Record<string, string>;
+    blockContents?: Record<string, string>;
+    generatorContents?: Record<string, string>;
+    localeContents?: Record<string, string>;
 }
 
 export class ExtensionService {
     /** 扩展存储目录 (userData/extensions) */
     private extensionsDir: string;
+    /** 高速缓存文件路径 (用于提升前端启动速度) */
+    private cacheFilePath: string;
     /** 已加载扩展的缓存 Map<扩展ID, 扩展信息> */
     private extensions: Map<string, LoadedExtension> = new Map();
 
     constructor() {
         // 设置扩展目录为 Electron userData 下的 extensions 子目录
         this.extensionsDir = path.join(app.getPath('userData'), 'extensions');
+        // 初始化高速缓存文件路径
+        this.cacheFilePath = path.join(this.extensionsDir, 'extensionsCache.json');
+
         // 如果目录不存在则创建
         if (!fs.existsSync(this.extensionsDir)) {
             fs.mkdirSync(this.extensionsDir, { recursive: true });
@@ -93,31 +104,97 @@ export class ExtensionService {
 
     /**
      * 扫描扩展目录，加载所有有效扩展
-     * 在启动时和安装/卸载扩展后调用
+     * 加入了高速缓存机制 (Cache First) 以优化启动性能
      */
     public scanExtensions() {
-        this.extensions.clear(); // 清空缓存，重新扫描
+        this.extensions.clear(); // 清空内存缓存
+
+        // 步骤 1: 尝试读取高速缓存文件
+        if (fs.existsSync(this.cacheFilePath)) {
+            try {
+                const cacheContent = fs.readFileSync(this.cacheFilePath, 'utf-8');
+                const cachedExtensions: LoadedExtension[] = JSON.parse(cacheContent);
+
+                // 验证缓存是否有效 (简单验证：检查缓存里的扩展数量和目录下的文件夹数量是否大致匹配)
+                const folders = fs.readdirSync(this.extensionsDir, { withFileTypes: true })
+                    .filter(e => e.isDirectory());
+
+                if (cachedExtensions.length === folders.length) {
+                    // 缓存命中：将缓存数据反序列化到内存中
+                    for (const ext of cachedExtensions) {
+                        // 出于绝对安全考虑，确保扩展路径依然存在
+                        if (fs.existsSync(ext.path)) {
+                            this.extensions.set(ext.manifest.id, ext);
+                        }
+                    }
+                    console.log(`[ExtensionService] Successfully loaded ${this.extensions.size} extensions from high-speed cache.`);
+
+                    // 如果缓存的扩展数量和实际一致，直接返回，跳过昂贵的物理硬盘扫描
+                    if (this.extensions.size === folders.length) {
+                        return;
+                    }
+                } else {
+                    console.log(`[ExtensionService] Cache invalidated (Folder count mismatch: ${folders.length} vs ${cachedExtensions.length}). Rebuilding...`);
+                }
+            } catch (e) {
+                console.warn("[ExtensionService] Failed to read cache file, rebuilding...", e);
+            }
+        }
+
+        // 步骤 2: 物理扫描与缓存重建 (Cache Miss or Invalidated)
         try {
             if (fs.existsSync(this.extensionsDir)) {
                 // 遍历扩展目录下的所有子目录
                 const entries = fs.readdirSync(this.extensionsDir, { withFileTypes: true });
                 for (const entry of entries) {
                     if (entry.isDirectory()) {
-                        // 尝试加载每个子目录作为扩展
-                        this.loadExtension(path.join(this.extensionsDir, entry.name));
+                        // 尝试深度加载每个子目录作为扩展，并读取内部所有的 JSON/JS 以备缓存
+                        this.loadExtensionDeep(path.join(this.extensionsDir, entry.name));
                     }
                 }
+
+                // 步骤 3: 物理扫描完毕，将全量带有文件内容的 Payload 写入硬盘缓存
+                this.buildAndSaveCache();
             }
         } catch (e) {
-            console.error("Failed to scan extensions:", e);
+            console.error("[ExtensionService] Failed to scan extensions:", e);
         }
     }
 
     /**
-     * 加载单个扩展
+     * 构建并持久化高速缓存
+     * 将 this.extensions 序列化到 extensionsCache.json
+     */
+    private buildAndSaveCache() {
+        try {
+            const allExtensions = Array.from(this.extensions.values());
+            fs.writeFileSync(this.cacheFilePath, JSON.stringify(allExtensions), 'utf-8');
+            console.log(`[ExtensionService] Optimization cache built and saved globally for ${allExtensions.length} extensions.`);
+        } catch (e) {
+            console.error("[ExtensionService] Failed to write cache file:", e);
+        }
+    }
+
+    /**
+     * 消除旧缓存，确保下次需要时强制重构
+     */
+    private invalidateCache() {
+        if (fs.existsSync(this.cacheFilePath)) {
+            try {
+                fs.unlinkSync(this.cacheFilePath);
+                console.log("[ExtensionService] Stale cache invalidated successfully.");
+            } catch (e) {
+                console.error("[ExtensionService] Failed to invalidate cache:", e);
+            }
+        }
+    }
+
+    /**
+     * 深度加载单个扩展 (包括读取各类清单、语言包和定义的文本内容)
+     * 专为缓存预热设计
      * @param dirPath 扩展目录的绝对路径
      */
-    private loadExtension(dirPath: string) {
+    private loadExtensionDeep(dirPath: string) {
         try {
             // 查找 manifest 文件 (优先 manifest.json，回退到 extension.json)
             let manifestPath = path.join(dirPath, 'manifest.json');
@@ -132,7 +209,7 @@ export class ExtensionService {
 
             // 基本验证: 必须包含 id 和 version
             if (!manifest.id || !manifest.version) {
-                console.warn(`Skipping invalid extension at ${dirPath}: missing id or version`);
+                console.warn(`[ExtensionService] Skipping invalid extension at ${dirPath}: missing id or version`);
                 return;
             }
 
@@ -140,20 +217,68 @@ export class ExtensionService {
             const libraryPath = path.join(dirPath, 'libraries');
             const hasLibraries = fs.existsSync(libraryPath) && fs.statSync(libraryPath).isDirectory();
 
-            // 检测支持的语言 (扫描 locales 目录)
+            // 文件文本缓存字典 (用于存储即将被传送到前端的文件内容)
+            const localeContents: Record<string, string> = {};
+            const boardContents: Record<string, string> = {};
+            const blockContents: Record<string, string> = {};
+            const generatorContents: Record<string, string> = {};
+
+            // 深度检测: 支持的语言并读取内容
             const languages: string[] = [];
             const localesPath = path.join(dirPath, 'locales');
             if (fs.existsSync(localesPath) && fs.statSync(localesPath).isDirectory()) {
                 const langFiles = fs.readdirSync(localesPath);
                 for (const file of langFiles) {
                     if (file.endsWith('.json')) {
-                        // 文件名即为语言代码 (如 zh.json -> 'zh')
-                        languages.push(file.replace('.json', ''));
+                        const langCode = file.replace('.json', '');
+                        languages.push(langCode);
+                        // [深度预读] 缓存语言文件内容
+                        try {
+                            localeContents[`locales/${file}`] = fs.readFileSync(path.join(localesPath, file), 'utf-8');
+                        } catch (e) {
+                            console.warn(`[ExtensionService] Failed to read locale file ${file} for ${manifest.id}`);
+                        }
                     }
                 }
             }
 
-            // 构建已加载扩展对象
+            // [深度预读] 循环预读所有的 boards (板卡) 定义
+            if (manifest.contributes?.boards) {
+                for (const boardFile of manifest.contributes.boards) {
+                    try {
+                        const fp = path.join(dirPath, boardFile);
+                        if (fs.existsSync(fp)) boardContents[boardFile] = fs.readFileSync(fp, 'utf-8');
+                    } catch (e) {
+                        console.warn(`[ExtensionService] Failed to cache board ${boardFile} for ${manifest.id}`);
+                    }
+                }
+            }
+
+            // [深度预读] 循环预读所有的 blocks (积木) 定义
+            if (manifest.contributes?.blocks) {
+                for (const blockFile of manifest.contributes.blocks) {
+                    try {
+                        const fp = path.join(dirPath, blockFile);
+                        if (fs.existsSync(fp)) blockContents[blockFile] = fs.readFileSync(fp, 'utf-8');
+                    } catch (e) {
+                        console.warn(`[ExtensionService] Failed to cache block ${blockFile} for ${manifest.id}`);
+                    }
+                }
+            }
+
+            // [深度预读] 循环预读所有的 generators (代码生成器) 定义
+            if (manifest.contributes?.generators) {
+                for (const genFile of manifest.contributes.generators) {
+                    try {
+                        const fp = path.join(dirPath, genFile);
+                        if (fs.existsSync(fp)) generatorContents[genFile] = fs.readFileSync(fp, 'utf-8');
+                    } catch (e) {
+                        console.warn(`[ExtensionService] Failed to cache generator ${genFile} for ${manifest.id}`);
+                    }
+                }
+            }
+
+            // 构建带有全量缓存的最终扩展对象
             const loadedExt: LoadedExtension = {
                 manifest,
                 path: dirPath,
@@ -161,15 +286,20 @@ export class ExtensionService {
                 hasBlocks: !!(manifest.contributes?.blocks?.length),
                 hasGenerators: !!(manifest.contributes?.generators?.length),
                 hasLibraries,
-                languages
+                languages,
+                // 将预读取的值挂载上来
+                localeContents,
+                boardContents,
+                blockContents,
+                generatorContents
             };
 
-            // 注册到缓存
+            // 注册到内存缓存
             this.extensions.set(manifest.id, loadedExt);
-            console.log(`Loaded extension: ${manifest.id} (${manifest.name})`);
+            console.log(`[ExtensionService] Loaded and deeply cached extension: ${manifest.id} (${manifest.name})`);
 
         } catch (e) {
-            console.error(`Error loading extension at ${dirPath}:`, e);
+            console.error(`[ExtensionService] Error loading extension at ${dirPath}:`, e);
         }
     }
 
@@ -316,8 +446,8 @@ export class ExtensionService {
                 await (fs.promises as any).cp(sourcePath, targetDir, { recursive: true });
             }
 
-            // 重新扫描扩展列表
-            this.scanExtensions();
+            // 重新扫描扩展列表前，先报废过期的旧缓存以确保拿到最新的插件状态
+            this.invalidateCache();
             this.scanExtensions();
             return { success: true, status: 'ok', message: `Extension ${manifest.name} imported successfully!`, extensionId: manifest.id };
 
@@ -347,7 +477,8 @@ export class ExtensionService {
             await fs.promises.rm(ext.path, { recursive: true, force: true });
             // 从缓存中移除
             this.extensions.delete(extId);
-            // 刷新内部状态
+            // 刷新内部状态前抹除过期的高速缓存
+            this.invalidateCache();
             this.scanExtensions();
             return { success: true, message: `Extension ${ext.manifest.name} uninstalled.` };
         } catch (e: any) {

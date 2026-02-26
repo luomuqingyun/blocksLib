@@ -86,14 +86,16 @@ export const BaseModal: React.FC<BaseModalProps> = ({
     // ========== 渲染模态框 ==========
     return (
         <div
-            className={`fixed inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-md transition-all duration-300 ${overlayClassName}`}
+            className={`fixed inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-md transition-all duration-300 transform-gpu isolate ${overlayClassName}`}
             onClick={handleOverlayClick}
+            style={{ WebkitTransform: 'translateZ(0)', backdropFilter: 'blur(12px)' }}
         >
             {/* 模态框主体内容容器 */}
             <div
                 ref={modalRef}
-                className={`animate-in fade-in zoom-in duration-200 outline-none ${className}`}
+                className={`animate-in fade-in zoom-in duration-200 outline-none transform-gpu ${className}`}
                 tabIndex={-1}
+                style={{ WebkitTransform: 'translateZ(0)' }}
             >
                 {/* 渲染子组件内容 */}
                 {children}

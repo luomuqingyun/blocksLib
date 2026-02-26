@@ -88,6 +88,13 @@ export interface LoadedExtension {
     hasLibraries: boolean;
     /** 支持的语言列表 */
     languages: string[];
+
+    // [性能优化] 主进程预取的高速缓存内容
+    boardContents?: Record<string, string>;
+    blockContents?: Record<string, string>;
+    generatorContents?: Record<string, string>;
+    localeContents?: Record<string, string>;
+
     /** 原始清单 (用于语言切换时恢复) */
     originalManifest?: ExtensionManifest;
 }
@@ -121,6 +128,7 @@ class ExtensionRegistryService {
     }
 
     private async init(): Promise<void> {
+        const initStart = performance.now();
         // 创建沙箱 iframe
         const iframe = document.createElement('iframe');
         // 开发环境：Vite 直接从 src 提供文件
@@ -146,13 +154,19 @@ class ExtensionRegistryService {
 
         if (window.electronAPI) {
             try {
+                const step1 = performance.now();
                 this.extensions = await window.electronAPI.extensionsList();
-                console.log('Extensions loaded:', this.extensions);
+                const step2 = performance.now();
+                console.log(`[ExtensionRegistry.init] extensionsList IPC took ${(step2 - step1).toFixed(2)}ms`, this.extensions);
 
                 // [FIX] 确保所有硬件注册表已就绪
                 await BoardRegistry.waitReady();
+                const step3 = performance.now();
+                console.log(`[ExtensionRegistry.init] BoardRegistry.waitReady took ${(step3 - step2).toFixed(2)}ms`);
 
                 await this.loadResources();
+                const step4 = performance.now();
+                console.log(`[ExtensionRegistry.init] loadResources took ${(step4 - step3).toFixed(2)}ms`);
 
                 // 当语言变更时重新加载资源以更新本地化字符串
                 i18n.on('languageChanged', async () => {
@@ -163,6 +177,8 @@ class ExtensionRegistryService {
                 console.error("Failed to load extensions list", e);
             }
         }
+        const initEnd = performance.now();
+        console.log(`[ExtensionRegistry.init] Total time: ${(initEnd - initStart).toFixed(2)}ms`);
     }
 
     /**
@@ -231,7 +247,8 @@ class ExtensionRegistryService {
     }
 
     private async loadResources() {
-        for (const ext of this.extensions) {
+        // [OPTIMIZATION] 并行处理所有扩展的资源加载
+        await Promise.all(this.extensions.map(async (ext) => {
             // 恢复原始 Manifest（如果存在），避免切换语言时重复翻译
             if (ext.originalManifest) {
                 ext.manifest = JSON.parse(JSON.stringify(ext.originalManifest));
@@ -243,39 +260,60 @@ class ExtensionRegistryService {
             // 0. 清除该扩展之前的资源，防止重复/残留
             BoardRegistry.unregisterExtension(ext.manifest.id);
 
+            // 并行执行多语言、板卡、积木、生成器的加载任务
+            const loadTasks: Promise<void>[] = [];
+
             // 0.1 加载翻译文件
-            let translations: Record<string, string> = {};
             if (ext.languages && ext.languages.length > 0) {
-                const currentLang = i18n.language.split('-')[0]; // 简单匹配 (en-US -> en)
-                const targetLang = ext.languages.includes(currentLang) ? currentLang :
-                    (ext.languages.includes('en') ? 'en' : ext.languages[0]);
+                loadTasks.push((async () => {
+                    const currentLang = i18n.language.split('-')[0]; // 简单匹配 (en-US -> en)
+                    const targetLang = ext.languages.includes(currentLang) ? currentLang :
+                        (ext.languages.includes('en') ? 'en' : ext.languages[0]);
 
-                try {
-                    const langContent = await window.electronAPI.extensionReadFile(ext.manifest.id, `locales/${targetLang}.json`);
-                    if (langContent) {
-                        translations = JSON.parse(langContent);
-                        // 合并到 i18next 用于通用 UI 字符串
-                        i18n.addResourceBundle(targetLang, 'translation', translations, true, true);
-                        // 同时合并到 Blockly 用于积木特定字符串
-                        Object.assign(Blockly.Msg, translations);
+                    try {
+                        // [性能优化] 优先从内存高速缓存中读取，消除底层 IPC 损耗
+                        let langContent = ext.localeContents?.[`locales/${targetLang}.json`];
 
-                        // 如果 Manifest 字段是键值引用，则进行翻译
-                        const translateFieldHelper = (val: string) => {
-                            if (val && val.startsWith('%{') && val.endsWith('}')) {
-                                const key = val.substring(2, val.length - 1);
-                                return translations[key] || val;
-                            }
-                            return val;
-                        };
-                        ext.manifest.name = translateFieldHelper(ext.manifest.name);
-                        ext.manifest.description = translateFieldHelper(ext.manifest.description);
+                        if (!langContent) {
+                            // [安全后备] 如果由于任何原因缓存丢失，退回到老式的 IPC 逐个读取
+                            langContent = await window.electronAPI.extensionReadFile(ext.manifest.id, `locales/${targetLang}.json`);
+                        }
 
-                        console.log(`[Extension] Loaded translations for ${ext.manifest.id} (${targetLang})`);
+                        if (langContent) {
+                            const translations = JSON.parse(langContent);
+                            // 合并到 i18next 用于通用 UI 字符串
+                            i18n.addResourceBundle(targetLang, 'translation', translations, true, true);
+                            // 同时合并到 Blockly 用于积木特定字符串
+                            Object.assign(Blockly.Msg, translations);
+
+                            // 如果 Manifest 字段是键值引用，则进行翻译
+                            const translateFieldHelper = (val: string) => {
+                                if (val && val.startsWith('%{') && val.endsWith('}')) {
+                                    const key = val.substring(2, val.length - 1);
+                                    return translations[key] || val;
+                                }
+                                return val;
+                            };
+                            ext.manifest.name = translateFieldHelper(ext.manifest.name);
+                            ext.manifest.description = translateFieldHelper(ext.manifest.description);
+
+                            console.log(`[Extension] Loaded translations for ${ext.manifest.id} (${targetLang})`);
+                        }
+                    } catch (e) {
+                        console.error(`[Extension] Failed to load translations for ${ext.manifest.id}`, e);
                     }
-                } catch (e) {
-                    console.error(`[Extension] Failed to load translations for ${ext.manifest.id}`, e);
-                }
+                })());
             }
+
+            // 必须等待多语言加载完成再处理板卡，因为板卡可能需要翻译
+            // 使用 await 等待语言加载任务完成 (当前唯一的一个由闭包封装的任务)
+            await Promise.all(loadTasks);
+            loadTasks.length = 0; // 清空任务队列
+
+
+            // 重新获取加载后的字典，供 translateField 使用
+            const currentLangLocalesStr = ext.localeContents?.[`locales/${i18n.language.split('-')[0]}.json`] || ext.localeContents?.['locales/en.json'];
+            const pluginTranslations: Record<string, string> = currentLangLocalesStr ? JSON.parse(currentLangLocalesStr) : {};
 
             // 定义本地翻译助手，用于板卡和积木
             const translateField = (val: any) => {
@@ -291,7 +329,7 @@ class ExtensionRegistryService {
                         key = key.substring(4);
                     }
                     // 尝试顺序：全局 Blockly Msg (系统) -> 插件共享 Locales -> 键名作为降级
-                    return (Blockly.Msg as any)[key] || translations[key] || val;
+                    return (Blockly.Msg as any)[key] || pluginTranslations[key] || val;
                 }
                 return val;
             };
@@ -299,37 +337,46 @@ class ExtensionRegistryService {
             // 1. 加载自定义板卡 (受信任的 JSON，在 Main/Renderer 中处理)
             if (ext.hasBoards && ext.manifest.contributes.boards) {
                 for (const boardFile of ext.manifest.contributes.boards) {
-                    try {
-                        const content = await window.electronAPI.extensionReadFile(ext.manifest.id, boardFile);
-                        if (content) {
-                            const boardConfig: BoardConfig = JSON.parse(content);
-                            // 确保 ID 唯一/命名空间化，以避免冲突
-                            boardConfig.id = `${ext.manifest.id}:${boardConfig.id}`;
+                    loadTasks.push((async () => {
+                        try {
+                            // [性能优化] 尝试直接从主进程预先打包的缓存字典中命中数据
+                            let content = ext.boardContents?.[boardFile];
 
-                            // 翻译板卡名称（如果它是一个键）
-                            const displayName = translateField(boardConfig.name);
-                            boardConfig.name = `${displayName} (Ext)`;
-
-                            // 深度翻译引脚标签
-                            if (boardConfig.pins) {
-                                Object.keys(boardConfig.pins).forEach(group => {
-                                    const pins = (boardConfig.pins as any)[group];
-                                    if (Array.isArray(pins)) {
-                                        pins.forEach(pin => {
-                                            if (pin.label) {
-                                                pin.label = translateField(pin.label);
-                                            }
-                                        });
-                                    }
-                                });
+                            if (!content) {
+                                // [安全后备] 缓存未命中时依然可以通过 IPC 读取，保证系统健壮性
+                                content = await window.electronAPI.extensionReadFile(ext.manifest.id, boardFile);
                             }
 
-                            BoardRegistry.register(boardConfig);
-                            console.log(`Registered extension board: ${boardConfig.id}`);
+                            if (content) {
+                                const boardConfig: BoardConfig = JSON.parse(content);
+                                // 确保 ID 唯一/命名空间化，以避免冲突
+                                boardConfig.id = `${ext.manifest.id}:${boardConfig.id}`;
+
+                                // 翻译板卡名称（如果它是一个键）
+                                const displayName = translateField(boardConfig.name);
+                                boardConfig.name = `${displayName} (Ext)`;
+
+                                // 深度翻译引脚标签
+                                if (boardConfig.pins) {
+                                    Object.keys(boardConfig.pins).forEach(group => {
+                                        const pins = (boardConfig.pins as any)[group];
+                                        if (Array.isArray(pins)) {
+                                            pins.forEach(pin => {
+                                                if (pin.label) {
+                                                    pin.label = translateField(pin.label);
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+
+                                BoardRegistry.register(boardConfig);
+                                console.log(`Registered extension board: ${boardConfig.id}`);
+                            }
+                        } catch (e) {
+                            console.error(`Failed to load board ${boardFile} from ${ext.manifest.id}`, e);
                         }
-                    } catch (e) {
-                        console.error(`Failed to load board ${boardFile} from ${ext.manifest.id}`, e);
-                    }
+                    })());
                 }
             }
 
@@ -339,74 +386,94 @@ class ExtensionRegistryService {
 
             // 2.1 处理积木定义 (JSON -> UI & 沙箱)
             for (const blockFile of blockFiles) {
-                try {
-                    const content = await window.electronAPI.extensionReadFile(ext.manifest.id, blockFile);
-                    if (content) {
-                        try {
-                            // 如果是 JSON，则是 UI 定义
-                            if (blockFile.endsWith('.json')) {
-                                const definitions = JSON.parse(content);
-                                // 在主窗口注册 (用于编辑器 UI)
-                                Blockly.defineBlocksWithJsonArray(definitions);
-                                console.log(`[Extension] Registered ${definitions.length} blocks from ${blockFile}`);
+                loadTasks.push((async () => {
+                    try {
+                        // [性能优化] 内存级秒读积木文件
+                        let content = ext.blockContents?.[blockFile];
 
-                                // 生成工具箱分类
-                                if (definitions.length > 0) {
-                                    const contents = definitions.map((def: any) => ({
-                                        kind: 'block',
-                                        type: def.type
-                                    }));
-
-                                    const category = {
-                                        kind: 'category',
-                                        name: ext.manifest.name,
-                                        colour: '#2ecc71', // Standard Green for Extensions
-                                        contents: contents
-                                    };
-
-                                    BoardRegistry.registerExtensionCategory(ext.manifest.id, category, ext.manifest.compatibility);
-                                }
-
-                                // 同步到沙箱 (用于无头工作区)
-                                this.sendMessage({
-                                    type: 'load-definitions',
-                                    id: ext.manifest.id,
-                                    definitions: definitions
-                                });
-                            } else {
-                                // 如果是 JS 文件，可能是旧版定义或逻辑。
-                                // 发送到沙箱。
-                                this.sendMessage({
-                                    type: 'load-script',
-                                    id: ext.manifest.id,
-                                    content: content
-                                });
-                            }
-                        } catch (parseErr) {
-                            console.error(`Failed to parse/load block file ${blockFile}`, parseErr);
+                        if (!content) {
+                            // [安全后备] 回退机制
+                            content = await window.electronAPI.extensionReadFile(ext.manifest.id, blockFile);
                         }
+
+                        if (content) {
+                            try {
+                                // 如果是 JSON，则是 UI 定义
+                                if (blockFile.endsWith('.json')) {
+                                    const definitions = JSON.parse(content);
+                                    // 在主窗口注册 (用于编辑器 UI)
+                                    Blockly.defineBlocksWithJsonArray(definitions);
+                                    console.log(`[Extension] Registered ${definitions.length} blocks from ${blockFile}`);
+
+                                    // 生成工具箱分类
+                                    if (definitions.length > 0) {
+                                        const contents = definitions.map((def: any) => ({
+                                            kind: 'block',
+                                            type: def.type
+                                        }));
+
+                                        const category = {
+                                            kind: 'category',
+                                            name: ext.manifest.name,
+                                            colour: '#2ecc71', // Standard Green for Extensions
+                                            contents: contents
+                                        };
+
+                                        BoardRegistry.registerExtensionCategory(ext.manifest.id, category, ext.manifest.compatibility);
+                                    }
+
+                                    // 同步到沙箱 (用于无头工作区)
+                                    this.sendMessage({
+                                        type: 'load-definitions',
+                                        id: ext.manifest.id,
+                                        definitions: definitions
+                                    });
+                                } else {
+                                    // 如果是 JS 文件，可能是旧版定义或逻辑。
+                                    // 发送到沙箱。
+                                    this.sendMessage({
+                                        type: 'load-script',
+                                        id: ext.manifest.id,
+                                        content: content
+                                    });
+                                }
+                            } catch (parseErr) {
+                                console.error(`Failed to parse/load block file ${blockFile}`, parseErr);
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`Failed to read block file ${blockFile} from ${ext.manifest.id}`, e);
                     }
-                } catch (e) {
-                    console.error(`Failed to read block file ${blockFile} from ${ext.manifest.id}`, e);
-                }
+                })());
             }
 
             // 2.2 处理生成器 (JS -> 仅沙箱)
             for (const scriptFile of generatorFiles) {
-                try {
-                    const content = await window.electronAPI.extensionReadFile(ext.manifest.id, scriptFile);
-                    if (content) {
-                        this.sendMessage({
-                            type: 'load-script',
-                            id: ext.manifest.id,
-                            content: content
-                        });
+                loadTasks.push((async () => {
+                    try {
+                        // [性能优化] 生成器脚本同样走内存缓存
+                        let content = ext.generatorContents?.[scriptFile];
+
+                        if (!content) {
+                            content = await window.electronAPI.extensionReadFile(ext.manifest.id, scriptFile);
+                        }
+
+                        if (content) {
+                            this.sendMessage({
+                                type: 'load-script',
+                                id: ext.manifest.id,
+                                content: content
+                            });
+                        }
+                    } catch (e) {
+                        console.error(`Failed to load generator ${scriptFile} from ${ext.manifest.id}`, e);
                     }
-                } catch (e) {
-                    console.error(`Failed to load generator ${scriptFile} from ${ext.manifest.id}`, e);
-                }
+                })());
             }
-        }
+
+            // 等待所有并行的板卡、积木、生成器加载完成
+            await Promise.all(loadTasks);
+        }));
     }
 
     // 用于代码生成的公共 API

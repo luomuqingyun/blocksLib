@@ -112,24 +112,9 @@ export const NewProjectModal: React.FC = () => {
             setSelectedBoardId('');
             setSelectedBoardData(null);
 
-            // 4. 异步加载 STM32 数据
-            const loadData = async () => {
-                const cached = boardRepository.getSTM32Boards();
-                if (Object.keys(cached.STM32).length > 0) {
-                    setStm32Data(cached);
-                } else {
-                    setIsStm32Loading(true);
-                    try {
-                        const data = await boardRepository.loadSTM32Boards();
-                        setStm32Data(data);
-                    } catch (e) {
-                        console.error("Failed to load STM32 boards:", e);
-                    } finally {
-                        setIsStm32Loading(false);
-                    }
-                }
-            };
-            loadData();
+            // 4. [OPTIMIZATION] 移除在此处的 eagerly load STM32 数据
+            // 由于 App.tsx 在后台预热时会 import NewProjectModal，
+            // 此时不应该触发耗时 2000ms 的 STM32 加载，而应推迟到用户真正点击 STM32 选项卡时。
         };
 
         initModal();
@@ -576,13 +561,26 @@ export const NewProjectModal: React.FC = () => {
                                     Standard
                                 </button>
                                 <button
-                                    onClick={() => {
+                                    onClick={async () => {
                                         setActiveTab('advanced');
                                         // 切换到高级模式时，如果当前选择不是高级板卡，则清空选择以显示 ST Logo 占位符
                                         // (除非未来我们想在这里也默认选一个 F103)
-                                        if (!selectedBoardId || !selectedBoardId.includes('stm32') && !selectedBoardId.includes('f4') && !selectedBoardId.includes('f1')) {
+                                        if (!selectedBoardId || (!selectedBoardId.includes('stm32') && !selectedBoardId.includes('f4') && !selectedBoardId.includes('f1'))) {
                                             setSelectedBoardId('');
                                             setSelectedBoardData(null);
+                                        }
+
+                                        // [OPTIMIZATION] 按需加载 STM32 配置
+                                        if (Object.keys(stm32Data.STM32 || {}).length === 0) {
+                                            setIsStm32Loading(true);
+                                            try {
+                                                const data = await boardRepository.loadSTM32Boards();
+                                                setStm32Data(data);
+                                            } catch (e) {
+                                                console.error("Failed to load STM32 boards:", e);
+                                            } finally {
+                                                setIsStm32Loading(false);
+                                            }
                                         }
                                     }}
                                     className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'advanced' ? 'bg-[#1e1e1e] text-purple-400 border-b-2 border-purple-500' : 'bg-[#252526] text-slate-500 hover:text-slate-300'}`}
@@ -600,7 +598,23 @@ export const NewProjectModal: React.FC = () => {
                                     placeholder="Search boards (e.g. F401)..."
                                     className="w-full bg-[#1e1e1e] border border-slate-600 rounded pl-2 pr-2 py-1 text-xs text-slate-200 outline-none focus:border-blue-500"
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={async (e) => {
+                                        const val = e.target.value;
+                                        setSearchTerm(val);
+                                        // [FIX] 如果输入了搜索词且尚未加载 STM32 数据，自动触发后台加载，
+                                        // 保证全局搜索能立刻搜到芯片而无需用户手动切到高级标签页。
+                                        if (val.trim() && Object.keys(stm32Data.STM32 || {}).length === 0 && !isStm32Loading) {
+                                            setIsStm32Loading(true);
+                                            try {
+                                                const data = await boardRepository.loadSTM32Boards();
+                                                setStm32Data(data);
+                                            } catch (err) {
+                                                console.error("Failed to lazy-load STM32 boards for search:", err);
+                                            } finally {
+                                                setIsStm32Loading(false);
+                                            }
+                                        }
+                                    }}
                                 />
                             </div>
                         )}

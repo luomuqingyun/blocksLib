@@ -108,48 +108,37 @@ function AppInner() {
   }, []);
 
   useEffect(() => {
-    const start = performance.now();
+    // [OPTIMIZATION] 静默预加载核心系统与重型组件 (Background Pre-warming)
+    console.log('[App] Starting background pre-warming...');
+    const preloadStart = performance.now();
+
+    // 1. 初始化模块注册表 (Blockly Definitions)
+    AppInitializer.initialize();
+
+    // 2. 初始化核心 ExtensionRegistry (后台执行，不阻塞首屏 UI)
     ExtensionRegistry.ensureInitialized().then(() => {
-      const end = performance.now();
-      console.log(`[App] ExtensionRegistry.init: ${(end - start).toFixed(2)}ms`);
-
-      // [OPTIMIZATION] 静默预加载重型组件与引擎引擎 (Background Pre-warming)
-      // 在欢迎界面闲置时，提前触发 AppContent、模态框加载以及引擎初始化
-      console.log('[App] Starting background pre-warming...');
-      const preloadStart = performance.now();
-
-      // 1. 初始化模块注册表 (Blockly Definitions)
-      AppInitializer.initialize();
-
-      // 2. 预加载代码块和多语言
-      const lang = i18next.language || 'zh';
-
-      // [FIX] 添加安全后备机制: 如果预加载卡住(例如语言加载失败)，最多等3秒强制进入界面
-      const safetyTimeout = setTimeout(() => {
-        console.warn('[App] Pre-warming safety timeout triggered. Forcing UI to load.');
-        setIsInitializing(false);
-      }, 3000);
-
-      Promise.all([
-        import('./components/NewProjectModal'),
-        import('./components/SettingsModal'),
-        setBlocklyLocale(lang)
-      ]).then(() => {
-        clearTimeout(safetyTimeout);
-        const preloadEnd = performance.now();
-        console.log(`[App] Background pre-warming complete in ${(preloadEnd - preloadStart).toFixed(2)}ms.`);
-        // [FIX] 只有在所有预热和初始化完成后才关闭加载层
-        setIsInitializing(false);
-      }).catch(err => {
-        clearTimeout(safetyTimeout);
-        console.warn('[App] Pre-warming deferred or failed (non-critical):', err);
-        setIsInitializing(false);
-      });
-
+      console.log(`[App] ExtensionRegistry.init resolved.`);
     }).catch(err => {
       console.error('[AppInner] Failed to initialize ExtensionRegistry:', err);
-      // 哪怕扩展注册表失败，也强行进入UI
-      setIsInitializing(false);
+    });
+
+    // 3. 预加载代码块和多语言
+    const lang = i18next.language || 'zh';
+
+    // [OPTIMIZATION] 彻底解耦！不再等待 ExtensionRegistry 和 locales 等待，
+    // UI 此时已获得了足够的数据（recentProjects）可以瞬间渲染出首页。
+    // 将整个耗时 400ms~2000ms 的过程丢到真正的后台！
+    setIsInitializing(false);
+
+    Promise.all([
+      import('./components/NewProjectModal'),
+      import('./components/SettingsModal'),
+      setBlocklyLocale(lang)
+    ]).then(() => {
+      const preloadEnd = performance.now();
+      console.log(`[App] Background pre-warming complete in ${(preloadEnd - preloadStart).toFixed(2)}ms.`);
+    }).catch(err => {
+      console.warn('[App] Pre-warming deferred or failed (non-critical):', err);
     });
   }, []);
 

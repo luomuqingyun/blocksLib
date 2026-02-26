@@ -49,12 +49,13 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, con
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center animate-in fade-in duration-300"
-            style={{ backgroundColor: 'rgba(15, 17, 26, 0.7)', backdropFilter: 'blur(12px)' }}
+            className="fixed inset-0 z-[100] flex items-center justify-center animate-in fade-in duration-300 transform-gpu isolate"
+            style={{ backgroundColor: 'rgba(15, 17, 26, 0.7)', backdropFilter: 'blur(12px)', WebkitTransform: 'translateZ(0)' }}
             onClick={onClose}
         >
             <div
-                className="relative max-w-2xl w-full max-h-[85vh] bg-[#1a1c23]/80 border border-slate-700/50 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300"
+                className="relative max-w-2xl w-full max-h-[85vh] bg-[#1a1c23]/80 border border-slate-700/50 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 transform-gpu"
+                style={{ WebkitTransform: 'translateZ(0)' }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* 关闭按钮 */}
