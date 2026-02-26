@@ -507,7 +507,8 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
 
     // [NEW] 入口积木删除保护：拦截删除事件并弹出确认
     const deletionGuarantor = (event: any) => {
-      if (!workspaceRef.current || isDraggingRef.current) return;
+      // 如果正在被 Backpack 执行安全替换，则绕过拦截保护
+      if (!workspaceRef.current || isDraggingRef.current || (workspaceRef.current as any).__isReplacingEntry) return;
 
       // 我们在拦截删除时需要非常小心，Blockly 的删除事件是不可撤销的拦截
       // 更好的方式是利用 Blockly 的 Delete 事件并结合撤销
@@ -712,7 +713,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
       />
 
       {/* 自定义背包组件 */}
-      <CustomBackpack workspace={workspaceInstance} />
+      <CustomBackpack workspace={workspaceInstance} currentFilePath={props.currentFilePath} />
     </div>
   );
 }));

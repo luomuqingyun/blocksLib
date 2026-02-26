@@ -8,6 +8,18 @@
  * @file src/components/blockly/CustomBackpack.css
  */
 
+/* --- 最外层容器定位 --- */
+.custom-backpack {
+    position: absolute;
+    right: 80px;
+    bottom: 30px;
+    /* 调整距离避开放大缩小和垃圾桶原生控件被遮挡 */
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
 /* --- 背包触发按钮 --- */
 .custom-backpack-btn {
     width: 36px;
@@ -40,24 +52,20 @@
 
 /* --- 交互状态反馈 --- */
 .custom-backpack-btn:hover {
-    background: #f3f4f6;
-    /* 悬停时背景变淡灰色 */
     color: #4b5563;
     /* 图标颜色变得更深、更清晰 */
     opacity: 1;
     /* 悬停时变为完全不透明 */
+    box-shadow: none !important;
+    background: transparent !important;
 }
 
 .custom-backpack-btn:active {
-    background: #e5e7eb;
-    /* 点击瞬间背景进一步加深 */
     transform: scale(0.95);
     /* 产生微弱的按下缩放反馈 */
 }
 
 .custom-backpack-btn.active {
-    background: #eff6ff;
-    /* 面板展开时的激活态背景（淡蓝色） */
     color: #3b82f6;
     /* 激活态图标变为品牌蓝 */
     opacity: 1;
@@ -197,25 +205,20 @@
     /* 图标默认颜色 */
 }
 
-.custom-backpack-item-info {
+.custom-backpack-item-content {
     flex: 1;
-    /* 占据中间剩余空间 */
+    /* 占据左侧和中间剩余空间 */
     overflow: hidden;
-    /* 裁剪超长文字 */
+    /* 防止内部预览 SVG 溢出破坏布局 */
+    margin-right: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: transparent;
+    transition: border-color 0.2s;
 }
 
-.custom-backpack-item-name {
-    font-size: 13px;
-    /* 积木名称字号 */
-    font-weight: 500;
-    /* 中等粗细 */
-    color: #374151;
-    /* 文字颜色 */
-    white-space: nowrap;
-    /* 强制单行 */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    /* 文本过长显示省略号 */
+.custom-backpack-item-content:hover {
+    border-color: #d1d5db;
 }
 
 .custom-backpack-item-date {
@@ -266,7 +269,6 @@
 
 /* --- 深色模式主题适配 (由 .theme-dark 类名驱动) --- */
 .theme-dark .custom-backpack-btn:hover {
-    background: #374151;
     /* 面板内部深蓝灰按钮悬停色 */
     color: #e5e7eb;
 }

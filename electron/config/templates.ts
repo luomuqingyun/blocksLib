@@ -120,11 +120,12 @@ export const generateIniConfig = (template: PlatformIOTemplate): string => {
                 useLocalPatch = true;
             }
         } else {
-            // 芯片不在增强映射中，使用 local_patch 模式
+            // 芯片不在增强映射中
             // 仅回退到手动定义的特殊板卡映射
             if (BOARD_COMPATIBILITY_MAP[boardId]) {
                 boardId = BOARD_COMPATIBILITY_MAP[boardId];
-            } else {
+            } else if (template.platform === 'ststm32' || boardId.startsWith('generic_stm32')) {
+                // 仅对 STM32 板卡使用 local_patch 模式，防止影响 Arduino / ESP32 等普通板卡
                 useLocalPatch = true;
             }
         }

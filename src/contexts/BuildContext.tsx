@@ -65,14 +65,17 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         loadConfig();
     }, []);
 
-    // ========== Effect: 加载项目时同步元数据中的开发板 ==========
+    // ========== Effect: 加载项目时同步元数据中的开发板并清理日志 ==========
     useEffect(() => {
         // 仅在 boardId 确实发生变化且与本地状态不一致时更新
         // 从而防止父组件频繁渲染导致的潜在循环更新
         if (projectMetadata?.boardId && projectMetadata.boardId !== selectedBoard) {
             _setLocalSelectedBoard(projectMetadata.boardId);
         }
-    }, [projectMetadata?.boardId, selectedBoard]);
+
+        // 当切换项目环境时，自动清除旧项目的编译日志
+        setLogs([]);
+    }, [projectMetadata?.boardId, selectedBoard, currentFilePath]);
 
 
     /** 获取项目根目录 (基于当前文件路径) */

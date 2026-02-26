@@ -124,22 +124,31 @@ function AppInner() {
       // 2. 预加载代码块和多语言
       const lang = i18next.language || 'zh';
 
+      // [FIX] 添加安全后备机制: 如果预加载卡住(例如语言加载失败)，最多等3秒强制进入界面
+      const safetyTimeout = setTimeout(() => {
+        console.warn('[App] Pre-warming safety timeout triggered. Forcing UI to load.');
+        setIsInitializing(false);
+      }, 3000);
+
       Promise.all([
         import('./components/NewProjectModal'),
         import('./components/SettingsModal'),
         setBlocklyLocale(lang)
       ]).then(() => {
+        clearTimeout(safetyTimeout);
         const preloadEnd = performance.now();
         console.log(`[App] Background pre-warming complete in ${(preloadEnd - preloadStart).toFixed(2)}ms.`);
         // [FIX] 只有在所有预热和初始化完成后才关闭加载层
         setIsInitializing(false);
       }).catch(err => {
+        clearTimeout(safetyTimeout);
         console.warn('[App] Pre-warming deferred or failed (non-critical):', err);
         setIsInitializing(false);
       });
 
     }).catch(err => {
       console.error('[AppInner] Failed to initialize ExtensionRegistry:', err);
+      // 哪怕扩展注册表失败，也强行进入UI
       setIsInitializing(false);
     });
   }, []);

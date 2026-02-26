@@ -24,10 +24,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 // @ts-ignore
 import * as Blockly from 'blockly';
+import { MiniBlockPreview } from './MiniBlockPreview';
 import './CustomBackpack.css';
 
-/** 本地存储的键名 */
-const BACKPACK_STORAGE_KEY = 'embedblocks_backpack';
+/** 本地存储的基础键名 (后续会拼接项目哈希或路径本身) */
+const BACKPACK_STORAGE_KEY_PREFIX = 'embedblocks_backpack_';
 
 /** 背包项接口 */
 interface BackpackItem {
@@ -49,6 +50,8 @@ interface BackpackItem {
 interface CustomBackpackProps {
     /** Blockly 工作区实例 */
     workspace: any;
+    /** 当前项目的本地绝对路径 (用于实现跨项目背包装备隔离) */
+    currentFilePath: string | null;
 }
 
 /**
@@ -69,27 +72,7 @@ function countBlocksInChain(block: any): number {
     return count;
 }
 
-/**
- * 获取积木块链的预览文本
- * 最多显示前 3 个块的文本，超出部分用 ... 表示
- * 
- * @param block 起始积木块
- * @returns 用 → 连接的预览字符串
- */
-function getChainPreview(block: any): string {
-    const texts: string[] = [];
-    let current = block;
-    // 最多收集 3 个块的文本
-    while (current && texts.length < 3) {
-        texts.push(current.toString());
-        current = current.nextConnection?.targetBlock();
-    }
-    // 还有更多块时添加省略号
-    if (current) {
-        texts.push('...');
-    }
-    return texts.join(' → ');
-}
+
 
 /** 背包图标 SVG - 80x80px 尺寸与 Blockly 系统图标一致 */
 const BackpackIcon = () => (
@@ -98,9 +81,27 @@ const BackpackIcon = () => (
     </svg>
 );
 
-export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace }) => {
+export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace, currentFilePath }) => {
     // ========== 状态管理 ==========
-    const [items, setItems] = useState<BackpackItem[]>([]);  // 背包中的积木块列表
+
+    // 计算当前项目的安全专属 Storage Key
+    const getStorageKey = useCallback(() => {
+        if (!currentFilePath) return `${BACKPACK_STORAGE_KEY_PREFIX}anonymous`;
+        // 简单地把路径里的特殊字符替换掉，或者直接用完整的路径作为键名
+        return `${BACKPACK_STORAGE_KEY_PREFIX}${currentFilePath}`;
+    }, [currentFilePath]);
+
+    // 初始化背包数据 (由于换项目时组件不卸载，所以这个初始态只吃第一下的亏，后面靠 useEffect 刷)
+    const [items, setItems] = useState<BackpackItem[]>(() => {
+        try {
+            const saved = localStorage.getItem(getStorageKey());
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.error('加载背包数据失败:', e);
+            return [];
+        }
+    });
+
     const [isOpen, setIsOpen] = useState(false);              // 背包面板是否展开
     const [isDragOver, setIsDragOver] = useState(false);      // 是否有积木块正在拖入
 
@@ -110,24 +111,44 @@ export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace }) => 
     const dragTargetRef = useRef<any>(null);                  // 拖放目标实例
     const itemsRef = useRef(items);                           // items 的 ref 副本，用于闭包中访问最新值
 
-    // 保持 itemsRef 与 items 同步
+    // [NEW] 当打开别的项目路径时，重新从 localStorage 加载对应这个新项目的专属背包数据
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(getStorageKey());
+            const parsedItems = saved ? JSON.parse(saved) : [];
+            setItems(parsedItems);
+            itemsRef.current = parsedItems;
+        } catch (e) {
+            console.error('加载项目专属背包数据失败:', e);
+            setItems([]);
+            itemsRef.current = [];
+        }
+    }, [currentFilePath, getStorageKey]);
+
+    // 保持 itemsRef 与 items 同步，并存储到 localStorage
     useEffect(() => {
         itemsRef.current = items;
-    }, [items]);
+        // 把最新内容存入 localStorage
+        try {
+            localStorage.setItem(getStorageKey(), JSON.stringify(items));
+        } catch (e) {
+            console.error('保存背包数据失败:', e);
+        }
+    }, [items, getStorageKey]);
 
     /**
-     * 将积木块添加到背包
-     * - 序列化积木块 (包含所有连接的子块)
-     * - 检查重复，避免重复添加
-     * - 生成预览文本和元数据
+     * 将积木块(或多块积木链)添加到背包
+     * - 这将通过 Blockly.serialization API 把积木及其挂载的子块全部转化为 JSON
+     * - 校验当前存储中是否已经存在相同的积木组合，避免重复
+     * - 为存入的组合生成唯一 ID 和时间戳记录
      */
     const addBlockToBackpack = useCallback((block: any) => {
         try {
-            // 使用 Blockly 序列化 API 保存积木块 (包含所有连接的子块)
+            // 使用 Blockly 序列化 API 保存积木块 (包含所有连接的子块/链)
             const blockJson = Blockly.serialization.blocks.save(block);
             if (!blockJson) return;
 
-            // 检查是否已存在相同的积木块
+            // 检查缓存中是否刚好有内容完全一样的积木，若存在则跳过
             const jsonStr = JSON.stringify(blockJson);
             const exists = itemsRef.current.some(item =>
                 JSON.stringify(item.blockJson) === jsonStr
@@ -136,18 +157,17 @@ export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace }) => 
                 return; // 已存在，不重复添加
             }
 
-            // 计算积木块链数量并生成预览文本
+            // 计算这个组合里总共有几个拼接在一起的顶层积木块
             const blockCount = countBlocksInChain(block);
-            const preview = blockCount > 1 ? getChainPreview(block) : block.toString();
 
-            // 创建新的背包项
+            // 创建并组装新的背包项元数据
             const newItem: BackpackItem = {
                 id: `bp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                blockJson,
-                preview,
-                blockType: block.type,
-                timestamp: Date.now(),
-                blockCount
+                blockJson, // 核心字段：留给 MiniBlockPreview 用于重建渲染
+                preview: '', // 不再使用文本预览，但保留字段防止类型错误
+                blockType: block.type, // 记录最初始的积木类别名称
+                timestamp: Date.now(), // 记录添加入背包的时间
+                blockCount // 记录这串积木链的数量，如果大于1可以在UI上显示角标
             };
 
             // 添加到列表开头 (最新的在前面)
@@ -155,28 +175,28 @@ export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace }) => 
         } catch (e) {
             console.error('添加积木块到背包失败:', e);
         }
-    }, []);
+    }, [getStorageKey]); // 确保在这里也加上 getStorageKey 依赖
 
     // 从 localStorage 加载背包数据 (组件挂载时)
     useEffect(() => {
         try {
-            const saved = localStorage.getItem(BACKPACK_STORAGE_KEY);
+            const saved = localStorage.getItem(getStorageKey());
             if (saved) {
                 setItems(JSON.parse(saved));
             }
         } catch (e) {
             console.error('加载背包数据失败:', e);
         }
-    }, []);
+    }, [getStorageKey]);
 
     // 将背包数据保存到 localStorage (items 变化时)
     useEffect(() => {
         try {
-            localStorage.setItem(BACKPACK_STORAGE_KEY, JSON.stringify(items));
+            localStorage.setItem(getStorageKey(), JSON.stringify(items));
         } catch (e) {
             console.error('保存背包数据失败:', e);
         }
-    }, [items]);
+    }, [items, getStorageKey]);
 
     /**
      * 注册 Blockly DragTarget 实现拖放支持
@@ -306,6 +326,29 @@ export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace }) => 
     const addToWorkspace = useCallback((item: BackpackItem) => {
         if (!workspace) return;
 
+        // 如果要添加的积木包含入口节点(Setup/Loop)
+        if (item.blockType === 'arduino_entry_root') {
+            const existingEntry = workspace.getBlocksByType('arduino_entry_root', false)[0];
+            if (existingEntry) {
+                // 如果工作区已经有入口节点，提示用户是否替换
+                const confirmReplace = window.confirm("该背包项包含完整的 Setup/Loop 结构。这将替换当前工作区的所有逻辑，是否继续？");
+                if (!confirmReplace) {
+                    return; // 用户取消添加
+                }
+
+                // 标记正在替换入口积木，跳过 BlocklyWrapper 的删除保护提示
+                (workspace as any).__isReplacingEntry = true;
+
+                // 静默删除旧的入口积木 (及其所有子积木)
+                existingEntry.dispose(false);
+
+                // 延迟清除标记，确保删除事件处理完毕
+                setTimeout(() => {
+                    (workspace as any).__isReplacingEntry = false;
+                }, 100);
+            }
+        }
+
         try {
             // 使用 Blockly 反序列化 API 添加积木块
             const block = Blockly.serialization.blocks.append(
@@ -412,14 +455,9 @@ export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace }) => 
                                         className="custom-backpack-item-content"
                                         onClick={() => addToWorkspace(item)}
                                         title="点击添加到工作区"
+                                        style={{ height: '80px', overflow: 'hidden' }}
                                     >
-                                        <span className="custom-backpack-item-preview">
-                                            {item.blockCount > 1 && <span className="chain-badge">{item.blockCount}</span>}
-                                            {item.preview || item.blockType}
-                                        </span>
-                                        <span className="custom-backpack-item-type">
-                                            {item.blockType}
-                                        </span>
+                                        <MiniBlockPreview blockJson={item.blockJson} />
                                     </div>
                                     <button
                                         className="custom-backpack-item-remove"
@@ -427,7 +465,7 @@ export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace }) => 
                                             e.stopPropagation();
                                             removeItem(item.id);
                                         }}
-                                        title="从背包移除"
+                                        title="从背包删除"
                                     >
                                         ×
                                     </button>

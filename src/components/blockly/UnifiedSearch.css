@@ -266,12 +266,10 @@
     cursor: pointer;
     /* 点击手型 */
     display: flex;
-    /* 横向布局 */
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
-    /* 标题与类型间距 */
+    /* 垂直间距 */
     border-left: 3px solid transparent;
     /* 左侧选中指示条 */
     transition: all 0.1s;
@@ -294,6 +292,15 @@
     /* 选中背景 (Blue-100) */
     border-left-color: #2563eb;
     /* 左侧指示条 (Blue-600) */
+}
+
+/* 确保每一项的标题拦还是水平的 */
+.result-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 }
 
 .result-label {

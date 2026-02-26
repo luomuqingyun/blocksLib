@@ -27,6 +27,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 // @ts-ignore
 import * as Blockly from 'blockly';
+import { MiniBlockPreview } from './MiniBlockPreview';
 import { BILINGUAL_MAP } from '../../config/search_dictionary';
 import { useTranslation } from 'react-i18next';
 import './UnifiedSearch.css';
@@ -882,30 +883,67 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({
             {/* 搜索结果列表 */}
             {results.length > 0 && (
                 <ul className="unified-search-results" ref={resultsRef}>
-                    {results.map((result, index) => (
-                        <li
-                            key={mode === 'workspace' ? (result as any).id : (result as any).type + index}
-                            className={`unified-search-item ${index === currentIndex ? 'selected' : ''}`}
-                            // [FIX] 点击结果项时，强制聚焦输入框，防止焦点跑偏导致键盘失效
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                inputRef.current?.focus();
+                    {results.map((result, index) => {
+                        const isSelected = index === currentIndex;
+                        let blockJson = null;
 
-                                // [FIX] 点击即选中，更新视觉状态 (无论是工作区还是工具箱模式)
-                                setCurrentIndex(index);
-
-                                if (mode === 'workspace') {
-                                    navigateTo(index);
-                                } else {
-                                    addBlockToWorkspace(result as any);
+                        // 只有被选中的项才生成预览数据，避免性能问题
+                        if (isSelected) {
+                            if (mode === 'workspace' && workspace) {
+                                try {
+                                    const block = workspace.getBlockById((result as any).id);
+                                    if (block) {
+                                        blockJson = Blockly.serialization.blocks.save(block);
+                                    }
+                                } catch (e) {
+                                    // 忽略获取失败的情况
                                 }
-                            }}
-                        >
-                            <span className="result-label">{result.label}</span>
-                            <span className="result-type">{(result as any).type}</span>
-                        </li>
-                    ))}
+                            } else if (mode === 'toolbox') {
+                                blockJson = (result as any).blockState;
+                            }
+                        }
+
+                        return (
+                            <li
+                                key={mode === 'workspace' ? (result as any).id : (result as any).type + index}
+                                className={`unified-search-item ${isSelected ? 'selected' : ''}`}
+                                // [FIX] 点击结果项时，强制聚焦输入框，防止焦点跑偏导致键盘失效
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    inputRef.current?.focus();
+
+                                    // [FIX] 点击即选中，更新视觉状态 (无论是工作区还是工具箱模式)
+                                    setCurrentIndex(index);
+
+                                    if (mode === 'workspace') {
+                                        navigateTo(index);
+                                    } else {
+                                        addBlockToWorkspace(result as any);
+                                    }
+                                }}
+                            >
+                                <div className="result-header">
+                                    <span className="result-label">{result.label}</span>
+                                    <span className="result-type">{(result as any).type}</span>
+                                </div>
+
+                                {/* 内联积木预览 */}
+                                {isSelected && blockJson && (
+                                    <div className="result-preview" style={{
+                                        height: '90px',
+                                        marginTop: '10px',
+                                        borderRadius: '6px',
+                                        overflow: 'hidden',
+                                        backgroundColor: 'rgba(0,0,0,0.02)',
+                                        border: '1px solid var(--border-color, #e5e7eb)'
+                                    }}>
+                                        <MiniBlockPreview blockJson={blockJson} />
+                                    </div>
+                                )}
+                            </li>
+                        );
+                    })}
                 </ul>
             )}
             {/* 无结果提示 */}
