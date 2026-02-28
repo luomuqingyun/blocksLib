@@ -44,7 +44,7 @@ export class BuildWorkflowService {
      * @param mainWindow 主窗口，用于发送 IPC 消息
      * @param code 要编译的源代码
      * @param buildConfig 构建配置 (包含 board, platform, framework, upload_port 等)
-     * @param operation 操作类型: 'build' 编译 | 'upload' 上传
+     * @param operation 操作类型: 'build' 编译 | 'upload' 上传 | 'clean' 清理
      * @param port 监视器当前端口 (可能不同于上传端口)
      * @param projectPath 项目路径 (可选，用于指定编译目录)
      */
@@ -52,7 +52,7 @@ export class BuildWorkflowService {
         mainWindow: BrowserWindow | null,
         code: string,
         buildConfig: any,
-        operation: 'build' | 'upload',
+        operation: 'build' | 'upload' | 'clean',
         port?: string,
         projectPath?: string
     ) {
@@ -106,6 +106,9 @@ export class BuildWorkflowService {
         if (operation === 'build') {
             // 编译操作: 不需要端口
             result = await pioService.build(code, buildConfig, extLibPaths, sendLog, projectPath);
+        } else if (operation === 'clean') {
+            // 清理操作: 调用 pio clean
+            result = await pioService.clean(buildConfig, sendLog, projectPath);
         } else {
             // 上传操作: 需要预检查端口是否存在
             if (targetUploadPort) {

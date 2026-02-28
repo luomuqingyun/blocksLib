@@ -94,6 +94,8 @@
         "unlockTooltip": "点击启用手动编辑",
         "buildOutput": "编译输出",
         "build": "编译",
+        "clean": "清理",
+        "cleanBuild": "清理构建产物 (Clean Build)",
         "upload": "烧录",
         "refreshPorts": "刷新串口"
     },
@@ -140,6 +142,7 @@
         "start": "启动",
         "stop": "停止",
         "clear": "清空",
+        "clearOutput": "清空输出",
         "sendPlaceholder": "发送消息...",
         "hexPlaceholder": "发送 HEX (如 AA BB ...或 AABB ...)",
         "selectPort": "选择端口",

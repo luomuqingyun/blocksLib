@@ -1,0 +1,54 @@
+
+[ExtensionService] Successfully loaded 0 extensions from high-speed cache.
+[Main] Running in Automated Test Mode...
+
+======================================================
+ EmbedBlocks Studio - Automated Testing Framework       
+======================================================
+
+[TestRunner] Starting Project GENERATION phase...
+
+[TestRunner] Filter active: Only generating test for board -> megaatmega2560
+
+Found 1 boards. Generating full .ebproj directories at: C:\Users\wofy\Desktop\embedblocks-studio\eb_compilation_tests
+
+
+--- DEBUG BOARD IN LOOP ---
+{
+  "id": "megaatmega2560",
+  "name": "Arduino Mega or Mega 2560 ATmega2560 (Mega 2560)",
+  "framework": "arduino",
+  "mcu": "ATMEGA2560",
+  "package": "BOARD_MEGA",
+  "isStm32": false
+}
+
+[1/1] Generating: megaatmega2560 ...      
+❌ [FAILED] Generation Failed for: megaatmega2560 | Reason: Project directory already exists
+
+
+[TestRunner] Generation Phase Complete. Success: 0, Failed: 1
+[TestRunner] Test projects are located at: C:\Users\wofy\Desktop\embedblocks-studio\eb_compilation_tests
+
+[TestRunner] Starting Project COMPILATION phase...
+
+[TestRunner] Filter active: Only compiling test for board containing -> megaatmega2560
+[TestRunner] Discovered 1 projects to compile. Only failures will be logged.
+
+
+[1/1] Compiling project: test_megaatmega2560...      
+❌ [FAILED] Project: test_megaatmega2560 (megaatmega2560)
+
+======================================================
+ Compilation Summary
+======================================================
+Total Compiled : 1
+Success        : 0
+Failed         : 1
+
+Failed Boards ([!] PLEASE FIX THESE):
+  - megaatmega2560 (test_megaatmega2560)
+
+Detailed report saved to: C:\Users\wofy\Desktop\embedblocks-studio\eb_compilation_tests\compilation_report.json
+======================================================
+

@@ -24,7 +24,6 @@
 import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { configService } from './services/ConfigService';
 
 // [FIX] 彻底解决 Windows 环境下，由于 Chromium GPU Composition (硬件加速合成) 导致
 // 带有 backdrop-filter: blur 或透明度的弹窗在使用 Alt+A (微信截图 / Snipaste) 时消失的问题。
@@ -42,9 +41,14 @@ import { registerExtensionHandlers } from './ipc/ExtensionHandlers';   // 扩展
 import { registerBuildHandlers } from './ipc/BuildHandlers';           // 编译构建
 import { registerMarketplaceHandlers } from './ipc/MarketplaceHandlers'; // 插件市场
 
+// ====== 测试流程注入 ======
+import { runTests } from './testRunner';
 // ============================================================
-// 1. 全局状态 (Global State)
-// ============================================================
+
+// ====== 初始化核心服务 (Initialize Core Services) ======
+// 服务作为单例在底层运行保持状态
+import { configService } from './services/ConfigService';
+import { pioService } from './services/PioService';
 
 /** 主窗口实例引用，用于其他模块访问 */
 let mainWindow: BrowserWindow | null = null;
@@ -368,36 +372,52 @@ app.on('open-file', (event, path) => {
     }
 });
 
-const gotTheLock = app.requestSingleInstanceLock();
+// ========== 自动化测试拦截器 (Automated Test Interceptor) ==========
+const testArgs = ['--run-board-tests', '--generate-test-projects', '--compile-test-projects', '--clean-test-projects'];
+const isTestMode = testArgs.some(arg => process.argv.includes(arg));
 
-if (!gotTheLock) {
-    app.quit();
-} else {
-    app.on('second-instance', (event, commandLine, workingDirectory) => {
-        if (mainWindow) {
-            if (mainWindow.isMinimized()) mainWindow.restore();
-            mainWindow.focus();
-
-            const file = commandLine.find(arg => arg.endsWith('.ebproj'));
-            if (file) {
-                mainWindow.webContents.send('menu-action', 'open-recent', file);
-            }
-        }
-    });
-
+if (isTestMode) {
     app.whenReady().then(() => {
-        console.time('[Main] Startup');
-        registerAllIpcs();
-        createWindow();
-        console.timeEnd('[Main] Startup');
-
-        const file = process.argv.find(arg => arg.endsWith('.ebproj'));
-        if (file) {
-            mainWindow?.webContents.once('did-finish-load', () => {
-                mainWindow?.webContents.send('menu-action', 'open-recent', file);
-            });
-        }
+        console.log('[Main] Running in Automated Test Mode...');
+        runTests().then(() => {
+            app.quit();
+        }).catch(err => {
+            console.error('[Main] Test Runner Error:', err);
+            app.quit();
+        });
     });
+} else {
+    const gotTheLock = app.requestSingleInstanceLock();
+
+    if (!gotTheLock) {
+        app.quit();
+    } else {
+        app.on('second-instance', (event, commandLine, workingDirectory) => {
+            if (mainWindow) {
+                if (mainWindow.isMinimized()) mainWindow.restore();
+                mainWindow.focus();
+
+                const file = commandLine.find(arg => arg.endsWith('.ebproj'));
+                if (file) {
+                    mainWindow.webContents.send('menu-action', 'open-recent', file);
+                }
+            }
+        });
+
+        app.whenReady().then(() => {
+            console.time('[Main] Startup');
+            registerAllIpcs();
+            createWindow();
+            console.timeEnd('[Main] Startup');
+
+            const file = process.argv.find(arg => arg.endsWith('.ebproj'));
+            if (file) {
+                mainWindow?.webContents.once('did-finish-load', () => {
+                    mainWindow?.webContents.send('menu-action', 'open-recent', file);
+                });
+            }
+        });
+    }
 }
 
 app.on('window-all-closed', () => {

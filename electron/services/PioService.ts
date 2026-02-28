@@ -224,7 +224,11 @@ export class PioService {
         return this.runCommand(code, buildConfig, 'upload', port, extensionLibPaths, logCallback, projectPath);
     }
 
-    private async runCommand(code: string, buildConfig: PlatformIOTemplate, operation: 'build' | 'upload', port: string | undefined, extensionLibPaths: string[], logCallback: (msg: string) => void, projectPath?: string): Promise<{ success: boolean; exitCode?: number }> {
+    public async clean(buildConfig: PlatformIOTemplate, logCallback: (msg: string) => void, projectPath?: string): Promise<{ success: boolean; exitCode?: number }> {
+        return this.runCommand('', buildConfig, 'clean', undefined, [], logCallback, projectPath);
+    }
+
+    private async runCommand(code: string, buildConfig: PlatformIOTemplate, operation: 'build' | 'upload' | 'clean', port: string | undefined, extensionLibPaths: string[], logCallback: (msg: string) => void, projectPath?: string): Promise<{ success: boolean; exitCode?: number }> {
         const tempDir = path.join(app.getPath('temp'), 'embedblocks_build', 'active_project');
         const workDir = projectPath || tempDir;
 
@@ -272,6 +276,8 @@ export class PioService {
                 if (port && useExplicitPort) {
                     args.push('--upload-port', port);
                 }
+            } else if (operation === 'clean') {
+                args.push('-t', 'clean');
             }
 
             // 注入扩展库路径

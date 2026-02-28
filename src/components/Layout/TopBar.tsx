@@ -17,7 +17,7 @@ import { Board } from '../../types/board';
 import {
     FilePlus, FolderOpen, Save, SaveAll, FileCode,
     Settings, RefreshCw, Play, Upload, Puzzle, FileInput, X, Sliders,
-    Sun, Moon, Grid3X3, Box, Cpu
+    Sun, Moon, Grid3X3, Box, Cpu, Eraser
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BoardRegistry } from '../../registries/BoardRegistry';
@@ -176,8 +176,17 @@ export const TopBar: React.FC = () => {
                 </div>
             </div>
 
-            {/* 操作按钮组: 编译和上传 */}
+            {/* 操作按钮组: 清理、编译和上传 */}
             <div className="flex items-center gap-1 ml-auto">
+                {/* 清理构建按钮 */}
+                <button
+                    onClick={build.cleanProject}
+                    className="flex items-center gap-2 bg-[#444] hover:bg-[#555] text-slate-200 px-3 py-1.5 rounded-sm text-xs font-medium transition-colors mr-1"
+                    title={t('app.cleanBuild', '清理构建产物 (Clean Build)')}
+                >
+                    <Eraser size={14} />
+                    <span className="hidden lg:inline">{t('app.clean', '清理')}</span>
+                </button>
                 {/* 编译按钮 */}
                 <button
                     onClick={build.buildProject}

@@ -132,6 +132,42 @@ const init = () => {
     });
 
     // =========================================================================
+    // 引脚电平翻转 (Digital Toggle)
+    // =========================================================================
+    registerBlock('arduino_digital_toggle', {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_IO_DIG_TOGGLE || "翻转引脚")
+                .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "PIN")
+                .appendField(Blockly.Msg.ARD_IO_TO_STATE || "电平状态");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(230);
+            this.setTooltip(Blockly.Msg.ARD_IO_DIG_TOGGLE_TOOLTIP || "切换数字引脚的高低电平状态。");
+        }
+    }, function (block: any) {
+        const pin = block.getFieldValue('PIN');
+        reservePin(block, pin, 'OUTPUT');
+
+        // 由于不同架构平台 (如 STM32 HAL vs AVR libc) 对读取已被配置为 OUTPUT 的 GPIO 引脚 
+        // 行为不同（有的返回 Latch 状态，有的未定义），不宜使用 !digitalRead(PIN)。
+        // 稳妥的做法是针对被翻转的引脚生成一个专门的全局布尔变量来记录状态。
+
+        // // 引入 generator (注意作用域)
+        // const gen = block.workspace ? (arduinoGenerator as any) : undefined;
+        // if (gen && typeof gen.addVariable === 'function') {
+        //     const varName = `toggleState_${pin.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        //     gen.addVariable(varName, `bool ${varName} = false;`);
+        //     return `${varName} = !${varName};\ndigitalWrite(${pin}, ${varName} ? HIGH : LOW);\n`;
+        // }
+
+        const safePinId = pin.replace(/[^a-zA-Z0-9]/g, '_');
+        const varName = `toggleState_${safePinId}`;
+        arduinoGenerator.addVariable(varName, `bool ${varName} = false;`);
+        return `${varName} = !${varName};\ndigitalWrite(${pin}, ${varName} ? HIGH : LOW);\n`;
+    });
+
+    // =========================================================================
     // 数字读 (Digital Read)
     // =========================================================================
     registerBlock('arduino_digital_read', {

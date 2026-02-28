@@ -48,6 +48,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 构建与上传 (Build & Upload)
   buildProject: (code: string, buildConfig: PlatformIOTemplate, projectPath?: string) => ipcRenderer.invoke('build-project', code, buildConfig, projectPath),
   uploadProject: (code: string, buildConfig: PlatformIOTemplate, port?: string, projectPath?: string) => ipcRenderer.invoke('upload-project', code, buildConfig, port, projectPath),
+  cleanProject: (buildConfig: PlatformIOTemplate, projectPath?: string) => ipcRenderer.invoke('clean-project', buildConfig, projectPath),
 
   // 构建日志监听 (Logs)
   // Handles both legacy string format and new {buildId, message} format

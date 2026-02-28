@@ -36,6 +36,7 @@ interface ElectronAPI {
   // --- 编译与上传 ---
   buildProject: (code: string, buildConfig: BoardBuildConfig, projectPath?: string) => Promise<{ success: boolean; exitCode?: number }>;
   uploadProject: (code: string, buildConfig: BoardBuildConfig, port?: string, projectPath?: string) => Promise<{ success: boolean; exitCode?: number }>;
+  cleanProject: (buildConfig: BoardBuildConfig, projectPath?: string) => Promise<{ success: boolean; exitCode?: number }>;
 
   // --- 日志 ---
   onLog: (callback: (msg: string) => void) => () => void;

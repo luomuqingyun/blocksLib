@@ -187,7 +187,14 @@ class VariantGenerator {
 
         const stats = fs.statSync(srcFile);
         if (stats.isFile()) {
-          fs.copyFileSync(srcFile, destFile);
+          // 对 C/C++/H 文件放宽 ARDUINO_GENERIC_ 宏检查
+          if (file.endsWith('.c') || file.endsWith('.cpp') || file.endsWith('.h')) {
+            let content = fs.readFileSync(srcFile, 'utf8');
+            content = content.replace(/#if\s+defined\s*\(\s*ARDUINO_GENERIC_.*?\s*\)/g, '#if 1 // $&');
+            fs.writeFileSync(destFile, content);
+          } else {
+            fs.copyFileSync(srcFile, destFile);
+          }
         }
       }
       return true;

@@ -21,7 +21,12 @@
     "sync:stm32": "npx tsx scripts/ops/global_sync_data.ts",
     "bundle:core": "npx tsx scripts/ops/bundle_resources.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:build": "vite build -c vite.config.js -m production",
+    "test:generate": "electron . --generate-test-projects",
+    "test:compile": "electron . --compile-test-projects",
+    "test:clean": "electron . --clean-test-projects",
+    "test:board": "npx electron . --run-board-tests --board="
   },
   "dependencies": {
     "@blockly/block-plus-minus": "^9.0.5",

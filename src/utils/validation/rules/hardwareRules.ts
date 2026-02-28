@@ -44,7 +44,6 @@ export const checkPinConflict: ValidationRule = (block, context) => {
         if (otherBlock.id === block.id) continue;
 
         // 跳过位于工具栏预览中的积木
-        // 注意：不跳过已禁用的积木，因为由于校验失败而禁用的积木依然占用引脚资源
         if (otherBlock.isInFlyout) continue;
 
         for (const otherInput of otherBlock.inputList) {
@@ -55,6 +54,28 @@ export const checkPinConflict: ValidationRule = (block, context) => {
                     // 检查是否存在引脚编号重叠
                     const conflict = usedPins.find(p => p.value === otherVal);
                     if (conflict) {
+
+                        // [深度优化] 硬件引脚复用规则 (Advanced Pin Mutex Logic)
+                        // 1. 定义被视为“通用无状态”的积木列表
+                        // 这些积木在执行完毕后不会独占引脚的硬件外设发生器（如硬件I2C/SPI控制器、硬件PWM通道长期占用）
+                        // 因此它们之间互相复用引脚是完全合法的（例如先向 PA0 输出高，再输出低，然后再读）
+                        const generalIoBlocks = [
+                            'arduino_digital_write', 'arduino_digital_read', 'arduino_digital_toggle',
+                            'arduino_analog_write', 'arduino_analog_read', 'arduino_tone'
+                        ];
+
+                        // 如果发生冲突的两个积木都属于通用 IO 操作，则直接豁免
+                        if (generalIoBlocks.includes(block.type) && generalIoBlocks.includes(otherBlock.type)) {
+                            continue;
+                        }
+
+                        // 2. 特殊情况：外设初始化与使用
+                        // 例如 Servo attach 和 Servo write，虽然都用了同一个引脚，但是属于同一类外设家族的合法链条
+                        const getFamily = (type: string) => type.split('_')[0]; // 例如 "arduino_servo"
+                        if (getFamily(block.type) === getFamily(otherBlock.type)) {
+                            continue; // 同一外设家族内的模块允许复用相同引脚
+                        }
+
                         // [关键优化] 责任归属判定 (Responsibility Attribution):
                         // 如果当前积木(block)不是触发者(trigger)，而对方(otherBlock)是触发者，
                         // 则当前积木应当“让位”，由对方去显示警告信息，避免出现“我没动却报错”的挫败感。

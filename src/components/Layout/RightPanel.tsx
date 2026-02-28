@@ -9,7 +9,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Lock, Unlock } from 'lucide-react';
+import { Lock, Unlock, Trash2 } from 'lucide-react';
 import { CodeEditor } from '../CodeEditor';
 import { SerialMonitorPanel } from '../SerialMonitor/SerialMonitorPanel';
 import { useSerial } from '../../contexts/SerialContext';
@@ -36,8 +36,18 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
     // UI 状态: 手动编辑模式、当前标签页
     const { isManualEditMode, setIsManualEditMode, activeTab, setActiveTab } = useUI();
 
-    // 构建上下文: 编译日志
-    const { logs } = useBuild();
+    // 构建上下文: 编译日志及清理函数
+    const { logs, clearLogs, isBuilding } = useBuild();
+
+    /** 根据日志内容返回语法高亮颜色 */
+    const getLogColor = (log: string) => {
+        const lower = log.toLowerCase();
+        if (lower.includes('error:') || lower.includes('failed') || lower.includes('undefined reference') || lower.includes('fatal error')) return 'text-red-400';
+        if (lower.includes('warning') || lower.includes('ignore unknown') || lower.includes('skipping')) return 'text-yellow-400';
+        if (lower.includes('success') || lower.includes('done') || log.includes('==========')) return 'text-green-400';
+        if (lower.startsWith('compiling') || lower.startsWith('building') || lower.startsWith('archiving') || lower.startsWith('indexing')) return 'text-blue-300';
+        return 'text-slate-300';
+    };
 
     /**
      * 滚动到底部
@@ -98,28 +108,47 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
             <div className="h-[40%] flex flex-col min-h-[200px] bg-[#1e1e1e]">
 
                 {/* 标签页头部 */}
-                <div className="flex border-b border-[#333] bg-[#252526]">
-                    {/* 构建输出标签 */}
-                    <button
-                        onClick={() => setActiveTab('build')}
-                        className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'build' ? 'border-blue-500 text-slate-200 bg-[#1e1e1e]' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
-                    >
-                        {t('app.buildOutput')}
-                    </button>
-                    {/* 串口监视器标签 (带连接状态指示器) */}
-                    <button
-                        onClick={() => setActiveTab('serial')}
-                        className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'serial' ? 'border-green-500 text-slate-200 bg-[#1e1e1e]' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
-                    >
-                        {t('serial.tab')}
-                        {isConnected && <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>}
-                    </button>
+                <div className="flex justify-between items-end border-b border-[#333] bg-[#252526]">
+                    <div className="flex">
+                        {/* 构建输出标签 */}
+                        <button
+                            onClick={() => setActiveTab('build')}
+                            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'build' ? 'border-blue-500 text-slate-200 bg-[#1e1e1e]' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+                        >
+                            {t('app.buildOutput')}
+                        </button>
+                        {/* 串口监视器标签 (带连接状态指示器) */}
+                        <button
+                            onClick={() => setActiveTab('serial')}
+                            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'serial' ? 'border-green-500 text-slate-200 bg-[#1e1e1e]' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+                        >
+                            {t('serial.tab')}
+                            {isConnected && <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>}
+                        </button>
+                    </div>
+
+                    {/* 日志清空工具按钮 */}
+                    {activeTab === 'build' && (
+                        <button
+                            onClick={clearLogs}
+                            disabled={isBuilding || logs.length === 0}
+                            className={`mr-3 mb-1 px-2.5 py-1 text-[11px] font-medium rounded transition-all flex items-center gap-1.5 border ${isBuilding || logs.length === 0 ? 'text-slate-600 border-slate-700 bg-transparent cursor-not-allowed' : 'text-slate-300 border-slate-600 bg-[#333] hover:text-white hover:border-red-500 hover:bg-red-500/20 shadow-sm'}`}
+                            title={t('serial.clearOutput', '清空输出')}
+                        >
+                            <Trash2 size={12} className={isBuilding || logs.length === 0 ? 'opacity-50' : 'text-red-400'} />
+                            {t('serial.clear', '清空')}
+                        </button>
+                    )}
                 </div>
 
                 {/* 标签页内容: 构建日志 */}
                 <div ref={bottomPanelRef} className={`flex-1 p-3 overflow-auto font-mono text-xs custom-scrollbar ${activeTab === 'build' ? 'block' : 'hidden'}`}>
-                    {logs.length === 0 && <div className="text-[#00ff00]/50">暂无日志...</div>}
-                    {logs.map((log, i) => (<div key={i} className="mb-0.5 text-[#00ff00] break-words whitespace-pre-wrap border-l-2 border-transparent hover:border-slate-700 pl-1">{log}</div>))}
+                    {logs.length === 0 && <div className="text-slate-500 italic flex items-center h-full justify-center">等待编译或上传输出...</div>}
+                    {logs.map((log, i) => (
+                        <div key={i} className={`mb-0.5 break-words whitespace-pre-wrap border-l-2 border-transparent hover:border-slate-700 pl-1 ${getLogColor(log)}`}>
+                            {log}
+                        </div>
+                    ))}
                 </div>
 
                 {/* 标签页内容: 串口监视器 */}

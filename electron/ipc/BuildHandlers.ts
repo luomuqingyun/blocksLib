@@ -58,4 +58,13 @@ export function registerBuildHandlers(ipcMain: IpcMain, getMainWindow: () => Bro
         // port 参数是监视器端口，如果 buildConfig 中指定了 upload_port 则优先使用
         await buildWorkflowService.runOrchestration(getMainWindow(), code, buildConfig, 'upload', port, projectPath);
     });
+
+    /**
+     * 清理编译缓存和输出
+     * @param buildConfig 构建配置
+     * @param projectPath 项目路径
+     */
+    ipcMain.handle('clean-project', async (event, buildConfig, projectPath) => {
+        await buildWorkflowService.runOrchestration(getMainWindow(), '', buildConfig, 'clean', undefined, projectPath);
+    });
 }

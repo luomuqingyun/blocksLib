@@ -153,15 +153,21 @@ export const generateIniConfig = (template: PlatformIOTemplate): string => {
 
         // [WBA Fix] 针对 STM32WBA 系列，自动注入构建拦截脚本以解决驱动识别错误问题
         // 只有当 template 中没有手动定义 extra_scripts 时才自动添加
-        if (template.board.toLowerCase().includes('wba') && !template['extra_scripts']) {
+        const actualBoard = String(template['original_board'] || template.board);
+        if (actualBoard.toLowerCase().includes('wba') && !template['extra_scripts']) {
             config += `extra_scripts = post:fix_wba_build.py\n`;
         }
     }
 
     // 3. 添加其他可选配置项 (如 build_flags, lib_deps 等)
+    const ignoredKeys = [
+        'envName', 'platform', 'board', 'framework', 'custom_ini_content',
+        'local_patch', 'original_board', 'cpu'
+    ];
+
     Object.keys(template).forEach(key => {
         // 排除已处理的固定字段和内部私有字段
-        if (key !== 'envName' && key !== 'platform' && key !== 'board' && key !== 'framework' && key !== 'custom_ini_content' && template[key]) {
+        if (!ignoredKeys.includes(key) && template[key]) {
             config += `${key} = ${template[key]}\n`;
         }
     });

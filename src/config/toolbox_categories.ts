@@ -107,6 +107,7 @@ export const FUNCTIONS_CONTENTS = [
 
 export const IO_CONTENTS = [
     { kind: 'block', type: 'arduino_digital_write' },
+    { kind: 'block', type: 'arduino_digital_toggle' },
     { kind: 'block', type: 'arduino_digital_read' },
     { kind: 'block', type: 'arduino_analog_write', inputs: { NUM: { shadow: { type: 'math_number', fields: { NUM: 255 } } } } },
     { kind: 'block', type: 'arduino_analog_read' },

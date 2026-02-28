@@ -37,6 +37,10 @@ interface BuildContextType {
     buildProject: () => Promise<void>;
     /** 异步触发项目上传至指定端口 */
     uploadProject: (selectedPort: string) => Promise<void>;
+    /** 触发项目清理 (删除编译产物) */
+    cleanProject: () => Promise<void>;
+    /** 清除当前的编译和上传日志 */
+    clearLogs: () => void;
     /** 全局配置对象 */
     config: any;
     /** 更新全局配置的状态更新器 */
@@ -161,6 +165,8 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (project.platform) mixed['platform'] = project.platform;
         if (project.framework) mixed['framework'] = project.framework;
         if (project.local_patch !== undefined) mixed['local_patch'] = project.local_patch;
+        if (project.original_board) mixed['original_board'] = project.original_board;
+        if (project.extra_scripts) mixed['extra_scripts'] = project.extra_scripts;
 
         // 4. 处理自定义 INI 内容 (追加自定义配置)
         if (project.customIni) {
@@ -229,6 +235,28 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     }, [code, getEffectiveConfig, setActiveTab, getProjectRoot, isSerialConnected, serialPort, toggleSerial]);
 
+    /** 触发项目清理 (清空编译产物) */
+    const cleanProject = useCallback(async () => {
+        if (!window.electronAPI) return;
+        setLogs([]);
+        setActiveTab('build');
+        setIsBuilding(true);
+
+        try {
+            const config = getEffectiveConfig();
+            if (!config) {
+                setLogs(prev => [...prev, `错误: 未找到开发板 ${selectedBoard} 的配置`]);
+                return;
+            }
+            // 调用 Electron API 执行清理
+            await window.electronAPI.cleanProject(config, getProjectRoot());
+        } catch (e: any) {
+            setLogs(prev => [...prev, `清理过程中出错: ${e.message}`]);
+        } finally {
+            setIsBuilding(false);
+        }
+    }, [getEffectiveConfig, setActiveTab, getProjectRoot]);
+
     // ========== Effect: 监听来自主进程的编译日志并自动切换标签页 ==========
     useEffect(() => {
         if (window.electronAPI) {
@@ -240,12 +268,16 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     }, [setActiveTab]);
 
+    const clearLogs = useCallback(() => setLogs([]), []);
+
     const value = {
         selectedBoard,
         logs,
         isBuilding,
         buildProject,
         uploadProject,
+        cleanProject,
+        clearLogs,
         config,
         setConfig
     };

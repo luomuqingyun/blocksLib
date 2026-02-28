@@ -86,6 +86,8 @@
         "port": "PORT",
         "board": "Board",
         "build": "Build",
+        "clean": "Clean",
+        "cleanBuild": "Clean Build Artifacts",
         "upload": "Upload",
         "untitled": "Untitled",
         "refreshPorts": "Refresh Ports"
@@ -131,6 +133,7 @@
         "start": "START",
         "stop": "STOP",
         "clear": "CLEAR",
+        "clearOutput": "Clear Output",
         "sendPlaceholder": "Send message...",
         "hexPlaceholder": "Send HEX (e.g. AA BB ... or AABB ...)",
         "restoreDefaults": "Restore Defaults",

@@ -53,6 +53,7 @@ interface BuildState {
     selectedBoard: string;
     buildProject: () => Promise<void>;
     uploadProject: (port: string) => Promise<void>;
+    cleanProject: () => Promise<void>;
 }
 
 /**
@@ -106,7 +107,7 @@ export function useToolbarActions(): ToolbarActionsResult {
     const { setIsSettingsOpen, setIsExtensionsOpen, setIsProjectSettingsOpen } = useUI();
 
     // 编译构建 Context: 管理目标板卡、执行编译及上传任务
-    const { selectedBoard, buildProject, uploadProject, config, setConfig } = useBuild();
+    const { selectedBoard, buildProject, uploadProject, cleanProject, config, setConfig } = useBuild();
 
     const updateConfig = useCallback(async (key: string, value: any) => {
         await window.electronAPI.setConfig(key, value);
@@ -139,6 +140,16 @@ export function useToolbarActions(): ToolbarActionsResult {
     /** 打开当前项目的特定配置（如编译参数、板卡选项） */
     const openProjectSettings = useCallback(() => setIsProjectSettingsOpen(true), [setIsProjectSettingsOpen]);
 
+    const handleBuildProject = useCallback(async () => {
+        await saveProject();
+        await buildProject();
+    }, [saveProject, buildProject]);
+
+    const handleUploadProject = useCallback(async (port: string) => {
+        await saveProject();
+        await uploadProject(port);
+    }, [saveProject, uploadProject]);
+
     // 3. 聚合并导出包含所有模块的单一对象
     return {
         // 串口模块
@@ -162,8 +173,9 @@ export function useToolbarActions(): ToolbarActionsResult {
         // 编译上传模块
         build: {
             selectedBoard,
-            buildProject,
-            uploadProject,
+            buildProject: handleBuildProject,
+            uploadProject: handleUploadProject,
+            cleanProject,
             config,
             updateConfig
         },

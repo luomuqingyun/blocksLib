@@ -163,6 +163,10 @@ export interface ProjectBuildConfig {
     customIni?: string;
     /** 是否启用本地板卡补丁模式 */
     local_patch?: boolean;
+    /** 原始电路板 ID，用于模板补丁判断 */
+    original_board?: string;
+    /** 额外的编译拦截脚本 */
+    extra_scripts?: string;
 }
 
 /**
