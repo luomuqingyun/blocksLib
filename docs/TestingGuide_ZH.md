@@ -14,59 +14,51 @@
 因此，测试程序采用**底层侵入注入法**：
 1. **真实外壳创建**：调用真实的底座服务 (`ProjectService.createProject`)，根据不同芯片的底层 `JSON` 特性文件创建具有对应环境元数据的项目。确保 `platformio.ini` 等配置合乎该单片机要求。
 2. **模拟 Blockly 注入**：将一份经过预先严密设计好的、能在所有支持环境均能工作的真实 Blockly 业务代码 JSON (例如：控制 `LED_BUILTIN` 的数字写及翻转) 直接写入项目的 `.ebproj` 文件。从而做到只要被打开，就是合法项目。
-3. **C++ 源码注入**：将与上述 Blockly 等效翻译而成的纯净 C++ 测试代码强行写入 `src/main.cpp`。
-4. **验证**：调用真实的 PlatformIO Core 进行原生底层编译，验证整个编译链条对该配置的环境是否报错。
+3. **真实等效 C++ 注入**：为了验证编译器（PlatformIO）与开发板变体定义（Variant）是否匹配（即能否通过底层链接阶段），我们将上述积木逻辑生成的等效 C++ 源码注入到 `src/main.cpp`。
 
 ---
 
-## 2. NPM 快捷测试指令详解
+## 2. 如何在本地执行测试？
 
-所有涉及主进程测试的指令都被配置成了极速后台编译 (`vite build -c vite.config.js`) 策略，这使得启动自动化脚本只在毫秒间。
+### 🔧 环境要求
+- 必须安装 Node.js (v18+) 及 npm。
+- 必须安装 PlatformIO Core (已加入系统 PATH)。
 
-### ① 全量测试命令 (Bulk Testing)
+### 🏃 执行步骤
 
 如果您要验证整个软件架构修改后是否破坏了某些厂家的板卡编译链：
 
-#### 批量生成项目骨架
+#### 批量生成测试工程
 ```bash
 npm run test:generate
+# 同样支持并发以加速 (默认为 CPU 核心数的一半)
+npm run test:generate -- --jobs 4
 ```
-**功能**：遍历 `src/data/boards/**/*.json` 中近 1400 款芯片数据，并在根目录下的 `eb_compilation_tests` 文件夹中自动创建所有的 `.ebproj` 项目与测试源码。
+**功能**：遍历所有支持的板卡 JSON 数据，在 `eb_compilation_tests` 目录下为每款芯片生成独立的 `.ebproj` 工程及合法的测试 C++ 源码。支持并发执行。
 
 #### 批量执行编译测试
 ```bash
 npm run test:compile
+# 或者指定并发任务数 (默认 CPU 核心数的一半)
+npm run test:compile -- --jobs 4
 ```
-**功能**：对上述生成的所有测试项目挨个执行长达数小时的 PlatformIO 原生编译。为了简化输出，**程序静默通过所有成功的测试，只在控制台抛出失败的板块名称及其错误原因。**
+**功能**：对上述生成的所有测试项目执行并行编译。程序会自动利用多核心提高效率。**程序静默通过所有成功的测试，并在实时进度条中显示状态，只在失败时抛出错误看板详情。**
 
 #### 一键销毁现场
 ```bash
 npm run test:clean
 ```
-**功能**：安全、快速地销毁整个 `eb_compilation_tests` 残留文件夹，打扫编译战场。
+**功能**：彻底删除 `eb_compilation_tests` 文件夹，释放硬盘空间。
 
 ---
 
-### ② 专属单体测试命令 (Targeted Board Testing)
+## 3. 对开发者的建议 (Best Practices)
 
-如果您只修复了某一个冷门芯片的配置，不想等上千个项目的生成，可以直接进行“拦截式过滤生成”。
-
-#### 定向生成单款板卡
-```bash
-npx electron . --generate-test-projects --board=芯片JSON文件名
-```
-*例如*：`npx electron . --generate-test-projects --board=generic_stm32f103ze`
-> **释义：** 这里的 `芯片JSON文件名` 指的是位于 `src/data/boards/stm32/` (或核心目录) 下对应配置文件的名称（**不含 `.json` 后缀**）。这也是软件内部识别各个主板的唯一 `boardId`。
-
-**功能**：它将直接忽略所有其他板卡，仅为您生成这 **1个** 被指定的测试项目。由于生成 JSON 时是写入的真实 Blockly 数据，您可以即刻打开 EmbedBlocks 主界面验证该板卡的侧边栏与积木图块表现。
-
-#### 定向编译单款板卡
-```bash
-npx electron . --compile-test-projects --board=芯片JSON文件名
-```
-*例如*：`npx electron . --compile-test-projects --board=generic_stm32f103ze`
-**功能**：仅读取被指定名字的那个文件夹，对其执行真实的 PlatformIO C++ 编译动作，反馈控制台输出结果。如果您是调整底层的 C++ 翻译规则或配置文件后，此举最适合用于秒级回显测试。
-
----
-
-*注意：被生成的 `eb_compilation_tests` 已被纳入全局 `.gitignore` 黑名单，绝不会不慎提交至代码审查或 Git 历史仓库中。*
+1. **增量测试**：如果您只修改了 `stm32` 系列，不需要重跑 1400 款芯片。可以使用 `--board` 参数过滤：
+   ```bash
+   # 只生成并测试与 stm32f4 相关的板卡
+   npm run test:generate -- --board=stm32f4
+   npm run test:compile -- --board=stm32f4
+   ```
+2. **观察日志**：编译失败的项目会在其项目路径下留下 `test_build.log`。
+3. **性能注意**：全量并行编译会占用极高的 CPU 和网络（PIOCore 可能会下载工具链）。建议在测试机器上保留足够的磁盘空间（~20GB+）。

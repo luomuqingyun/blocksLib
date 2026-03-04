@@ -1,0 +1,25 @@
+{
+  "build": {
+    "core": "stm32",
+    "cpu": "cortex-m4",
+    "mcu": "stm32wb55cc",
+    "extra_flags": "-DSTM32WB55xx -DARDUINO_GENERIC_ARDUINO_GENERIC_WB55CCTX",
+    "f_cpu": "72000000L",
+    "product_line": "STM32WB55xx",
+    "variant": "eb_custom_variant",
+    "ldscript": "ldscript.ld"
+  },
+  "name": "EmbedBlocks Custom (STM32WB55CC)",
+  "upload": {
+    "maximum_ram_size": 131072,
+    "maximum_size": 262144,
+    "protocol": "stlink"
+  },
+  "vendor": "ST",
+  "url": "https://www.st.com/en/microcontrollers-microprocessors.html",
+  "frameworks": [
+    "arduino",
+    "cmsis",
+    "stm32cube"
+  ]
+}

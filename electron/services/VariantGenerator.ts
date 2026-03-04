@@ -33,8 +33,8 @@ export interface VariantData {
   name: string;
   mcu: string;
   specs: string; // "64k Flash / 20k RAM"
-  variant: string; // e.g. "F030RCT" (板卡原始 variant 名)
-  parentBoardId?: string; // [NEW] e.g. "nucleo_f030r8"
+  variant: string; // 比如 "F030RCT" (板卡原始变体名)
+  parentBoardId?: string; // [新增] 比如 "nucleo_f030r8"
   pinMap: any[];
   pinout: any;
   defaults: any;
@@ -45,7 +45,7 @@ export interface VariantData {
   maxFlashSize?: number; // bytes
   maxRamSize?: number; // bytes
 
-  // [Added] Option to use build config from JSON
+  // [新增] 可选的从 JSON 解析 build 配置
   build?: {
     cpu?: string;
     extra_flags?: string;
@@ -108,6 +108,8 @@ class VariantGenerator {
       await this.generateVariantH(specificVariantDir, boardData);
       // 回退方案: 自动生成 variants/eb_custom_variant/variant_generic.cpp
       await this.generateVariantCpp(specificVariantDir, boardData);
+      // 回退方案: 自动生成 variants/eb_custom_variant/generic_clock.c 等缺少的弱函数
+      await this.generateGenericClockC(specificVariantDir);
     } else {
       console.log(`[VariantGenerator] Successfully reused official variant files for ${boardData.name}`);
     }
@@ -187,6 +189,21 @@ class VariantGenerator {
 
         const stats = fs.statSync(srcFile);
         if (stats.isFile()) {
+          // [PATCH] For generic boards, we want to avoid including multiple variant files
+          // that could cause symbol redefinition errors (e.g., STM32WL series).
+          if (data.id.toLowerCase().startsWith('generic_')) {
+            // Only keep the main generic variant file
+            if (file.startsWith('variant_') && file.endsWith('.cpp') && file !== 'variant_generic.cpp') {
+              console.log(`[VariantGenerator] Skipping non-generic variant file: ${file}`);
+              continue;
+            }
+            // Skip additional PeripheralPins files (e.g., PeripheralPins_WE_OCEANUS1.c)
+            if (file.startsWith('PeripheralPins_') && file.endsWith('.c')) {
+              console.log(`[VariantGenerator] Skipping specific PeripheralPins file: ${file}`);
+              continue;
+            }
+          }
+
           // 对 C/C++/H 文件放宽 ARDUINO_GENERIC_ 宏检查
           if (file.endsWith('.c') || file.endsWith('.cpp') || file.endsWith('.h')) {
             let content = fs.readFileSync(srcFile, 'utf8');
@@ -230,38 +247,67 @@ class VariantGenerator {
 
     // 提前确定 product_line 用于 extra_flags
     // 产品线格式: STM32F103xB (HAL 设备选择器)
-    const productLineMacro = data.productLine || this.inferProductLine(data.mcu);
+    let productLineMacro = data.productLine || this.inferProductLine(data.mcu);
+
+    // [HOTFIX] STM32L1 系列 256KB flash (C) 且具有 132(Q) 或 144(Z) 引脚的芯片属于 Category 4，
+    // 具有 GPIOF 和 GPIOG。它们必须使用 'xCA' 产品线而不是 'xC'，
+    // 以便 CMSIS 头文件能够定义 GPIOF_BASE 和 GPIOG_BASE，否则
+    // 从 STM32duino 复制来的 PeripheralPins.c 会编译失败。
+    if (productLineMacro.match(/^STM32L1[0-9]{2}xC$/i)) {
+      if (data.mcu.match(/STM32L1[0-9]{2}[QZ]/i)) {
+        productLineMacro = productLineMacro + 'A';
+        data.productLine = productLineMacro; // Force override
+      }
+    }
+
+    // [HOTFIX] STM32WB0 系列 MCU (WB05, WB06, WB07, WB09) 需要 STM32WB0x 宏定义
+    // 以便包含正确的 stm32wb0x.h CMSIS 内核头文件。它们不使用 WB05xx 等格式。
+    if (productLineMacro.match(/^STM32WB0/i)) {
+      productLineMacro = 'STM32WB0x';
+      data.productLine = productLineMacro;
+    }
 
     // 生成 Arduino 板卡宏用于 variant_generic.cpp 条件编译
     // 格式: ARDUINO_GENERIC_F103C8TX (系列 + 封装 + Flash + 后缀 'X')
     const arduinoBoardMacro = this.generateArduinoBoardMacro(data.mcu);
 
-    // [CORE UPDATE] Ensure mandatory fields (core, mcu) even if data.build is provided
+    // [CORE UPDATE] 即使提供了 data.build，也要确保存在强制性字段 (core, mcu)
     const defaultBuild = {
       core: "stm32",
-      cpu: "cortex-m3", // Default fallback
+      cpu: "cortex-m3", // 默认退路
       mcu: data.mcu.toLowerCase()
     };
 
-    // Merge strategy: data.build (if any) > parentConfig.build (if any) > defaults
+    // 合并策略: data.build (如果有) > parentConfig.build (如果有) > 默认配置
     const build: any = {
       ...defaultBuild,
       ...(parentConfig?.build || {}),
       ...(data.build || {})
     };
 
-    // Ensure extra_flags includes productLineMacro and arduinoBoardMacro
+    // 确保 extra_flags 包含了 productLineMacro 和 arduinoBoardMacro
     const existingExtraFlags = build.extra_flags || '';
-    const requiredFlags = [`-D${productLineMacro}`, `-D${arduinoBoardMacro}`];
-    const newExtraFlags = [...new Set([...existingExtraFlags.split(' ').filter((f: string) => f), ...requiredFlags])].join(' ');
-    build.extra_flags = newExtraFlags;
+    const requiredFlags = [`-D${productLineMacro}`, `-DARDUINO_GENERIC_${arduinoBoardMacro}`];
+    let newExtraFlags = [...new Set([...existingExtraFlags.split(' ').filter((f: string) => f), ...requiredFlags])];
 
-    // [FIX] Always ensure 'mcu' is in build config, required by PlatformIO
+    // [HOTFIX] STM32WB0 系列 MCU 需要显式指定其 CMSIS 库的 Include 路径，
+    // 因为 PlatformIO 的 python 脚本会错误地根据 "STM32WB" 前缀推断出 "STM32WBxx"。
+    // 另外还需要针对 stm32wb0x.h 声明特定的子系列宏 (例如 STM32WB05)。
+    if (productLineMacro === 'STM32WB0x') {
+      newExtraFlags.push('-I"${platformio.packages_dir}/framework-arduinoststm32/system/Drivers/CMSIS/Device/ST/STM32WB0x/Include"');
+      const wb0SubFamily = data.mcu.match(/STM32WB0[5679]/i);
+      if (wb0SubFamily) {
+        newExtraFlags.push(`-D${wb0SubFamily[0].toUpperCase()}`);
+      }
+    }
+    build.extra_flags = newExtraFlags.join(' ');
+
+    // [FIX] 始终确保构建配置中存在 'mcu' 字段，这是 PlatformIO 的硬性要求
     build.mcu = data.mcu.toLowerCase();
 
-    // Set f_cpu if not already set
+    // 如果尚未设置，则设置 f_cpu
     if (!build.f_cpu) {
-      build.f_cpu = "72000000L"; // Default F_CPU
+      build.f_cpu = "72000000L"; // 默认 F_CPU
     }
 
     // [增强] 使用增强兼容性映射中的 product_line
@@ -274,19 +320,44 @@ class VariantGenerator {
     // 智能修正 CPU 类型 (F4, F3, G4, H7 等为 M4/M7)
     if (!parentConfig?.build?.cpu) {
       const mcuName = data.mcu.toUpperCase();
-      if (mcuName.startsWith('STM32WBA') || mcuName.startsWith('STM32H5') || mcuName.startsWith('STM32U5') || mcuName.startsWith('STM32L5')) {
-        build.cpu = "cortex-m33";
-      } else if (['STM32F4', 'STM32F3', 'STM32G4', 'STM32L4', 'STM32WB'].some(p => mcuName.startsWith(p))) {
-        build.cpu = "cortex-m4";
-      } else if (['STM32F7', 'STM32H7'].some(p => mcuName.startsWith(p))) {
-        build.cpu = "cortex-m7";
-      } else if (['STM32G0', 'STM32F0', 'STM32L0', 'STM32C0'].some(p => mcuName.startsWith(p))) {
-        build.cpu = "cortex-m0plus";
-      } else if (['STM32F2'].some(p => mcuName.startsWith(p))) {
-        build.cpu = "cortex-m3";
-      } else {
-        build.cpu = "cortex-m3"; // F1, F2 等默认 M3
+      let cpuType = "cortex-m3"; // 默认后备选项
+
+      // 使用带正则的 switch(true) 进行更可靠的匹配，
+      // 特别是为了处理包含 "GENERIC_STM32F103C8" 这种格式的情况
+      switch (true) {
+        case /^(GENERIC_)?STM32WBA/i.test(mcuName):
+        case /^(GENERIC_)?STM32H5/i.test(mcuName):
+        case /^(GENERIC_)?STM32U5/i.test(mcuName):
+        case /^(GENERIC_)?STM32L5/i.test(mcuName):
+          cpuType = "cortex-m33";
+          break;
+        case /^(GENERIC_)?STM32G0/i.test(mcuName):
+        case /^(GENERIC_)?STM32F0/i.test(mcuName):
+        case /^(GENERIC_)?STM32L0/i.test(mcuName):
+        case /^(GENERIC_)?STM32C0/i.test(mcuName):
+        case /^(GENERIC_)?STM32WB0/i.test(mcuName):
+          cpuType = "cortex-m0plus";
+          break;
+        case /^(GENERIC_)?STM32F4/i.test(mcuName):
+        case /^(GENERIC_)?STM32F3/i.test(mcuName):
+        case /^(GENERIC_)?STM32G4/i.test(mcuName):
+        case /^(GENERIC_)?STM32L4/i.test(mcuName):
+        case /^(GENERIC_)?STM32WB/i.test(mcuName):
+          cpuType = "cortex-m4";
+          break;
+        case /^(GENERIC_)?STM32F7/i.test(mcuName):
+        case /^(GENERIC_)?STM32H7/i.test(mcuName):
+          cpuType = "cortex-m7";
+          break;
+        case /^(GENERIC_)?STM32F1/i.test(mcuName):
+        case /^(GENERIC_)?STM32F2/i.test(mcuName):
+          cpuType = "cortex-m3";
+          break;
+        default:
+          cpuType = "cortex-m3"; // 针对未知或旧版系列(如果上面未明确匹配)的默认值
+          break;
       }
+      build.cpu = cpuType;
     }
 
     // 强制重定向
@@ -321,6 +392,16 @@ class VariantGenerator {
     fs.writeFileSync(path.join(boardsDir, 'eb_custom_board.json'), JSON.stringify(boardJson, null, 2));
   }
 
+  private formatPinName(pin: string): string {
+    if (!pin) return "NC";
+    // Strip suffixes like _R to avoid undefined PinName errors (PA_9_R -> PA_9)
+    const match = pin.match(/^P([A-Z])(\d+)(_[A-Z]+)?$/);
+    if (match) {
+      return `P${match[1]}_${match[2]}`;
+    }
+    return pin;
+  }
+
   private async generatePeripheralPinsC(variantDir: string, data: VariantData) {
     let content = `/*
  * THIS FILE IS GENERATED BY EMBEDBLOCKS STUDIO. DO NOT EDIT.
@@ -339,37 +420,78 @@ WEAK const PinMap PinMap_UART_TX[] = {
         const inst = data.pinout.UART[uart];
         if (inst.TX) {
           inst.TX.forEach((pin: string) => {
-            content += `  {${pin}, ${uart.replace('USART', 'INSTANCE_USART').replace('UART', 'INSTANCE_UART')}, STM_PIN_DATA(STM_MODE_AF_PP, GPIO_PULLUP, GPIO_AF_UNKNOWN)}, // TODO: Better AF matching if needed\n`;
+            // Some keys are 'UART4', some are 'USART1', some are 'LPUART1'
+            // Keep the exact name from the JSON key, just ensure it matches the core's expected instance macro.
+            // The JSON keys are usually already correct (e.g. UART4, USART1, LPUART1).
+            content += `  {${this.formatPinName(pin)}, ${uart}, STM_PIN_DATA(STM_MODE_AF_PP, GPIO_PULLUP, GPIO_AF_NONE)}, // Fallback GPIO_AF_NONE used\n`;
           });
         }
       });
     }
-    content += `  {NC,    NP,    0}\n};\n#endif\n\n`;
+    content += `  {NC,    NP,    0}\n};\n`;
 
-    // 注意: 这是简化版本。完整的 AF 数据需要更多解析工作。
-    // 目前主要关注基础设施的实现。 
+    // Add missing WEAK definitions to satisfy linker
+    content += `
+WEAK const PinMap PinMap_UART_RX[] = { {NC, NP, 0} };
+WEAK const PinMap PinMap_UART_RTS[] = { {NC, NP, 0} };
+WEAK const PinMap PinMap_UART_CTS[] = { {NC, NP, 0} };
+#endif
+
+/* ===== TIM ===== */
+#ifdef HAL_TIM_MODULE_ENABLED
+WEAK const PinMap PinMap_TIM[] = { {NC, NP, 0} };
+#endif
+
+/* ===== I2C ===== */
+#ifdef HAL_I2C_MODULE_ENABLED
+WEAK const PinMap PinMap_I2C_SDA[] = { {NC, NP, 0} };
+WEAK const PinMap PinMap_I2C_SCL[] = { {NC, NP, 0} };
+#endif
+
+/* ===== SPI ===== */
+#ifdef HAL_SPI_MODULE_ENABLED
+WEAK const PinMap PinMap_SPI_MOSI[] = { {NC, NP, 0} };
+WEAK const PinMap PinMap_SPI_MISO[] = { {NC, NP, 0} };
+WEAK const PinMap PinMap_SPI_SCLK[] = { {NC, NP, 0} };
+WEAK const PinMap PinMap_SPI_SSEL[] = { {NC, NP, 0} };
+#endif
+
+/* ===== ADC ===== */
+#ifdef HAL_ADC_MODULE_ENABLED
+WEAK const PinMap PinMap_ADC[] = { {NC, NP, 0} };
+#endif
+
+/* ===== DAC ===== */
+#ifdef HAL_DAC_MODULE_ENABLED
+WEAK const PinMap PinMap_DAC[] = { {NC, NP, 0} };
+#endif
+`;
 
     fs.writeFileSync(path.join(variantDir, 'PeripheralPins.c'), content);
   }
 
   private async generateVariantH(variantDir: string, data: VariantData) {
+    const digitalPinsLength = data.pin_options?.digital?.length || 0;
     let content = `#ifndef _VARIANT_GENERIC_H_
 #define _VARIANT_GENERIC_H_
 
+#define NUM_DIGITAL_PINS        ${digitalPinsLength}
+#define NUM_ANALOG_INPUTS       0
+
 /* UART */
 #define SERIAL_UART_INSTANCE 1
-#define PIN_SERIAL_RX ${data.defaults?.serial?.rx || 'PA3'}
-#define PIN_SERIAL_TX ${data.defaults?.serial?.tx || 'PA2'}
+#define PIN_SERIAL_RX ${this.formatPinName(data.defaults?.serial?.rx || 'PA3')}
+#define PIN_SERIAL_TX ${this.formatPinName(data.defaults?.serial?.tx || 'PA2')}
 
 /* I2C */
-#define PIN_WIRE_SDA ${data.defaults?.i2c?.sda || 'PB7'}
-#define PIN_WIRE_SCL ${data.defaults?.i2c?.scl || 'PB6'}
+#define PIN_WIRE_SDA ${this.formatPinName(data.defaults?.i2c?.sda || 'PB7')}
+#define PIN_WIRE_SCL ${this.formatPinName(data.defaults?.i2c?.scl || 'PB6')}
 
 /* SPI */
-#define PIN_SPI_MOSI ${data.defaults?.spi?.mosi || 'PA7'}
-#define PIN_SPI_MISO ${data.defaults?.spi?.miso || 'PA6'}
-#define PIN_SPI_SCK  ${data.defaults?.spi?.sck || 'PA5'}
-#define PIN_SPI_SS   ${data.defaults?.spi?.ss || 'PA4'}
+#define PIN_SPI_MOSI ${this.formatPinName(data.defaults?.spi?.mosi || 'PA7')}
+#define PIN_SPI_MISO ${this.formatPinName(data.defaults?.spi?.miso || 'PA6')}
+#define PIN_SPI_SCK  ${this.formatPinName(data.defaults?.spi?.sck || 'PA5')}
+#define PIN_SPI_SS   ${this.formatPinName(data.defaults?.spi?.ss || 'PA4')}
 
 #endif
 `;
@@ -380,16 +502,40 @@ WEAK const PinMap PinMap_UART_TX[] = {
     const digitalPins = data.pin_options.digital || [];
     let content = `#include <Arduino.h>\n\n`;
     content += `// Digital Pin Array\n`;
-    content += `const uint32_t digitalPin[] = {\n`;
+    content += `extern "C" {\n`;
+    content += `  const PinName digitalPin[] = {\n`;
     digitalPins.forEach((pair: string[]) => {
-      content += `  ${pair[1]}, // ${pair[0]}\n`;
+      content += `    ${this.formatPinName(pair[1])}, // ${pair[0]}\n`;
     });
-    content += `};\n\n`;
+    content += `  };\n`;
+    content += `}\n\n`;
 
     content += `// Analog Pin Array\n`;
     content += `// TODO: Implement analogPin array mapping if needed for full compatibility\n`;
 
     fs.writeFileSync(path.join(variantDir, 'variant_generic.cpp'), content);
+  }
+
+  private async generateGenericClockC(variantDir: string) {
+    const content = `/*
+ * THIS FILE IS GENERATED BY EMBEDBLOCKS STUDIO. DO NOT EDIT.
+ */
+#include <Arduino.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+WEAK void SystemClock_Config(void)
+{
+  /* SystemClock_Config can be generated by STM32CubeMX */
+}
+
+#ifdef __cplusplus
+}
+#endif
+`;
+    fs.writeFileSync(path.join(variantDir, 'generic_clock.c'), content);
   }
 
   private async generateLdScript(variantDir: string, data: VariantData) {

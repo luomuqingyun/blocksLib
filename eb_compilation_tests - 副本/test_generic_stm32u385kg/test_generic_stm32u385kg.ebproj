@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "name": "test_generic_stm32u385kg",
+    "boardId": "generic_stm32u385kg",
+    "createdAt": 1772610805741,
+    "lastModified": 1772616211693,
+    "buildConfig": {
+      "envName": "STM32U385KG",
+      "platform": "ststm32",
+      "board": "eb_custom_board",
+      "framework": "arduino",
+      "cpu": "cortex-m33",
+      "local_patch": true,
+      "original_board": "generic_stm32u385kg"
+    }
+  },
+  "blocks": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "arduino_entry_root",
+          "id": "default_entry_root",
+          "x": 50,
+          "y": 50,
+          "inputs": {
+            "LOOP_STACK": {
+              "block": {
+                "type": "arduino_digital_toggle",
+                "id": "toggle_block",
+                "fields": {
+                  "PIN": "PA0"
+                },
+                "next": {
+                  "block": {
+                    "type": "arduino_delay_ms",
+                    "id": "delay_block",
+                    "inputs": {
+                      "DELAY": {
+                        "shadow": {
+                          "type": "math_number",
+                          "id": "delay_val",
+                          "fields": {
+                            "NUM": 1000
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

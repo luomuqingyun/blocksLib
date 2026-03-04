@@ -1,0 +1,25 @@
+{
+  "build": {
+    "core": "stm32",
+    "cpu": "cortex-m4",
+    "mcu": "stm32wb35ce",
+    "extra_flags": "-DSTM32WB35xx -DARDUINO_GENERIC_ARDUINO_GENERIC_WB35CETX",
+    "f_cpu": "72000000L",
+    "product_line": "STM32WB35xx",
+    "variant": "eb_custom_variant",
+    "ldscript": "ldscript.ld"
+  },
+  "name": "EmbedBlocks Custom (STM32WB35CE)",
+  "upload": {
+    "maximum_ram_size": 98304,
+    "maximum_size": 524288,
+    "protocol": "stlink"
+  },
+  "vendor": "ST",
+  "url": "https://www.st.com/en/microcontrollers-microprocessors.html",
+  "frameworks": [
+    "arduino",
+    "cmsis",
+    "stm32cube"
+  ]
+}

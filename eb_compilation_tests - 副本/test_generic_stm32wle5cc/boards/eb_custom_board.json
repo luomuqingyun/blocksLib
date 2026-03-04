@@ -1,0 +1,25 @@
+{
+  "build": {
+    "core": "stm32",
+    "cpu": "cortex-m3",
+    "mcu": "stm32wle5cc",
+    "extra_flags": "-DSTM32WLE5xx -DARDUINO_GENERIC_ARDUINO_GENERIC_WLE5CCTX",
+    "f_cpu": "72000000L",
+    "product_line": "STM32WLE5xx",
+    "variant": "eb_custom_variant",
+    "ldscript": "ldscript.ld"
+  },
+  "name": "EmbedBlocks Custom (STM32WLE5CC)",
+  "upload": {
+    "maximum_ram_size": 65536,
+    "maximum_size": 262144,
+    "protocol": "stlink"
+  },
+  "vendor": "ST",
+  "url": "https://www.st.com/en/microcontrollers-microprocessors.html",
+  "frameworks": [
+    "arduino",
+    "cmsis",
+    "stm32cube"
+  ]
+}

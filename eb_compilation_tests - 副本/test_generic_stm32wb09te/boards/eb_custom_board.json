@@ -1,0 +1,25 @@
+{
+  "build": {
+    "core": "stm32",
+    "cpu": "cortex-m0plus",
+    "mcu": "stm32wb09te",
+    "extra_flags": "-DSTM32WB0x -DARDUINO_GENERIC_ARDUINO_GENERIC_WB09TETX -I\"${platformio.packages_dir}/framework-arduinoststm32/system/Drivers/CMSIS/Device/ST/STM32WB0x/Include\" -DSTM32WB09",
+    "f_cpu": "72000000L",
+    "product_line": "STM32WB0x",
+    "variant": "eb_custom_variant",
+    "ldscript": "ldscript.ld"
+  },
+  "name": "EmbedBlocks Custom (STM32WB09TE)",
+  "upload": {
+    "maximum_ram_size": 65536,
+    "maximum_size": 524288,
+    "protocol": "stlink"
+  },
+  "vendor": "ST",
+  "url": "https://www.st.com/en/microcontrollers-microprocessors.html",
+  "frameworks": [
+    "arduino",
+    "cmsis",
+    "stm32cube"
+  ]
+}

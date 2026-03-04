@@ -151,11 +151,69 @@ export const generateIniConfig = (template: PlatformIOTemplate): string => {
         config += `board_build.variants_dir = variants\n`;
         config += `board_build.variant = eb_custom_variant\n`;
 
-        // [WBA Fix] 针对 STM32WBA 系列，自动注入构建拦截脚本以解决驱动识别错误问题
+        // [STM32 Fixes] 自动注入必要的构建拦截脚本和系统标志
         // 只有当 template 中没有手动定义 extra_scripts 时才自动添加
-        const actualBoard = String(template['original_board'] || template.board);
-        if (actualBoard.toLowerCase().includes('wba') && !template['extra_scripts']) {
-            config += `extra_scripts = post:fix_wba_build.py\n`;
+        const actualBoard = String(template['original_board'] || template.board).toLowerCase();
+
+        // 1. STM32H7 Dual Core
+        if (actualBoard.includes('h745') || actualBoard.includes('h747') || actualBoard.includes('h755') || actualBoard.includes('h757')) {
+            template.build_flags = (template.build_flags ? template.build_flags + ' ' : '') + '-DCORE_CM7';
+        }
+
+        // 2. STM32WL Sub-GHz
+        if (actualBoard.startsWith('generic_stm32wl') || actualBoard.startsWith('generic_stm32wle')) {
+            const chipBase = actualBoard.replace('generic_', '').substring(0, 9).toUpperCase() + 'xx';
+            let flags = `-D${chipBase}`;
+
+            // WL54/WL55/WLM 系列是双核, 默认使用 CM4
+            if (actualBoard.includes('wl54') || actualBoard.includes('wl55') || actualBoard.includes('wl5m')) {
+                flags += ' -DUSE_CM4_STARTUP_FILE';
+            }
+
+            template.build_flags = (template.build_flags ? template.build_flags + ' ' : '') + flags;
+            if (!template['extra_scripts']) template['extra_scripts'] = `pre:fix_wl_build.py`;
+        }
+
+        // 3. STM32WBA Series
+        if (actualBoard.includes('wba')) {
+            const chipBase = actualBoard.replace('generic_', '').substring(0, 10).toUpperCase() + 'xx';
+            template.build_flags = (template.build_flags ? template.build_flags + ' ' : '') + `-D${chipBase}`;
+            if (!template['extra_scripts']) {
+                template['extra_scripts'] = `post:fix_wba_build.py`;
+            }
+        }
+        // 4. STM32WB Series (Non-WBA)
+        else if (actualBoard.includes('wb') && !actualBoard.includes('wba')) {
+            const chipBase = actualBoard.replace('generic_', '').substring(0, 9).toUpperCase() + 'xx';
+            // WB0x 需要特别加上基础宏，不然后续 PIO 不会加载 WB0x 的 CMSIS 头文件路径
+            let flags = `-D${chipBase}`;
+            if (actualBoard.includes('wb0')) {
+                flags += ' -DSTM32WB0x';
+            }
+            template.build_flags = (template.build_flags ? template.build_flags + ' ' : '') + flags;
+            if (!template['extra_scripts']) {
+                template['extra_scripts'] = `post:fix_wb_build.py`;
+            }
+        }
+
+        // 5. STM32C0 Series
+        if (actualBoard.startsWith('generic_stm32c0') && !template['extra_scripts']) {
+            template['extra_scripts'] = `post:fix_c0_build.py`;
+        }
+
+        // 6. STM32H5 and STM32U3 Series (DLYB LL bug fix)
+        if ((actualBoard.startsWith('generic_stm32h5') || actualBoard.startsWith('generic_stm32u3')) && !template['extra_scripts']) {
+            template['extra_scripts'] = `post:fix_ll_dlyb.py`;
+        }
+
+        // 7. STM32L1 Series (Missing Pin definitions fix)
+        if (actualBoard.startsWith('generic_stm32l1') && !template['extra_scripts']) {
+            template['extra_scripts'] = `post:fix_l1_variant.py`;
+        }
+
+        // 8. STM32L0 Series (Enable LTO to fit inside 8KB flash for L011)
+        if (actualBoard.startsWith('generic_stm32l0') && !String(template.build_flags || '').includes('-flto')) {
+            template.build_flags = (template.build_flags ? template.build_flags + ' ' : '') + '-flto -Os --specs=nano.specs -fno-exceptions -fno-rtti';
         }
     }
 

@@ -68,6 +68,8 @@ function main() {
     let totalFiles = 0;
     // 收集生成的文名用于后期清理过时文件
     const generatedFiles = new Set<string>();
+    // 收集由于 8KB 限制被丢弃的芯片用于生成黑名单报告
+    const excluded8kbChips: any[] = [];
 
     // 遍历每一个系列 (Series)
     Object.keys(stm32Series).forEach(series => {
@@ -95,6 +97,13 @@ function main() {
             // ------------------------------------------------------------------
             if (!b.specs || b.specs.includes('Unknown')) {
                 b.specs = getSpecsFromMcuName(mcuName);
+            }
+
+            // [FIX] User explicitly requested to completely eradicate 8KB flash chips from the UI/JSON data
+            if (b.specs && /\b8k flash\b/i.test(b.specs)) {
+                console.log(`[过滤] 跳过不支持的 8KB 芯片: ${mcuName}`);
+                excluded8kbChips.push({ id: b.id, name: b.name || b.id, specs: b.specs });
+                return; // 跳出此板卡的处理循环，不生成 JSON 文件
             }
 
             // 获取该型号的详细外设数据和默认引脚
@@ -413,6 +422,35 @@ function main() {
     console.log(`清理完成，共移除了 ${cleanedCount} 个过时文件。`);
 
     // ------------------------------------------------------------------
+    // [新增] 导出被过滤的 8KB 芯片报告
+    // ------------------------------------------------------------------
+    console.log('\n正在导出被拦截的 8KB 芯片报告...');
+    const outJsonPath = path.join(__dirname, '../../electron/config/unsupported_8kb_chips.json');
+    const outMdPath = path.join(__dirname, '../../docs/unsupported_8kb_chips.md');
+
+    fs.writeFileSync(outJsonPath, JSON.stringify(excluded8kbChips.map(c => c.id), null, 2), 'utf-8');
+
+    const mdContent = [
+        '# 不受支持的 8KB 闪存芯片硬件黑名单 (EmbedBlocks)',
+        '',
+        '以下 STM32 芯片在结构上不受 EmbedBlocks/Arduino 标准框架的支持，因为它们的硬件闪存 (8KB) 在物理限制上太小，无法容纳最低的固件编译体积要求（即使开启 `-Os` 优化参数，一个最小的空程序也需要大约 11KB 的闪存空间）。',
+        '',
+        '为了防止用户必然遇到 `region FLASH overflowed` (闪存溢出) 的底层编译错误，系统级别的项目创建服务已主动禁止针对于这些微控制器创建或载入任何代码工程。',
+        '',
+        '## 已被拦截的微控制器型号',
+        ''
+    ];
+    excluded8kbChips.forEach(chip => {
+        mdContent.push(`- **${chip.name}** (\`${chip.id}\`) - ${chip.specs}`);
+    });
+
+    if (!fs.existsSync(path.dirname(outMdPath))) {
+        fs.mkdirSync(path.dirname(outMdPath), { recursive: true });
+    }
+    fs.writeFileSync(outMdPath, mdContent.join('\n'), 'utf-8');
+    console.log(`[完成] 已导出 ${excluded8kbChips.length} 款由于物理容量限制被拦截的 8KB 芯片列表。`);
+
+    // ------------------------------------------------------------------
     // [新增] 生成兼容性映射 (stm32_compatibility_enhanced.json)
     // ------------------------------------------------------------------
     console.log('\n正在生成兼容性映射...');
@@ -651,16 +689,16 @@ function getCpuArch(mcu: string): string {
     if (!arch) {
         if (rawMcu.startsWith('STM32WBA') || rawMcu.startsWith('STM32H5') || rawMcu.startsWith('STM32U5') || rawMcu.startsWith('STM32L5')) {
             arch = "cortex-m33";
-        } else if (['STM32F4', 'STM32F3', 'STM32G4', 'STM32L4', 'STM32WB'].some(p => rawMcu.startsWith(p))) {
+        } else if (['STM32F4', 'STM32F3', 'STM32G4', 'STM32L4'].some(p => rawMcu.startsWith(p)) || (rawMcu.startsWith('STM32WB') && !rawMcu.startsWith('STM32WB0'))) {
             arch = "cortex-m4";
         } else if (['STM32F7', 'STM32H7'].some(p => rawMcu.startsWith(p))) {
             arch = "cortex-m7";
-        } else if (['STM32G0', 'STM32F0', 'STM32L0', 'STM32C0'].some(p => rawMcu.startsWith(p))) {
+        } else if (['STM32G0', 'STM32F0', 'STM32L0', 'STM32C0', 'STM32WB0'].some(p => rawMcu.startsWith(p))) {
             arch = "cortex-m0plus";
         } else if (['STM32F2'].some(p => rawMcu.startsWith(p))) {
             arch = "cortex-m3";
         } else {
-            arch = "cortex-m3"; // Default to M3 (F1 series etc)
+            arch = "cortex-m3"; // 默认退路到 M3 (F1 系列等)
         }
     }
 

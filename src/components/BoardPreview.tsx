@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Cpu, MemoryStick, Link, Maximize2, X, Focus } from 'lucide-react';
+import { Cpu, MemoryStick, Link, Maximize2, X, Focus, AlertCircle } from 'lucide-react';
 import { PinMapping } from '../types/board';
 import { ChipRenderer } from './ChipRenderer';
 import { BaseModal } from './BaseModal';
@@ -241,6 +241,19 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                         <Link size={12} />
                         官方文档 (Documentation)
                     </a>
+                )}
+
+                {/* 8KB 物理限制警告栏 */}
+                {specs && /\b8k flash\b/i.test(specs) && (
+                    <div className="mt-4 p-3 bg-red-900/20 border border-red-900/50 rounded-md flex items-start gap-3 select-none">
+                        <AlertCircle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                            <h4 className="text-xs font-bold text-red-400 mb-1">UNSUPPORTED HARDWARE</h4>
+                            <p className="text-xs text-red-300/80 leading-relaxed">
+                                This microcontroller only has 8KB of Flash memory. The minimum requirement to compile the Arduino software framework is approximately 11KB. Generation of projects targeting this chip is disabled to prevent unavoidable <code>region FLASH overflowed</code> compilation errors.
+                            </p>
+                        </div>
+                    </div>
                 )}
             </div>
 
