@@ -74,9 +74,9 @@ function countBlocksInChain(block: any): number {
 
 
 
-/** 背包图标 SVG - 80x80px 尺寸与 Blockly 系统图标一致 */
+/** 背包图标 SVG - 72x72px 尺寸与 Blockly 系统图标一致 */
 const BackpackIcon = () => (
-    <svg viewBox="0 0 24 24" width="80" height="80" style={{ width: 80, height: 80 }} fill="currentColor">
+    <svg viewBox="0 0 24 24" width="72" height="72" style={{ width: 72, height: 72 }} fill="currentColor">
         <path d="M13.97,5.34C13.98,5.23,14,5.12,14,5c0-1.1-0.9-2-2-2s-2,0.9-2,2c0,0.12,0.02,0.23,0.03,0.34C7.69,6.15,6,8.38,6,11v8 c0,1.1,0.9,2,2,2h8c1.1,0,2-0.9,2-2v-8C18,8.38,16.31,6.15,13.97,5.34z M11,5c0-0.55,0.45-1,1-1s1,0.45,1,1 c0,0.03-0.01,0.06-0.02,0.09C12.66,5.03,12.34,5,12,5s-0.66,0.03-0.98,0.09C11.01,5.06,11,5.03,11,5z M16,13v1v0.5 c0,0.28-0.22,0.5-0.5,0.5S15,14.78,15,14.5V14v-1H8v-1h7h1V13z" />
     </svg>
 );
@@ -418,7 +418,7 @@ export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace, curre
                 className={`custom-backpack-btn ${isOpen ? 'active' : ''} ${items.length > 0 ? 'has-items' : ''} ${isDragOver ? 'drag-over' : ''}`}
                 onClick={() => setIsOpen(!isOpen)}
                 title={`背包 (${items.length}) - 拖拽积木到此添加`}
-                style={{ width: 80, height: 80, minWidth: 80, minHeight: 80 }}
+                style={{ width: 72, height: 72, minWidth: 72, minHeight: 72 }}
             >
                 <BackpackIcon />
                 {items.length > 0 && (

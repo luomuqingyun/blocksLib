@@ -26,6 +26,11 @@ interface BoardPreviewProps {
     specs?: string;         // 规格摘要 (如 "32k Flash / 2k RAM")
     images?: BoardImages;   // 媒体图片对象
     pageUrl?: string;       // 官方文档链接
+    boardId?: string;       // 板卡唯一标识符 (用于区分系统内置还是外部插件)
+    visuals?: {             // 视觉展示配置
+        svgPath?: string;
+        svgContent?: string;
+    };
     className?: string;     // 外部布局类名
 }
 
@@ -48,6 +53,8 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
     specs,
     images,
     pageUrl,
+    boardId,
+    visuals,
     className
 }) => {
     // 内部状态
@@ -189,6 +196,8 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                         pinCount={pinCount}
                         pins={pins}
                         pinMap={pinMap}
+                        boardId={boardId}
+                        visuals={visuals}
                         className="w-full h-full p-4 pointer-events-none"
                     />
                 ) : (
@@ -351,7 +360,7 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                                 style={{ maxHeight: '80vh', maxWidth: '80vw' }}
                             />
                         ) : canRenderChip ? (
-                            <div className="w-[800px] h-[800px] pointer-events-none">
+                            <div className="w-full h-full p-8 flex items-center justify-center max-h-[85vh] max-w-[85vw] pointer-events-none">
                                 {/* 当没有实物图时，使用 ChipRenderer 进行 3D/仿真预览 */}
                                 <ChipRenderer
                                     mcu={mcu || name}
@@ -359,6 +368,8 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
                                     pinCount={pinCount}
                                     pins={pins}
                                     pinMap={pinMap}
+                                    boardId={boardId}
+                                    visuals={visuals}
                                     className="w-full h-full border-none bg-transparent"
                                 />
                             </div>

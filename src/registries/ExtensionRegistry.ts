@@ -372,6 +372,20 @@ class ExtensionRegistryService {
                                         });
                                     }
 
+                                    // 处理插件自带的 CUSTOM_SVG 模型加载
+                                    if (boardConfig.package === 'CUSTOM_SVG' && boardConfig.visuals?.svgPath) {
+                                        try {
+                                            const svgContent = await window.electronAPI.extensionReadFile(ext.manifest.id, boardConfig.visuals.svgPath);
+                                            if (svgContent) {
+                                                boardConfig.visuals.svgContent = svgContent;
+                                            } else {
+                                                console.warn(`[Extension] SVG file not found: ${boardConfig.visuals.svgPath} in ${ext.manifest.id}`);
+                                            }
+                                        } catch (e) {
+                                            console.error(`[Extension] Failed to load SVG asset for board ${boardConfig.id}:`, e);
+                                        }
+                                    }
+
                                     BoardRegistry.register(boardConfig);
                                     console.log(`Registered extension board: ${boardConfig.id}`);
                                 } catch (parseErr) {

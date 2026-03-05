@@ -330,3 +330,27 @@ body,
   animation: float-reverse 4s ease-in-out infinite;
   /* 4秒一个周期，镜像动画 */
 }
+
+/* --- 自定义板卡 SVG 引脚高亮 (Chip Renderer SVG Highlighting) --- */
+.pin-highlight {
+  filter: drop-shadow(0 0 8px var(--highlight-color, #4ade80));
+  stroke: var(--highlight-color, #4ade80);
+  stroke-width: 2px;
+  animation: pin-pulse 2s infinite ease-in-out;
+  transition: all 0.3s ease;
+  z-index: 50;
+}
+
+@keyframes pin-pulse {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 5px var(--highlight-color, #4ade80));
+    opacity: 0.8;
+  }
+
+  50% {
+    filter: drop-shadow(0 0 15px var(--highlight-color, #4ade80));
+    opacity: 1;
+  }
+}

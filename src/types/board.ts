@@ -217,6 +217,11 @@ export interface Board {
         /** 是否支持 RTOS */
         rtos?: boolean;
     };
+    /** 视觉展示配置 (如自定义 SVG 路径与内容) */
+    visuals?: {
+        svgPath?: string;
+        svgContent?: string;
+    };
     /** 构建配置 (迁移期间可选) */
     build?: BoardBuildConfig;
 }

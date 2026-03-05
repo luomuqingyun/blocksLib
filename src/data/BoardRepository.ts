@@ -30,6 +30,9 @@ const standardModules = import.meta.glob('/src/data/boards/standard/**/*.json', 
 const stm32Modules = import.meta.glob('/src/data/boards/stm32/**/*.json', { eager: false });
 const customModules = import.meta.glob('/src/data/boards/custom/**/*.json', { eager: true });
 
+// 自动打包所有的源自带 SVG 文件作为纯文本
+const standardSvgs = import.meta.glob('/src/data/boards/**/*.svg', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+
 
 
 export interface BoardRepository {
@@ -111,8 +114,37 @@ class BoardRepositoryImpl implements BoardRepository {
                 if (!result[catName]) result[catName] = [];
                 const rawBoard = mod.default || mod;
 
+                // [SVG AUTO-DISCOVERY & PRIORITY] 
+                // 自动检测逻辑：如果板卡 JSON 同级目录下存在与其 ID 匹配或指定的 SVG 文件，则强制提升为 CUSTOM_SVG
+                let customSvgContent = rawBoard.visuals?.svgContent;
+                const dir = path.substring(0, path.lastIndexOf('/') + 1);
+                const svgFileName = rawBoard.visuals?.svgPath || `${rawBoard.id}.svg`;
+                const svgRelPath = svgFileName.startsWith('./') ? svgFileName.substring(2) : svgFileName;
+
+                // 构造 Vite import.meta.glob 键名格式
+                const fullSvgPath = (dir + svgRelPath).startsWith('/')
+                    ? (dir + svgRelPath)
+                    : '/' + (dir + svgRelPath);
+
+                const foundSvg = standardSvgs[fullSvgPath];
+
+                if (foundSvg) {
+                    // 找到了匹配的 SVG，自动设置为 CUSTOM_SVG 模式并注入原文
+                    rawBoard.package = 'CUSTOM_SVG';
+                    customSvgContent = foundSvg;
+                    if (!rawBoard.visuals) rawBoard.visuals = {};
+                    rawBoard.visuals.svgPath = svgRelPath;
+                } else if (rawBoard.package === 'CUSTOM_SVG') {
+                    // 如果 JSON 显式声明了 CUSTOM_SVG 但没找到文件，输出警告
+                    console.warn(`[BoardRepository] CUSTOM_SVG declared but file not found at: ${fullSvgPath}`);
+                }
+
                 const board = {
                     ...rawBoard,
+                    visuals: {
+                        ...(rawBoard.visuals || {}),
+                        ...(customSvgContent ? { svgContent: customSvgContent } : {})
+                    },
                     family: category.toLowerCase(),
                     page_url: rawBoard.page_url || `https://www.google.com/search?q=${rawBoard.name ? rawBoard.name.replace(/\s+/g, '+') : rawBoard.id}+${category}+board`,
                     build: {
@@ -259,8 +291,23 @@ class BoardRepositoryImpl implements BoardRepository {
                     pageUrl = `https://www.st.com/content/st_com/en/search.html#q=${mcu}`;
                 }
 
+                // 尝试提取同目录下的 SVG 原文 (如果 package 是 CUSTOM_SVG)
+                let customSvgContent = rawBoard.visuals?.svgContent;
+                if (!customSvgContent && rawBoard.package === 'CUSTOM_SVG' && rawBoard.visuals?.svgPath) {
+                    const dir = path.substring(0, path.lastIndexOf('/') + 1);
+                    const svgRelPath = rawBoard.visuals.svgPath.startsWith('./')
+                        ? rawBoard.visuals.svgPath.substring(2)
+                        : rawBoard.visuals.svgPath;
+                    const fullSvgPath = dir + svgRelPath;
+                    customSvgContent = standardSvgs[fullSvgPath];
+                }
+
                 const board = {
                     ...rawBoard,
+                    visuals: {
+                        ...(rawBoard.visuals || {}),
+                        ...(customSvgContent ? { svgContent: customSvgContent } : {})
+                    },
                     family: 'stm32',
                     page_url: pageUrl,
                     build: {

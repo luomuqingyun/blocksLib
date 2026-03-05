@@ -29,6 +29,7 @@ import { LoadedExtension, ExtensionRegistry } from '../registries/ExtensionRegis
 import { BoardRegistry } from '../registries/BoardRegistry';
 import { BaseModal } from './BaseModal';
 import { useUI } from '../contexts/UIContext';
+import { notificationService } from '../services/NotificationService';
 
 // --- 组件属性类型 ---
 
@@ -67,7 +68,9 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
     // 市场状态
     const [marketplaces, setMarketplaces] = useState<string[]>([]);          // 已添加的市场源 URL 列表
     const [remoteExtensions, setRemoteExtensions] = useState<any[]>([]);     // 远程扩展列表
-    const [isLoadingMarketplace, setIsLoadingMarketplace] = useState(false); // 市场加载中状态
+    const [isSearching, setIsSearching] = useState(false);                   // 正在搜索市场扩展
+    const [isProcessing, setIsProcessing] = useState(false);                 // 正在执行安装/卸载/导入操作
+    const [processingMsg, setProcessingMsg] = useState('');                  // 处理中的提示文字
     const [isAddingMarketplace, setIsAddingMarketplace] = useState(false);   // 添加市场源弹窗状态
     const [newMarketplaceUrl, setNewMarketplaceUrl] = useState('');          // 新市场源 URL
 
@@ -98,7 +101,7 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                 setMarketplaces(urls);
 
                 // 从每个市场源获取扩展列表
-                setIsLoadingMarketplace(true);
+                setIsSearching(true);
                 const results = await Promise.all(urls.map(async (url) => {
                     try {
                         return await window.electronAPI.marketplaceFetchRemote(url);
@@ -111,7 +114,7 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
             } catch (e) {
                 console.error("加载市场失败", e);
             } finally {
-                setIsLoadingMarketplace(false);
+                setIsSearching(false);
             }
         }
     };
@@ -144,11 +147,12 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
      */
     const handleInstall = async (ext: any, force: boolean = false) => {
         if (window.electronAPI) {
-            setIsLoadingMarketplace(true);
+            setIsProcessing(true);
+            setProcessingMsg(t('extensions.installing'));
             try {
                 const result = await window.electronAPI.marketplaceInstall(ext, force);
                 if (result.success) {
-                    alert(result.message);
+                    notificationService.show(result.message, 'success');
                     await ExtensionRegistry.reload();
                     loadExtensions();
                 } else if (result.status === 'downgrade') {
@@ -158,18 +162,19 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                         new: result.newVersion,
                         defaultValue: `检测到降级!\n当前: v${result.currentVersion}\n新版本: v${result.newVersion}\n\n是否覆盖?`
                     }))) {
-                        // 用户确认，强制安装
-                        await handleInstall(ext, true);
+                        // 用户确认，由于 confirm 是阻塞的，我们需要先关闭主处理状态
+                        setIsProcessing(false);
+                        handleInstall(ext, true);
                         return;
                     }
                 } else {
-                    alert(result.message);
+                    notificationService.show(result.message, 'error');
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error("安装失败:", error);
-                alert("安装失败: " + error);
+                notificationService.show(t('extensions.installFailed', { defaultValue: '安装失败' }) + ': ' + error?.message, 'error');
             } finally {
-                setIsLoadingMarketplace(false);
+                setIsProcessing(false);
             }
         }
     };
@@ -178,13 +183,20 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
     const handleUninstall = async (ext: LoadedExtension) => {
         if (window.electronAPI) {
             if (confirm(t('dialog.confirmUninstall', { name: ext.manifest.name, defaultValue: `确定要卸载 "${ext.manifest.name}" 吗?` }))) {
-                const result = await window.electronAPI.uninstallExtension(ext.manifest.id);
-                if (result.success) {
-                    BoardRegistry.unregisterExtension(ext.manifest.id);
-                    await ExtensionRegistry.reload(); // 重要: 更新注册表缓存
-                    loadExtensions(); // 刷新 UI
-                } else {
-                    alert(result.message);
+                setIsProcessing(true);
+                setProcessingMsg(t('extensions.uninstalling'));
+                try {
+                    const result = await window.electronAPI.uninstallExtension(ext.manifest.id);
+                    if (result.success) {
+                        BoardRegistry.unregisterExtension(ext.manifest.id);
+                        await ExtensionRegistry.reload();
+                        loadExtensions();
+                        notificationService.show(t('common.success', 'Success'), 'success');
+                    } else {
+                        notificationService.show(result.message, 'error');
+                    }
+                } finally {
+                    setIsProcessing(false);
                 }
             }
         }
@@ -199,6 +211,8 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
      */
     const handleImport = async (forceOptions?: { force: boolean, sourcePath: string }) => {
         if (window.electronAPI) {
+            setIsProcessing(true);
+            setProcessingMsg(t('extensions.importing'));
             try {
                 const result = await window.electronAPI.importExtension(forceOptions);
                 if (result.success) {
@@ -208,7 +222,6 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                     // 查找导入的扩展以获取本地化名称
                     let extName = "Extension";
                     if (result.extensionId) {
-                        // 必须再次从注册表获取，因为 loadExtensions() 是异步设置状态的
                         const freshExtensions = ExtensionRegistry.getExtensions();
                         const importedExt = freshExtensions.find(e => e.manifest.id === result.extensionId);
                         if (importedExt) {
@@ -216,7 +229,7 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                         }
                     }
 
-                    alert(t('dialog.importSuccess', { name: extName, defaultValue: `Extension "${extName}" imported successfully!` }));
+                    notificationService.show(t('dialog.importSuccess', { name: extName, defaultValue: `Extension "${extName}" imported successfully!` }), 'success');
                 } else if (result.status === 'downgrade') {
                     // 处理本地导入的降级确认
                     if (confirm(t('dialog.confirmDowngrade', {
@@ -225,25 +238,26 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                         defaultValue: `Downgrade detected!\nCurrent: v${result.currentVersion}\nNew: v${result.newVersion}\n\nDo you want to overwrite it?`
                     }))) {
                         if (result.actualSourcePath) {
-                            // 用户确认，强制导入
+                            setIsProcessing(false);
                             await handleImport({ force: true, sourcePath: result.actualSourcePath });
                         } else {
-                            alert("Error: Cannot retry import (path lost). Please try again.");
+                            notificationService.show("Error: Cannot retry import (path lost). Please try again.", 'error');
                         }
                     }
                 } else {
                     // 显示错误信息 (除非用户取消)
                     if (result.message !== 'Canceled') {
-                        alert('Import Failed: ' + result.message);
+                        notificationService.show('Import Failed: ' + result.message, 'error');
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error("IPC invoke failed:", error);
-                alert("IPC Error: " + error);
+                notificationService.show("IPC Error: " + error?.message, 'error');
+            } finally {
+                setIsProcessing(false);
             }
         } else {
             console.error("electronAPI not available");
-            alert("Internal Error: electronAPI not available");
         }
     };
 
@@ -412,8 +426,8 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                             </div>
 
                             {/* 远程扩展列表 */}
-                            <div className="space-y-4">
-                                {isLoadingMarketplace ? (
+                            <div className="space-y-4 relative min-h-[200px]">
+                                {isSearching ? (
                                     <div className="text-center py-20 text-slate-500">
                                         <Loader2 size={32} className="mx-auto mb-4 animate-spin opacity-50" />
                                         <p>{t('extensions.searching')}</p>
@@ -436,6 +450,16 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                                         />
                                     ))
                                 )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 全局处理遮罩层 (安装/卸载/导入) */}
+                    {isProcessing && (
+                        <div className="absolute inset-0 bg-[#1e1e1e]/60 backdrop-blur-[2px] z-50 flex flex-col items-center justify-center transition-all animate-in fade-in duration-200">
+                            <div className="bg-[#252526] p-8 rounded-xl border border-slate-700 shadow-2xl flex flex-col items-center gap-4">
+                                <Loader2 size={40} className="text-blue-500 animate-spin" />
+                                <p className="text-slate-200 font-medium">{processingMsg}</p>
                             </div>
                         </div>
                     )}

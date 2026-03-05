@@ -238,8 +238,13 @@ export const NewProjectModal: React.FC = () => {
         // 如果点击的是当前已选中的，则不触发更新，减少无谓的重绘
         if (selectedBoardId === board.id) return;
 
+        // [STALE CACHE FIX] 优先通过 ID 在实时注册表 (live data) 中寻找板卡定义。
+        // 这样即使是从过期的 Favorites 缓存点击，也能展示最新的 package/visuals 配置。
+        const liveBoard = allRegisteredBoards.find(b => b.id === board.id);
+        const finalBoard = liveBoard || board;
+
         setSelectedBoardId(board.id);
-        setSelectedBoardData(board);
+        setSelectedBoardData(finalBoard);
     };
 
     /**
@@ -673,6 +678,8 @@ export const NewProjectModal: React.FC = () => {
                                     specs={selectedBoardData.specs}
                                     images={selectedBoardData.images}
                                     pageUrl={selectedBoardData.page_url}
+                                    boardId={selectedBoardId}
+                                    visuals={selectedBoardData.visuals}
                                     className="flex-1 shadow-lg"
                                 />
                             </>

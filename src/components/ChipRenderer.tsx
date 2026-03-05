@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 
 /**
  * PinMapping: 物理引脚映射接口
@@ -14,10 +15,15 @@ interface PinMapping {
  */
 interface ChipRendererProps {
     mcu: string;          // MCU 型号名称 (如 "STM32F103C8")
-    packageType: string;  // 封装类型 (如 "LQFP", "QFN")
+    packageType: string;  // 封装类型 (如 "LQFP", "QFN", "CUSTOM_SVG")
     pinCount: number;     // 总引脚数
     pins: string[];       // 当前板卡正在使用的功能引脚列表 (用于高亮)
     pinMap?: PinMapping[]; // 可选的官方物理位置映射表
+    boardId?: string;     // 板卡唯一 ID
+    visuals?: {           // 视觉资源
+        svgPath?: string;
+        svgContent?: string;
+    };
     className?: string;   // 外部样式类名
 }
 
@@ -35,8 +41,80 @@ export const ChipRenderer: React.FC<ChipRendererProps> = ({
     pinCount,
     pins,
     pinMap = [],
+    boardId,
+    visuals,
     className
 }) => {
+    // 引用用于辅助操作 SVG DOM
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // 安全清理并缓存自定义 SVG 内容
+    const sanitizedSvg = useMemo(() => {
+        if (packageType === 'CUSTOM_SVG' && visuals?.svgContent) {
+            return DOMPurify.sanitize(visuals.svgContent, {
+                USE_PROFILES: { svg: true, svgFilters: true },
+                ADD_ATTR: ['id', 'class'] // 保证 id 用于引脚高亮锁定
+            });
+        }
+        return null;
+    }, [packageType, visuals?.svgContent]);
+
+    // 处理 CUSTOM_SVG 模式下的引脚交互高亮
+    useEffect(() => {
+        if (packageType !== 'CUSTOM_SVG' || !containerRef.current || !sanitizedSvg) return;
+
+        // 获取 SVG 内部所有带 id 的节点 (引脚通常命名为 pin_XXX)
+        const svgElement = containerRef.current.querySelector('svg');
+        if (!svgElement) return;
+
+        // 清除所有现有高亮 (如果有)
+        const highlighted = svgElement.querySelectorAll('.pin-highlight');
+        highlighted.forEach(el => el.classList.remove('pin-highlight'));
+
+        // 应用新高亮
+        pins.forEach(pinName => {
+            // 支持多种通配符命名: pin_D13, pin_13, D13
+            const possibleIds = [`pin_${pinName}`, pinName, `pin_${pinName.toLowerCase()}`];
+            for (const id of possibleIds) {
+                const node = svgElement.getElementById(id);
+                if (node) {
+                    node.classList.add('pin-highlight');
+                    break;
+                }
+            }
+        });
+    }, [pins, sanitizedSvg, packageType]);
+
+    // 如果是自定义 SVG，直接渲染清理后的 HTML
+    if (packageType === 'CUSTOM_SVG' && sanitizedSvg) {
+        return (
+            <div
+                ref={containerRef}
+                className={`custom-svg-renderer flex items-center justify-center overflow-hidden ${className || ''}`}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    '--highlight-color': '#4ade80'
+                } as React.CSSProperties}
+            >
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                    .custom-svg-renderer svg {
+                        width: 100% !important;
+                        height: 100% !important;
+                        max-width: 100%;
+                        max-height: 100%;
+                        display: block;
+                        margin: auto;
+                    }
+                ` }} />
+                <div
+                    className="w-full h-full flex items-center justify-center"
+                    dangerouslySetInnerHTML={{ __html: sanitizedSvg }}
+                />
+            </div>
+        );
+    }
     // 基础视觉参数及板型检测
     const isBoard = packageType.startsWith('BOARD_');
     const size = isBoard ? 400 : 300;           // SVG 视图大小
@@ -48,19 +126,32 @@ export const ChipRenderer: React.FC<ChipRendererProps> = ({
     const isUno = packageType === 'BOARD_UNO_R3';
     const isMega = packageType === 'BOARD_MEGA';
     // 解析 DIP 板卡的引脚数，例如 BOARD_DIP_30 -> 30, BOARD_DIP_38 -> 38
-    const dipMatch = packageType.match(/BOARD_DIP_(\d+)/);
+    const dipMatch = packageType?.match(/BOARD_DIP_(\d+)/);
     const isDipBoard = !!dipMatch;
     const dipPinCount = isDipBoard ? parseInt(dipMatch![1]) : 0;
 
     // 确定封装几何形状
     // 检测是否为双列直插式封装 (TSSOP, SOIC, DIP, SOP) - 这种显示为长方形，引脚分布在左右两侧
-    const isDualInline = /TSSOP|SOIC|DIP|SOP/i.test(packageType);
-    const isBGA = /GA|WLCSP|LCC/i.test(packageType); // Detect BGA/LGA/PGA/WLCSP/LCC/TFBGA...
+    const isDualInline = /TSSOP|SOIC|DIP|SOP/i.test(packageType || '');
+    const isBGA = /GA|WLCSP|LCC/i.test(packageType || ''); // Detect BGA/LGA/PGA/WLCSP/LCC/TFBGA...
 
     // 确定总引脚数
-    const totalPins = pinCount > 0 ? pinCount : (isDipBoard ? dipPinCount : (isDualInline ? 20 : (isBGA ? 100 : 48)));
+    const totalPins = pinCount > 0 ? pinCount : (isDipBoard ? dipPinCount : (isDualInline ? 20 : (isBGA ? 100 : 0)));
 
-    // 计算布局参数
+    // 空状态/无预览数据拦截: 如果没标明引脚数，且不是以上已知类型，则无法渲染真实物理视图
+    if (!totalPins && !isUno && !isMega) {
+        return (
+            <div className={`relative flex items-center justify-center p-4 bg-[#1e1e1e] rounded-lg border border-slate-700/50 ${className} min-h-[300px]`}>
+                <div className="flex flex-col items-center justify-center text-slate-500">
+                    <svg className="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    <span className="text-sm font-medium tracking-wide">没有预览数据</span>
+                    <span className="text-xs text-slate-600 mt-1">请在 board.json 中查阅或完善封装信息</span>
+                </div>
+            </div>
+        );
+    }
     let pinsPerSide = 0;
     let pinSpacing = 0;
     let bodyWidth = 0;
@@ -467,8 +558,8 @@ export const ChipRenderer: React.FC<ChipRendererProps> = ({
                             const p1Idx = i;
                             const p2Idx = i + pinsPerSide;
 
-                            const p1Name = pinMap[p1Idx]?.name || String(p1Idx + 1);
-                            const p2Name = pinMap[p2Idx]?.name || String(p2Idx + 1);
+                            const p1Name = positionMap[String(p1Idx + 1)] || String(p1Idx + 1);
+                            const p2Name = positionMap[String(p2Idx + 1)] || String(p2Idx + 1);
 
                             const isP1Func = pins.includes(p1Name);
                             const isP2Func = pins.includes(p2Name);

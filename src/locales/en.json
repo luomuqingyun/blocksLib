@@ -49,7 +49,10 @@
         "hardware": "Chip Extensions",
         "software": "Module Extensions",
         "noInstalled": "No extensions installed",
-        "installTip": "Place extensions in your user data folder"
+        "installTip": "Place extensions in your user data folder",
+        "installing": "Installing extension...",
+        "uninstalling": "Uninstalling extension...",
+        "importing": "Importing extension..."
     },
     "search": {
         "workspace": "Search Workspace...",
