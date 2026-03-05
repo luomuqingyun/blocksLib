@@ -19,6 +19,7 @@ import { setBlocklyLocale } from './locales/setupBlocklyLocales';
 import i18next from 'i18next';
 
 import { AppContent } from './components/AppContent';
+import { ToastContainer } from './components/ToastContainer';
 
 // [OPTIMIZATION] 延迟加载非核心重型组件，显著提升启动速度
 const NewProjectModal = lazy(() => import('./components/NewProjectModal').then(m => ({ default: m.NewProjectModal })));
@@ -164,6 +165,7 @@ function AppInner() {
         </div>
       )}
       <GlobalListeners />
+      <ToastContainer />
       <Toast />
     </div>
   );

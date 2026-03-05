@@ -37,6 +37,7 @@ export interface AppConfig {
         recentProjects: string[];          // 最近打开的项目路径
         favoriteLimit?: number;            // 常用板卡收藏上限
         favoriteBoardsCache?: any[];       // 收藏板卡的数据缓存，用于秒开预览
+        lastOpenDir?: string;              // 上次打开项目的目录
     };
     serialSettings: {
         baudRate: number;                  // 波特率
@@ -163,7 +164,8 @@ export class ConfigService {
                 projectHistoryLimit: 10,
                 favoriteLimit: 10,              // 收藏板卡上限
                 recentProjects: [],
-                favoriteBoardsCache: []         // 收藏板卡数据缓存
+                favoriteBoardsCache: [],         // 收藏板卡数据缓存
+                lastOpenDir: app.getPath('documents') // 上次打开项目的目录
             },
             serialSettings: {
                 baudRate: 115200, dataBits: 8, stopBits: 1, parity: 'none',

@@ -818,7 +818,7 @@ if os.path.exists(variant_cpp):
     async openProjectDialog(): Promise<{ cancelled: boolean; projectPath?: string; data?: ProjectData; error?: string }> {
         const { canceled, filePaths } = await dialog.showOpenDialog({
             title: 'Open EmbedBlocks Project',
-            defaultPath: configService.get('general.workDir'),
+            defaultPath: configService.get('general.lastOpenDir') || configService.get('general.workDir'),
             filters: [{ name: 'EmbedBlocks Project', extensions: ['ebproj'] }],
             properties: ['openFile']
         });
@@ -826,6 +826,9 @@ if os.path.exists(variant_cpp):
         if (canceled || filePaths.length === 0) return { cancelled: true };
 
         const ebprojPath = filePaths[0];
+        // 保存上次打开的目录
+        configService.set('general.lastOpenDir', path.dirname(ebprojPath));
+
         return await this.openProject(ebprojPath);
     }
 

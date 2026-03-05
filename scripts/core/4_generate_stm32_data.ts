@@ -21,9 +21,11 @@ const __dirname = path.dirname(__filename);
 const INPUT_BASIC = path.join(__dirname, '../generated', 'stm32_board_data.json'); // Changed to generated
 const INPUT_DETAILS = path.join(__dirname, '../generated', 'detailed_board_data.json'); // Changed to generated
 const INPUT_LAYOUTS = path.join(__dirname, '../generated', 'stm32_layouts_cache.json');
-const INPUT_REGISTRY = path.join(__dirname, '../generated', 'stm32duino_support_registry.json'); // Changed to generated // Add Registry Input
+const INPUT_REGISTRY = path.join(__dirname, '../generated', 'stm32duino_support_registry.json');
+const STATE_FILE = path.join(__dirname, '../generated', 'stm32_previous_state.json');
 const OUTPUT_DIR = path.join(__dirname, '../../src/data/boards/stm32');
-const OUTPUT_ENHANCED_COMPAT = path.join(__dirname, '../../electron/config/stm32_compatibility_enhanced.json'); // Add Compat Output
+const OUTPUT_ENHANCED_COMPAT = path.join(__dirname, '../../electron/config/stm32_compatibility_enhanced.json');
+const PIO_PACKAGE_JSON = path.join(os.homedir(), '.platformio', 'packages', 'framework-arduinoststm32', 'package.json');
 
 import { ST_OPEN_PIN_DATA_PATH } from '../utils/data_sources';
 
@@ -66,10 +68,31 @@ function main() {
 
     const stm32Series = basicData['STM32'];
     let totalFiles = 0;
-    // 收集生成的文名用于后期清理过时文件
     const generatedFiles = new Set<string>();
-    // 收集由于 8KB 限制被丢弃的芯片用于生成黑名单报告
     const excluded8kbChips: any[] = [];
+    const currentChips = new Set<string>();
+
+    // [New] Detect STM32duino Version
+    let currentVersion = 'Unknown';
+    if (fs.existsSync(PIO_PACKAGE_JSON)) {
+        try {
+            const pkg = JSON.parse(fs.readFileSync(PIO_PACKAGE_JSON, 'utf8'));
+            currentVersion = pkg.version || 'Unknown';
+            console.log(`检测到当前 STM32duino 版本: ${currentVersion}`);
+        } catch (e) {
+            console.warn('警告: 无法解析 stm32duino package.json 版本信息');
+        }
+    }
+
+    // [New] Load Previous State
+    let prevState: { version: string, chipIds: string[] } = { version: '', chipIds: [] };
+    if (fs.existsSync(STATE_FILE)) {
+        try {
+            prevState = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+        } catch (e) {
+            console.warn('警告: 无法加载历史状态文件，将无法对比增量。');
+        }
+    }
 
     // 遍历每一个系列 (Series)
     Object.keys(stm32Series).forEach(series => {
@@ -105,6 +128,9 @@ function main() {
                 excluded8kbChips.push({ id: b.id, name: b.name || b.id, specs: b.specs });
                 return; // 跳出此板卡的处理循环，不生成 JSON 文件
             }
+
+            // 记录有效芯片用于增量对比 (排除被过滤的)
+            currentChips.add(b.id);
 
             // 获取该型号的详细外设数据和默认引脚
             const rawDetails = detailsData[b.id];
@@ -422,24 +448,63 @@ function main() {
     console.log(`清理完成，共移除了 ${cleanedCount} 个过时文件。`);
 
     // ------------------------------------------------------------------
-    // [新增] 导出被过滤的 8KB 芯片报告
+    // [新增] 导出芯片支持变更报告 (含版本记录、增减对比、8KB 过滤)
     // ------------------------------------------------------------------
-    console.log('\n正在导出被拦截的 8KB 芯片报告...');
+    console.log('\n正在生成芯片支持变更与兼容性报告...');
     const outJsonPath = path.join(__dirname, '../../electron/config/unsupported_8kb_chips.json');
-    const outMdPath = path.join(__dirname, '../../docs/unsupported_8kb_chips.md');
+    const outMdPath = path.join(__dirname, '../../docs/STM32芯片支持变更与兼容性报告.md');
+    // 旧文件清理
+    const oldMdPath = path.join(__dirname, '../../docs/unsupported_8kb_chips.md');
+    if (fs.existsSync(oldMdPath)) fs.unlinkSync(oldMdPath);
 
     fs.writeFileSync(outJsonPath, JSON.stringify(excluded8kbChips.map(c => c.id), null, 2), 'utf-8');
 
+    // 计算增量
+    const addedChips = [...currentChips].filter(id => !prevState.chipIds.includes(id));
+    const removedChips = prevState.chipIds.filter(id => !currentChips.has(id));
+
     const mdContent = [
-        '# 不受支持的 8KB 闪存芯片硬件黑名单 (EmbedBlocks)',
+        '# STM32 芯片支持变更与兼容性报告 (EmbedBlocks)',
         '',
-        '以下 STM32 芯片在结构上不受 EmbedBlocks/Arduino 标准框架的支持，因为它们的硬件闪存 (8KB) 在物理限制上太小，无法容纳最低的固件编译体积要求（即使开启 `-Os` 优化参数，一个最小的空程序也需要大约 11KB 的闪存空间）。',
+        `> **记录时间**: ${new Date().toLocaleString('zh-CN')}`,
+        `> **核心版本**: STM32duino (Arduino_Core_STM32) \`${currentVersion}\``,
         '',
-        '为了防止用户必然遇到 `region FLASH overflowed` (闪存溢出) 的底层编译错误，系统级别的项目创建服务已主动禁止针对于这些微控制器创建或载入任何代码工程。',
-        '',
-        '## 已被拦截的微控制器型号',
+        '## 1. 框架版本更新摘要',
         ''
     ];
+
+    if (prevState.version && prevState.version !== currentVersion) {
+        mdContent.push(`- **版本变动**: 从 \`${prevState.version}\` 更新至 \`${currentVersion}\``);
+    } else {
+        mdContent.push(`- **当前状态**: 已是最新版本 (\`${currentVersion}\`)，无核心框架变动。`);
+    }
+
+    mdContent.push('', '## 2. 芯片支持定义变动', '');
+    if (addedChips.length > 0) {
+        mdContent.push(`### 🆕 新增支持 (${addedChips.length})`);
+        addedChips.slice(0, 20).forEach(id => mdContent.push(`- \`${id}\``));
+        if (addedChips.length > 20) mdContent.push(`- *(及其他 ${addedChips.length - 20} 款...)*`);
+        mdContent.push('');
+    }
+
+    if (removedChips.length > 0) {
+        mdContent.push(`### 🗑️ 移除支持 (${removedChips.length})`);
+        removedChips.slice(0, 20).forEach(id => mdContent.push(`- \`${id}\``));
+        if (removedChips.length > 20) mdContent.push(`- *(及其他 ${removedChips.length - 20} 款...)*`);
+        mdContent.push('');
+    }
+
+    if (addedChips.length === 0 && removedChips.length === 0) {
+        mdContent.push('*(本次扫描未发现芯片定义的增减变动)*', '');
+    }
+
+    mdContent.push(
+        '## 3. 物理容量限制拦截列表 (8KB Flash)',
+        '',
+        '以下芯片虽被 STM32duino 官方库收录，但因其 **8KB Flash** 物理体积过小，无法满足 Arduino 最小运行时要求（即使优化后空程序仍需约 11KB），已被 EmbedBlocks 策略性屏蔽。',
+        ''
+    );
+
     excluded8kbChips.forEach(chip => {
         mdContent.push(`- **${chip.name}** (\`${chip.id}\`) - ${chip.specs}`);
     });
@@ -448,7 +513,14 @@ function main() {
         fs.mkdirSync(path.dirname(outMdPath), { recursive: true });
     }
     fs.writeFileSync(outMdPath, mdContent.join('\n'), 'utf-8');
-    console.log(`[完成] 已导出 ${excluded8kbChips.length} 款由于物理容量限制被拦截的 8KB 芯片列表。`);
+
+    // 保存当前状态供下次对比
+    fs.writeFileSync(STATE_FILE, JSON.stringify({
+        version: currentVersion,
+        chipIds: [...currentChips]
+    }, null, 2));
+
+    console.log(`[报告] 已生成并保存芯片支持变更记录。`);
 
     // ------------------------------------------------------------------
     // [新增] 生成兼容性映射 (stm32_compatibility_enhanced.json)

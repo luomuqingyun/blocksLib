@@ -132,11 +132,17 @@ class BoardRegistryService {
      * 从统一仓库加载已发现的板卡和家族注入信息
      */
     public initializeBoards() {
-        this.boards.clear();
+        // [FIX] 保护机制: 只清除来自内置仓库的板卡，保留由外部扩展 (ID 包含 ':') 动态注册的板卡。
+        // 否则背景加载 STM32 完毕后会抹除掉已经加载的插件板卡。
+        for (const [id] of this.boards.entries()) {
+            if (!id.includes(':')) {
+                this.boards.delete(id);
+            }
+        }
 
         // 批量加载标准/自定义板卡 (非 STM32 此时为同步加载)
         const allBoards = boardRepository.getAllBoards();
-        console.log(`[BoardRegistry] Loaded ${allBoards.length} boards from repository.`);
+        console.log(`[BoardRegistry] Loaded ${allBoards.length} boards from repository. Existing extension boards preserved.`);
 
         allBoards.forEach(board => {
             // 直接操作 Map 避免触发 register 中的 notify

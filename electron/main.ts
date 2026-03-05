@@ -146,7 +146,7 @@ function buildMenu() {
             label: getT('view'),
             submenu: [
                 { label: getT('reload'), role: 'reload' },
-                { label: getT('toggleDevTools'), role: 'toggleDevTools' },
+                { label: getT('toggleDevTools'), role: 'toggleDevTools', accelerator: 'F12' },
                 { type: 'separator' },
                 { label: getT('resetZoom'), role: 'resetZoom' },
                 { label: getT('zoomIn'), role: 'zoomIn' },

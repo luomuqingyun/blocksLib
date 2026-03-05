@@ -32,6 +32,7 @@ import { useUI } from '../contexts/UIContext';
 import { BaseModal } from './BaseModal';
 import { BoardPreview } from './BoardPreview';
 import { getI18nString } from '../utils/i18n_utils';
+import { useBoards } from '../hooks/useBoards';
 
 // 通过 BoardRepository 统一访问底层硬件定义文件 (JSON)
 import { boardRepository } from '../data/BoardRepository';
@@ -52,6 +53,14 @@ export const NewProjectModal: React.FC = () => {
 
     // [OPTIMIZATION] 将标准板卡数据移入用 useMemo 延迟加载
     const standardData = useMemo(() => boardRepository.getStandardBoards(), []);
+
+    // 获取所有已注册的板卡 (包括通过扩展加载的)
+    const allRegisteredBoards = useBoards();
+
+    // 过滤出扩展提供的板卡 (ID 通常带有命名空间前缀 ':')
+    const extensionBoards = useMemo(() => {
+        return allRegisteredBoards.filter(b => b.id.includes(':'));
+    }, [allRegisteredBoards]);
 
     const isOpen = isNewProjectOpen || isSaveAsOpen;
     const isSaveAs = isSaveAsOpen;
@@ -318,11 +327,6 @@ export const NewProjectModal: React.FC = () => {
         </div>
     );
 
-    // 渲染收藏夹
-    /**
-     * 渲染收藏夹列表
-     * [OPTIMIZATION] 直接使用 favoriteCache 渲染，实现秒开显示，不再等待 stm32Data 加载
-     */
     const renderFavorites = () => {
         if (favoriteCache.length === 0) return null;
 
@@ -340,28 +344,39 @@ export const NewProjectModal: React.FC = () => {
         );
     };
 
+    /**
+     * 渲染扩展板卡 (已安装的插件板卡)
+     */
+    const renderExtensions = () => {
+        if (extensionBoards.length === 0) return null;
+
+        return (
+            <div className="mb-4">
+                <h3 className="text-xs font-bold text-green-500 uppercase tracking-wider mb-2 px-2 flex items-center gap-1">
+                    <Box size={12} />
+                    Installed / Extensions
+                </h3>
+                <div className="space-y-1">
+                    {extensionBoards.map(renderBoardItem)}
+                </div>
+                <div className="h-px bg-slate-700/50 my-2 mx-2"></div>
+            </div>
+        );
+    };
+
     // 扁平化搜索结果
     const renderSearchResults = () => {
         if (!searchTerm) return null;
 
         const term = searchTerm.toLowerCase();
-        const results: any[] = [];
 
-        const searchIn = (list: any) => {
-            Object.values(list).forEach((val: any) => {
-                if (Array.isArray(val)) {
-                    val.forEach(b => {
-                        if ((b.name?.toLowerCase().includes(term) || b.id.toLowerCase().includes(term))) {
-                            results.push(b);
-                        }
-                    });
-                } else if (typeof val === 'object') {
-                    searchIn(val);
-                }
-            });
-        };
-        searchIn(standardData);
-        searchIn(stm32Data);
+        // [FIX] 搜索逻辑优化：直接使用 allRegisteredBoards，
+        // 确保能搜索到内置标准版、STM32全系列以及用户安装的所有扩展版。
+        const results = allRegisteredBoards.filter(b => {
+            const name = typeof b.name === 'string' ? b.name :
+                (typeof b.name === 'object' && b.name ? (getI18nString(b.name, i18n.language) || b.id) : b.id);
+            return name.toLowerCase().includes(term) || b.id.toLowerCase().includes(term);
+        });
 
         if (results.length === 0) return <div className="p-4 text-center text-slate-500 text-sm">No matching boards found</div>;
 
@@ -376,6 +391,7 @@ export const NewProjectModal: React.FC = () => {
         <div className="space-y-4">
             {/* 只有在没有搜索且不是收藏夹模式时才显示分类 */}
             {renderFavorites()}
+            {renderExtensions()}
 
             {Object.entries(standardData).map(([category, boards]: [string, any]) => (
                 <div key={category}>

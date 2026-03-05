@@ -32,6 +32,7 @@ import * as Blockly from 'blockly';
 import { BoardConfig } from '../types/board';
 import { BoardRegistry } from './BoardRegistry';
 import i18n from '../i18n';
+import { notificationService } from '../services/NotificationService';
 
 /**
  * 扩展清单接口
@@ -348,33 +349,41 @@ class ExtensionRegistryService {
                             }
 
                             if (content) {
-                                const boardConfig: BoardConfig = JSON.parse(content);
-                                // 确保 ID 唯一/命名空间化，以避免冲突
-                                boardConfig.id = `${ext.manifest.id}:${boardConfig.id}`;
+                                try {
+                                    const boardConfig: BoardConfig = JSON.parse(content);
+                                    // 确保 ID 唯一/命名空间化，以避免冲突
+                                    boardConfig.id = `${ext.manifest.id}:${boardConfig.id}`;
 
-                                // 翻译板卡名称（如果它是一个键）
-                                const displayName = translateField(boardConfig.name);
-                                boardConfig.name = `${displayName} (Ext)`;
+                                    // 翻译板卡名称（如果它是一个键）
+                                    const displayName = translateField(boardConfig.name);
+                                    boardConfig.name = `${displayName} (Ext)`;
 
-                                // 深度翻译引脚标签
-                                if (boardConfig.pins) {
-                                    Object.keys(boardConfig.pins).forEach(group => {
-                                        const pins = (boardConfig.pins as any)[group];
-                                        if (Array.isArray(pins)) {
-                                            pins.forEach(pin => {
-                                                if (pin.label) {
-                                                    pin.label = translateField(pin.label);
-                                                }
-                                            });
-                                        }
-                                    });
+                                    // 深度翻译引脚标签
+                                    if (boardConfig.pins) {
+                                        Object.keys(boardConfig.pins).forEach(group => {
+                                            const pins = (boardConfig.pins as any)[group];
+                                            if (Array.isArray(pins)) {
+                                                pins.forEach(pin => {
+                                                    if (pin.label) {
+                                                        pin.label = translateField(pin.label);
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+
+                                    BoardRegistry.register(boardConfig);
+                                    console.log(`Registered extension board: ${boardConfig.id}`);
+                                } catch (parseErr) {
+                                    const errMsg = `[Extension] Failed to parse board JSON: ${boardFile} in ${ext.manifest.id}. Error: ${(parseErr as Error).message}`;
+                                    console.error(errMsg);
+                                    notificationService.show(errMsg, 'error', 10000);
                                 }
-
-                                BoardRegistry.register(boardConfig);
-                                console.log(`Registered extension board: ${boardConfig.id}`);
                             }
                         } catch (e) {
-                            console.error(`Failed to load board ${boardFile} from ${ext.manifest.id}`, e);
+                            const errMsg = `[Extension] Failed to load board ${boardFile} from ${ext.manifest.id}. Error: ${(e as Error).message}`;
+                            console.error(errMsg);
+                            notificationService.show(errMsg, 'error', 10000);
                         }
                     })());
                 }
