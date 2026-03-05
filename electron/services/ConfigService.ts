@@ -26,6 +26,7 @@
 import { app, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import { execSync } from 'child_process';
 
 /** 应用配置接口 */
 export interface AppConfig {
@@ -156,16 +157,24 @@ export class ConfigService {
 
     /** 加载默认配置 */
     private loadDefaults(): any {
+        // [核心增强] 尝试从注册表读取安装时设置的工作目录 (仅限 Windows)
+        let initialWorkDir = app.getPath('documents');
+        const regPath = this.getRegistryWorkspacePath();
+        if (regPath && fs.existsSync(regPath)) {
+            console.log('[ConfigService] Detected workspace from registry:', regPath);
+            initialWorkDir = regPath;
+        }
+
         const defaults: any = {
             general: {
                 language: 'system',                 // 系统语言
-                workDir: app.getPath('documents'),  // 默认工作目录
+                workDir: initialWorkDir,            // 默认工作目录
                 autoCleanNoMatchRecent: false,
                 projectHistoryLimit: 10,
                 favoriteLimit: 10,              // 收藏板卡上限
                 recentProjects: [],
                 favoriteBoardsCache: [],         // 收藏板卡数据缓存
-                lastOpenDir: app.getPath('documents') // 上次打开项目的目录
+                lastOpenDir: initialWorkDir      // 上次打开项目的目录
             },
             serialSettings: {
                 baudRate: 115200, dataBits: 8, stopBits: 1, parity: 'none',
@@ -420,6 +429,29 @@ export class ConfigService {
         const current = this.config.general.recentProjects || [];
         this.config.general.recentProjects = current.filter(p => p !== pathToRemove);
         this.saveConfig();
+    }
+
+    /**
+     * [核心辅助] 从注册表读取安装时设置的路径
+     * 用于 Windows 平台的安装后首次启动配置
+     */
+    private getRegistryWorkspacePath(): string | null {
+        if (process.platform !== 'win32') return null;
+        try {
+            // 使用 reg query 查询之前 installer.nsh 写入的路径
+            const cmd = 'reg query "HKCU\\Software\\EmbedBlocks" /v WorkspacePath';
+            const output = execSync(cmd, { encoding: 'utf8', timeout: 2000 });
+
+            // 解析输出格式: WorkspacePath    REG_SZ    C:\Users\...\xxx
+            const match = /WorkspacePath\s+REG_SZ\s+(.*)/.exec(output);
+            if (match && match[1]) {
+                const result = match[1].trim();
+                return result;
+            }
+        } catch (e) {
+            // 正常现象：如果键不存在，reg query 会抛出错误
+        }
+        return null;
     }
 }
 

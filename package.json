@@ -109,6 +109,14 @@
       "target": "nsis",
       "icon": "icon.ico"
     },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "EmbedBlocks Studio"
+    },
     "linux": {
       "target": "AppImage"
     },

@@ -90,7 +90,8 @@
         "cleanBuild": "Clean Build Artifacts",
         "upload": "Upload",
         "untitled": "Untitled",
-        "refreshPorts": "Refresh Ports"
+        "refreshPorts": "Refresh Ports",
+        "importMoreBoards": "Import More Boards"
     },
     "editor": {
         "sourcePreview": "Source Preview",

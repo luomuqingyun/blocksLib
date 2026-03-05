@@ -12,7 +12,7 @@
  * - 开发板/芯片选择与预览
  * 
  * 数据来源:
- * - BoardRepository: 统一管理底层硬件定义文件 (JSON)
+ * - BoardRepository: 统一管理底层硬件 definition 文件 (JSON)
  * - Vite Glob 静态分析的板卡词典
  * 
  * 界面特性:
@@ -72,7 +72,7 @@ export const NewProjectModal: React.FC = () => {
     const nameInputRef = React.useRef<HTMLInputElement>(null);
 
     // 交互状态
-    const [activeTab, setActiveTab] = useState<'standard' | 'advanced'>('standard'); // 当前选项卡
+    const [activeTab, setActiveTab] = useState<'favorites' | 'standard' | 'stm32' | 'extensions'>('standard'); // 当前选项卡
     const [selectedBoardId, setSelectedBoardId] = useState<string>('');              // 选中的板卡 ID
     const [selectedBoardData, setSelectedBoardData] = useState<any>(null);           // 选中的板卡完整数据 (用于预览)
 
@@ -102,7 +102,6 @@ export const NewProjectModal: React.FC = () => {
             // 1. 重置基础状态
             setProjectName(isSaveAs ? (projectMetadata?.name || 'MyProject_Copy') : 'MyProject');
             setSearchTerm('');
-            setActiveTab('standard');
             setPos({ x: 0, y: 0 });
 
             if (workDir) setParentDir(workDir);
@@ -117,17 +116,16 @@ export const NewProjectModal: React.FC = () => {
                 setFavorites(new Set(currentCache.map((b: any) => b.id)));
             }
 
-            // 3. 决定初始选中的板卡 (User Request: 不再默认选中 Uno)
+            // 3. 决定初始选中的标签页 (有收藏则优先显示收藏)
+            setActiveTab(currentCache.length > 0 ? 'favorites' : 'standard');
+
+            // 4. 决定初始选中的板卡 (User Request: 不再默认选中 Uno)
             setSelectedBoardId('');
             setSelectedBoardData(null);
-
-            // 4. [OPTIMIZATION] 移除在此处的 eagerly load STM32 数据
-            // 由于 App.tsx 在后台预热时会 import NewProjectModal，
-            // 此时不应该触发耗时 2000ms 的 STM32 加载，而应推迟到用户真正点击 STM32 选项卡时。
         };
 
         initModal();
-    }, [isOpen]);
+    }, [isOpen, isSaveAs, projectMetadata, workDir]);
 
     // [REMOVED] 移除了原有的 metadata 同步 Effect，防止后台加载完成导致 UI 抖动 (以静制动)
 
@@ -389,10 +387,6 @@ export const NewProjectModal: React.FC = () => {
 
     const renderStandardList = () => (
         <div className="space-y-4">
-            {/* 只有在没有搜索且不是收藏夹模式时才显示分类 */}
-            {renderFavorites()}
-            {renderExtensions()}
-
             {Object.entries(standardData).map(([category, boards]: [string, any]) => (
                 <div key={category}>
                     <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2">{category}</h3>
@@ -408,31 +402,13 @@ export const NewProjectModal: React.FC = () => {
      * 智能分组: 将大列表按名称前缀分组
      */
     const groupBoards = (boards: any[]) => {
-        if (boards.length <= 12) return boards; // 数量少时不分组
-
-        const groups: Record<string, any[]> = {};
-        const singles: any[] = [];
-
+        const groups: { [key: string]: any[] } = {};
         boards.forEach(board => {
-            // 尝试提取前缀 (例如 STM32F103C8 -> STM32F103)
-            // 假设命名规范通常为 STM32 + Series(1) + Line(2) + Package/Flash
-            // 取前 9 位通常能命中 STM32F103 这一层级
             const name = board.name || board.id;
-            const prefix = name.length > 9 ? name.substring(0, 9) : 'Other';
-
+            const prefix = name.split(' ')[0] || 'Other';
             if (!groups[prefix]) groups[prefix] = [];
             groups[prefix].push(board);
         });
-
-        // 如果某个分组只有一个元素，或者分组太多导致并没有简化多少，则还需要进一步优化
-        // 这里的简单策略：如果分组后的 Keys 数量比原数量减少了至少 30%，则采用分组，否则原样返回
-        const groupKeys = Object.keys(groups);
-
-        // [FIX] 防止无限递归：如果全部分组后只有一个组 (例如 STM32F103 下全是 F103)，说明无法进一步拆分，直接返回原列表
-        if (groupKeys.length === 1) return boards;
-
-        if (groupKeys.length > boards.length * 0.8) return boards;
-
         return groups;
     };
 
@@ -446,59 +422,39 @@ export const NewProjectModal: React.FC = () => {
     const renderSTM32Tree = (data: any, pathIdx = 0) => {
         if (!data) return null;
 
-        // 如果是根节点渲染 (pathIdx === 0)，先渲染收藏夹
-        // 注意：这里需要由于递归调用，只在最外层渲染收藏夹，但我们已在 list 渲染时统一处理了收藏夹
-
-        // 情况1: 数组 - 叶子节点列表
+        // 如果是数组，直接渲染板卡列表
         if (Array.isArray(data)) {
-            // 尝试智能分组
-            const grouped = groupBoards(data);
-
-            // 如果分组后不再是数组，说明产生了子目录，递归调用自己处理
-            if (!Array.isArray(grouped)) {
-                return renderSTM32Tree(grouped, pathIdx);
-            }
-
-            // 否则渲染扁平列表
             return (
-                <div className="pl-2 border-l border-slate-700/50 space-y-1">
-                    {/* [MODIFIED] 使用 renderBoardItem 统一渲染 */}
-                    {grouped.map(renderBoardItem)}
+                <div className="space-y-1 ml-4 border-l border-slate-800 pl-2 mt-1">
+                    {data.map(renderBoardItem)}
                 </div>
             );
         }
 
-        // 情况2: 对象 - 目录/分组 (如 STM32 -> STM32F4)
-        if (typeof data === 'object') {
-            return (
-                <div className="pl-2 border-l border-slate-700/50 space-y-1">
-                    {Object.entries(data).map(([key, value]: [string, any]) => {
-                        // 为自动分组生成的 Key 创建唯一的 toggle ID
-                        const nodeKey = key; // 实际逻辑中最好带 path，暂时简化
-                        const isExpanded = expandedNodes.has(nodeKey);
-
-                        // 动态计算包含的板卡数量
-                        const count = Array.isArray(value) ? value.length : Object.keys(value).length;
-
-                        return (
-                            <div key={key}>
-                                <button
-                                    onClick={() => toggleNode(nodeKey)}
-                                    className="w-full flex items-center gap-1.5 px-2 py-1 text-slate-300 hover:text-white text-sm font-medium hover:bg-[#333] rounded group"
-                                >
-                                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                                    <span className="flex-1 text-left truncate">{key}</span>
-                                    <span className="text-xs text-slate-600 group-hover:text-slate-500">{count}</span>
-                                </button>
-                                {isExpanded && renderSTM32Tree(value, pathIdx + 1)}
+        // 如果是对象，渲染分类目录
+        return (
+            <div className="space-y-1">
+                {Object.entries(data).map(([nodeName, content]) => {
+                    const isExpanded = expandedNodes.has(nodeName);
+                    return (
+                        <div key={nodeName} className="select-none">
+                            <div
+                                role="button"
+                                tabIndex={0}
+                                className="flex items-center gap-1 px-2 py-1.5 hover:bg-[#2a2a2a] rounded cursor-pointer text-slate-400 hover:text-slate-200 transition-colors"
+                                onClick={() => toggleNode(nodeName)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleNode(nodeName); }}
+                            >
+                                {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                <Cpu size={12} className="text-blue-500/60" />
+                                <span className="text-xs font-medium uppercase tracking-tight">{nodeName}</span>
                             </div>
-                        );
-                    })}
-                </div>
-            );
-        }
-
-        return null;
+                            {isExpanded && renderSTM32Tree(content, pathIdx + 1)}
+                        </div>
+                    );
+                })}
+            </div>
+        );
     };
 
     if (!isOpen) return null;
@@ -560,9 +516,24 @@ export const NewProjectModal: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* 标签页切换 (Standard / STM32 Advanced) */}
+                        {/* 标签页切换 (Favorites / Standard / STM32 / Extensions) */}
                         {!isSaveAs && !searchTerm && (
                             <div className="flex border-b border-slate-700">
+                                {favoriteCache.length > 0 && (
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab('favorites');
+                                            // 切换回收藏模式时，如果当前选择不是收藏板卡，则清空选择
+                                            if (!favorites.has(selectedBoardId)) {
+                                                setSelectedBoardId('');
+                                                setSelectedBoardData(null);
+                                            }
+                                        }}
+                                        className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'favorites' ? 'bg-[#1e1e1e] text-yellow-400 border-b-2 border-yellow-500' : 'bg-[#252526] text-slate-500 hover:text-slate-300'}`}
+                                    >
+                                        Favorites
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => {
                                         setActiveTab('standard');
@@ -578,9 +549,8 @@ export const NewProjectModal: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={async () => {
-                                        setActiveTab('advanced');
+                                        setActiveTab('stm32');
                                         // 切换到高级模式时，如果当前选择不是高级板卡，则清空选择以显示 ST Logo 占位符
-                                        // (除非未来我们想在这里也默认选一个 F103)
                                         if (!selectedBoardId || (!selectedBoardId.includes('stm32') && !selectedBoardId.includes('f4') && !selectedBoardId.includes('f1'))) {
                                             setSelectedBoardId('');
                                             setSelectedBoardData(null);
@@ -599,10 +569,25 @@ export const NewProjectModal: React.FC = () => {
                                             }
                                         }
                                     }}
-                                    className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'advanced' ? 'bg-[#1e1e1e] text-purple-400 border-b-2 border-purple-500' : 'bg-[#252526] text-slate-500 hover:text-slate-300'}`}
+                                    className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'stm32' ? 'bg-[#1e1e1e] text-purple-400 border-b-2 border-purple-500' : 'bg-[#252526] text-slate-500 hover:text-slate-300'}`}
                                 >
-                                    STM32 / Advanced
+                                    STM32
                                 </button>
+                                {extensionBoards.length > 0 && (
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab('extensions');
+                                            // 切换到扩展标签时，如果当前选择不是扩展板卡，则清空选择
+                                            if (!selectedBoardId.includes(':')) {
+                                                setSelectedBoardId('');
+                                                setSelectedBoardData(null);
+                                            }
+                                        }}
+                                        className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'extensions' ? 'bg-[#1e1e1e] text-green-400 border-b-2 border-green-500' : 'bg-[#252526] text-slate-500 hover:text-slate-300'}`}
+                                    >
+                                        Extensions
+                                    </button>
+                                )}
                             </div>
                         )}
 
@@ -639,18 +624,27 @@ export const NewProjectModal: React.FC = () => {
                         {!isSaveAs ? (
                             <div className="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-slate-700">
                                 {searchTerm ? renderSearchResults() : (
-                                    activeTab === 'standard' ? renderStandardList() : (
-                                        <>
-                                            {renderFavorites()}
-                                            {isStm32Loading ? (
-                                                <div className="flex items-center justify-center p-8 text-slate-500 gap-2">
-                                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-500 border-t-transparent"></div>
-                                                    <span className="text-sm">Loading definitions...</span>
-                                                </div>
-                                            ) : (
-                                                renderSTM32Tree(stm32Data['STM32'] || stm32Data)
-                                            )}
-                                        </>
+                                    activeTab === 'favorites' ? (
+                                        <div className="space-y-1">
+                                            {favoriteCache.map(renderBoardItem)}
+                                        </div>
+                                    ) : activeTab === 'standard' ? renderStandardList() : (
+                                        activeTab === 'stm32' ? (
+                                            <>
+                                                {isStm32Loading ? (
+                                                    <div className="flex items-center justify-center p-8 text-slate-500 gap-2">
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-500 border-t-transparent"></div>
+                                                        <span className="text-sm">Loading definitions...</span>
+                                                    </div>
+                                                ) : (
+                                                    renderSTM32Tree(stm32Data['STM32'] || stm32Data)
+                                                )}
+                                            </>
+                                        ) : (
+                                            <div className="space-y-1">
+                                                {extensionBoards.map(renderBoardItem)}
+                                            </div>
+                                        )
                                     )
                                 )
                                 }
@@ -661,7 +655,6 @@ export const NewProjectModal: React.FC = () => {
                                 Board selection locked<br />in Save As mode.
                             </div>
                         )}
-
                     </div>
 
                     {/* 右侧: 板卡预览面板 */}
@@ -685,13 +678,31 @@ export const NewProjectModal: React.FC = () => {
                             </>
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center text-slate-600 border border-slate-700 border-dashed rounded-lg bg-[#252526]/50 select-none">
-                                {activeTab === 'advanced' ? (
+                                {activeTab === 'favorites' ? (
+                                    <>
+                                        {/* Favorites 占位符 */}
+                                        <div className="w-20 h-20 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6 shadow-xl border border-yellow-500/20 animate-float-reverse active:scale-95 active:brightness-105 active:shadow-inner transition-all duration-150 cursor-pointer select-none group">
+                                            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500 group-active:rotate-[360deg] transition-transform duration-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-200 mb-1">Favorites</h3>
+                                        <span className="text-sm opacity-60 font-medium text-slate-400">{t('newProject.selectBoardOrChip')}</span>
+                                    </>
+                                ) : activeTab === 'stm32' ? (
                                     <>
                                         {/* ST Logo 通用占位符 (更精致的样式 + 持续浮动动效 + 点击反馈) */}
                                         <div className="w-20 h-20 bg-[#03234b] rounded-xl flex items-center justify-center mb-6 shadow-xl border border-blue-500/20 animate-float-reverse active:scale-95 active:brightness-110 active:shadow-inner transition-all duration-150 cursor-pointer select-none group">
                                             <span className="text-white font-black text-4xl italic tracking-tighter group-active:rotate-[360deg] transition-transform duration-500">ST</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-slate-200 mb-1">STM32 / Advanced</h3>
+                                        <h3 className="text-lg font-bold text-slate-200 mb-1">STM32</h3>
+                                        <span className="text-sm opacity-60 font-medium text-slate-400">{t('newProject.selectBoardOrChip')}</span>
+                                    </>
+                                ) : activeTab === 'extensions' ? (
+                                    <>
+                                        {/* Extensions 占位符 */}
+                                        <div className="w-20 h-20 bg-green-900/20 rounded-xl flex items-center justify-center mb-6 shadow-xl border border-green-500/20 animate-float active:scale-95 active:brightness-105 active:shadow-inner transition-all duration-150 cursor-pointer select-none group">
+                                            <Box size={40} className="text-green-500 group-active:rotate-[360deg] transition-transform duration-500" />
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-200 mb-1">Extensions</h3>
                                         <span className="text-sm opacity-60 font-medium text-slate-400">{t('newProject.selectBoardOrChip')}</span>
                                     </>
                                 ) : (
@@ -708,15 +719,6 @@ export const NewProjectModal: React.FC = () => {
                                 )}
                             </div>
                         )}
-
-                        {/* 扩展导入链接 */}
-                        {!isSaveAs && (
-                            <div className="mt-4 flex justify-end">
-                                <button onClick={() => setIsExtensionsOpen(true)} className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
-                                    <Download size={12} /> 导入更多板卡
-                                </button>
-                            </div>
-                        )}
                     </div>
 
                 </div>
@@ -724,6 +726,15 @@ export const NewProjectModal: React.FC = () => {
                 {/* 底部按钮栏 */}
                 <div className="p-4 bg-[#252526] border-t border-slate-700 flex justify-end gap-3 items-center">
                     {errorMessage && <span className="text-red-400 text-xs mr-auto">{errorMessage}</span>}
+
+                    {!isSaveAs && (
+                        <button
+                            onClick={() => setIsExtensionsOpen(true)}
+                            className="mr-auto text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 px-2 py-1 hover:bg-blue-500/5 rounded transition-colors"
+                        >
+                            <Download size={12} /> {t('app.importMoreBoards')}
+                        </button>
+                    )}
 
                     <button onClick={handleClose} className="px-4 py-2 hover:bg-[#333] text-slate-300 rounded text-sm transition-colors">
                         {t('dialog.cancel')}
@@ -742,4 +753,3 @@ export const NewProjectModal: React.FC = () => {
         </BaseModal >
     );
 };
-

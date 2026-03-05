@@ -97,7 +97,8 @@
         "clean": "清理",
         "cleanBuild": "清理构建产物 (Clean Build)",
         "upload": "烧录",
-        "refreshPorts": "刷新串口"
+        "refreshPorts": "刷新串口",
+        "importMoreBoards": "导入更多板卡"
     },
     "editor": {
         "sourcePreview": "代码预览",
