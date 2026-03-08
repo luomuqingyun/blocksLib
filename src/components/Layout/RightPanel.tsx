@@ -9,9 +9,10 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Lock, Unlock, Trash2 } from 'lucide-react';
+import { Lock, Unlock, Trash2, Sparkles } from 'lucide-react';
 import { CodeEditor } from '../CodeEditor';
 import { SerialMonitorPanel } from '../SerialMonitor/SerialMonitorPanel';
+import { AiAssistantPanel } from '../AiAssistant/AiAssistantPanel';
 import { useSerial } from '../../contexts/SerialContext';
 import { useFileSystem } from '../../contexts/FileSystemContext';
 import { useUI } from '../../contexts/UIContext';
@@ -125,6 +126,22 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
                             {t('serial.tab')}
                             {isConnected && <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>}
                         </button>
+                        {/* AI 助手标签 (集成 OpenClaw，支持积木建议) */}
+                        <button
+                            onClick={() => {
+                                setActiveTab('ai');
+                                // 当切换到 AI 助手时，强制夺取所在窗口和 DOM 的焦点
+                                setTimeout(() => {
+                                    window.focus();
+                                    const input = document.querySelector('input[data-input-protect="true"]') as HTMLInputElement;
+                                    if (input) input.focus();
+                                }, 50);
+                            }}
+                            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'ai' ? 'border-purple-500 text-slate-200 bg-[#1e1e1e]' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+                        >
+                            <Sparkles size={14} className={activeTab === 'ai' ? 'text-purple-400' : ''} />
+                            {t('app.aiAssistant')}
+                        </button>
                     </div>
 
                     {/* 日志清空工具按钮 */}
@@ -142,7 +159,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
                 </div>
 
                 {/* 标签页内容: 构建日志 */}
-                <div ref={bottomPanelRef} className={`flex-1 p-3 overflow-auto font-mono text-xs custom-scrollbar ${activeTab === 'build' ? 'block' : 'hidden'}`}>
+                <div ref={bottomPanelRef} className={`flex-1 p-3 overflow-auto font-mono text-xs custom-scrollbar ${activeTab === 'build' ? 'block' : 'hidden pointer-events-none'}`}>
                     {logs.length === 0 && <div className="text-slate-500 italic flex items-center h-full justify-center">等待编译或上传输出...</div>}
                     {logs.map((log, i) => (
                         <div key={i} className={`mb-0.5 break-words whitespace-pre-wrap border-l-2 border-transparent hover:border-slate-700 pl-1 ${getLogColor(log)}`}>
@@ -152,9 +169,18 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
                 </div>
 
                 {/* 标签页内容: 串口监视器 */}
-                <SerialMonitorPanel
-                    isVisible={activeTab === 'serial'}
-                />
+                <div className={`flex-1 flex overflow-hidden ${activeTab === 'serial' ? '' : 'hidden pointer-events-none'}`}>
+                    <SerialMonitorPanel
+                        isVisible={activeTab === 'serial'}
+                    />
+                </div>
+
+                {/* 标签页内容: AI 助手 */}
+                <div className={`flex-1 flex overflow-hidden ${activeTab === 'ai' ? '' : 'hidden pointer-events-none'}`}>
+                    <AiAssistantPanel
+                        isVisible={activeTab === 'ai'}
+                    />
+                </div>
 
             </div>
         </div>

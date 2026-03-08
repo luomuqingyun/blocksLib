@@ -8,7 +8,7 @@
 // ----------------------------------------------------------------------------
 
 import React from 'react';
-import { Plus, FolderOpen, Clock, Github, Settings, FileCode, X, HardDrive, Puzzle } from 'lucide-react';
+import { Plus, FolderOpen, Clock, Github, Settings, FileCode, X, HardDrive, Puzzle, Bot } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFileSystem } from '../contexts/FileSystemContext';
 
@@ -20,13 +20,15 @@ interface WelcomeScreenProps {
     onOpenConfig: () => void;
     /** 打开扩展管理弹窗的回调 */
     onOpenExtensions: () => void;
+    /** 打开 AI 设置弹窗的回调 */
+    onOpenAiSettings: () => void;
     /** 最近项目路径列表 */
     recentProjects: string[];
     /** 刷新最近项目列表的回调 (可选) */
     onRefreshRecent?: () => void;
 }
 
-export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOpenConfig, onOpenExtensions, recentProjects, onRefreshRecent }) => {
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOpenConfig, onOpenExtensions, onOpenAiSettings, recentProjects, onRefreshRecent }) => {
     const { t } = useTranslation();
     const { openProject, openProjectByPath } = useFileSystem();
 
@@ -62,8 +64,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
     };
 
     return (
-        <div className="flex flex-col items-center h-full w-full bg-[#1e1e1e] text-slate-200 p-8 select-none overflow-y-auto auto-hide-scrollbar">
-            <div className="max-w-2xl w-full space-y-8 flex-shrink-0">
+        <div
+            id="welcome-screen-root"
+            className="flex flex-col items-center h-full w-full bg-[#1e1e1e] text-slate-200 p-8 select-none overflow-y-auto auto-hide-scrollbar pointer-events-auto relative z-[1]"
+        >
+            <div className="max-w-4xl w-full space-y-8 flex-shrink-0">
 
                 {/* 标题区域 - Logo 和应用名称 */}
                 <div className="text-center space-y-4">
@@ -78,8 +83,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
                     </p>
                 </div>
 
-                {/* 主要操作按钮 - 新建、打开、目录、扩展 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 主要操作按钮 - 新建、打开、目录、扩展、AI 设置 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <button
                         onClick={onNewProject}
                         className="group flex flex-col items-center p-6 bg-[#252526] hover:bg-[#2a2d2e] border border-slate-700/50 hover:border-blue-500/50 rounded-xl transition-all duration-200 text-center"
@@ -144,6 +149,23 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
                             </h3>
                             <p className="text-sm text-slate-500">
                                 {t('welcome.extensionsDesc', 'Manage boards and block sets')}
+                            </p>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={onOpenAiSettings}
+                        className="group flex flex-col items-center p-6 bg-[#252526] hover:bg-[#2a2d2e] border border-slate-700/50 hover:border-cyan-500/50 rounded-xl transition-all duration-200 text-center"
+                    >
+                        <div className="p-3 bg-cyan-500/10 rounded-lg group-hover:scale-110 transition-transform mb-4">
+                            <Bot size={24} className="text-cyan-400" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-lg text-slate-200 group-hover:text-cyan-400 transition-colors">
+                                {t('settings.ai')}
+                            </h3>
+                            <p className="text-sm text-slate-500">
+                                {t('settings.aiEnabledDesc')}
                             </p>
                         </div>
                     </button>

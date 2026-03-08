@@ -97,6 +97,10 @@ interface ElectronAPI {
   readHelpFile: (type: 'user' | 'plugin' | 'about' | 'marketplace') => Promise<{ content: string; path: string }>;
   openHelpGuide: (type: 'user' | 'plugin' | 'marketplace') => Promise<{ success: boolean; message?: string }>;
   openExternal: (path: string) => Promise<boolean>;
+  openPath: (path: string) => Promise<any>;
+
+  // --- AI ---
+  askOpenClaw: (data: { prompt: string, context?: any }) => Promise<{ content: string; blocks?: any }>;
 
   // --- 市场 ---
   marketplaceListUrls: () => Promise<string[]>;

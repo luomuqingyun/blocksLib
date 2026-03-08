@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { glob } from 'glob';
 import { pioService } from './services/PioService';
+import { projectService } from './services/ProjectService';
 
 // 定义测试结果接口
 interface TestResult {
@@ -119,8 +120,6 @@ export async function runTests() {
 
             // 确保测试父目录存在
             fs.mkdirSync(testWorkDir, { recursive: true });
-
-            const { projectService } = await import('./services/ProjectService');
 
             // --- 并行生成逻辑 ---
             let concurrency = Math.max(1, Math.floor(os.cpus().length / 2));

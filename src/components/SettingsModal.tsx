@@ -29,18 +29,20 @@ import { GeneralSettings } from './settings/sections/GeneralSettings';
 import { SerialSettings } from './settings/sections/SerialSettings';
 import { AdvancedSettings } from './settings/sections/AdvancedSettings';
 import { ToolboxSettings } from './settings/sections/ToolboxSettings';
-import { LayoutGrid } from 'lucide-react';
+import { AiSettings } from './settings/sections/AiSettings';
+import { LayoutGrid, Bot } from 'lucide-react';
 import { BaseModal } from './BaseModal';
 
 /** 设置模态框属性 */
 interface SettingsModalProps {
-
     isOpen: boolean;
     onClose: () => void;
     selectedBoard?: string;
+    /** 初始打开的标签页 (可选) */
+    initialTab?: string;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, selectedBoard }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, selectedBoard, initialTab = 'general' }) => {
     // 多语言支持
     const { t } = useTranslation();
     // 使用自定义 Hook 处理设置逻辑（状态管理、保存、JSON 切换等）
@@ -53,7 +55,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
         handleSave,
         handleSelectWorkDir,
         handleClose
-    } = useSettingsLogic(isOpen, onClose);
+    } = useSettingsLogic(isOpen, onClose, initialTab);
 
     // 如果模态框未打开，不进行任何渲染
     if (!isOpen) return null;
@@ -69,9 +71,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                     </div>
                     {/* 映射并渲染标签页按钮 */}
                     {[
-                        { id: 'general', icon: Settings, label: t('settings.general') },
+                        { id: 'general', icon: Monitor, label: t('settings.general') },
                         { id: 'serial', icon: Monitor, label: t('settings.serial') },
                         { id: 'toolbox', icon: LayoutGrid, label: t('settings.toolbox') },
+                        { id: 'ai', icon: Bot, label: t('settings.ai') },
                         { id: 'advanced', icon: Sliders, label: t('settings.advanced') }
                     ].map(tab => (
                         <button
@@ -98,7 +101,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                                 activeTab === 'general' ? t('settings.general') :
                                     activeTab === 'serial' ? t('settings.serial') :
                                         activeTab === 'toolbox' ? t('settings.toolbox') :
-                                            t('settings.advanced')
+                                            activeTab === 'ai' ? t('settings.ai') :
+                                                t('settings.advanced')
                             )}
                         </h2>
                         {/* 操作按钮区 */}
@@ -166,6 +170,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                                 )}
                                 {activeTab === 'toolbox' && (
                                     <ToolboxSettings config={config} handleSave={handleSave} selectedBoard={selectedBoard} />
+                                )}
+                                {activeTab === 'ai' && (
+                                    <AiSettings config={config} handleSave={handleSave} />
                                 )}
                                 {activeTab === 'advanced' && (
                                     <AdvancedSettings config={config} handleSave={handleSave} />

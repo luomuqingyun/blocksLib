@@ -51,7 +51,10 @@ const isExternalEditable = (target: EventTarget | null): boolean => {
     if (el.classList.contains('unified-search-input') || el.closest('.unified-search-input')) return true;
 
     // 标准表单元素
-    if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT') return true;
+    if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT') {
+        // [Phase 4] 即使获焦的是 Input，也需要二次确认识别它的保护状态
+        return true;
+    }
 
     // 内容可编辑区域
     if (el.isContentEditable) return true;

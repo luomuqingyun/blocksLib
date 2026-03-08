@@ -20,6 +20,7 @@
     "gen:stm32": "npx tsx scripts/core/7_parse_stm32duino_variants.ts && npx tsx scripts/core/1c_discover_from_open_data.ts && npx tsx scripts/core/2_scan_stm32_pins.ts && npx tsx scripts/core/5_fetch_official_layouts.ts && npx tsx scripts/core/4_generate_stm32_data.ts",
     "sync:stm32": "npx tsx scripts/ops/global_sync_data.ts",
     "bundle:core": "npx tsx scripts/ops/bundle_resources.ts",
+    "bundle:openclaw": "node scripts/ops/bundle_openclaw.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:build": "vite build -c vite.config.js -m production",
@@ -102,6 +103,13 @@
       {
         "from": "bundled_pio",
         "to": "bundled_pio",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "bundled_openclaw",
+        "to": "bundled_openclaw",
         "filter": [
           "**/*"
         ]

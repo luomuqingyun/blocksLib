@@ -21,6 +21,7 @@ import { InputLogger } from './services/InputLoggerService';
 
 // [DEBUG] 初始化全过程交互诊断记录器
 InputLogger.init();
+(window as any).InputLogger = InputLogger;
 
 
 const rootElement = document.getElementById('root');

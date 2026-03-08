@@ -34,13 +34,13 @@ import { useBuild } from '../../../contexts/BuildContext';
  * @param isOpen 设置模态框是否打开
  * @param onClose 关闭模态框的回调
  */
-export const useSettingsLogic = (isOpen: boolean, onClose: () => void) => {
+export const useSettingsLogic = (isOpen: boolean, onClose: () => void, initialTab: string = 'general') => {
     const { t, i18n } = useTranslation();
     const { reloadHistory } = useSerial();
     const { config, setConfig } = useBuild();
 
     // ========== 状态管理 ==========
-    const [activeTab, setActiveTab] = useState('general');      // 当前活动的标签页
+    const [activeTab, setActiveTab] = useState(initialTab);      // 当前活动的标签页
     const [isJsonMode, setIsJsonMode] = useState(false);        // 是否为 JSON 编辑模式
     const [jsonContent, setJsonContent] = useState('');         // JSON 编辑器内容
     const [jsonError, setJsonError] = useState<string | null>(null); // JSON 解析错误
@@ -63,10 +63,10 @@ export const useSettingsLogic = (isOpen: boolean, onClose: () => void) => {
         if (isOpen) {
             loadConfig();
             setIsJsonMode(false);   // 重置为普通模式
-            setActiveTab('general'); // 重置到通用标签页
+            setActiveTab(initialTab); // 使用传入的初始标签页
             setJsonError(null);
         }
-    }, [isOpen, loadConfig]);
+    }, [isOpen, loadConfig, initialTab]);
 
     // 实时验证 JSON 内容是否有效
     useEffect(() => {

@@ -20,7 +20,7 @@
  * @module EmbedBlocks/Electron/IPC/ProjectHandlers
  */
 
-import { IpcMain, dialog } from 'electron';
+import { IpcMain, dialog, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { projectService } from '../services/ProjectService';
@@ -134,5 +134,14 @@ export function registerProjectHandlers(ipcMain: IpcMain, callbacks: {
         } catch (error: any) {
             return { success: false, error: error.message };
         }
+    });
+
+    // ==================== 外壳操作 (Shell Operations) ====================
+    ipcMain.handle('shell:open', async (event, url) => {
+        return shell.openExternal(url);
+    });
+
+    ipcMain.handle('shell:open-path', async (event, path) => {
+        return shell.openPath(path);
     });
 }

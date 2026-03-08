@@ -24,9 +24,9 @@ interface UIContextType {
     /** 右侧面面板的宽度 (像素) */
     rightPanelWidth: number;
     setRightPanelWidth: (width: number) => void;
-    /** 当前活动的下方面板标签页 ('build' 编译日志 或 'serial' 串口监视器) */
-    activeTab: 'build' | 'serial';
-    setActiveTab: (tab: 'build' | 'serial') => void;
+    /** 当前活动的下方面板标签页 ('build' 编译日志, 'serial' 串口监视器, 或 'ai' 助手) */
+    activeTab: 'build' | 'serial' | 'ai';
+    setActiveTab: (tab: 'build' | 'serial' | 'ai') => void;
     /** 是否处于手动代码编辑模式 (绕过积木块) */
     isManualEditMode: boolean;
     setIsManualEditMode: (mode: boolean) => void;
@@ -35,6 +35,9 @@ interface UIContextType {
     /** 系统设置弹窗是否打开 */
     isSettingsOpen: boolean;
     setIsSettingsOpen: (isOpen: boolean) => void;
+    /** 系统设置弹窗打开时默认显示的标签页 */
+    settingsTab: string;
+    setSettingsTab: (tab: string) => void;
     /** 扩展程序弹窗是否打开 */
     isExtensionsOpen: boolean;
     setIsExtensionsOpen: (isOpen: boolean) => void;
@@ -83,9 +86,10 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 
 export const UIProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [rightPanelWidth, setRightPanelWidth] = useState(500);
-    const [activeTab, setActiveTab] = useState<'build' | 'serial'>('build');
+    const [activeTab, setActiveTab] = useState<'build' | 'serial' | 'ai'>('build');
     const [isManualEditMode, setIsManualEditMode] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [settingsTab, setSettingsTab] = useState('general');
     const [isExtensionsOpen, setIsExtensionsOpen] = useState(false);
     const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
     const [isSaveAsOpen, setIsSaveAsOpen] = useState(false);
@@ -132,13 +136,16 @@ export const UIProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         rightPanelWidth, setRightPanelWidth,
         activeTab, setActiveTab,
         isManualEditMode, setIsManualEditMode,
-        isSettingsOpen, setIsSettingsOpen, isExtensionsOpen, setIsExtensionsOpen, isNewProjectOpen, setIsNewProjectOpen, isSaveAsOpen, setIsSaveAsOpen, isProjectSettingsOpen, setIsProjectSettingsOpen,
+        isSettingsOpen, setIsSettingsOpen,
+        settingsTab, setSettingsTab,
+        isExtensionsOpen, setIsExtensionsOpen, isNewProjectOpen, setIsNewProjectOpen, isSaveAsOpen, setIsSaveAsOpen, isProjectSettingsOpen, setIsProjectSettingsOpen,
         isHelpOpen, helpTitle, helpContent, helpPath, openHelp, closeHelp,
         isAboutOpen, aboutContent, openAbout, closeAbout,
         notification, showNotification
     }), [
         rightPanelWidth, activeTab, isManualEditMode,
-        isSettingsOpen, isExtensionsOpen, isNewProjectOpen, isSaveAsOpen, isProjectSettingsOpen,
+        isSettingsOpen, settingsTab,
+        isExtensionsOpen, isNewProjectOpen, isSaveAsOpen, isProjectSettingsOpen,
         isHelpOpen, helpTitle, helpContent, helpPath,
         isAboutOpen, aboutContent,
         notification

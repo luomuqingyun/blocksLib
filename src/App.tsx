@@ -46,6 +46,7 @@ const GlobalListeners = () => {
   const {
     isExtensionsOpen, setIsExtensionsOpen,
     isSettingsOpen, setIsSettingsOpen,
+    settingsTab,
     isHelpOpen, helpTitle, helpContent, helpPath, closeHelp,
     isAboutOpen, aboutContent, closeAbout
   } = useUI();
@@ -55,7 +56,12 @@ const GlobalListeners = () => {
     <Suspense fallback={null}>
       <NewProjectModal />
       <ExtensionsModal isOpen={isExtensionsOpen} onClose={() => setIsExtensionsOpen(false)} />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} selectedBoard={selectedBoard} />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        selectedBoard={selectedBoard}
+        initialTab={settingsTab}
+      />
       <ProjectSettingsModal />
       <HelpModal isOpen={isHelpOpen} onClose={closeHelp} title={helpTitle} content={helpContent} helpPath={helpPath} />
       <AboutOverlay isOpen={isAboutOpen} onClose={closeAbout} content={aboutContent} />
@@ -72,7 +78,7 @@ const GlobalListeners = () => {
 function AppInner() {
   const { currentFilePath } = useFileSystem();
   const { config } = useBuild();
-  const { setIsNewProjectOpen, setIsSettingsOpen, setIsExtensionsOpen } = useUI();
+  const { setIsNewProjectOpen, setIsSettingsOpen, setIsExtensionsOpen, setSettingsTab } = useUI();
   const [recentProjects, setRecentProjects] = useState<string[]>([]);
   const [isInitializing, setIsInitializing] = useState(true);
 
@@ -150,12 +156,19 @@ function AppInner() {
       {isInitializing ? (
         <LoadingOverlay />
       ) : (
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden relative">
           {!currentFilePath ? (
             <WelcomeScreen
               onNewProject={() => setIsNewProjectOpen(true)}
-              onOpenConfig={() => setIsSettingsOpen(true)}
-              onOpenExtensions={() => setIsExtensionsOpen(true)}
+              onOpenConfig={() => {
+                setSettingsTab('general');
+                setIsSettingsOpen(true);
+              }}
+              onOpenExtensions={() => setIsExtensionsOpen(false)}
+              onOpenAiSettings={() => {
+                setSettingsTab('ai');
+                setIsSettingsOpen(true);
+              }}
               recentProjects={recentProjects}
               onRefreshRecent={refreshRecent}
             />

@@ -139,6 +139,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   readHelpFile: (type: 'user' | 'plugin') => ipcRenderer.invoke('help:read-file', type),
   openHelpGuide: (type: 'user' | 'plugin' | 'marketplace') => ipcRenderer.invoke('help:open-guide', type),
   openExternal: (path: string) => ipcRenderer.invoke('shell:open', path),
+  openPath: (path: string) => ipcRenderer.invoke('shell:open-path', path),
 
   // --- Marketplace ---
   marketplaceListUrls: () => ipcRenderer.invoke('marketplace:list-urls'),
@@ -160,5 +161,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const handler = (_event: any, data: { key: string, value: any }) => callback(data.key, data.value);
     ipcRenderer.on('config-changed', handler);
     return () => ipcRenderer.removeListener('config-changed', handler);
-  }
+  },
+
+  // --- AI 助手交互接口 (OpenClaw) ---
+  askOpenClaw: (data: { prompt: string, context?: any }) => ipcRenderer.invoke('ai:ask', data)
 });

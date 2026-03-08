@@ -25,10 +25,16 @@ import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, shell } 
 import * as path from 'path';
 import * as fs from 'fs';
 
-// [FIX] 彻底解决 Windows 环境下，由于 Chromium GPU Composition (硬件加速合成) 导致
-// 带有 backdrop-filter: blur 或透明度的弹窗在使用 Alt+A (微信截图 / Snipaste) 时消失的问题。
-// 必须在 app.whenReady() 之前调用。
 app.disableHardwareAcceleration();
+
+// --- 全局错误捕获 (防崩溃与诊断) ---
+process.on('uncaughtException', (error) => {
+    console.error('[Main] Uncaught Exception:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[Main] Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
 // ============================================================
 // 导入 IPC 处理器模块 (Import IPC Handler Modules)
@@ -40,9 +46,11 @@ import { registerConfigHandlers } from './ipc/ConfigHandlers';         // 配置
 import { registerExtensionHandlers } from './ipc/ExtensionHandlers';   // 扩展/插件管理
 import { registerBuildHandlers } from './ipc/BuildHandlers';           // 编译构建
 import { registerMarketplaceHandlers } from './ipc/MarketplaceHandlers'; // 插件市场
+import { aiService } from './services/AiService';                        // AI 服务
 
-// ====== 测试流程注入 ======
+// ====== 测试与 AI 注入流程注入 ======
 import { runTests } from './testRunner';
+import { runAiProjectCreation } from './aiRunner';
 // ============================================================
 
 // ====== 初始化核心服务 (Initialize Core Services) ======
@@ -96,7 +104,14 @@ loadLocales();
 function getT(key: string): string {
     let lang = configService.get('general.language');
     // 如果设置为跟随系统，则自动判断
-    if (lang === 'system') lang = app.getLocale().startsWith('zh') ? 'zh' : 'en';
+    if (lang === 'system') {
+        try {
+            lang = app.getLocale().startsWith('zh') ? 'zh' : 'en';
+        } catch (e) {
+            console.warn('[Main] Failed to get system locale, defaulting to en:', e);
+            lang = 'en';
+        }
+    }
     const dict = locales[lang] || locales['en'];
     return dict[key] || key;
 }
@@ -347,16 +362,14 @@ function registerAllIpcs() {
         return { success: false, message: 'File not found' };
     });
 
-    // Universal shell open
-    ipcMain.handle('shell:open', async (_event, filePath: string) => {
-        if (!filePath) return false;
-        try {
-            await shell.openPath(filePath);
-            return true;
-        } catch (e) {
-            console.error('[Main] Failed to open path:', filePath, e);
-            return false;
-        }
+    // 移除这里重复的 shell:open，它已经在 ProjectHandlers.ts 中被注册了
+    // --- AI 助手交互接口 (OpenClaw) ---
+    /**
+     * 处理来自渲染进程的 AI 咨询请求。
+     * 该处理器将提示词透传给 AiService，并返回 AI 生成的文本或积木数据。
+     */
+    ipcMain.handle('ai:ask', async (_event, data: { prompt: string, context?: any }) => {
+        return await aiService.ask(data.prompt, data.context);
     });
 }
 
@@ -372,53 +385,68 @@ app.on('open-file', (event, path) => {
     }
 });
 
-// ========== 自动化测试拦截器 (Automated Test Interceptor) ==========
-const testArgs = ['--run-board-tests', '--generate-test-projects', '--compile-test-projects', '--clean-test-projects'];
-const isTestMode = testArgs.some(arg => process.argv.includes(arg));
+// ========== 自动化测试 & AI 注入拦截器 (Automated Test & AI Interceptor) ==========
+const TEST_FLAGS = ['run-board-tests', 'generate-test-projects', 'compile-test-projects', 'clean-test-projects', 'ai-create-project'];
 
-if (isTestMode) {
-    app.whenReady().then(() => {
-        console.log('[Main] Running in Automated Test Mode...');
-        runTests().then(() => {
-            app.quit();
-        }).catch(err => {
-            console.error('[Main] Test Runner Error:', err);
-            app.quit();
-        });
-    });
-} else {
-    const gotTheLock = app.requestSingleInstanceLock();
+app.whenReady().then(() => {
+    const isTestMode = TEST_FLAGS.some(flag => app.commandLine.hasSwitch(flag) || process.argv.some(arg => typeof arg === 'string' && arg.includes(flag)));
 
-    if (!gotTheLock) {
-        app.quit();
+    if (isTestMode) {
+        console.log('[Main] Running in Automated Mode (Test/AI)...');
+        if (app.commandLine.hasSwitch('ai-create-project')) {
+            runAiProjectCreation().then(() => {
+                app.quit();
+            }).catch((err: any) => {
+                console.error('[Main] AI Runner Error:', err);
+                app.quit();
+            });
+        } else {
+            runTests().then(() => {
+                app.quit();
+            }).catch((err: any) => {
+                console.error('[Main] Test Runner Error:', err);
+                app.quit();
+            });
+        }
     } else {
-        app.on('second-instance', (event, commandLine, workingDirectory) => {
-            if (mainWindow) {
-                if (mainWindow.isMinimized()) mainWindow.restore();
-                mainWindow.focus();
+        const gotTheLock = app.requestSingleInstanceLock();
+        if (!gotTheLock) {
+            app.quit();
+        } else {
+            app.on('second-instance', (event, commandLine, workingDirectory) => {
+                if (mainWindow) {
+                    if (mainWindow.isMinimized()) mainWindow.restore();
+                    mainWindow.focus();
 
-                const file = commandLine.find(arg => arg.endsWith('.ebproj'));
-                if (file) {
-                    mainWindow.webContents.send('menu-action', 'open-recent', file);
+                    const file = commandLine.find(arg => arg.endsWith('.ebproj'));
+                    if (file) {
+                        mainWindow.webContents.send('menu-action', 'open-recent', file);
+                    }
                 }
-            }
-        });
+            });
 
-        app.whenReady().then(() => {
             console.time('[Main] Startup');
             registerAllIpcs();
+
+            // --- 延迟解密敏感配置 (必须在 app ready 之后) ---
+            try {
+                configService.decryptSensitiveData();
+            } catch (e) {
+                console.error('[Main] Failed to decrypt sensitive data:', e);
+            }
+
             createWindow();
             console.timeEnd('[Main] Startup');
 
-            const file = process.argv.find(arg => arg.endsWith('.ebproj'));
+            const file = process.argv.find(arg => typeof arg === 'string' && arg.endsWith('.ebproj'));
             if (file) {
                 mainWindow?.webContents.once('did-finish-load', () => {
                     mainWindow?.webContents.send('menu-action', 'open-recent', file);
                 });
             }
-        });
+        }
     }
-}
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();

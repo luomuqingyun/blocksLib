@@ -22,6 +22,7 @@
 import { IpcMain, shell, dialog } from 'electron';
 import * as fs from 'fs';
 import { configService } from '../services/ConfigService';
+import { aiService } from '../services/AiService';
 
 /**
  * 注册所有配置管理相关的 IPC 处理器
@@ -35,8 +36,14 @@ export function registerConfigHandlers(ipcMain: IpcMain, callbacks: {
     // 获取配置 (key 可选，不传则返回全部配置)
     ipcMain.handle('config:get', (event, key?: string) => configService.get(key));
     // 设置配置 (语言切换时触发菜单更新和广播)
-    ipcMain.handle('config:set', (event, key: string, value: any) => {
+    ipcMain.handle('config:set', async (event, key: string, value: any) => {
         configService.set(key, value);
+
+        // 如果是 AI 相关的配置变更，尝试同步到 OpenClaw 配置文件
+        if (key.startsWith('ai.')) {
+            const fullAiConfig = configService.get('ai');
+            await aiService.syncConfig(fullAiConfig);
+        }
 
         // 触发广播
         if (callbacks.onConfigChange) {
