@@ -24,6 +24,11 @@
         "selectBoardPrompt": "请先选择一个开发板或芯片",
         "preview": "预览"
     },
+    "chip": {
+        "noPreview": "没有预览数据",
+        "incompleteInfo": "封装信息不完整，无法显示",
+        "checkBoardJson": "请在 board.json 中查阅或完善封装信息"
+    },
     "extensions": {
         "title": "扩展中心",
         "marketplace": "插件市场",

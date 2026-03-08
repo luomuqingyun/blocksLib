@@ -1,10 +1,10 @@
 {
   "id": "megaatmega2560",
-  "name": "Arduino Mega or Mega 2560 ATmega2560 (Mega 2560)",
+  "name": "Mega 2560 Rev3",
   "mcu": "ATMEGA2560",
   "package": "CUSTOM_SVG",
   "visuals": {
-    "svgPath": "megaatmega2560.svg"
+    "svgPath": "Mega_2560_Rev3.svg"
   },
   "pinCount": 70,
   "specs": "248k Flash / 8k RAM",

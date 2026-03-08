@@ -144,11 +144,14 @@ class ProjectService {
                 if (!buildConfig.platform) buildConfig.platform = 'ststm32';
                 if (!buildConfig.framework) buildConfig.framework = 'arduino';
             } else {
-                // 非 patch 模式下的标准板卡回退补偿 (例如 Arduino Uno, Mega)
+                // 非 patch 模式下的标准板卡回退补偿 (例如 Arduino Uno, Mega, Pro Mini)
                 if (!buildConfig.platform) {
-                    if (boardId.includes('uno') || boardId.includes('mega') || boardId.includes('nano') || boardId.includes('leonardo')) {
+                    const idLower = boardId.toLowerCase();
+                    const avrKeywords = ['uno', 'mega', 'nano', 'leonardo', 'pro', 'micro'];
+
+                    if (avrKeywords.some(kw => idLower.includes(kw))) {
                         buildConfig.platform = 'atmelavr';
-                    } else if (boardId.includes('esp32')) {
+                    } else if (idLower.includes('esp32')) {
                         buildConfig.platform = 'espressif32';
                     } else {
                         buildConfig.platform = 'ststm32'; // 其它未知的保底

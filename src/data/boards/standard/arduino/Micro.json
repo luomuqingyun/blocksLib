@@ -1,13 +1,17 @@
 {
-  "id": "uno",
-  "name": "Arduino Uno",
-  "mcu": "ATMEGA328P",
-  "package": "BOARD_UNO_R3",
-  "pinCount": 28,
-  "specs": "31.5k Flash / 2k RAM",
-  "description": "Arduino UNO R3 是一款基于ATmega328P的开源电子原型平台，包含数字I/O口14个（其中6个支持PWM输出），模拟输入口6个，16MHz晶振，USB接口，电源接口，ICSP接口等。",
-  "page_url": "https://docs.arduino.cc/hardware/uno-rev3",
+  "id": "micro",
+  "name": "Micro",
+  "mcu": "ATMEGA32U4",
+  "package": "CUSTOM_SVG",
+  "visuals": {
+    "svgPath": "Micro.svg"
+  },
+  "pinCount": 34,
+  "specs": "28k Flash / 2.5k RAM",
+  "description": "Arduino Micro 是一款基于 ATmega32u4 的微控制器板，与 Arduino Leonardo 类似，但体积更小，类似于 Arduino Nano。",
+  "page_url": "https://docs.arduino.cc/hardware/micro",
   "capabilities": [],
+  "pinMap": [],
   "pin_options": {
     "digital": [
       [
@@ -91,6 +95,30 @@
       [
         "A5",
         "A5"
+      ],
+      [
+        "A6",
+        "A6"
+      ],
+      [
+        "A7",
+        "A7"
+      ],
+      [
+        "A8",
+        "A8"
+      ],
+      [
+        "A9",
+        "A9"
+      ],
+      [
+        "A10",
+        "A10"
+      ],
+      [
+        "A11",
+        "A11"
       ]
     ],
     "pwm": [
@@ -117,34 +145,34 @@
       [
         "11",
         "11"
+      ],
+      [
+        "13",
+        "13"
       ]
     ],
     "i2c": [
       [
         "SDA",
-        "A4"
+        "2"
       ],
       [
         "SCL",
-        "A5"
+        "3"
       ]
     ],
     "spi": [
       [
         "MOSI",
-        "11"
+        "ICSP4"
       ],
       [
         "MISO",
-        "12"
+        "ICSP1"
       ],
       [
         "SCK",
-        "13"
-      ],
-      [
-        "SS",
-        "10"
+        "ICSP3"
       ]
     ]
   }

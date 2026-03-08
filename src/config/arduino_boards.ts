@@ -106,7 +106,7 @@ export const ARDUINO_FAMILY: BoardFamily = {
             boards: [
                 {
                     id: 'uno',
-                    name: 'Arduino Uno',
+                    name: 'UNO R3',
                     mcu: 'ATmega328P',
                     freq: '16MHz',
                     flash: '32KB',
@@ -118,7 +118,7 @@ export const ARDUINO_FAMILY: BoardFamily = {
                 },
                 {
                     id: 'nano',
-                    name: 'Arduino Nano',
+                    name: 'Nano',
                     mcu: 'ATmega328P',
                     freq: '16MHz',
                     flash: '32KB',
@@ -133,7 +133,7 @@ export const ARDUINO_FAMILY: BoardFamily = {
                 },
                 {
                     id: 'leonardo',
-                    name: 'Arduino Leonardo',
+                    name: 'Leonardo',
                     mcu: 'ATmega32u4',
                     freq: '16MHz',
                     flash: '32KB',
@@ -154,7 +154,7 @@ export const ARDUINO_FAMILY: BoardFamily = {
             boards: [
                 {
                     id: 'mega2560',
-                    name: 'Arduino Mega 2560',
+                    name: 'Mega 2560 Rev3',
                     mcu: 'ATmega2560',
                     freq: '16MHz',
                     flash: '256KB',

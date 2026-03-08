@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
+import { useTranslation } from 'react-i18next';
 
 /**
  * PinMapping: 物理引脚映射接口
@@ -45,6 +46,7 @@ export const ChipRenderer: React.FC<ChipRendererProps> = ({
     visuals,
     className
 }) => {
+    const { t } = useTranslation();
     // 引用用于辅助操作 SVG DOM
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -134,20 +136,47 @@ export const ChipRenderer: React.FC<ChipRendererProps> = ({
     // 检测是否为双列直插式封装 (TSSOP, SOIC, DIP, SOP) - 这种显示为长方形，引脚分布在左右两侧
     const isDualInline = /TSSOP|SOIC|DIP|SOP/i.test(packageType || '');
     const isBGA = /GA|WLCSP|LCC/i.test(packageType || ''); // Detect BGA/LGA/PGA/WLCSP/LCC/TFBGA...
+    const isSquare = /LQFP|QFP|QFN/i.test(packageType || '');
+
+    // 综合判断封装是否已识别 (用于 auto-generation 回退拦截)
+    const isIdentified = isUno || isMega || isDipBoard || isDualInline || isBGA || isSquare;
 
     // 确定总引脚数
     const totalPins = pinCount > 0 ? pinCount : (isDipBoard ? dipPinCount : (isDualInline ? 20 : (isBGA ? 100 : 0)));
 
-    // 空状态/无预览数据拦截: 如果没标明引脚数，且不是以上已知类型，则无法渲染真实物理视图
-    if (!totalPins && !isUno && !isMega) {
+    // [FIX] Move positionMap and sortedHeuristicPins declarations up to avoid ReferenceError when using them in DIP board branches before line 685.
+    // 构建位置映射快速查找表: 将物理位置编号 (如 "1", "A1") 映射到引脚信号名 (如 "PA0")
+    const positionMap: Record<string, string> = {};
+    if (pinMap.length > 0) {
+        pinMap.forEach(p => {
+            positionMap[p.position] = p.name;
+        });
+    }
+
+    // 提取纯数字编号用于内部排序 (作为启发式回退)
+    // 当官方数据缺失时，按端口顺序 (PA0, PA1, PB0...) 排列，尽量模拟合理分布
+    const sortedHeuristicPins = [...pins].sort((a, b) => {
+        const portA = a.charAt(1);
+        const portB = b.charAt(1);
+        if (portA !== portB) return portA.localeCompare(portB);
+        const numA = parseInt(a.slice(2));
+        const numB = parseInt(b.slice(2));
+        return (isNaN(numA) || isNaN(numB)) ? 0 : numA - numB;
+    });
+
+
+    // 空状态/无预览数据拦截: 如果没标明引脚数，或者封装类型未识别，则显示提示而非强行生成错误预览
+    if (packageType !== 'CUSTOM_SVG' && (!totalPins || !isIdentified)) {
         return (
             <div className={`relative flex items-center justify-center p-4 bg-[#1e1e1e] rounded-lg border border-slate-700/50 ${className} min-h-[300px]`}>
                 <div className="flex flex-col items-center justify-center text-slate-500">
                     <svg className="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                     </svg>
-                    <span className="text-sm font-medium tracking-wide">没有预览数据</span>
-                    <span className="text-xs text-slate-600 mt-1">请在 board.json 中查阅或完善封装信息</span>
+                    <span className="text-sm font-medium tracking-wide">
+                        {!totalPins ? t('chip.noPreview') : t('chip.incompleteInfo')}
+                    </span>
+                    <span className="text-xs text-slate-600 mt-1">{t('chip.checkBoardJson')}</span>
                 </div>
             </div>
         );
@@ -679,26 +708,6 @@ export const ChipRenderer: React.FC<ChipRendererProps> = ({
     // 芯片主体起始坐标 (居中)
     const startX = (size - bodyWidth) / 2;
     const startY = (size - bodyHeight) / 2;
-
-
-    // 构建位置映射快速查找表: 将物理位置编号 (如 "1", "A1") 映射到引脚信号名 (如 "PA0")
-    const positionMap: Record<string, string> = {};
-    if (pinMap.length > 0) {
-        pinMap.forEach(p => {
-            positionMap[p.position] = p.name;
-        });
-    }
-
-    // 提取纯数字编号用于内部排序 (作为启发式回退)
-    // 当官方数据缺失时，按端口顺序 (PA0, PA1, PB0...) 排列，尽量模拟合理分布
-    const sortedHeuristicPins = [...pins].sort((a, b) => {
-        const portA = a.charAt(1);
-        const portB = b.charAt(1);
-        if (portA !== portB) return portA.localeCompare(portB);
-        const numA = parseInt(a.slice(2));
-        const numB = parseInt(b.slice(2));
-        return (isNaN(numA) || isNaN(numB)) ? 0 : numA - numB;
-    });
 
     /**
      * 根据物理位置索引获取引脚显示名称

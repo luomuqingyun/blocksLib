@@ -139,6 +139,8 @@ class BoardRepositoryImpl implements BoardRepository {
                     console.warn(`[BoardRepository] CUSTOM_SVG declared but file not found at: ${fullSvgPath}`);
                 }
 
+                const platform = rawBoard.platform || (category.toLowerCase() === 'esp32' ? 'espressif32' : 'atmelavr');
+
                 const board = {
                     ...rawBoard,
                     visuals: {
@@ -149,7 +151,7 @@ class BoardRepositoryImpl implements BoardRepository {
                     page_url: rawBoard.page_url || `https://www.google.com/search?q=${rawBoard.name ? rawBoard.name.replace(/\s+/g, '+') : rawBoard.id}+${category}+board`,
                     build: {
                         envName: rawBoard.mcu || `${rawBoard.id}`,
-                        platform: rawBoard.platform || 'atmelavr', // Fallback
+                        platform: platform,
                         board: rawBoard.id,
                         framework: 'arduino',
                         ...(rawBoard.build || {})

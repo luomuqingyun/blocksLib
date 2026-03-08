@@ -1,17 +1,16 @@
 {
-  "id": "leonardo",
-  "name": "Leonardo",
-  "mcu": "ATMEGA32u4",
+  "id": "uno",
+  "name": "UNO R3",
+  "mcu": "ATMEGA328P",
   "package": "CUSTOM_SVG",
   "visuals": {
-    "svgPath": "Leonardo.svg"
+    "svgPath": "UNO_R3.svg"
   },
-  "pinCount": 30,
-  "specs": "28k Flash / 2.5k RAM",
-  "description": "Arduino Leonardo开发板",
-  "page_url": "https://docs.arduino.cc/hardware/leonardo",
+  "pinCount": 28,
+  "specs": "31.5k Flash / 2k RAM",
+  "description": "Arduino UNO R3 是一款基于ATmega328P的开源电子原型平台，包含数字I/O口14个（其中6个支持PWM输出），模拟输入口6个，16MHz晶振，USB接口，电源接口，ICSP接口等。",
+  "page_url": "https://docs.arduino.cc/hardware/uno-rev3",
   "capabilities": [],
-  "pinMap": [],
   "pin_options": {
     "digital": [
       [
@@ -95,30 +94,6 @@
       [
         "A5",
         "A5"
-      ],
-      [
-        "A6",
-        "A6"
-      ],
-      [
-        "A7",
-        "A7"
-      ],
-      [
-        "A8",
-        "A8"
-      ],
-      [
-        "A9",
-        "A9"
-      ],
-      [
-        "A10",
-        "A10"
-      ],
-      [
-        "A11",
-        "A11"
       ]
     ],
     "pwm": [
@@ -145,34 +120,34 @@
       [
         "11",
         "11"
-      ],
-      [
-        "13",
-        "13"
       ]
     ],
     "i2c": [
       [
         "SDA",
-        "2"
+        "A4"
       ],
       [
         "SCL",
-        "3"
+        "A5"
       ]
     ],
     "spi": [
       [
         "MOSI",
-        "ICSP4"
+        "11"
       ],
       [
         "MISO",
-        "ICSP1"
+        "12"
       ],
       [
         "SCK",
-        "ICSP3"
+        "13"
+      ],
+      [
+        "SS",
+        "10"
       ]
     ]
   }

@@ -13,6 +13,28 @@ interface TestResult {
     time: number;
 }
 
+/** [Helper] Extract multiple board patterns from arguments (comma or space separated) */
+function getTargetPatterns(): string[] {
+    const targetBoardArgIndex = process.argv.findIndex(arg => arg.startsWith('--board'));
+    if (targetBoardArgIndex === -1) return [];
+
+    let patterns: string[] = [];
+    const arg = process.argv[targetBoardArgIndex];
+    if (arg.includes('=')) {
+        const val = arg.split('=')[1].trim();
+        if (val) patterns.push(...val.split(',').map(v => v.trim()).filter(v => v.length > 0));
+    }
+
+    // Collect subsequent arguments that don't start with '--'
+    for (let i = targetBoardArgIndex + 1; i < process.argv.length; i++) {
+        const nextArg = process.argv[i];
+        if (nextArg.startsWith('--')) break;
+        patterns.push(...nextArg.split(',').map(v => v.trim()).filter(v => v.length > 0));
+    }
+
+    return patterns.map(p => p.toLowerCase().trim());
+}
+
 export async function runTests() {
     console.log('\n======================================================');
     console.log(' EmbedBlocks Studio - Automated Testing Framework       ');
@@ -70,27 +92,16 @@ export async function runTests() {
                 } catch (e) { }
             }
 
-            // 支持指定具体的板卡测试 (e.g. --board=generic_stm32f103ze, 或模糊的 STM32F103)
-            let targetId: string | undefined;
-            const targetBoardArgIndex = process.argv.findIndex(arg => arg.startsWith('--board'));
-            if (targetBoardArgIndex !== -1) {
-                const arg = process.argv[targetBoardArgIndex];
-                if (arg.includes('=')) {
-                    // 处理 --board=xxx 
-                    const splitVal = arg.split('=')[1].trim();
-                    // 处理 npm 把参数分成 '--board=', 'xxx' 两项被传入的情况
-                    targetId = splitVal || process.argv[targetBoardArgIndex + 1];
-                } else {
-                    // 处理 --board xxx 的情况
-                    targetId = process.argv[targetBoardArgIndex + 1];
-                }
-            }
+            // [Multi-Board Support] Extract all target board patterns
+            const targetPatterns = getTargetPatterns();
 
-            if (targetId && typeof targetId === 'string') {
-                targetId = targetId.toLowerCase().trim();
-                const normalizedTarget = targetId.replace(/[-_]/g, '');
-                boardsToTest = boardsToTest.filter(b => b.id.toLowerCase().replace(/[-_]/g, '').includes(normalizedTarget));
-                console.log(`[TestRunner] Filter active: Only generating test for board -> ${targetId} (normalized: ${normalizedTarget})`);
+            if (targetPatterns.length > 0) {
+                const normalizedTargets = targetPatterns.map(p => p.replace(/[-_]/g, ''));
+                boardsToTest = boardsToTest.filter(b => {
+                    const boardIdNorm = b.id.toLowerCase().replace(/[-_]/g, '');
+                    return normalizedTargets.some(target => boardIdNorm.includes(target));
+                });
+                console.log(`[TestRunner] Filter active: Generating tests for boards matching -> [${targetPatterns.join(', ')}]`);
             } else {
                 const limitStr = process.env.TEST_LIMIT;
                 if (limitStr) {
@@ -133,7 +144,9 @@ export async function runTests() {
             const genWorkers: Promise<void>[] = [];
 
             const processGeneration = async (board: any) => {
-                const testProjectName = `test_${board.id.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                // [Sync] Use board.name for folder naming to keep it consistent with UI
+                const sanitizedName = board.name.replace(/[^a-zA-Z0-9]/g, '_');
+                const testProjectName = `test_${sanitizedName}`;
                 const projectPath = path.join(testWorkDir, testProjectName);
 
                 try {
@@ -280,27 +293,16 @@ void loop() {
                 .filter(dirent => dirent.isDirectory())
                 .map(dirent => dirent.name);
 
-            // 支持专门编译某个特定测试工程 (模糊匹配)
-            let compileTargetId: string | undefined;
-            const compileTargetBoardArgIndex = process.argv.findIndex(arg => arg.startsWith('--board'));
-            console.log(`[DEBUG] process.argv:`, process.argv);
-            if (compileTargetBoardArgIndex !== -1) {
-                const arg = process.argv[compileTargetBoardArgIndex];
-                if (arg.includes('=')) {
-                    const splitVal = arg.split('=')[1].trim();
-                    // 处理 npm 把参数分成 '--board=', 'xxx' 两项被传入的情况
-                    compileTargetId = splitVal || process.argv[compileTargetBoardArgIndex + 1];
-                } else {
-                    compileTargetId = process.argv[compileTargetBoardArgIndex + 1];
-                }
-            }
-            console.log(`[DEBUG] Found compileTargetId: "${compileTargetId}"`);
+            // [Multi-Board Support] Extract all target board patterns
+            const compileTargetPatterns = getTargetPatterns();
 
-            if (compileTargetId && typeof compileTargetId === 'string') {
-                compileTargetId = compileTargetId.toLowerCase().trim();
-                const normalizedCompileTarget = compileTargetId.replace(/[-_]/g, '');
-                projectDirs = projectDirs.filter(d => d.toLowerCase().replace(/[-_]/g, '').includes(normalizedCompileTarget));
-                console.log(`[TestRunner] Filter active: Only compiling test for board containing -> ${compileTargetId} (normalized: ${normalizedCompileTarget})`);
+            if (compileTargetPatterns.length > 0) {
+                const normalizedCompileTargets = compileTargetPatterns.map(p => p.replace(/[-_]/g, ''));
+                projectDirs = projectDirs.filter(d => {
+                    const dirNameNorm = d.toLowerCase().replace(/[-_]/g, '');
+                    return normalizedCompileTargets.some(target => dirNameNorm.includes(target));
+                });
+                console.log(`[TestRunner] Filter active: Only compiling tests matching -> [${compileTargetPatterns.join(', ')}]`);
             }
 
             if (projectDirs.length === 0) {

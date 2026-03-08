@@ -1,8 +1,11 @@
 {
   "id": "nanoatmega328",
-  "name": "Arduino Nano ATmega328",
+  "name": "Nano",
   "mcu": "ATMEGA328P",
-  "package": "BOARD_DIP_30",
+  "package": "CUSTOM_SVG",
+  "visuals": {
+    "svgPath": "Nano.svg"
+  },
   "pinCount": 30,
   "specs": "30k Flash / 2k RAM",
   "description": "Arduino Nano 是一款基于 ATmega328P 的紧凑型面包板友好型开发板，功能与 Arduino Uno 几乎相同，但体积更小，使用 Mini-B USB 接口。",

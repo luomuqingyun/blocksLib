@@ -24,6 +24,11 @@
         "selectBoardPrompt": "Please select a board or chip first",
         "preview": "Preview"
     },
+    "chip": {
+        "noPreview": "No Preview Data",
+        "incompleteInfo": "Incomplete package info, cannot display",
+        "checkBoardJson": "Please check or complete package info in board.json"
+    },
     "extensions": {
         "title": "Extensions",
         "marketplace": "Extension Marketplace",
