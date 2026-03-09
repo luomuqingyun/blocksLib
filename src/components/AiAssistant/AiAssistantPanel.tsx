@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Send, Bot, User, Loader2, Key } from 'lucide-react';
+import { Sparkles, Send, Bot, User, Loader2, Key, Eraser } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useFileSystem } from '../../contexts/FileSystemContext';
@@ -64,6 +64,22 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
         scrollToBottom();
     }, [messages]);
 
+    // 清空历史记录
+    const handleClearHistory = async () => {
+        if (!currentFilePath || !window.electronAPI) return;
+
+        const confirmed = await (window.electronAPI as any).showConfirmDialog({
+            title: t('ai.clear_history_title') || '清除对话记忆',
+            message: t('ai.clear_history_confirm') || '确定要清除当前项目的 AI 对话记忆吗？这将开启一个新的会话，AI 将不再记得之前的聊天内容。',
+            buttons: [t('common.cancel') || '取消', t('common.confirm') || '确定']
+        });
+
+        if (confirmed) {
+            await (window.electronAPI as any).clearAiSession(currentFilePath);
+            setMessages([]); // 同时清空本地显示的聊天记录
+        }
+    };
+
     /**
      * 发送消息处理函数
      * 流程：前端记录用户消息 -> 启动 Loading 状态 -> 通过 IPC 隧道请求 OpenClaw -> 处理响应并注入积木
@@ -93,7 +109,8 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                     context: {
                         config: await window.electronAPI.getConfig(),
                         board: selectedBoard,
-                        code: code
+                        code: code,
+                        filePath: currentFilePath
                     }
                 });
 
@@ -137,13 +154,26 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                         }
                     } catch (e) {
                         console.error('[AI] 积木注入失败:', e);
-                        // ⚠️ 积木注入失败反馈
-                        setMessages(prev => [...prev, {
-                            id: 'blocks-err-' + Date.now(),
-                            role: 'assistant',
-                            content: '⚠️ 积木生成格式异常，请重试或手动搭建',
-                            timestamp: Date.now()
-                        }]);
+
+                        // [NEW] 检查工作区是否部分存活。如果工作区中仍有积木，说明降级恢复部分成功，不报完全失败的红底错。
+                        const blocksCount = blocklyRef.current?.getAllBlocks()?.length || 0;
+                        if (blocksCount > 0) {
+                            markWorkspaceDirty();
+                            setMessages(prev => [...prev, {
+                                id: 'blocks-partial-' + Date.now(),
+                                role: 'assistant',
+                                content: '⚠️ 积木含有未知类型，已为您尽力过滤并保留有效部分结构。',
+                                timestamp: Date.now()
+                            }]);
+                        } else {
+                            // ⚠️ 积木注入完全失败反馈
+                            setMessages(prev => [...prev, {
+                                id: 'blocks-err-' + Date.now(),
+                                role: 'assistant',
+                                content: '⚠️ 积木生成格式异常，请重试或手动搭建',
+                                timestamp: Date.now()
+                            }]);
+                        }
                     }
                 }
             } else {
@@ -180,6 +210,25 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
 
     return (
         <div className="flex flex-col h-full bg-[#1e1e1e] text-slate-300">
+            {/* Header */}
+            <div className="flex items-center justify-between p-3 border-b border-slate-700 bg-[#252526] z-50">
+                <div className="flex items-center space-x-2">
+                    <Sparkles className="w-5 h-5 text-purple-400 animate-pulse" />
+                    <h2 className="text-sm font-semibold text-gray-100">{t('ai.assistant_title') || 'AI 助手'}</h2>
+                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30 uppercase tracking-wider font-bold">OpenClaw</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                    <button
+                        onClick={handleClearHistory}
+                        title={t('ai.clear_history') || '清除历史记录'}
+                        className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-all group"
+                    >
+                        <Eraser className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                    </button>
+                    {/* 暂时隐藏关闭按钮，或者如果需要可以保留 */}
+                </div>
+            </div>
+
             {/* 消息列表 */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar relative">
                 {messages.map(msg => (

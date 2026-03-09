@@ -211,31 +211,65 @@ export const useWorkspacePersistence = (
                 // --- AI 错误恢复：预处理净化 AST (Robust Unfolding) ---
                 // Blockly serialization.load 会因为遇到任意一个未注册的 block type
                 // 而抛出严重异常，导致整个反序列化失败并清空工作区。
-                // 针对 AI 可能幻觉出错误积木（如 arduino_delay_ms），我们在此拦截：
+                // 针对 AI 可能幻觉出错误积木（如 arduino_pin_mode），我们在此拦截：
                 const sanitizeBlockNode = (node: any): any => {
-                    if (!node) return null;
-                    if (node.type && !Blockly.Blocks[node.type]) {
-                        console.warn(`[WorkspacePersistence] 拦截并移除未注册积木: ${node.type}`);
-                        // 尝试旁路恢复：提取 next block 连接到父节点，舍弃当前坏节点
-                        if (node.next && node.next.block) return sanitizeBlockNode(node.next.block);
-                        return null;
-                    }
+                    if (!node || typeof node !== 'object') return node;
+
+                    // 1. 递归处理所有的 inputs (包含 value/statement 类型的连接点)
                     if (node.inputs) {
                         for (const key of Object.keys(node.inputs)) {
                             if (node.inputs[key].block) {
+                                // 递归探测子节点
                                 const s = sanitizeBlockNode(node.inputs[key].block);
-                                if (s) node.inputs[key].block = s; else delete node.inputs[key].block;
+                                if (s) {
+                                    node.inputs[key].block = s;
+                                } else {
+                                    delete node.inputs[key].block;
+                                }
                             }
                             if (node.inputs[key].shadow) {
                                 const s = sanitizeBlockNode(node.inputs[key].shadow);
-                                if (s) node.inputs[key].shadow = s; else delete node.inputs[key].shadow;
+                                if (s) {
+                                    node.inputs[key].shadow = s;
+                                } else {
+                                    delete node.inputs[key].shadow;
+                                }
+                            }
+                            // 如果该 input 节点此时已经空了，我们可以安全删除这个 key 以免触发 Blockly 解析异常
+                            if (Object.keys(node.inputs[key]).length === 0) {
+                                delete node.inputs[key];
                             }
                         }
                     }
+
+                    // 2. 递归处理 next 流水线 (next.block)
                     if (node.next && node.next.block) {
                         const s = sanitizeBlockNode(node.next.block);
-                        if (s) node.next.block = s; else delete node.next;
+                        if (s) {
+                            node.next.block = s;
+                        } else {
+                            delete node.next.block;
+                        }
                     }
+                    if (node.next && Object.keys(node.next).length === 0) {
+                        delete node.next;
+                    }
+
+                    // 3. 拦截未注册的幻觉积木 (核心目的)
+                    // 判断当前节点自身是否合法 (必须具有 type 且存在于 Blockly Registry 中)
+                    if (node.type && !Blockly.Blocks[node.type]) {
+                        console.warn(`[WorkspacePersistence] 拦截并移除未注册积木 (AI幻觉): ${node.type}`);
+
+                        // 尝试【旁路恢复】：
+                        // 既然当前节点是非法的，我们需要把它的下游（也就是接在它屁股后面的 next.block）
+                        // 整个提取出来，交接给本节点的调用方（父节点），从而抹掉中间这个错误的幽灵节点。
+                        // 如果它既非法又没有后继者，就返回 null，从而整个抛弃这棵小树。
+                        if (node.next && node.next.block) {
+                            return node.next.block;
+                        }
+                        return null; // 无法恢复且无子嗣，彻底截断
+                    }
+
                     return node;
                 };
 
@@ -253,6 +287,7 @@ export const useWorkspacePersistence = (
 
                 // 清空并加载新状态
                 Blockly.Events.disable();
+                let loadSuccess = false;
                 try {
                     workspaceRef.current.clear();
                     console.log('[loadWorkspaceState] Loading state (Robust Mode)...');
@@ -263,11 +298,16 @@ export const useWorkspacePersistence = (
                     console.log('[loadWorkspaceState] 注入后工作区积木数量:', blocksAfter.length);
 
                     ensureDefaultBlocks();
+                    loadSuccess = true;
                 } catch (loadErr) {
                     console.error('[loadWorkspaceState] Blockly load failed! Reverting...', loadErr);
                     workspaceRef.current.clear();
-                    Blockly.serialization.workspaces.load(stateBackup, workspaceRef.current);
-                    throw loadErr; // 继续往外抛，由上层 catch 捕获并返回 false
+                    try {
+                        Blockly.serialization.workspaces.load(stateBackup, workspaceRef.current);
+                    } catch (backupErr) {
+                        console.error('[loadWorkspaceState] Backup restore also failed!', backupErr);
+                    }
+                    throw loadErr; // 继续往外抛，由上层 catch 捕获并返回 false (AI 注入失败)
                 } finally {
                     Blockly.Events.enable();
                 }

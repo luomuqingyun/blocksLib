@@ -86,6 +86,7 @@ export interface BlocklyWrapperHandle {
   clear: () => void;                  // 清空工作区
   centerOnBlocks: () => void;         // 将积木居中
   resetCentering: () => void;         // 重置对齐标志位 (用于切换项目)
+  getAllBlocks: () => any[];          // 获取工作区上的所有积木
 }
 
 // ------------------------------------------------------------------
@@ -297,7 +298,13 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
     resize: () => { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current); },
     clear: () => { if (workspaceRef.current) workspaceRef.current.clear(); },
     centerOnBlocks: centerOnBlocks,
-    resetCentering: resetCentering
+    resetCentering: resetCentering,
+    getAllBlocks: () => {
+      if (workspaceRef.current) {
+        return workspaceRef.current.getAllBlocks(false);
+      }
+      return [];
+    }
   }));
 
   // ========== Effect: 系统主题同步 ==========

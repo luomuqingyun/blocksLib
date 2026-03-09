@@ -108,10 +108,14 @@
     },
     "ai": {
         "assistant": "AI Assistant",
+        "assistant_title": "AI Assistant",
         "placeholder": "Enter requirements, e.g., Blink LED every 1s...",
         "welcome": "Hello! I am your embedded AI assistant. Tell me your needs, and I will help you with the block logic.",
         "error": "Sorry, an error occurred while communicating with AI. Please ensure OpenClaw is correctly deployed.",
-        "poweredBy": "Powered by OpenClaw AI"
+        "poweredBy": "Powered by OpenClaw AI",
+        "clear_history": "Clear History",
+        "clear_history_title": "Reset AI Memory",
+        "clear_history_confirm": "Are you sure you want to clear the AI conversation history for this project? This will start a new session, and the AI will no longer remember previous chat contents."
     },
     "editor": {
         "sourcePreview": "Source Preview",

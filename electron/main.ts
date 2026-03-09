@@ -431,6 +431,10 @@ function registerAllIpcs() {
     ipcMain.handle('ai:ask', async (_event, data: { prompt: string, context?: any }) => {
         return await aiService.ask(data.prompt, data.context);
     });
+
+    ipcMain.handle('ai:clear-session', async (_event, filePath: string) => {
+        return aiService.clearSession(filePath);
+    });
 }
 
 // ============================================================

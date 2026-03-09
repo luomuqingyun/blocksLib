@@ -93,31 +93,19 @@ const BLOCKLY_SYSTEM_PROMPT = `
 
 ## Blockly JSON 协议
 根节点必须是 "arduino_entry_root"，它有两个 Statement 输入槽：
-- "SETUP_STACK": 放置初始化积木（如 pinMode）
+- "SETUP_STACK": 放置初始化积木（大部分外设在需要时系统底层会自动初始化 pinMode，除非特殊情况一般为空）
 - "LOOP_STACK": 放置循环执行的积木（如 digitalWrite + delay）
 
 积木之间通过 "next" 字段链接（形成垂直堆叠）。
 
-## 可用积木速查表
-| 积木 type | 用途 | fields | inputs |
-|-----------|------|--------|--------|
-| arduino_pin_mode | 设置引脚模式 | PIN, MODE("INPUT"/"OUTPUT") | - |
-| arduino_digital_write | 数字写 | PIN, STATE("HIGH"/"LOW") | - |
-| arduino_digital_read | 数字读 | PIN | - |
-| arduino_digital_toggle | 翻转引脚 | PIN | - |
-| arduino_analog_write | PWM 输出 | PIN | VALUE(math_number) |
-| arduino_analog_read | 模拟读 | PIN | - |
-| base_delay | 延时(ms) | - | DELAY_TIME(math_number) |
-| arduino_serial_print | 串口打印 | NEWLINE("TRUE"/"FALSE") | CONTENT(text/math_number) |
-| arduino_serial_begin | 串口初始化 | BAUD("9600") | - |
-| controls_repeat_ext | 重复 N 次 | - | TIMES(math_number), DO(statement) |
-| controls_if | 条件判断 | - | IF0(logic), DO0(statement) |
-| math_number | 数字常量 | NUM | - |
-| text | 字符串常量 | TEXT | - |
-| arduino_var_declare | 声明变量 | QUALIFIER, TYPE, VAR | VALUE |
+## 完整输出示例（LED 闪烁 PA3 每 1000ms）
+{"content":"已为您生成 LED 翻转逻辑。","blocks":{"blocks":{"languageVersion":0,"blocks":[{"type":"arduino_entry_root","id":"root_1","x":50,"y":50,"inputs":{"LOOP_STACK":{"block":{"type":"arduino_digital_toggle","id":"t_1","fields":{"PIN":"PA3"},"next":{"block":{"type":"arduino_delay_ms","id":"d_1","inputs":{"DELAY":{"shadow":{"type":"math_number","id":"n_1","fields":{"NUM":1000}}}}}}}}}}}]}}}
 
-## 完整输出示例（LED 闪烁 PA3 每 500ms）
-{"content":"PA3引脚需配置为输出模式，LED串联限流电阻","blocks":{"blocks":{"languageVersion":0,"blocks":[{"type":"arduino_entry_root","id":"root_1","x":50,"y":50,"inputs":{"SETUP_STACK":{"block":{"type":"arduino_pin_mode","id":"pm_1","fields":{"PIN":"PA3","MODE":"OUTPUT"}}},"LOOP_STACK":{"block":{"type":"arduino_digital_write","id":"dw_1","fields":{"PIN":"PA3","STATE":"HIGH"},"next":{"block":{"type":"base_delay","id":"d_1","inputs":{"DELAY_TIME":{"shadow":{"type":"math_number","id":"n_1","fields":{"NUM":500}}}},"next":{"block":{"type":"arduino_digital_write","id":"dw_2","fields":{"PIN":"PA3","STATE":"LOW"},"next":{"block":{"type":"base_delay","id":"d_2","inputs":{"DELAY_TIME":{"shadow":{"type":"math_number","id":"n_2","fields":{"NUM":500}}}}}}}}}}}}}}]}}}
+## 关键积木参考
+- 延时: type="arduino_delay_ms", input="DELAY"
+- 数字写: type="arduino_digital_write", fields={"PIN": "...", "STATE": "HIGH/LOW"}
+- 数字翻转: type="arduino_digital_toggle", fields={"PIN": "..."}
+- 主入口: type="arduino_entry_root", inputs={"SETUP_STACK": ..., "LOOP_STACK": ...}
 
 ## 上下文感知
 优先使用用户当前所选的板卡和代码作为参考。如果用户没有指定引脚，根据板卡常见习惯给出（STM32 用 PA 引脚，Arduino 用数字引脚号）。
@@ -136,6 +124,7 @@ export class AiService {
     private static instance: AiService;
     private isOpenClawAvailable: boolean = false;
     private openClawPath: string = 'openclaw'; // 默认使用系统全局变量
+    private sessionMap: Map<string, string> = new Map(); // 文件路径 -> Session ID 映射
 
     private constructor() {
         // 初始化时自动进行环境检查，添加 catch 防止未捕获的 Promise 异常导致程序崩溃
@@ -216,6 +205,14 @@ export class AiService {
             console.log(`[AiService] OpenClaw 2026.3.2 配置已同步: ${OPENCLAW_CONFIG_PATH}`);
         } catch (e) {
             console.error('[AiService] 同步 OpenClaw 配置失败:', e);
+        }
+    }
+
+    /** 手动清理指定项目的会话，重置 AI 记忆 */
+    public clearSession(filePath: string) {
+        if (filePath && this.sessionMap.has(filePath)) {
+            console.log(`[AiService] 手动清理项目会话历史: ${filePath}`);
+            this.sessionMap.delete(filePath);
         }
     }
 
@@ -360,11 +357,23 @@ export class AiService {
                 /**
                  * 执行 OpenClaw 代理任务:
                  * --agent main: 指定使用主代理，确保其加载正确的配置和技能。
+                 * --session-id: 按项目路径锁定会话 ID。同一项目内保留聊天记忆，切换项目则自动隔离。
                  * --message: 传递强化后的用户的指令。
-                 * 使用 execFileAsync 可以安全传递含特殊字符/换行的大型 Payload，防止命令行注入漏洞。
                  */
-                const exeSpecs = await this.getTrueExecutableAndArgs(this.openClawPath, ['agent', '--agent', 'main', '--message', enhancedPrompt]);
+                let sessionId = `eb_temp_${Date.now()}`;
+                if (context && context.filePath) {
+                    const fp = context.filePath;
+                    if (!this.sessionMap.has(fp)) {
+                        this.sessionMap.set(fp, `eb_proj_${Date.now()}_${Math.floor(Math.random() * 1000)}`);
+                    }
+                    sessionId = this.sessionMap.get(fp)!;
+                }
+
+                const exeSpecs = await this.getTrueExecutableAndArgs(this.openClawPath, ['agent', '--agent', 'main', '--session-id', sessionId, '--message', enhancedPrompt]);
                 const { stdout } = await execFileAsync(exeSpecs.cmd, exeSpecs.args, { maxBuffer: 10 * 1024 * 1024 });
+
+                // [DEBUG] 输出原始响应以排查格式问题
+                console.log('[AiService] OpenClaw 原始输出:', stdout.substring(0, 500) + (stdout.length > 500 ? '...' : ''));
 
                 // 解析回复 (Robust JSON Extraction)
                 const result = this.extractJsonObject(stdout);

@@ -118,10 +118,14 @@
     },
     "ai": {
         "assistant": "AI 助手",
+        "assistant_title": "AI 助手",
         "placeholder": "输入需求，例如：每隔 1s 闪烁 LED...",
         "welcome": "你好！我是您的内嵌 AI 助手。您可以告诉我您的需求，我会协助您编排积木逻辑。",
         "error": "抱歉，与 AI 通信时出现错误。请确保 OpenClaw 已正确部署。",
-        "poweredBy": "由 OpenClaw AI 驱动"
+        "poweredBy": "由 OpenClaw AI 驱动",
+        "clear_history": "清除对话记忆",
+        "clear_history_title": "重置 AI 记忆",
+        "clear_history_confirm": "确定要清除当前项目的 AI 对话记忆吗？这将开启一个新的会话，AI 将不再记得之前的聊天内容。"
     },
     "editor": {
         "sourcePreview": "代码预览",
