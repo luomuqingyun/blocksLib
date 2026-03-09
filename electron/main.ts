@@ -204,27 +204,36 @@ function createWindow() {
     });
 
     // ============================================================
-    // [关键修复] Chromium Compositor/IME 焦点修复 IPC (Focus Fix IPC)
+    // [关键修复] Chromium Compositor/IME 焦点修复 (Focus Fix)
     // ============================================================
     // 根因：当 Electron 窗口失去 OS 焦点后，用户点击回来时，
-    // BrowserWindow 的窗口框架 (frame) 虽然获得了 OS 窗口焦点，
-    // 但 Chromium 的渲染合成器 (Compositor) 和 IME 不会自动恢复。
+    // Chromium 的 Compositor 和 IME 有时不自动恢复，
+    // 导致 DOM focusable 元素虽然 active 但不显示光标。
     //
-    // 因为窗口框架认为自己"已经是焦点"，不会重新发送 WM_ACTIVATE，
-    // 导致 BrowserWindow 的 'focus' 事件也不会重新触发。
-    //
-    // 解决方案：从渲染进程通过 IPC 调用此方法，执行 blur → focus 循环，
-    // 强制 OS 重新发送 WM_KILLFOCUS → WM_ACTIVATE，
-    // 等同于 Alt+Tab 切换应用后切回来的效果。
+    // 三层防御策略：
+    // 1. mainWindow.on('focus'): OS 级窗口获焦时同步 webContents
+    // 2. IPC app:focus-fix: 渲染进程主动请求同步
+    // 3. did-finish-load: 启动时确保 webContents 获焦
+
+    // [防御 1] OS 级窗口获焦时，强制同步 Chromium Compositor
+    mainWindow.on('focus', () => {
+        mainWindow?.webContents.focus();
+    });
+
+    // [防御 2] 渲染进程主动请求 Compositor 同步（非破坏性）
     ipcMain.handle('app:focus-fix', async () => {
         if (!mainWindow) return;
-        mainWindow.blur();
-        return new Promise<void>((resolve) => {
-            setTimeout(() => {
-                mainWindow?.focus();
-                resolve();
-            }, 50);
-        });
+        // 非破坏性：不 blur 窗口，只告诉 Chromium 同步焦点状态
+        mainWindow.webContents.focus();
+        // 如果上面不够，兜底：强制窗口获焦
+        if (!mainWindow.isFocused()) {
+            mainWindow.focus();
+        }
+    });
+
+    // [防御 3] 页面加载完成后确保 Compositor 正确初始化
+    mainWindow.webContents.on('did-finish-load', () => {
+        mainWindow?.webContents.focus();
     });
 
     // ============================================================

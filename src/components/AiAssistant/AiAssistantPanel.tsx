@@ -245,30 +245,39 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                             /**
                              * [Event Firewall + Compositor Reset]
                              * 1. stopPropagation: 阻止事件到达 Blockly
-                             * 2. IPC focusFix: 通过主进程执行 OS 级窗口 blur→focus 循环，
-                             *    强制 Windows 重新发送 WM_KILLFOCUS → WM_ACTIVATE，
-                             *    等同于 Alt+Tab 切换应用的效果（彻底重置 Chromium Compositor）
+                             * 2. blur→focus 循环: 强制产生真正的 FOCUS 事件
+                             * 3. setSelectionRange: 强制 Chromium 绘制光标
+                             * 4. IPC focusFix: 同步 Chromium Compositor
                              */
                             onPointerDown={(e) => {
                                 e.stopPropagation();
-                                e.nativeEvent.stopImmediatePropagation();
                             }}
                             onMouseDown={(e) => {
                                 e.stopPropagation();
-                                e.nativeEvent.stopImmediatePropagation();
-                                // [关键] 通过 IPC 执行 OS 级窗口焦点重置
-                                // 这等同于 Alt+Tab 或 Ctrl+Shift+L 导出日志时打开文件管理器的效果
-                                if (window.electronAPI?.focusFix) {
-                                    window.electronAPI.focusFix().then(() => {
-                                        // 窗口焦点重置后，重新聚焦到输入框
-                                        setTimeout(() => inputRef.current?.focus(), 60);
+                                const el = inputRef.current;
+                                if (el) {
+                                    // 步骤 1: 先 blur 再 focus，强制产生真正的焦点转移事件
+                                    el.blur();
+                                    requestAnimationFrame(() => {
+                                        el.focus();
+                                        // 步骤 2: setSelectionRange 强制 Chromium 渲染光标
+                                        const len = el.value.length;
+                                        el.setSelectionRange(len, len);
                                     });
+                                }
+                                // 步骤 3: IPC 同步 Compositor（非破坏性）
+                                if (window.electronAPI?.focusFix) {
+                                    window.electronAPI.focusFix();
                                 }
                             }}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                // 兜底对焦：确保点击后一定获焦
-                                inputRef.current?.focus();
+                                const el = inputRef.current;
+                                if (el && document.activeElement !== el) {
+                                    el.focus();
+                                    const len = el.value.length;
+                                    el.setSelectionRange(len, len);
+                                }
                             }}
                             placeholder={t('ai.placeholder')}
                             className="w-full h-full bg-[#1e1e1e] border border-slate-700 rounded-lg pl-3 pr-10 py-2.5 text-sm focus:border-blue-500 focus:outline-[2px] focus:outline-blue-500/50 focus:ring-1 focus:ring-blue-500 transition-all select-text cursor-text !pointer-events-auto"
