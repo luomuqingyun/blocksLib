@@ -50,8 +50,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
             // 如果文件不存在，提示用户是否移除
             if (result.error && (result.error.includes('not found') || result.error.includes('ENOENT'))) {
                 setTimeout(async () => {
-                    // 使用 t('key', { path }) 进行字符串插值
-                    if (confirm(t('welcome.confirmRemoveRecent', { path: path }))) {
+                    let doRemove = false;
+                    if (window.electronAPI.showConfirmDialog) {
+                        doRemove = await window.electronAPI.showConfirmDialog({
+                            title: 'Project Not Found',
+                            message: t('welcome.confirmRemoveRecent', { path: path }),
+                            buttons: ['Cancel', 'Remove']
+                        });
+                    } else {
+                        doRemove = confirm(t('welcome.confirmRemoveRecent', { path: path }));
+                    }
+
+                    if (doRemove) {
                         if (window.electronAPI.removeRecentProject) {
                             await window.electronAPI.removeRecentProject(path);
                             onRefreshRecent?.(); // 刷新最近项目列表

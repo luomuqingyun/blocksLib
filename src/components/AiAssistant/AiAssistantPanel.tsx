@@ -119,17 +119,22 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                             : JSON.stringify(response.blocks);
 
                         // 调用封装的 BlocklyWrapper 加载新的积木定义
-                        blocklyRef.current.loadXml(blocksJson);
-                        markWorkspaceDirty(); // 标记为已修改，触发撤销栈记录
-                        console.log('[AI] 已自动同步积木至工作区');
+                        const success = blocklyRef.current.loadXml(blocksJson);
 
-                        // ✅ 积木注入成功反馈
-                        setMessages(prev => [...prev, {
-                            id: 'blocks-ok-' + Date.now(),
-                            role: 'assistant',
-                            content: '✅ 积木已同步至工作区',
-                            timestamp: Date.now()
-                        }]);
+                        if (success) {
+                            markWorkspaceDirty(); // 标记为已修改，触发撤销栈记录
+                            console.log('[AI] 已自动同步积木至工作区 (包含容错过滤)');
+
+                            // ✅ 积木注入成功反馈
+                            setMessages(prev => [...prev, {
+                                id: 'blocks-ok-' + Date.now(),
+                                role: 'assistant',
+                                content: '✅ 积木已同步至工作区',
+                                timestamp: Date.now()
+                            }]);
+                        } else {
+                            throw new Error("UI 反馈：工作区加载失败或发生严重异常");
+                        }
                     } catch (e) {
                         console.error('[AI] 积木注入失败:', e);
                         // ⚠️ 积木注入失败反馈

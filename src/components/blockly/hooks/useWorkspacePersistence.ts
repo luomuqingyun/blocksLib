@@ -141,10 +141,11 @@ export const useWorkspacePersistence = (
      * 支持 XML 格式 (旧版) 和 JSON 格式 (新版)
      * 
      * @param stateStr 状态字符串 (XML 或 JSON)
+     * @returns 是否加载成功
      */
-    const loadWorkspaceState = useCallback((stateStr: string) => {
+    const loadWorkspaceState = useCallback((stateStr: string): boolean => {
         console.log('[loadWorkspaceState] Called with stateStr length:', stateStr?.length);
-        if (!workspaceRef.current) return;
+        if (!workspaceRef.current) return false;
 
         // [关键修复] 如果 stateStr 为空，也不能直接 return
         // 必须确保默认积木加载并通知外界完成，否则会导致加载锁死锁
@@ -160,7 +161,7 @@ export const useWorkspacePersistence = (
             // 进入居中逻辑
             pendingCenter.current = true;
             attemptViewRestore();
-            return;
+            return true;
         }
 
         try {
@@ -207,13 +208,66 @@ export const useWorkspacePersistence = (
                     finalState = blocksState.blocks ? blocksState : { blocks: blocksState };
                 }
 
+                // --- AI 错误恢复：预处理净化 AST (Robust Unfolding) ---
+                // Blockly serialization.load 会因为遇到任意一个未注册的 block type
+                // 而抛出严重异常，导致整个反序列化失败并清空工作区。
+                // 针对 AI 可能幻觉出错误积木（如 arduino_delay_ms），我们在此拦截：
+                const sanitizeBlockNode = (node: any): any => {
+                    if (!node) return null;
+                    if (node.type && !Blockly.Blocks[node.type]) {
+                        console.warn(`[WorkspacePersistence] 拦截并移除未注册积木: ${node.type}`);
+                        // 尝试旁路恢复：提取 next block 连接到父节点，舍弃当前坏节点
+                        if (node.next && node.next.block) return sanitizeBlockNode(node.next.block);
+                        return null;
+                    }
+                    if (node.inputs) {
+                        for (const key of Object.keys(node.inputs)) {
+                            if (node.inputs[key].block) {
+                                const s = sanitizeBlockNode(node.inputs[key].block);
+                                if (s) node.inputs[key].block = s; else delete node.inputs[key].block;
+                            }
+                            if (node.inputs[key].shadow) {
+                                const s = sanitizeBlockNode(node.inputs[key].shadow);
+                                if (s) node.inputs[key].shadow = s; else delete node.inputs[key].shadow;
+                            }
+                        }
+                    }
+                    if (node.next && node.next.block) {
+                        const s = sanitizeBlockNode(node.next.block);
+                        if (s) node.next.block = s; else delete node.next;
+                    }
+                    return node;
+                };
+
+                if (finalState.blocks && Array.isArray(finalState.blocks.blocks)) {
+                    const newBlocks = [];
+                    for (const b of finalState.blocks.blocks) {
+                        const s = sanitizeBlockNode(b);
+                        if (s) newBlocks.push(s);
+                    }
+                    finalState.blocks.blocks = newBlocks;
+                }
+
+                // 备份当前状态，以防 load 抛出异常导致彻底毁灭
+                const stateBackup = Blockly.serialization.workspaces.save(workspaceRef.current);
+
                 // 清空并加载新状态
                 Blockly.Events.disable();
                 try {
                     workspaceRef.current.clear();
                     console.log('[loadWorkspaceState] Loading state (Robust Mode)...');
                     Blockly.serialization.workspaces.load(finalState, workspaceRef.current);
+
+                    // [DEBUG] 打印注入后的工作区状态
+                    const blocksAfter = workspaceRef.current.getAllBlocks(false);
+                    console.log('[loadWorkspaceState] 注入后工作区积木数量:', blocksAfter.length);
+
                     ensureDefaultBlocks();
+                } catch (loadErr) {
+                    console.error('[loadWorkspaceState] Blockly load failed! Reverting...', loadErr);
+                    workspaceRef.current.clear();
+                    Blockly.serialization.workspaces.load(stateBackup, workspaceRef.current);
+                    throw loadErr; // 继续往外抛，由上层 catch 捕获并返回 false
                 } finally {
                     Blockly.Events.enable();
                 }
@@ -228,8 +282,10 @@ export const useWorkspacePersistence = (
                     if (onXmlLoaded) onXmlLoaded();
                 }
             }
+            return true;
         } catch (e) {
             console.error("[WorkspacePersistence] Failed to load state", e);
+            return false;
         }
     }, [workspaceRef, currentFilePath, attemptViewRestore, ensureDefaultBlocks, setIsReadyForEdits, onXmlLoaded]);
 

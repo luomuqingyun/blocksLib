@@ -319,35 +319,8 @@ export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace, curre
         }
     }, [workspace, addBlockToBackpack]);
 
-    /**
-     * 从背包中添加积木块到工作区
-     * 反序列化并将积木块放置在视口中心位置
-     */
-    const addToWorkspace = useCallback((item: BackpackItem) => {
+    const finishAddToWorkspace = useCallback((item: BackpackItem) => {
         if (!workspace) return;
-
-        // 如果要添加的积木包含入口节点(Setup/Loop)
-        if (item.blockType === 'arduino_entry_root') {
-            const existingEntry = workspace.getBlocksByType('arduino_entry_root', false)[0];
-            if (existingEntry) {
-                // 如果工作区已经有入口节点，提示用户是否替换
-                const confirmReplace = window.confirm("该背包项包含完整的 Setup/Loop 结构。这将替换当前工作区的所有逻辑，是否继续？");
-                if (!confirmReplace) {
-                    return; // 用户取消添加
-                }
-
-                // 标记正在替换入口积木，跳过 BlocklyWrapper 的删除保护提示
-                (workspace as any).__isReplacingEntry = true;
-
-                // 静默删除旧的入口积木 (及其所有子积木)
-                existingEntry.dispose(false);
-
-                // 延迟清除标记，确保删除事件处理完毕
-                setTimeout(() => {
-                    (workspace as any).__isReplacingEntry = false;
-                }, 100);
-            }
-        }
 
         try {
             // 使用 Blockly 反序列化 API 添加积木块
@@ -384,14 +357,77 @@ export const CustomBackpack: React.FC<CustomBackpackProps> = ({ workspace, curre
         }
     }, [workspace]);
 
+    /**
+     * 从背包中添加积木块到工作区
+     * 反序列化并将积木块放置在视口中心位置
+     */
+    const addToWorkspace = useCallback((item: BackpackItem) => {
+        if (!workspace) return;
+
+        // 如果要添加的积木包含入口节点(Setup/Loop)
+        if (item.blockType === 'arduino_entry_root') {
+            const existingEntry = workspace.getBlocksByType('arduino_entry_root', false)[0];
+            if (existingEntry) {
+                // 如果工作区已经有入口节点，提示用户是否替换
+                const executeReplace = () => {
+                    // 标记正在替换入口积木，跳过 BlocklyWrapper 的删除保护提示
+                    (workspace as any).__isReplacingEntry = true;
+
+                    // 静默删除旧的入口积木 (及其所有子积木)
+                    existingEntry.dispose(false);
+
+                    // 延迟清除标记，确保删除事件处理完毕
+                    setTimeout(() => {
+                        (workspace as any).__isReplacingEntry = false;
+                    }, 100);
+
+                    finishAddToWorkspace(item);
+                };
+
+                if (window.electronAPI && window.electronAPI.showConfirmDialog) {
+                    window.electronAPI.showConfirmDialog({
+                        title: 'Replace Entry Block',
+                        message: "该背包项包含完整的 Setup/Loop 结构。这将替换当前工作区的所有逻辑，是否继续？",
+                        buttons: ['Cancel', 'Replace']
+                    }).then(confirmReplace => {
+                        if (confirmReplace) {
+                            executeReplace();
+                        }
+                    });
+                    return; // 异步处理，直接返回
+                } else {
+                    const confirmReplace = window.confirm("该背包项包含完整的 Setup/Loop 结构。这将替换当前工作区的所有逻辑，是否继续？");
+                    if (!confirmReplace) {
+                        return; // 用户取消添加
+                    }
+                    executeReplace();
+                    return; // 已执行完毕，返回
+                }
+            }
+        }
+
+        finishAddToWorkspace(item);
+    }, [workspace, finishAddToWorkspace]);
+
     /** 从背包中删除指定项 */
     const removeItem = useCallback((id: string) => {
         setItems(prev => prev.filter(item => item.id !== id));
     }, []);
 
     /** 清空所有背包项 */
-    const clearAll = useCallback(() => {
-        if (window.confirm('确定清空背包？')) {
+    const clearAll = useCallback(async () => {
+        let doClear = false;
+        if (window.electronAPI && window.electronAPI.showConfirmDialog) {
+            doClear = await window.electronAPI.showConfirmDialog({
+                title: 'Clear Backpack',
+                message: '确定清空背包？',
+                buttons: ['Cancel', 'Clear']
+            });
+        } else {
+            doClear = window.confirm('确定清空背包？');
+        }
+
+        if (doClear) {
             setItems([]);
         }
     }, []);

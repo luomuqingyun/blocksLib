@@ -77,7 +77,18 @@ export const useAppController = () => {
                                 // 自动清理失效的最近项目路径（如果文件已不存在）
                                 if (result.error && (result.error.includes('not found') || result.error.includes('ENOENT'))) {
                                     setTimeout(async () => {
-                                        if (confirm(i18n.t('welcome.confirmRemoveRecent', { path: arg }))) {
+                                        let doRemove = false;
+                                        if (window.electronAPI.showConfirmDialog) {
+                                            doRemove = await window.electronAPI.showConfirmDialog({
+                                                title: 'Project Not Found',
+                                                message: i18n.t('welcome.confirmRemoveRecent', { path: arg }),
+                                                buttons: ['Cancel', 'Remove'],
+                                            });
+                                        } else {
+                                            doRemove = confirm(i18n.t('welcome.confirmRemoveRecent', { path: arg }));
+                                        }
+
+                                        if (doRemove) {
                                             await window.electronAPI.removeRecentProject(arg);
                                         }
                                     }, 500);

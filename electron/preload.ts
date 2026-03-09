@@ -169,4 +169,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // --- 焦点修复 (Focus Fix) ---
   // 强制执行 OS 级窗口 blur→focus 循环，修复 Chromium Compositor/IME 焦点丢失
   focusFix: () => ipcRenderer.invoke('app:focus-fix'),
+
+  // --- 原生对话框 (Native Dialogs) ---
+  // 替代 window.confirm() 等原生阻塞 API 以避免引发光标消失/输入变黑洞的严重 Bug
+  showConfirmDialog: (options: { title?: string, message: string, buttons?: string[] }) => ipcRenderer.invoke('dialog:confirm', options),
 });

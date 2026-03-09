@@ -45,7 +45,18 @@ export const SerialSettings: React.FC<SerialSettingsProps> = ({ config, handleSa
 
     /** 清除串口历史记录 */
     const handleClearHistory = async () => {
-        if (confirm(t('settings.confirmClearHistory'))) {
+        let doClear = false;
+        if (window.electronAPI.showConfirmDialog) {
+            doClear = await window.electronAPI.showConfirmDialog({
+                title: t('settings.clearHistory'),
+                message: t('settings.confirmClearHistory'),
+                buttons: ['Cancel', 'Clear History']
+            });
+        } else {
+            doClear = confirm(t('settings.confirmClearHistory'));
+        }
+
+        if (doClear) {
             await window.electronAPI.updateHistory([]);
             await reloadHistory();
             alert(t('settings.historyCleared'));

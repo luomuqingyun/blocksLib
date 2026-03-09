@@ -225,7 +225,19 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const importBlocklyJson = useCallback(async () => {
         if (!window.electronAPI) return;
         // 如果当前已有开启的项目，提示用户导入将覆盖现有内容
-        if (currentFilePath && !confirm("导入将替换当前的积木块。是否继续？")) return;
+        if (currentFilePath) {
+            let doImport = false;
+            if (window.electronAPI.showConfirmDialog) {
+                doImport = await window.electronAPI.showConfirmDialog({
+                    title: '导入警告 (Import Warning)',
+                    message: "导入将替换当前的积木块。是否继续？",
+                    buttons: ['Cancel', 'Continue Import']
+                });
+            } else {
+                doImport = confirm("导入将替换当前的积木块。是否继续？");
+            }
+            if (!doImport) return;
+        }
 
         const result = await window.electronAPI.openFileDialog({
             title: '导入 Blockly JSON',

@@ -157,12 +157,27 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                     loadExtensions();
                 } else if (result.status === 'downgrade') {
                     // 处理降级确认
-                    if (confirm(t('dialog.confirmDowngrade', {
-                        current: result.currentVersion,
-                        new: result.newVersion,
-                        defaultValue: `检测到降级!\n当前: v${result.currentVersion}\n新版本: v${result.newVersion}\n\n是否覆盖?`
-                    }))) {
-                        // 用户确认，由于 confirm 是阻塞的，我们需要先关闭主处理状态
+                    let doDowngrade = false;
+                    if (window.electronAPI.showConfirmDialog) {
+                        doDowngrade = await window.electronAPI.showConfirmDialog({
+                            title: 'Downgrade Warning',
+                            message: t('dialog.confirmDowngrade', {
+                                current: result.currentVersion,
+                                new: result.newVersion,
+                                defaultValue: `检测到降级!\n当前: v${result.currentVersion}\n新版本: v${result.newVersion}\n\n是否覆盖?`
+                            }),
+                            buttons: ['Cancel', 'Overwrite']
+                        });
+                    } else {
+                        doDowngrade = confirm(t('dialog.confirmDowngrade', {
+                            current: result.currentVersion,
+                            new: result.newVersion,
+                            defaultValue: `检测到降级!\n当前: v${result.currentVersion}\n新版本: v${result.newVersion}\n\n是否覆盖?`
+                        }));
+                    }
+
+                    if (doDowngrade) {
+                        // 用户确认，由于 confirm 原本是阻塞的，现在由于异步不会阻塞，直接调用
                         setIsProcessing(false);
                         handleInstall(ext, true);
                         return;
@@ -182,7 +197,18 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
     /** 卸载扩展 */
     const handleUninstall = async (ext: LoadedExtension) => {
         if (window.electronAPI) {
-            if (confirm(t('dialog.confirmUninstall', { name: ext.manifest.name, defaultValue: `确定要卸载 "${ext.manifest.name}" 吗?` }))) {
+            let doUninstall = false;
+            if (window.electronAPI.showConfirmDialog) {
+                doUninstall = await window.electronAPI.showConfirmDialog({
+                    title: 'Uninstall Extension',
+                    message: t('dialog.confirmUninstall', { name: ext.manifest.name, defaultValue: `确定要卸载 "${ext.manifest.name}" 吗?` }),
+                    buttons: ['Cancel', 'Uninstall']
+                });
+            } else {
+                doUninstall = confirm(t('dialog.confirmUninstall', { name: ext.manifest.name, defaultValue: `确定要卸载 "${ext.manifest.name}" 吗?` }));
+            }
+
+            if (doUninstall) {
                 setIsProcessing(true);
                 setProcessingMsg(t('extensions.uninstalling'));
                 try {
@@ -232,11 +258,26 @@ export const ExtensionsModal: React.FC<ExtensionsModalProps> = ({ isOpen, onClos
                     notificationService.show(t('dialog.importSuccess', { name: extName, defaultValue: `Extension "${extName}" imported successfully!` }), 'success');
                 } else if (result.status === 'downgrade') {
                     // 处理本地导入的降级确认
-                    if (confirm(t('dialog.confirmDowngrade', {
-                        current: result.currentVersion,
-                        new: result.newVersion,
-                        defaultValue: `Downgrade detected!\nCurrent: v${result.currentVersion}\nNew: v${result.newVersion}\n\nDo you want to overwrite it?`
-                    }))) {
+                    let doDowngrade = false;
+                    if (window.electronAPI.showConfirmDialog) {
+                        doDowngrade = await window.electronAPI.showConfirmDialog({
+                            title: 'Downgrade Warning',
+                            message: t('dialog.confirmDowngrade', {
+                                current: result.currentVersion,
+                                new: result.newVersion,
+                                defaultValue: `Downgrade detected!\nCurrent: v${result.currentVersion}\nNew: v${result.newVersion}\n\nDo you want to overwrite it?`
+                            }),
+                            buttons: ['Cancel', 'Overwrite']
+                        });
+                    } else {
+                        doDowngrade = confirm(t('dialog.confirmDowngrade', {
+                            current: result.currentVersion,
+                            new: result.newVersion,
+                            defaultValue: `Downgrade detected!\nCurrent: v${result.currentVersion}\nNew: v${result.newVersion}\n\nDo you want to overwrite it?`
+                        }));
+                    }
+
+                    if (doDowngrade) {
                         if (result.actualSourcePath) {
                             setIsProcessing(false);
                             await handleImport({ force: true, sourcePath: result.actualSourcePath });

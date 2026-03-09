@@ -151,7 +151,18 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                     />
                     <button
                         onClick={async () => {
-                            if (confirm(t('settings.confirmClearProjectHistory', 'Are you sure you want to clear project history?'))) {
+                            let doClear = false;
+                            if (window.electronAPI.showConfirmDialog) {
+                                doClear = await window.electronAPI.showConfirmDialog({
+                                    title: t('settings.clearProjectHistory', 'Clear History'),
+                                    message: t('settings.confirmClearProjectHistory', 'Are you sure you want to clear project history?'),
+                                    buttons: ['Cancel', 'Clear History']
+                                });
+                            } else {
+                                doClear = confirm(t('settings.confirmClearProjectHistory', 'Are you sure you want to clear project history?'));
+                            }
+
+                            if (doClear) {
                                 await window.electronAPI.setConfig('general.recentProjects', []);
                                 setConfig((prev: any) => ({ ...prev, general: { ...prev.general, recentProjects: [] } }));
                             }
@@ -197,7 +208,18 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                     />
                     <button
                         onClick={async () => {
-                            if (confirm(t('settings.confirmClearFavorites', 'Are you sure you want to clear all favorite boards?'))) {
+                            let doClear = false;
+                            if (window.electronAPI.showConfirmDialog) {
+                                doClear = await window.electronAPI.showConfirmDialog({
+                                    title: t('settings.clearFavorites', 'Clear'),
+                                    message: t('settings.confirmClearFavorites', 'Are you sure you want to clear all favorite boards?'),
+                                    buttons: ['Cancel', 'Clear Favorites']
+                                });
+                            } else {
+                                doClear = confirm(t('settings.confirmClearFavorites', 'Are you sure you want to clear all favorite boards?'));
+                            }
+
+                            if (doClear) {
                                 await window.electronAPI.setConfig('general.favoriteBoardsCache', []);
                                 setConfig((prev: any) => ({ ...prev, general: { ...prev.general, favoriteBoardsCache: [] } }));
                                 alert(t('settings.favoritesCleared', 'All favorites cleared.'));

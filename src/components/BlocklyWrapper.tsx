@@ -81,7 +81,7 @@ interface BlocklyWrapperProps {
 
 export interface BlocklyWrapperHandle {
   getXml: () => string;               // 获取工作区 XML/JSON 状态
-  loadXml: (state: string) => void;   // 加载工作区状态
+  loadXml: (state: string) => boolean; // 加载工作区状态并返回成功与否
   resize: () => void;                 // 强制重绘/调整大小
   clear: () => void;                  // 清空工作区
   centerOnBlocks: () => void;         // 将积木居中

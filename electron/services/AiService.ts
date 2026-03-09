@@ -371,6 +371,7 @@ export class AiService {
                 if (result) {
                     console.log('[AiService] 已成功解析结构化 AI 响应');
                     const normalizedBlocks = this.normalizeBlocksResponse(result.blocks);
+                    console.log('[AiService] 发送给前端的 Blocks JSON:', JSON.stringify(normalizedBlocks, null, 2));
                     return {
                         content: result.content || result.message || result.response || "AI 响应处理完成。",
                         blocks: normalizedBlocks

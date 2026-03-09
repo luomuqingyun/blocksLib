@@ -370,3 +370,17 @@ body,
     opacity: 1;
   }
 }
+
+/* --- Blockly Focus Bug fixes (12轮关键修复: Z-Index 穿透隔离) --- */
+/*
+  Blockly 会在 body 末尾动态注入 div 用于承载下拉框、输入弹窗和 Tooltip。
+  这些 div 的内联 z-index 往往在 10000 甚至 100000 级别！
+  我们的 React Modal (如 SavePromptModal, NewProjectModal) 使用 Tailwind 的 z-[100]。
+  如果不限制，Blockly 的输入框 ("255")、下拉菜单会直接穿透并渲染在系统级弹窗之上！
+  更致命的是，透明的 Blockly Widget 可能会偷偷抢占系统焦点，导致全量级输入冻结。
+*/
+.blocklyWidgetDiv,
+.blocklyTooltipDiv,
+.blocklyDropDownDiv {
+  z-index: 90 !important; /* 强制压在 React Modal (z-[100]) 和 TopBar (z-50) 之间 */
+}

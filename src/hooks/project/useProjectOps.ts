@@ -138,7 +138,24 @@ export const useProjectOps = (props: ProjectOpsProps) => {
                 // 检查是否存在由于宕机或强制退出留下的备份文件
                 const backupCheck = await window.electronAPI.checkBackup(projectPath);
                 if (backupCheck.hasBackup) {
-                    const restore = confirm("检测到未保存的备份文件 (Unsaved Backup Found).\n\n是否恢复？(OK = Restore, Cancel = Discard)");
+                    let restore = false;
+
+                    // [关键修复 Round 10] 原生 confirm() 阻塞 V8 并在恢复时导致 Chromium 丢失层面焦点（表现为输入变黑洞）。
+                    // 我们必须使用主进程弹出的异步对话框。
+                    if (window.electronAPI && window.electronAPI.showConfirmDialog) {
+                        restore = await window.electronAPI.showConfirmDialog({
+                            title: '未保存备份 (Unsaved Backup)',
+                            message: '检测到未保存的备份文件 (Unsaved Backup Found).\n\n是否恢复？',
+                            buttons: ['Discard (放弃)', 'Restore (恢复)'],
+                        });
+                    } else {
+                        // 降级兼容
+                        restore = confirm("检测到未保存的备份文件 (Unsaved Backup Found).\n\n是否恢复？(OK = Restore, Cancel = Discard)");
+                        if (window.electronAPI && window.electronAPI.focusFix) {
+                            setTimeout(() => window.electronAPI.focusFix(), 100);
+                        }
+                    }
+
                     if (restore) {
                         const backupRes = await window.electronAPI.restoreBackup(projectPath);
                         if (backupRes.success && backupRes.data) {
@@ -186,7 +203,22 @@ export const useProjectOps = (props: ProjectOpsProps) => {
 
                 const backupCheck = await window.electronAPI.checkBackup(projectPath);
                 if (backupCheck.hasBackup) {
-                    const restore = confirm("检测到未保存的备份文件 (Unsaved Backup Found).\n\n是否恢复？(OK = Restore, Cancel = Discard)");
+                    let restore = false;
+
+                    // [关键修复 Round 11] 对于从最近列表打开项目的入口，依然保持异步 IPC 对话框，避免冻结输入
+                    if (window.electronAPI && window.electronAPI.showConfirmDialog) {
+                        restore = await window.electronAPI.showConfirmDialog({
+                            title: '未保存备份 (Unsaved Backup)',
+                            message: '检测到未保存的备份文件 (Unsaved Backup Found).\n\n是否恢复？',
+                            buttons: ['Discard (放弃)', 'Restore (恢复)'],
+                        });
+                    } else {
+                        restore = confirm("检测到未保存的备份文件 (Unsaved Backup Found).\n\n是否恢复？(OK = Restore, Cancel = Discard)");
+                        if (window.electronAPI && window.electronAPI.focusFix) {
+                            setTimeout(() => window.electronAPI.focusFix(), 100);
+                        }
+                    }
+
                     if (restore) {
                         const backupRes = await window.electronAPI.restoreBackup(projectPath);
                         if (backupRes.success && backupRes.data) {

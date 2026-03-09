@@ -102,8 +102,11 @@ interface ElectronAPI {
   // --- AI ---
   askOpenClaw: (data: { prompt: string, context?: any }) => Promise<{ content: string; blocks?: any }>;
 
-  // --- 焦点修复 ---
+  // --- 焦点修复 (Focus Fix) ---
   focusFix: () => Promise<void>;
+
+  // --- 原生对话框 (Native Dialogs) ---
+  showConfirmDialog: (options: { title?: string, message: string, buttons?: string[] }) => Promise<boolean>;
 
   // --- 市场 ---
   marketplaceListUrls: () => Promise<string[]>;

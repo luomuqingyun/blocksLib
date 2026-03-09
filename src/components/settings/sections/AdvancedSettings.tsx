@@ -58,7 +58,18 @@ export const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({ config, hand
                 <button
                     onClick={async () => {
                         // 确认对话框
-                        if (confirm(t('settings.confirmRestoreFactory'))) {
+                        let doRestore = false;
+                        if (window.electronAPI.showConfirmDialog) {
+                            doRestore = await window.electronAPI.showConfirmDialog({
+                                title: t('settings.restoreFactoryDefaults'),
+                                message: t('settings.confirmRestoreFactory'),
+                                buttons: ['Cancel', 'Restore Defaults']
+                            });
+                        } else {
+                            doRestore = confirm(t('settings.confirmRestoreFactory'));
+                        }
+
+                        if (doRestore) {
                             // 如果串口连接中，先关闭
                             const status = await window.electronAPI.getSerialStatus();
                             if (status.connected) {

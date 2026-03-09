@@ -305,7 +305,19 @@ export const SerialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     /** 恢复串口配置为默认值 */
     const restoreDefaults = async () => {
         if (!window.electronAPI) return;
-        if (confirm(t('serial.confirmRestoreDefaults'))) {
+
+        let doRestore = false;
+        if (window.electronAPI.showConfirmDialog) {
+            doRestore = await window.electronAPI.showConfirmDialog({
+                title: t('serial.settings'),
+                message: t('serial.confirmRestoreDefaults'),
+                buttons: ['Cancel', 'Restore Defaults']
+            });
+        } else {
+            doRestore = confirm(t('serial.confirmRestoreDefaults'));
+        }
+
+        if (doRestore) {
             // 如果当前已连接，先断开
             if (state.isConnected) await window.electronAPI.closeSerial();
             dispatch({ type: 'RESTORE_DEFAULTS', payload: { ports: state.ports } });

@@ -21,7 +21,7 @@
  * @module EmbedBlocks/Electron/Main
  */
 
-import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, shell, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -229,6 +229,33 @@ function createWindow() {
         if (!mainWindow.isFocused()) {
             mainWindow.focus();
         }
+    });
+
+    // ============================================================
+    // [关键修复 Round 10] 安全的对话框调起
+    // 渲染进程的 window.confirm() 会阻塞 V8 并在恢复时导致焦点黑洞。
+    // 我们必须从主进程拉起原生对话框。
+    // ============================================================
+    ipcMain.handle('dialog:confirm', async (event, options: { title?: string, message: string, buttons?: string[] }) => {
+        if (!mainWindow) return false;
+
+        // 确保打开对话框前聚焦窗口
+        mainWindow.focus();
+
+        const result = await dialog.showMessageBox(mainWindow, {
+            type: 'question',
+            title: options.title || 'EmbedBlocks',
+            message: options.message,
+            buttons: options.buttons || ['Cancel', 'OK'],
+            defaultId: 1, // 默认高亮 OK
+            cancelId: 0   // ESC 或关闭时返回 0
+        });
+
+        // 对话框关闭后，手动将焦点塞回渲染进程
+        mainWindow.webContents.focus();
+
+        // 返回 true 代表用户选了 OK (index 1)
+        return result.response === 1;
     });
 
     // [防御 3] 页面加载完成后确保 Compositor 正确初始化

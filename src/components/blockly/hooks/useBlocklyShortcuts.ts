@@ -106,30 +106,26 @@ const applyGlobalPatch = () => {
             return originalOnKeyDown.call(this, workspace, e);
         };
 
-        // ===== 鼠标层防御（集中式） =====
-        // Blockly 在 document 上注册了 capture 阶段的 mousedown 监听器，
-        // 会对所有鼠标点击调用 e.preventDefault()，杀死浏览器原生的输入框聚焦机制。
+        // ===== 鼠标层防御（轻量级气泡拦截） =====
+        // 不要使用 stopImmediatePropagation 和全局 document 拦截器！
+        // 那会切断 React 的整个合成事件树，导致各种诡异的黑洞 Bug。
         //
-        // 解决方案：在 document 上注册一个更高优先级的 capture 阶段拦截器，
-        // 当点击目标落在外部可编辑元素上时，立即 stopImmediatePropagation()，
-        // 阻止 Blockly 的 capture 监听器接收到该事件。
-        //
-        // stopImmediatePropagation 比 stopPropagation 更强：
-        // - stopPropagation: 阻止事件传播到父/子节点
-        // - stopImmediatePropagation: 阻止同一节点上其他监听器也接收该事件
-        //
-        // 由于 Blockly 的监听器也挂在 document 上，我们需要 stopImmediatePropagation。
-        document.addEventListener('mousedown', (e: MouseEvent) => {
-            if (isExternalEditable(e.target)) {
-                e.stopImmediatePropagation();
+        // 相对安全的做法：将我们的拦截器也挂到 mousedown 气泡阶段，
+        // 或者让 React 组件在它们的 onClick / onMouseDown 里自己调用 e.stopPropagation()
+        // 这里提供一个后备监听器，只拦截真正的 svg 区域点击
+        const observer = new MutationObserver(() => {
+            const blocklyContainer = document.querySelector('.blocklySvg');
+            if (blocklyContainer && !blocklyContainer.hasAttribute('data-patched')) {
+                blocklyContainer.setAttribute('data-patched', 'true');
+                blocklyContainer.addEventListener('mousedown', (e: Event) => {
+                    // 如果正在操作外部组件（比如处于某种 overlay 上），阻止事件进入 Blockly
+                    if (isExternalEditable(e.target)) {
+                        e.stopPropagation();
+                    }
+                }, true);
             }
-        }, true); // true = capture 阶段
-
-        document.addEventListener('pointerdown', (e: PointerEvent) => {
-            if (isExternalEditable(e.target)) {
-                e.stopImmediatePropagation();
-            }
-        }, true);
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
 
         isBlocklyPatched = true;
         console.log('[useBlocklyShortcuts] Global Blockly shortcut + mouse patch applied successfully.');
