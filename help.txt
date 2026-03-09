@@ -1,6 +1,5 @@
 
-🦞 OpenClaw 2026.3.2 (85377a2)
-   I don't just autocomplete—I auto-commit (emotionally), then ask you to review (logically).
+🦞 OpenClaw 2026.3.2 (85377a2) — Your config is valid, your assumptions are not.
 
 Usage: openclaw agent [options]
 

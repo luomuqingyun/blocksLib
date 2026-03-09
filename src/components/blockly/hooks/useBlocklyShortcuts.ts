@@ -75,11 +75,16 @@ const isExternalEditable = (target: EventTarget | null): boolean => {
 /**
  * 执行全局安全性 Patch
  * 仅在模块首次加载或首次调用 hook 时执行一次
+ * 
+ * 两层防御:
+ * 1. 键盘层: 补丁 ShortcutRegistry.onKeyDown，阻止 Blockly 在外部输入时处理快捷键
+ * 2. 鼠标层: 全局 capture 阶段拦截器，阻止 Blockly 的 mousedown 处理器窃取输入框焦点
  */
 const applyGlobalPatch = () => {
     if (isBlocklyPatched) return;
 
     try {
+        // ===== 键盘层防御 =====
         // @ts-ignore - Accessing internal registry
         const registry = Blockly.ShortcutRegistry.registry;
 
@@ -101,8 +106,33 @@ const applyGlobalPatch = () => {
             return originalOnKeyDown.call(this, workspace, e);
         };
 
+        // ===== 鼠标层防御（集中式） =====
+        // Blockly 在 document 上注册了 capture 阶段的 mousedown 监听器，
+        // 会对所有鼠标点击调用 e.preventDefault()，杀死浏览器原生的输入框聚焦机制。
+        //
+        // 解决方案：在 document 上注册一个更高优先级的 capture 阶段拦截器，
+        // 当点击目标落在外部可编辑元素上时，立即 stopImmediatePropagation()，
+        // 阻止 Blockly 的 capture 监听器接收到该事件。
+        //
+        // stopImmediatePropagation 比 stopPropagation 更强：
+        // - stopPropagation: 阻止事件传播到父/子节点
+        // - stopImmediatePropagation: 阻止同一节点上其他监听器也接收该事件
+        //
+        // 由于 Blockly 的监听器也挂在 document 上，我们需要 stopImmediatePropagation。
+        document.addEventListener('mousedown', (e: MouseEvent) => {
+            if (isExternalEditable(e.target)) {
+                e.stopImmediatePropagation();
+            }
+        }, true); // true = capture 阶段
+
+        document.addEventListener('pointerdown', (e: PointerEvent) => {
+            if (isExternalEditable(e.target)) {
+                e.stopImmediatePropagation();
+            }
+        }, true);
+
         isBlocklyPatched = true;
-        console.log('[useBlocklyShortcuts] Global Blockly shortcut patch applied successfully.');
+        console.log('[useBlocklyShortcuts] Global Blockly shortcut + mouse patch applied successfully.');
     } catch (e) {
         console.error('[useBlocklyShortcuts] Failed to patch Blockly shortcuts:', e);
     }

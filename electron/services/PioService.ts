@@ -29,7 +29,10 @@ import { app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { exec, spawn, execSync } from 'child_process';
+import { promisify } from 'util';
 import * as dns from 'dns';
+
+const execAsync = promisify(exec);
 // 引入板级配置模板和 INI 生成工具
 import { generateIniConfig } from '../config/templates';
 import { PlatformIOTemplate } from '../shared/types';
@@ -237,29 +240,27 @@ export class PioService {
             if (!projectPath) {
                 // 临时模式: 清理重建
                 if (fs.existsSync(tempDir)) {
-                    try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) { }
+                    try { await fs.promises.rm(tempDir, { recursive: true, force: true }); } catch (e) { }
                 }
-                fs.mkdirSync(path.join(tempDir, 'src'), { recursive: true });
-                fs.writeFileSync(path.join(tempDir, 'src', 'main.cpp'), code);
+                await fs.promises.mkdir(path.join(tempDir, 'src'), { recursive: true });
+                await fs.promises.writeFile(path.join(tempDir, 'src', 'main.cpp'), code);
 
                 // 生成 PIO 配置
                 const envConfig = generateIniConfig(buildConfig);
-                fs.writeFileSync(path.join(tempDir, 'platformio.ini'), envConfig);
+                await fs.promises.writeFile(path.join(tempDir, 'platformio.ini'), envConfig);
             } else {
                 // 项目模式: 验证
                 const srcPath = path.join(workDir, 'src', 'main.cpp');
                 if (code) {
-                    if (!fs.existsSync(path.dirname(srcPath))) fs.mkdirSync(path.dirname(srcPath), { recursive: true });
-                    fs.writeFileSync(srcPath, code);
+                    if (!fs.existsSync(path.dirname(srcPath))) await fs.promises.mkdir(path.dirname(srcPath), { recursive: true });
+                    await fs.promises.writeFile(srcPath, code);
                 }
 
                 // 检查 platformio.ini，如果缺失则生成
-                // 检查 platformio.ini
                 const pioPath = path.join(workDir, 'platformio.ini');
                 // Always overwrite to ensure settings are applied
                 const envConfig = generateIniConfig(buildConfig);
-                fs.writeFileSync(pioPath, envConfig);
-                // console.log('[PioService] Regenerated platformio.ini based on build config');
+                await fs.promises.writeFile(pioPath, envConfig);
             }
 
             const args = ['run'];
@@ -268,7 +269,7 @@ export class PioService {
                 // 智能端口处理
                 let useExplicitPort = true;
                 try {
-                    const pioContent = fs.readFileSync(path.join(workDir, 'platformio.ini'), 'utf-8');
+                    const pioContent = await fs.promises.readFile(path.join(workDir, 'platformio.ini'), 'utf-8');
                     // 如果使用 stlink 等调试器，不需要指定端口
                     if (pioContent.includes('upload_protocol = stlink')) useExplicitPort = false;
                 } catch (e) { }
@@ -411,7 +412,7 @@ export class PioService {
             let powershellExe = 'powershell.exe';
             try {
                 // 1. 优先尝试通过 where 命令在 PATH 中查找 (最通用)
-                const stdout = execSync('where.exe pwsh', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+                const { stdout } = await execAsync('where.exe pwsh');
                 if (stdout) {
                     const foundPath = stdout.split('\r\n')[0].trim() || stdout.split('\n')[0].trim();
                     if (foundPath && fs.existsSync(foundPath)) {

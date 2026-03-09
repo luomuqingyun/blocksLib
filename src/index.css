@@ -126,8 +126,16 @@ body,
   /* 行高 1.6，优化长文本阅读体验 */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   /* 标准文档字体栈 */
-  padding: 2rem;
-  /* 容器内边距，提供留白 */
+  padding: 1.25rem;
+  /* 恢复：增加内边距提供足够的呼吸感，防止内容紧贴边框 */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 针对 AI 助手面板的 Markdown 样式微调，解决双重内边距导致的遮挡 */
+.markdown-body.ai-markdown {
+  padding: 0.25rem 0.5rem;
+  /* 显著减小内边距，因为外层容器已经有 p-3 */
 }
 
 .markdown-body h1 {
@@ -157,8 +165,8 @@ body,
   padding-bottom: 0.3rem;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
-  color: #f5bde6;
-  /* 粉色强调色 */
+  color: #a78bfa;
+  /* 紫色强调色 */
 }
 
 .markdown-body h3 {
@@ -168,25 +176,33 @@ body,
   /* 中粗体 */
   margin-top: 1.2rem;
   margin-bottom: 0.8rem;
-  color: #8bd5ca;
-  /* 青色强调色 */
+  color: #818cf8;
+  /* 靛蓝色强调色 */
 }
 
 .markdown-body p {
   margin-bottom: 1rem;
   /* 段落间距 */
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
-.markdown-body ul,
+.markdown-body ul {
+  padding-left: 2rem;
+  margin-bottom: 1rem;
+  list-style-type: disc;
+}
+
 .markdown-body ol {
   padding-left: 2rem;
-  /* 列表左侧缩进，留出序号/圆点空间 */
   margin-bottom: 1rem;
+  list-style-type: decimal;
 }
 
 .markdown-body li {
   margin-bottom: 0.4rem;
   /* 列表项之间的间距 */
+  display: list-item;
 }
 
 .markdown-body blockquote {
@@ -235,11 +251,11 @@ body,
 
 .markdown-body pre code {
   background: none;
-  /* 块级代码内部不再重复背景 */
   padding: 0;
-  /* 清除多余边距 */
   color: #cad3f5;
-  /* 块级代码默认文字色 */
+  white-space: pre-wrap;
+  /* 允许代码块内换行，防止横向溢出导致遮挡 */
+  word-break: break-all;
 }
 
 .markdown-body hr {

@@ -1,0 +1,311 @@
+commit be75a9168ce2ce394ab1dde2343595f65c95effb
+Author: luomuqingyun <luomuqingyun@gmail.com>
+Date:   Sun Mar 8 17:05:01 2026 +0800
+
+    添加OpenClaw AI智能助手
+
+diff --git a/electron/services/AiService.ts b/electron/services/AiService.ts
+new file mode 100644
+index 0000000..b846a4f
+--- /dev/null
++++ b/electron/services/AiService.ts
+@@ -0,0 +1,299 @@
++import { app, shell } from 'electron';
++import * as path from 'path';
++import * as fs from 'fs';
++import { exec, execFile } from 'child_process';
++import { promisify } from 'util';
++
++const execAsync = promisify(exec);
++const execFileAsync = promisify(execFile);
++
++const OPENCLAW_CONFIG_PATH = path.join(app.getPath('home'), '.openclaw', 'openclaw.json');
++
++/**
++ * AI 服务 (AiService): 核心逻辑类，负责管理与 OpenClaw AI 引擎的集成。
++ * 
++ * 主要职责:
++ * 1. 同步应用设置中的 AI 配置到 OpenClaw 的本地配置文件。
++ * 2. 自动检测并优先使用软件内置的 OpenClaw 二进制文件。
++ * 3. 处理前端发起的 AI 对话请求，并将其透传给 OpenClaw CLI。
++ * 4. 提供环境自检功能，确保 API Key 和执行环境已就绪。
++ */
++export class AiService {
++    private static instance: AiService;
++    private isOpenClawAvailable: boolean = false;
++    private openClawPath: string = 'openclaw'; // 默认使用系统全局变量
++
++    private constructor() {
++        // 初始化时自动进行环境检查，添加 catch 防止未捕获的 Promise 异常导致程序崩溃
++        this.checkEnvironment().catch(err => {
++            console.warn('[AiService] Initial environment check failed:', err?.message || err);
++        });
++    }
++
++    /**
++     * 将 UI 用户设置中的配置同步到 OpenClaw 的标准配置文件 (~/.openclaw/openclaw.json)
++     * 此过程确保软件界面修改后，底层的 OpenClaw 引擎能立即感知。
++     * 
++     * @param aiConfig 来自 ConfigService 的 AI 配置对象 (包含 apiKey, provider, model 等)
++     */
++    public async syncConfig(aiConfig: any) {
++        if (!aiConfig) return;
++
++        try {
++            let config: any = {};
++            // 如果文件已存在，先读取现有配置以进行合并，防止覆盖用户手动修改的其他项
++            if (fs.existsSync(OPENCLAW_CONFIG_PATH)) {
++                config = JSON.parse(fs.readFileSync(OPENCLAW_CONFIG_PATH, 'utf8'));
++            }
++
++            /**
++             * 适配 OpenClaw 2026.3.2 官方推荐的架构:
++             * 1. 环境变量 (env): 用于存储敏感的 API Key，避免在模型定义中明文出现。
++             * 2. 代理默认设置 (agents.defaults): 定义系统默认使用的模型路径。
++             */
++
++            const provider = aiConfig.provider || 'deepseek';
++            const modelId = aiConfig.model || (provider === 'deepseek' ? 'deepseek-chat' : 'gemini-1.5-pro');
++
++            // 构造环境变量名，例如 "deepseek" 映射为 "DEEPSEEK_API_KEY"
++            const envKey = `${provider.toUpperCase()}_API_KEY`;
++
++            config.env = config.env || {};
++            config.env[envKey] = aiConfig.apiKey; // 注意：此处的 apiKey 是已经解密后的明文
++
++            // 针对自定义代理地址 (Base URL) 的处理
++            if (aiConfig.baseUrl) {
++                config.models = config.models || {};
++                config.models.providers = config.models.providers || {};
++                // 将用户配置的提供商注册为 OpenAI 兼容接口
++                config.models.providers[provider] = {
++                    api: "openai-completions",
++                    baseUrl: aiConfig.baseUrl,
++                    apiKey: aiConfig.apiKey,
++                    models: [
++                        { id: modelId, name: modelId.toUpperCase() }
++                    ]
++                };
++            }
++
++            // 设置 OpenClaw 默认模型路径，格式为 "provider/modelId"
++            config.agents = config.agents || {};
++            config.agents.defaults = config.agents.defaults || {};
++            config.agents.defaults.model = { primary: `${provider}/${modelId}` };
++
++            // 确保本地配置目录 (.openclaw) 存在
++            const dir = path.dirname(OPENCLAW_CONFIG_PATH);
++            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
++
++            // 写入配置文件
++            fs.writeFileSync(OPENCLAW_CONFIG_PATH, JSON.stringify(config, null, 2));
++
++            /**
++             * 关键补丁：
++             * OpenClaw 2026.3.2 运行 `agent --agent main` 时需要物理存在相应的 agent 目录。
++             * 如果缺失，会导致路由失败。此处强制创建一个默认的 main agent 目录。
++             */
++            const agentDir = path.join(dir, 'agents', 'main', 'agent');
++            if (!fs.existsSync(agentDir)) {
++                fs.mkdirSync(agentDir, { recursive: true });
++                fs.writeFileSync(path.join(agentDir, 'agent.md'), '# Main Agent\nDefault agent for EmbedBlocks Studio.');
++            }
++
++            console.log(`[AiService] OpenClaw 2026.3.2 配置已同步: ${OPENCLAW_CONFIG_PATH}`);
++        } catch (e) {
++            console.error('[AiService] 同步 OpenClaw 配置失败:', e);
++        }
++    }
++
++    /** 获取单例实例 */
++    public static getInstance(): AiService {
++        if (!AiService.instance) {
++            AiService.instance = new AiService();
++        }
++        return AiService.instance;
++    }
++
++    /**
++     * 获取 OpenClaw 可执行文件的绝对路径。
++     * 检测顺序:
++     * 1. 软件打包后的 resources 内部目录 (生产环境)。
++     * 2. 软件根目录下的 bundled_openclaw 目录 (开发环境)。
++     * 3. 系统环境变量中的 'openclaw' 全局命令 (兜底方案)。
++     */
++    private getOpenClawPath(): string {
++        const isDev = !app.isPackaged;
++        const binName = process.platform === 'win32' ? 'openclaw.bat' : 'openclaw';
++
++        // 1. 检查生产环境路径
++        if (!isDev) {
++            const prodPath = path.join(process.resourcesPath, 'bundled_openclaw', 'bin', binName);
++            if (fs.existsSync(prodPath)) return prodPath;
++        }
++
++        // 2. 检查开发环境路径
++        const devPath = path.join(app.getAppPath(), 'bundled_openclaw', 'bin', binName);
++        if (fs.existsSync(devPath)) return devPath;
++
++        // 3. 回退至全局命令
++        return 'openclaw';
++    }
++
++    /**
++     * 检查 OpenClaw 环境是否可用。
++     * 通过运行 `--version` 命令来确认可执行文件是否能正常响应。
++     */
++    public async checkEnvironment(): Promise<boolean> {
++        const resolvedPath = this.getOpenClawPath();
++        this.openClawPath = resolvedPath;
++
++        try {
++            await execFileAsync(resolvedPath, ['--version']);
++            this.isOpenClawAvailable = true;
++            console.log(`[AiService] 环境检查通过，使用路径: ${resolvedPath}`);
++            return true;
++        } catch (err) {
++            this.isOpenClawAvailable = false;
++            return false;
++        }
++    }
++
++    /**
++     * AI 对话核心方法（主入口）
++     * 
++     * @param prompt 用户通过侧边栏输入的原始文本
++     * @param context (可选) 额外的上下文信息，如当前项目代码、板卡型号等
++     * @returns 包含 AI 生成内容或错误信息的对象
++     */
++    public async ask(prompt: string, context?: any): Promise<any> {
++        console.log('[AiService] 收到 AI 指令:', prompt);
++
++        const isReady = await this.checkEnvironment();
++
++        if (isReady) {
++            try {
++                let enhancedPrompt = prompt;
++
++                // 如果附加了项目上下文信息，则组合为强化提示词
++                if (context && (context.board || context.code)) {
++                    let contextStr = "【当前项目运行环境】\n";
++                    if (context.board) {
++                        contextStr += `- 目标开发板架构/型号: ${context.board}\n`;
++                    }
++                    if (context.code && context.code.trim()) {
++                        contextStr += `- 现有的（由 Blockly 积木生成的）C++ 代码:\n\`\`\`cpp\n${context.code}\n\`\`\`\n\n`;
++                    }
++                    contextStr += "【用户的请求指令】\n";
++                    enhancedPrompt = `${contextStr}${prompt}`;
++                    console.log('[AiService] 已拼接项目上下文强化提示词。');
++                }
++
++                /**
++                 * 执行 OpenClaw 代理任务:
++                 * --agent main: 指定使用主代理，确保其加载正确的配置和技能。
++                 * --message: 传递强化后的用户的指令。
++                 * 使用 execFileAsync 可以安全传递含特殊字符/换行的大型 Payload，防止命令行注入漏洞。
++                 */
++                const { stdout } = await execFileAsync(this.openClawPath, ['agent', '--agent', 'main', '--message', enhancedPrompt]);
++
++                try {
++                    // 尝试将输出解析为 JSON (如果 OpenClaw 启用了结构化输出模式)
++                    const result = JSON.parse(stdout);
++                    return {
++                        content: result.message || result.content || result.response || "AI 响应处理完成。",
++                        blocks: result.blocks || null // 如果返回了 Blockly 积木数据，则可以进行注入
++                    };
++                } catch (parseErr) {
++                    // 如果不是 JSON，则作为纯文本处理 (2026.3.2 默认的流式或标准输出)
++                    console.log('[AiService] 解析为纯文本响应');
++                    return { content: stdout };
++                }
++            } catch (e: any) {
++                const errorStr = (e.stdout || '') + (e.stderr || '') + (e.message || '');
++                console.error('[AiService] OpenClaw 运行异常:', errorStr);
++
++                // 针对 API Key 缺失或无效的特别指引
++                if (errorStr.toLowerCase().includes('config') || errorStr.toLowerCase().includes('api key')) {
++                    return {
++                        content: `### 🔑 需要配置 AI 授权\n\nOpenClaw 检测到您的 API Key 尚未设置或已失效。请点击下方按钮运行设置程序：\n\n\`\`\`bash\nopenclaw setup\n\`\`\`\n您也可以直接在软件设置中手动填写。`,
++                        isUnconfigured: true
++                    };
++                }
++
++                return {
++                    content: `抱歉，执行 OpenClaw 时出错。这通常是由于网络连接超时或 API Key 余额不足导致的。\n\n详情: ${e.message}`,
++                    error: true
++                };
++            }
++        }
++
++        /**
++         * 兜底逻辑:
++         * 如果检测到没有 OpenClaw 环境，则进入引导/模拟模式。
++         */
++        return this.simulateResponse(prompt, context);
++    }
++
++    /**
++     * 模拟响应与错误引导逻辑
++     * 仅在 OpenClaw 环境缺失或作为演示时调用。
++     */
++    private simulateResponse(prompt: string, context: any): any {
++        const lower = prompt.toLowerCase();
++
++        // 核心引导：告诉用户如何安装 OpenClaw
++        if (!this.isOpenClawAvailable) {
++            return {
++                content: `### 🚀 尚未检测到 OpenClaw 环境\n\n要在软件中调用强大的 AI 辅助功能，您需要先完成以下步骤：\n\n1. **安装 OpenClaw CLI**: \n   \`\`\`bash\n   npm install -g openclaw\n   \`\`\`\n2. **验证环境**: \n   在终端输入 \`openclaw --version\` 确认可用后重启本软件。\n\n**提示**: OpenClaw 是一个高功率的 AI 代理框架，EmbedBlocks 通过它来执行代码生成和积木编排任务。`,
++                isInstruction: true
++            };
++        }
++
++        // 简单的关键词匹配，用于快速演示 Demo
++        if (lower.includes('闪烁') || lower.includes('blink')) {
++            return {
++                content: '好的，我已经为您生成了 LED 闪烁逻辑（Pin 13）。相应的积木组件已准备就绪。',
++                blocks: {
++                    "languageVersion": 0,
++                    "blocks": [
++                        {
++                            "type": "arduino_entry_root",
++                            "id": "root",
++                            "x": 50,
++                            "y": 50,
++                            "inputs": {
++                                "LOOP_STACK": {
++                                    "block": {
++                                        "type": "arduino_digital_toggle",
++                                        "id": "toggle",
++                                        "fields": { "PIN": "13" },
++                                        "next": {
++                                            "block": {
++                                                "type": "arduino_delay_ms",
++                                                "id": "delay_1s",
++                                                "inputs": {
++                                                    "DELAY": {
++                                                        "shadow": {
++                                                            "type": "math_number",
++                                                            "id": "val_1s",
++                                                            "fields": { "NUM": 1000 }
++                                                        }
++                                                    }
++                                                }
++                                            }
++                                        }
++                                    }
++                                }
++                            }
++                        }
++                    ]
++                }
++            };
++        }
++
++        return {
++            content: `收到您的指令: "${prompt}"。由于 OpenClaw 当前处于离线状态，我只能进行简单的文本记录。请检查设置以恢复 AI 的完整编排能力。`
++        };
++    }
++}
++
++export const aiService = AiService.getInstance();

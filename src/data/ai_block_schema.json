@@ -1,0 +1,4687 @@
+{
+  "_meta": {
+    "generated": "2026-03-09T18:33:03.654Z",
+    "total": 474,
+    "byCategory": {
+      "Arduino核心": 4,
+      "流程控制": 3,
+      "加密": 4,
+      "数据处理": 7,
+      "诊断": 5,
+      "字典": 4,
+      "游戏": 6,
+      "列表": 3,
+      "日志": 2,
+      "高级逻辑": 4,
+      "高级循环": 4,
+      "数学": 2,
+      "菜单": 5,
+      "RTOS": 2,
+      "信号": 3,
+      "基础逻辑": 17,
+      "系统": 12,
+      "文本": 7,
+      "时间": 5,
+      "变量": 46,
+      "示例": 4,
+      "其他": 45,
+      "音频": 5,
+      "条码": 3,
+      "摄像头": 2,
+      "芯片信息": 2,
+      "DAC": 1,
+      "显示屏": 23,
+      "ESP32专用": 9,
+      "输入设备": 6,
+      "基础IO": 13,
+      "电机": 7,
+      "MP3": 4,
+      "LED灯带": 5,
+      "OTA升级": 2,
+      "参数存储": 5,
+      "RFID": 8,
+      "实时时钟": 5,
+      "传感器": 8,
+      "舵机": 7,
+      "移位寄存器": 2,
+      "语音": 2,
+      "存储": 9,
+      "触摸": 2,
+      "自动化": 5,
+      "BLE": 6,
+      "蓝牙": 4,
+      "Blynk": 5,
+      "ESP-NOW": 4,
+      "Firebase": 4,
+      "HTTP": 2,
+      "I2C": 5,
+      "红外": 5,
+      "LoRa": 11,
+      "MQTT": 8,
+      "WiFi网络": 6,
+      "NRF24": 6,
+      "OpenAI": 2,
+      "无线电": 7,
+      "串口通信": 10,
+      "SPI": 4,
+      "Telegram": 4,
+      "USB HID": 6,
+      "Web服务": 9,
+      "机器人": 13,
+      "STM32专用": 10,
+      "第三方硬件": 14
+    }
+  },
+  "blocks": [
+    {
+      "type": "base_delay",
+      "category": "Arduino核心",
+      "connection": "statement",
+      "inputs": {
+        "DELAY_TIME": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "base_map",
+      "category": "Arduino核心",
+      "connection": "output",
+      "inputs": {
+        "NUM": "value",
+        "DMAX": "value"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "various_constrain",
+      "category": "Arduino核心",
+      "connection": "output",
+      "inputs": {
+        "x": "value(Number)",
+        "a": "value(Number)",
+        "b": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_cpp_raw",
+      "category": "Arduino核心",
+      "connection": "statement",
+      "description": "========================================================================="
+    },
+    {
+      "type": "pid_create",
+      "category": "流程控制",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "INPUT": "value(Number)",
+        "OUTPUT": "value(Number)",
+        "SETPOINT": "value(Number)",
+        "KP": "value(Number)",
+        "KI": "value(Number)",
+        "KD": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "pid_compute",
+      "category": "流程控制",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "pid_tunings",
+      "category": "流程控制",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "KP": "value(Number)",
+        "KI": "value(Number)",
+        "KD": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "crypto_md5",
+      "category": "加密",
+      "connection": "output",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "crypto_sha256",
+      "category": "加密",
+      "connection": "output",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "crypto_base64_encode",
+      "category": "加密",
+      "connection": "output",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "crypto_base64_decode",
+      "category": "加密",
+      "connection": "output",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "json_parse",
+      "category": "数据处理",
+      "connection": "statement",
+      "inputs": {
+        "JSON": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "json_get_key",
+      "category": "数据处理",
+      "connection": "output",
+      "inputs": {
+        "KEY": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "json_create_doc",
+      "category": "数据处理",
+      "connection": "statement",
+      "description": "========================================================================="
+    },
+    {
+      "type": "json_set_key",
+      "category": "数据处理",
+      "connection": "statement",
+      "inputs": {
+        "KEY": "value(String)",
+        "VAL": "value"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "json_serialize",
+      "category": "数据处理",
+      "connection": "output",
+      "description": "========================================================================="
+    },
+    {
+      "type": "data_csv_create",
+      "category": "数据处理",
+      "connection": "output",
+      "inputs": {
+        "ITEM1": "value",
+        "ITEM2": "value",
+        "ITEM3": "value"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "data_csv_parse",
+      "category": "数据处理",
+      "connection": "output",
+      "inputs": {
+        "CSV": "value(String)",
+        "INDEX": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "temp_read",
+      "category": "诊断",
+      "connection": "output",
+      "description": "========================================================================="
+    },
+    {
+      "type": "diag_free_heap",
+      "category": "诊断",
+      "connection": "output",
+      "description": "========================================================================="
+    },
+    {
+      "type": "diag_uptime",
+      "category": "诊断",
+      "connection": "output",
+      "description": "========================================================================="
+    },
+    {
+      "type": "diag_restart_reason",
+      "category": "诊断",
+      "connection": "output",
+      "description": "========================================================================="
+    },
+    {
+      "type": "diag_chip_model",
+      "category": "诊断",
+      "connection": "output",
+      "description": "========================================================================="
+    },
+    {
+      "type": "dict_create",
+      "category": "字典",
+      "connection": "statement",
+      "description": "========================================================================="
+    },
+    {
+      "type": "dict_set",
+      "category": "字典",
+      "connection": "statement",
+      "inputs": {
+        "KEY": "value(String)",
+        "VAL": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "dict_get",
+      "category": "字典",
+      "connection": "output",
+      "inputs": {
+        "KEY": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "dict_exists",
+      "category": "字典",
+      "connection": "output",
+      "inputs": {
+        "KEY": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "game_init",
+      "category": "游戏",
+      "connection": "statement",
+      "inputs": {
+        "MAX_SPRITES": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "game_create_sprite",
+      "category": "游戏",
+      "connection": "statement",
+      "inputs": {
+        "ID": "value(Number)",
+        "X": "value(Number)",
+        "Y": "value(Number)",
+        "W": "value(Number)",
+        "H": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "game_set_velocity",
+      "category": "游戏",
+      "connection": "statement",
+      "inputs": {
+        "ID": "value(Number)",
+        "DX": "value(Number)",
+        "DY": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "game_update_all",
+      "category": "游戏",
+      "connection": "statement",
+      "description": "========================================================================="
+    },
+    {
+      "type": "game_check_collision",
+      "category": "游戏",
+      "connection": "output",
+      "inputs": {
+        "ID1": "value(Number)",
+        "ID2": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "game_get_prop",
+      "category": "游戏",
+      "connection": "output",
+      "fields": {
+        "PROP": [
+          "x",
+          "y",
+          "w",
+          "h",
+          "dx",
+          "dy"
+        ]
+      },
+      "inputs": {
+        "ID": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "lists_sort_num",
+      "category": "列表",
+      "connection": "statement",
+      "fields": {
+        "ORDER": [
+          "ASC",
+          "DESC"
+        ]
+      },
+      "inputs": {
+        "LIST": "value(Array)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "lists_reverse",
+      "category": "列表",
+      "connection": "statement",
+      "inputs": {
+        "LIST": "value(Array)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "lists_find_index",
+      "category": "列表",
+      "connection": "output",
+      "inputs": {
+        "ITEM": "value(Number)",
+        "LIST": "value(Array)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "log_to_serial_csv",
+      "category": "日志",
+      "connection": "statement",
+      "inputs": {
+        "VAL1": "value",
+        "VAL2": "value",
+        "VAL3": "value",
+        "VAL4": "value"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "log_plotter_print",
+      "category": "日志",
+      "connection": "statement",
+      "inputs": {
+        "LABEL": "value(String)",
+        "VALUE": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "controls_switch_case",
+      "category": "高级逻辑",
+      "connection": "statement",
+      "description": "Case 分支项"
+    },
+    {
+      "type": "controls_switch_default",
+      "category": "高级逻辑",
+      "connection": "terminal",
+      "description": "Default 默认分支项"
+    },
+    {
+      "type": "controls_switch_container",
+      "category": "高级逻辑",
+      "connection": "standalone",
+      "inputs": {
+        "STACK": "statement"
+      },
+      "description": "Mutator 内部的根容器"
+    },
+    {
+      "type": "controls_switch",
+      "category": "高级逻辑",
+      "connection": "statement",
+      "inputs": {
+        "SWITCH_VAL": "value"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "c_do_while",
+      "category": "高级循环",
+      "connection": "statement",
+      "inputs": {
+        "CONDITION": "value(Boolean)",
+        "DO": "statement"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "c_for_custom",
+      "category": "高级循环",
+      "connection": "statement",
+      "inputs": {
+        "COND": "value(Boolean)",
+        "INIT": "statement",
+        "STEP": "statement",
+        "DO": "statement"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "controls_flow_break",
+      "category": "高级循环",
+      "connection": "terminal",
+      "description": "========================================================================="
+    },
+    {
+      "type": "controls_flow_continue",
+      "category": "高级循环",
+      "connection": "terminal",
+      "description": "========================================================================="
+    },
+    {
+      "type": "stats_average",
+      "category": "数学",
+      "connection": "output",
+      "inputs": {
+        "LIST": "value(Array)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "stats_min_max",
+      "category": "数学",
+      "connection": "output",
+      "fields": {
+        "MODE": [
+          "MIN",
+          "MAX"
+        ]
+      },
+      "inputs": {
+        "LIST": "value(Array)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "menu_create",
+      "category": "菜单",
+      "connection": "statement",
+      "description": "========================================================================="
+    },
+    {
+      "type": "menu_add_item",
+      "category": "菜单",
+      "connection": "statement",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "menu_manage_input",
+      "category": "菜单",
+      "connection": "statement",
+      "description": "废弃逻辑：基于复选框的输入管理"
+    },
+    {
+      "type": "menu_nav",
+      "category": "菜单",
+      "connection": "statement",
+      "inputs": {
+        "NEXT": "value(Boolean)",
+        "PREV": "value(Boolean)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "menu_get_current",
+      "category": "菜单",
+      "connection": "output",
+      "description": "========================================================================="
+    },
+    {
+      "type": "rtos_task_create",
+      "category": "RTOS",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "STACK": "value(Number)",
+        "PRIORITY": "value(Number)",
+        "DO": "statement"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "rtos_delay",
+      "category": "RTOS",
+      "connection": "statement",
+      "inputs": {
+        "MS": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "filter_kalman_init",
+      "category": "信号",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "MEA_E": "value(Number)",
+        "EST_E": "value(Number)",
+        "Q": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "filter_kalman_update",
+      "category": "信号",
+      "connection": "output",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "VAL": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "filter_lowpass",
+      "category": "信号",
+      "connection": "output",
+      "inputs": {
+        "VAL": "value(Number)",
+        "OLD": "value(Number)",
+        "ALPHA": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "controls_if",
+      "category": "基础逻辑",
+      "connection": "statement",
+      "inputs": {
+        "IF0": "statement",
+        "DO0": "statement",
+        "IF": "statement",
+        "DO": "statement",
+        "ELSE": "statement"
+      },
+      "description": "If-Else 分支结构"
+    },
+    {
+      "type": "logic_compare",
+      "category": "基础逻辑",
+      "connection": "output",
+      "fields": {
+        "OP": "(值)"
+      },
+      "inputs": {
+        "A": "statement",
+        "B": "statement"
+      },
+      "description": "比较运算 (==, !=, <, <=, >, >=)"
+    },
+    {
+      "type": "logic_operation",
+      "category": "基础逻辑",
+      "connection": "output",
+      "fields": {
+        "OP": "(值)"
+      },
+      "inputs": {
+        "A": "statement",
+        "B": "statement"
+      },
+      "description": "逻辑运算 (AND, OR)"
+    },
+    {
+      "type": "logic_negate",
+      "category": "基础逻辑",
+      "connection": "output",
+      "inputs": {
+        "BOOL": "statement"
+      },
+      "description": "逻辑非 (Not)"
+    },
+    {
+      "type": "logic_boolean",
+      "category": "基础逻辑",
+      "connection": "output",
+      "fields": {
+        "BOOL": "(值)"
+      },
+      "description": "布尔常量 (True/False)"
+    },
+    {
+      "type": "controls_repeat_ext",
+      "category": "基础逻辑",
+      "connection": "statement",
+      "inputs": {
+        "TIMES": "statement",
+        "DO": "statement"
+      },
+      "description": "计数循环 (Repeat n times)"
+    },
+    {
+      "type": "controls_whileUntil",
+      "category": "基础逻辑",
+      "connection": "statement",
+      "fields": {
+        "MODE": "(值)"
+      },
+      "inputs": {
+        "BOOL": "statement",
+        "DO": "statement"
+      },
+      "description": "条件循环 (While / Until)"
+    },
+    {
+      "type": "controls_for",
+      "category": "基础逻辑",
+      "connection": "statement",
+      "inputs": {
+        "FROM": "statement",
+        "TO": "statement",
+        "BY": "statement",
+        "DO": "statement"
+      },
+      "description": "范围循环 (For)"
+    },
+    {
+      "type": "math_number",
+      "category": "基础逻辑",
+      "connection": "output",
+      "fields": {
+        "NUM": "(值)"
+      },
+      "description": "数字常量"
+    },
+    {
+      "type": "math_arithmetic",
+      "category": "基础逻辑",
+      "connection": "output",
+      "fields": {
+        "OP": "(值)"
+      },
+      "inputs": {
+        "A": "statement",
+        "B": "statement"
+      },
+      "description": "基础四则运算"
+    },
+    {
+      "type": "math_single",
+      "category": "基础逻辑",
+      "connection": "output",
+      "fields": {
+        "OP": "(值)"
+      },
+      "inputs": {
+        "NUM": "statement"
+      },
+      "description": "单目数学运算 (平方根、绝对值等)"
+    },
+    {
+      "type": "math_map",
+      "category": "基础逻辑",
+      "connection": "output",
+      "inputs": {
+        "VALUE": "statement",
+        "FROM_LOW": "statement",
+        "FROM_HIGH": "statement",
+        "TO_LOW": "statement",
+        "TO_HIGH": "statement"
+      },
+      "description": "映射函数 (Map) - Arduino 专属 API"
+    },
+    {
+      "type": "math_constrain",
+      "category": "基础逻辑",
+      "connection": "output",
+      "inputs": {
+        "VALUE": "statement",
+        "LOW": "statement",
+        "HIGH": "statement"
+      },
+      "description": "数值约束 (Constrain) - Arduino 专属 API"
+    },
+    {
+      "type": "math_random",
+      "category": "基础逻辑",
+      "connection": "output",
+      "inputs": {
+        "MIN": "statement",
+        "MAX": "statement"
+      },
+      "description": "随机数 (Random)"
+    },
+    {
+      "type": "math_bitwise",
+      "category": "基础逻辑",
+      "connection": "output",
+      "fields": {
+        "OP": "(值)"
+      },
+      "inputs": {
+        "A": "statement",
+        "B": "statement"
+      },
+      "description": "位运算 (&, |, ^, ~, <<, >>)"
+    },
+    {
+      "type": "text",
+      "category": "基础逻辑",
+      "connection": "output",
+      "fields": {
+        "TEXT": "(值)"
+      },
+      "description": "字符串常量"
+    },
+    {
+      "type": "text_print",
+      "category": "基础逻辑",
+      "connection": "statement",
+      "inputs": {
+        "TEXT": "statement"
+      },
+      "description": "打印到串口 (Print)"
+    },
+    {
+      "type": "arduino_param_def",
+      "category": "系统",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_functions_def_flexible",
+      "category": "系统",
+      "connection": "standalone",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "PARAMS": "statement",
+        "STACK": "statement"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_entry_root",
+      "category": "系统",
+      "connection": "standalone",
+      "inputs": {
+        "SETUP_STACK": "statement",
+        "LOOP_STACK": "statement"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_call_arg_container",
+      "category": "系统",
+      "connection": "statement",
+      "inputs": {
+        "VALUE": "value",
+        "STACK": "statement"
+      },
+      "description": "Mutator 辅助积木"
+    },
+    {
+      "type": "system_interrupt_attach",
+      "category": "系统",
+      "connection": "statement",
+      "fields": {
+        "MODE": [
+          "RISING",
+          "FALLING",
+          "CHANGE",
+          "LOW"
+        ],
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "DO": "statement"
+      },
+      "description": "绑定中断"
+    },
+    {
+      "type": "system_interrupt_referrer",
+      "category": "系统",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "取消中断"
+    },
+    {
+      "type": "system_interrupts_enable",
+      "category": "系统",
+      "connection": "statement",
+      "description": "全局启用中断"
+    },
+    {
+      "type": "system_interrupts_disable",
+      "category": "系统",
+      "connection": "statement",
+      "description": "全局禁用中断"
+    },
+    {
+      "type": "system_pulse_in",
+      "category": "系统",
+      "connection": "output",
+      "fields": {
+        "STATE": [
+          "HIGH",
+          "LOW"
+        ],
+        "TIMEOUT": "(数值)",
+        "PIN": "(文本)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "system_millis",
+      "category": "系统",
+      "connection": "output",
+      "description": "获取自开机以来的毫秒数"
+    },
+    {
+      "type": "system_micros",
+      "category": "系统",
+      "connection": "output",
+      "description": "获取自开机以来的微秒数"
+    },
+    {
+      "type": "system_software_reset",
+      "category": "系统",
+      "connection": "statement",
+      "description": "========================================================================="
+    },
+    {
+      "type": "text_char",
+      "category": "文本",
+      "connection": "output",
+      "fields": {
+        "VAL": "(文本)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "c_to_string",
+      "category": "文本",
+      "connection": "output",
+      "inputs": {
+        "VAL": "value"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "c_text_join",
+      "category": "文本",
+      "connection": "output",
+      "inputs": {
+        "A": "value",
+        "B": "value"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "text_length",
+      "category": "文本",
+      "connection": "output",
+      "inputs": {
+        "VAL": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "text_substring",
+      "category": "文本",
+      "connection": "output",
+      "inputs": {
+        "STR": "value(String)",
+        "FROM": "value(Number)",
+        "TO": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "text_to_case",
+      "category": "文本",
+      "connection": "output",
+      "fields": {
+        "CASE": [
+          "toUpperCase",
+          "toLowerCase"
+        ]
+      },
+      "inputs": {
+        "STR": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "text_to_number",
+      "category": "文本",
+      "connection": "output",
+      "fields": {
+        "TYPE": [
+          "toInt",
+          "toFloat"
+        ]
+      },
+      "inputs": {
+        "STR": "value(String)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_delay_ms",
+      "category": "时间",
+      "connection": "statement",
+      "inputs": {
+        "DELAY": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_millis",
+      "category": "时间",
+      "connection": "output",
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_micros",
+      "category": "时间",
+      "connection": "output",
+      "description": "========================================================================="
+    },
+    {
+      "type": "timer_every",
+      "category": "时间",
+      "connection": "statement",
+      "inputs": {
+        "MS": "value(Number)",
+        "DO": "statement"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "timer_once",
+      "category": "时间",
+      "connection": "statement",
+      "inputs": {
+        "MS": "value(Number)",
+        "DO": "statement"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "c_array_define",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "TYPE": "(动态选项)",
+        "VAR": "(文本)"
+      },
+      "inputs": {
+        "SIZE": "value(Number)"
+      },
+      "description": "--- c_array_define: 数组定义 (带初始化 Mutator) ---"
+    },
+    {
+      "type": "c_array_init_container",
+      "category": "变量",
+      "connection": "standalone",
+      "inputs": {
+        "STACK": "statement"
+      },
+      "description": "--- Mutator 辅助积木 ---"
+    },
+    {
+      "type": "c_array_init_item",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "VAL": "(文本)"
+      }
+    },
+    {
+      "type": "c_array_dims_container",
+      "category": "变量",
+      "connection": "standalone",
+      "inputs": {
+        "STACK": "statement"
+      }
+    },
+    {
+      "type": "c_array_dim_item",
+      "category": "变量",
+      "connection": "statement"
+    },
+    {
+      "type": "c_array_get_element",
+      "category": "变量",
+      "connection": "output",
+      "description": "--- c_array_get_element: 获取数组元素 (多维) ---"
+    },
+    {
+      "type": "c_array_set_element",
+      "category": "变量",
+      "connection": "statement",
+      "description": "--- c_array_set_element: 设置数组元素 (多维) ---"
+    },
+    {
+      "type": "c_array_get_whole",
+      "category": "变量",
+      "connection": "output",
+      "description": "--- c_array_get_whole: 获取整个数组引用 ---"
+    },
+    {
+      "type": "arduino_var_declare",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "QUALIFIER": "(动态选项)",
+        "TYPE": "(动态选项)",
+        "VAR": "(文本)"
+      },
+      "inputs": {
+        "VALUE": "value"
+      },
+      "description": "--- arduino_var_declare: 变量声明 ---"
+    },
+    {
+      "type": "arduino_var_set_dynamic",
+      "category": "变量",
+      "connection": "statement",
+      "inputs": {
+        "VALUE": "value"
+      },
+      "description": "--- arduino_var_set_dynamic: 动态变量赋值 ---"
+    },
+    {
+      "type": "arduino_var_get_dynamic",
+      "category": "变量",
+      "connection": "output",
+      "description": "--- arduino_var_get_dynamic: 动态变量获取 ---"
+    },
+    {
+      "type": "c_macro_define",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)",
+        "VALUE": "(文本)"
+      },
+      "description": "--- c_macro_define: 宏定义 ---"
+    },
+    {
+      "type": "c_macro_get",
+      "category": "变量",
+      "connection": "output",
+      "description": "--- c_macro_get: 获取宏值 ---"
+    },
+    {
+      "type": "c_include",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "HEADER": "(文本)"
+      },
+      "description": "--- c_include: 自定义 #include ---"
+    },
+    {
+      "type": "arduino_var_declare",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "QUALIFIER": "(动态选项)",
+        "TYPE": "(动态选项)",
+        "VAR": "(文本)"
+      },
+      "inputs": {
+        "VALUE": "value"
+      }
+    },
+    {
+      "type": "arduino_var_set_dynamic",
+      "category": "变量",
+      "connection": "statement",
+      "inputs": {
+        "VALUE": "value"
+      }
+    },
+    {
+      "type": "arduino_var_get_dynamic",
+      "category": "变量",
+      "connection": "output"
+    },
+    {
+      "type": "c_macro_define",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)",
+        "VALUE": "(文本)"
+      }
+    },
+    {
+      "type": "c_macro_get",
+      "category": "变量",
+      "connection": "output"
+    },
+    {
+      "type": "c_include",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "HEADER": "(文本)"
+      }
+    },
+    {
+      "type": "c_array_define",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "TYPE": "(动态选项)",
+        "VAR": "(文本)"
+      },
+      "inputs": {
+        "SIZE": "value(Number)"
+      }
+    },
+    {
+      "type": "c_array_init_container",
+      "category": "变量",
+      "connection": "standalone",
+      "inputs": {
+        "STACK": "statement"
+      }
+    },
+    {
+      "type": "c_array_init_item",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "VAL": "(文本)"
+      }
+    },
+    {
+      "type": "c_array_dims_container",
+      "category": "变量",
+      "connection": "standalone",
+      "inputs": {
+        "STACK": "statement"
+      },
+      "description": "Register Mutator Blocks"
+    },
+    {
+      "type": "c_array_dim_item",
+      "category": "变量",
+      "connection": "statement"
+    },
+    {
+      "type": "c_array_get_element",
+      "category": "变量",
+      "connection": "output"
+    },
+    {
+      "type": "c_array_set_element",
+      "category": "变量",
+      "connection": "statement"
+    },
+    {
+      "type": "c_array_get_whole",
+      "category": "变量",
+      "connection": "output"
+    },
+    {
+      "type": "c_struct_define",
+      "category": "变量",
+      "connection": "standalone",
+      "fields": {
+        "NAME": "(文本)"
+      }
+    },
+    {
+      "type": "c_struct_container",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)",
+        "ARR": "(文本)"
+      },
+      "inputs": {
+        "STACK": "statement"
+      }
+    },
+    {
+      "type": "c_enum_define",
+      "category": "变量",
+      "connection": "standalone",
+      "fields": {
+        "NAME": "(文本)"
+      }
+    },
+    {
+      "type": "c_enum_container",
+      "category": "变量",
+      "connection": "standalone",
+      "inputs": {
+        "STACK": "statement"
+      }
+    },
+    {
+      "type": "c_enum_item",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)",
+        "VAL": "(文本)"
+      }
+    },
+    {
+      "type": "c_struct_var_declare",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "VAR": "(文本)"
+      }
+    },
+    {
+      "type": "c_enum_var_declare",
+      "category": "变量",
+      "connection": "statement",
+      "fields": {
+        "VAR": "(文本)"
+      }
+    },
+    {
+      "type": "c_enum_value",
+      "category": "变量",
+      "connection": "output",
+      "description": "Enum Value"
+    },
+    {
+      "type": "c_enum_set",
+      "category": "变量",
+      "connection": "statement",
+      "inputs": {
+        "VALUE": "value"
+      },
+      "description": "Enum Set/Get"
+    },
+    {
+      "type": "c_enum_get",
+      "category": "变量",
+      "connection": "output"
+    },
+    {
+      "type": "c_struct_get_member",
+      "category": "变量",
+      "connection": "output"
+    },
+    {
+      "type": "c_struct_set_member",
+      "category": "变量",
+      "connection": "statement",
+      "inputs": {
+        "VALUE": "value"
+      }
+    },
+    {
+      "type": "c_struct_get_whole",
+      "category": "变量",
+      "connection": "output"
+    },
+    {
+      "type": "c_sizeof",
+      "category": "变量",
+      "connection": "output"
+    },
+    {
+      "type": "c_type_cast",
+      "category": "变量",
+      "connection": "output",
+      "fields": {
+        "TYPE": "(动态选项)"
+      },
+      "inputs": {
+        "VAL": "value"
+      }
+    },
+    {
+      "type": "c_address_of",
+      "category": "变量",
+      "connection": "output",
+      "inputs": {
+        "VAL": "value"
+      }
+    },
+    {
+      "type": "arduino_functions_return",
+      "category": "变量",
+      "connection": "terminal",
+      "inputs": {
+        "VALUE": "value"
+      }
+    },
+    {
+      "type": "c_dereference",
+      "category": "变量",
+      "connection": "output",
+      "inputs": {
+        "VAL": "value"
+      }
+    },
+    {
+      "type": "example_dht_init",
+      "category": "示例",
+      "connection": "statement",
+      "fields": {
+        "TYPE": [
+          "DHT11",
+          "DHT22"
+        ],
+        "PIN": "(文本)"
+      },
+      "description": "block: Init"
+    },
+    {
+      "type": "example_dht_read_temp",
+      "category": "示例",
+      "connection": "output",
+      "description": "block: Read Temp"
+    },
+    {
+      "type": "example_led_control",
+      "category": "示例",
+      "connection": "statement",
+      "fields": {
+        "STATE": [
+          "HIGH",
+          "LOW"
+        ],
+        "PIN": "(文本)"
+      }
+    },
+    {
+      "type": "complex_sensor_read",
+      "category": "示例",
+      "connection": "output"
+    },
+    {
+      "type": "actuator_relay",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "STATE": [
+          "HIGH",
+          "LOW"
+        ],
+        "PIN": "(文本)"
+      },
+      "description": "继电器 (Relay)"
+    },
+    {
+      "type": "actuator_solenoid",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "TIME": "value(Number)"
+      },
+      "description": "电磁铁/电磁阀 (Solenoid)"
+    },
+    {
+      "type": "actuator_buzzer",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "FREQ": "value(Number)",
+        "DUR": "value(Number)"
+      },
+      "description": "蜂鸣器 (Buzzer) - 发声"
+    },
+    {
+      "type": "actuator_buzzer_notone",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "蜂鸣器停止发声"
+    },
+    {
+      "type": "actuator_vibration",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "STATE": [
+          "HIGH",
+          "LOW"
+        ],
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "TIME": "value(Number)"
+      },
+      "description": "振动马达 (Vibration Motor)"
+    },
+    {
+      "type": "sensor_pir_motion",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "检测周围是否有人体移动（输出高/低电平）"
+    },
+    {
+      "type": "sensor_adxl362_init",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "CS": "(文本)"
+      },
+      "description": "初始化 SPI 接口的 ADXL362 低功耗三轴加速度计"
+    },
+    {
+      "type": "sensor_adxl362_read",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "AXIS": [
+          "readXData()",
+          "readYData()",
+          "readZData()"
+        ]
+      },
+      "description": "读取加速度计的轴向数据或温度"
+    },
+    {
+      "type": "sensor_apds9960_init",
+      "category": "其他",
+      "connection": "statement",
+      "description": "初始化 APDS-9960 功能 (支持手势、颜色、接近检测)"
+    },
+    {
+      "type": "sensor_apds9960_gesture",
+      "category": "其他",
+      "connection": "output",
+      "description": "检查当前是否有手势数据可用"
+    },
+    {
+      "type": "sensor_apds9960_read_gesture",
+      "category": "其他",
+      "connection": "output",
+      "description": "读取具体的手势类型 (上、下、左、右等)"
+    },
+    {
+      "type": "sensor_apds9960_color",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "COLOR": [
+          "0",
+          "1",
+          "2"
+        ]
+      },
+      "description": "读取并返回 R/G/B 颜色通道的原始数值"
+    },
+    {
+      "type": "sensor_hx711_init",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "DOUT": "(文本)",
+        "CLK": "(文本)"
+      },
+      "description": "初始化 HX711 称重模块 (电子秤专用 ADC 芯片)"
+    },
+    {
+      "type": "sensor_hx711_read",
+      "category": "其他",
+      "connection": "output",
+      "description": "读取重量传感器当前的原始 AD 值"
+    },
+    {
+      "type": "sensor_hx711_tare",
+      "category": "其他",
+      "connection": "statement",
+      "description": "将当前重量设为皮重（校准/置零）"
+    },
+    {
+      "type": "sensor_bmp280_init",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "description": "初始化 BMP280 气压传感器 (通常用于海拔和温度测量)"
+    },
+    {
+      "type": "sensor_bmp280_read",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "VAL": [
+          "readTemperature()",
+          "readPressure()",
+          "readAltitude(1013.25)"
+        ]
+      },
+      "description": "读取 BMP280 返回的具体数值 (温度、气压或估算的海拔)"
+    },
+    {
+      "type": "audio_tone",
+      "category": "音频",
+      "connection": "statement",
+      "inputs": {
+        "PIN": "value(Number)",
+        "FREQ": "value(Number)",
+        "DURATION": "value(Number)"
+      },
+      "description": "播放音调"
+    },
+    {
+      "type": "audio_notone",
+      "category": "音频",
+      "connection": "statement",
+      "inputs": {
+        "PIN": "value(Number)"
+      }
+    },
+    {
+      "type": "audio_note_freq",
+      "category": "音频",
+      "connection": "output",
+      "fields": {
+        "FREQ": [
+          "262",
+          "294",
+          "330",
+          "349",
+          "392",
+          "440",
+          "..."
+        ]
+      }
+    },
+    {
+      "type": "audio_read_volume",
+      "category": "音频",
+      "connection": "output",
+      "fields": {
+        "PIN": "(文本)",
+        "WINDOW": "(文本)"
+      },
+      "description": "读取麦克风音量 (峰值检测)"
+    },
+    {
+      "type": "audio_is_loud",
+      "category": "音频",
+      "connection": "output",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "THRESH": "value(Number)"
+      },
+      "description": "检测声音是否超过阈值 (响度检测)"
+    },
+    {
+      "type": "barcode_init",
+      "category": "条码",
+      "connection": "statement",
+      "fields": {
+        "RX": "(文本)",
+        "TX": "(文本)"
+      },
+      "description": "初始化条形码扫描器 (串口通信)"
+    },
+    {
+      "type": "barcode_available",
+      "category": "条码",
+      "connection": "output"
+    },
+    {
+      "type": "barcode_read",
+      "category": "条码",
+      "connection": "output"
+    },
+    {
+      "type": "camera_init",
+      "category": "摄像头",
+      "connection": "statement",
+      "description": "ESP32 摄像头初始化 (AI-Thinker 引脚配置)"
+    },
+    {
+      "type": "camera_take_photo",
+      "category": "摄像头",
+      "connection": "statement",
+      "description": "执行拍照动作"
+    },
+    {
+      "type": "board_info_string",
+      "category": "芯片信息",
+      "connection": "output",
+      "fields": {
+        "TYPE": [
+          "0",
+          "1"
+        ]
+      },
+      "description": "积木: 获取芯片字符串信息 (唯一 ID、架构名称)"
+    },
+    {
+      "type": "board_info_number",
+      "category": "芯片信息",
+      "connection": "output",
+      "fields": {
+        "TYPE": [
+          "0",
+          "1",
+          "2"
+        ]
+      },
+      "description": "积木: 获取芯片数值统计 (频率、存储余量)"
+    },
+    {
+      "type": "dac_write",
+      "category": "DAC",
+      "connection": "statement",
+      "fields": {
+        "PIN": [
+          "25",
+          "26"
+        ]
+      },
+      "inputs": {
+        "VAL": "value(Number)"
+      },
+      "description": "写入 DAC 模拟值"
+    },
+    {
+      "type": "display_lcd_init",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "COLS": "(数值)",
+        "ROWS": "(数值)",
+        "ADDR": "(文本)"
+      },
+      "description": "初始化 LCD I2C 屏幕"
+    },
+    {
+      "type": "display_lcd_print",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "inputs": {
+        "TEXT": "value(String)",
+        "COL": "value(Number)",
+        "ROW": "value(Number)"
+      },
+      "description": "Print Block"
+    },
+    {
+      "type": "display_lcd_clear",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "description": "Clear Block"
+    },
+    {
+      "type": "display_neopixel_init",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "COUNT": "(数值)",
+        "PIN": "(文本)"
+      },
+      "description": "初始化 NeoPixel 发光二极管 (WS2812B)"
+    },
+    {
+      "type": "display_neopixel_set",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "LED": "value(Number)",
+        "R": "value(Number)",
+        "G": "value(Number)",
+        "B": "value(Number)"
+      },
+      "description": "Set Color Block"
+    },
+    {
+      "type": "display_neopixel_fill",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "R": "value(Number)",
+        "G": "value(Number)",
+        "B": "value(Number)"
+      },
+      "description": "将整个 NeoPixel 灯条填充为统一颜色"
+    },
+    {
+      "type": "display_neopixel_clear",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "清除 NeoPixel 灯条（关闭所有灯）"
+    },
+    {
+      "type": "display_neopixel_rainbow",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "WAIT": "value(Number)"
+      },
+      "description": "播放彩虹动画效果"
+    },
+    {
+      "type": "display_lcd_backlight",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "STATE": [
+          "backlight",
+          "noBacklight"
+        ],
+        "ADDR": "(文本)"
+      },
+      "description": "控制 LCD I2C 屏幕的背光开关"
+    },
+    {
+      "type": "display_matrix_init",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "DIN": "(文本)",
+        "CLK": "(文本)",
+        "CS": "(文本)"
+      },
+      "description": "初始化 LED 点阵 (DIN/CLK/CS 引脚)"
+    },
+    {
+      "type": "display_matrix_set_led",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "STATE": [
+          "true",
+          "false"
+        ]
+      },
+      "inputs": {
+        "ROW": "value(Number)",
+        "COL": "value(Number)"
+      },
+      "description": "设置点阵屏上特定位置 LED 的开关状态"
+    },
+    {
+      "type": "display_matrix_clear",
+      "category": "显示屏",
+      "connection": "statement",
+      "description": "清空点阵屏显示（关闭所有 LED）"
+    },
+    {
+      "type": "display_matrix_brightness",
+      "category": "显示屏",
+      "connection": "statement",
+      "inputs": {
+        "VAL": "value(Number)"
+      },
+      "description": "设置点阵屏亮度"
+    },
+    {
+      "type": "display_matrix_write_char",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "IDX": "(文本)"
+      },
+      "inputs": {
+        "CHAR": "value(String)"
+      },
+      "description": "在点阵屏上显示单个字符"
+    },
+    {
+      "type": "display_matrix_row",
+      "category": "显示屏",
+      "connection": "statement",
+      "inputs": {
+        "ROW": "value(Number)",
+        "VAL": "value(Number)"
+      },
+      "description": "通过字节数据设置点阵屏的一整行"
+    },
+    {
+      "type": "display_matrix_col",
+      "category": "显示屏",
+      "connection": "statement",
+      "inputs": {
+        "COL": "value(Number)",
+        "VAL": "value(Number)"
+      },
+      "description": "通过字节数据设置点阵屏的一整列"
+    },
+    {
+      "type": "oled_init",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "W": "(数值)",
+        "H": "(数值)",
+        "ADDR": "(文本)"
+      },
+      "description": "初始化屏幕"
+    },
+    {
+      "type": "oled_print",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "inputs": {
+        "TEXT": "value(String)",
+        "X": "value(Number)",
+        "Y": "value(Number)",
+        "SIZE": "value(Number)"
+      },
+      "description": "打印文本"
+    },
+    {
+      "type": "oled_clear",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "description": "清空屏幕"
+    },
+    {
+      "type": "oled_draw_line",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "inputs": {
+        "X1": "value(Number)",
+        "Y1": "value(Number)",
+        "X2": "value(Number)",
+        "Y2": "value(Number)"
+      },
+      "description": "绘制直线"
+    },
+    {
+      "type": "oled_draw_rect",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "inputs": {
+        "X": "value(Number)",
+        "Y": "value(Number)",
+        "W": "value(Number)",
+        "H": "value(Number)"
+      },
+      "description": "绘制矩形 (支持填充)"
+    },
+    {
+      "type": "oled_draw_circle",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "inputs": {
+        "X": "value(Number)",
+        "Y": "value(Number)",
+        "R": "value(Number)"
+      },
+      "description": "绘制圆 (支持填充)"
+    },
+    {
+      "type": "oled_display",
+      "category": "显示屏",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "description": "手动刷新屏幕 (Display)"
+    },
+    {
+      "type": "ds18b20_init",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "初始化 DS18B20 传感器"
+    },
+    {
+      "type": "ds18b20_request",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "向总线上的所有 DS18B20 传感器发送温度转换请求"
+    },
+    {
+      "type": "ds18b20_read",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "IDX": "(数值)",
+        "PIN": "(文本)"
+      },
+      "description": "读取指定索引的 DS18B20 传感器的摄氏温度值"
+    },
+    {
+      "type": "ds18b20_set_resolution",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "RES": [
+          "9",
+          "10",
+          "11",
+          "12"
+        ],
+        "PIN": "(文本)"
+      },
+      "description": "设置 DS18B20 的测量分辨率 (9-12位)"
+    },
+    {
+      "type": "ds18b20_get_device_count",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "获取当前 OneWire 总线上检测到的 DS18B20 传感器数量"
+    },
+    {
+      "type": "esp32_wifi_connect",
+      "category": "ESP32专用",
+      "connection": "statement",
+      "inputs": {
+        "SSID": "value(String)",
+        "PASSWORD": "value(String)"
+      },
+      "description": "ESP32 WiFi 连接"
+    },
+    {
+      "type": "esp32_deep_sleep",
+      "category": "ESP32专用",
+      "connection": "statement",
+      "inputs": {
+        "TIME": "value(Number)"
+      },
+      "description": "ESP32 进入深度睡眠"
+    },
+    {
+      "type": "esp32_hall_read",
+      "category": "ESP32专用",
+      "connection": "output"
+    },
+    {
+      "type": "esp32_touch_read",
+      "category": "ESP32专用",
+      "connection": "output",
+      "fields": {
+        "PIN": [
+          "T0",
+          "T1",
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "..."
+        ]
+      },
+      "description": "读取 ESP32 特有的电容式触摸引脚"
+    },
+    {
+      "type": "esp_deep_sleep",
+      "category": "ESP32专用",
+      "connection": "statement",
+      "inputs": {
+        "TIME": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "esp_restart",
+      "category": "ESP32专用",
+      "connection": "statement"
+    },
+    {
+      "type": "esp_yield",
+      "category": "ESP32专用",
+      "connection": "statement"
+    },
+    {
+      "type": "esp_ticker_attach",
+      "category": "ESP32专用",
+      "connection": "statement",
+      "fields": {
+        "INTERVAL": "(数值)",
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "DO": "statement"
+      },
+      "description": "绑定 Ticker 定时器中断"
+    },
+    {
+      "type": "esp_ticker_detach",
+      "category": "ESP32专用",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "description": "停止并分离指定的定时器任务"
+    },
+    {
+      "type": "ethernet_w5500_init",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "CS": "(文本)"
+      },
+      "inputs": {
+        "MAC": "value(String)"
+      },
+      "description": "初始化 W5500 以太网"
+    },
+    {
+      "type": "ethernet_w5500_get_ip",
+      "category": "其他",
+      "connection": "output",
+      "description": "获取当前以太网模块分配到的本地 IP 地址"
+    },
+    {
+      "type": "input_keypad_init",
+      "category": "输入设备",
+      "connection": "statement",
+      "fields": {
+        "R_PINS": "(文本)",
+        "C_PINS": "(文本)"
+      },
+      "description": "初始化矩阵键盘 (Keypad.h)"
+    },
+    {
+      "type": "input_keypad_get_key",
+      "category": "输入设备",
+      "connection": "output",
+      "description": "获取当前按下的键值"
+    },
+    {
+      "type": "input_joystick_read",
+      "category": "输入设备",
+      "connection": "output",
+      "fields": {
+        "AXIS": [
+          "X",
+          "Y"
+        ],
+        "PIN": "(文本)"
+      },
+      "description": "读取摇杆指定轴的模拟值"
+    },
+    {
+      "type": "input_rotary_init",
+      "category": "输入设备",
+      "connection": "statement",
+      "fields": {
+        "CLK": "(文本)",
+        "DT": "(文本)"
+      },
+      "description": "初始化旋转编码器 (Encoder.h)"
+    },
+    {
+      "type": "input_rotary_read",
+      "category": "输入设备",
+      "connection": "output",
+      "fields": {
+        "CLK": "(文本)",
+        "DT": "(文本)"
+      },
+      "description": "读取编码器的当前位置计数值"
+    },
+    {
+      "type": "input_rotary_reset",
+      "category": "输入设备",
+      "connection": "statement",
+      "fields": {
+        "CLK": "(文本)",
+        "DT": "(文本)"
+      },
+      "description": "将编码器的位置计数值重置为 0"
+    },
+    {
+      "type": "arduino_digital_write",
+      "category": "基础IO",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(数字引脚)",
+        "STATE": [
+          "HIGH",
+          "LOW"
+        ]
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_digital_toggle",
+      "category": "基础IO",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(数字引脚)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_digital_read",
+      "category": "基础IO",
+      "connection": "output",
+      "fields": {
+        "PIN": "(数字引脚)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_analog_write",
+      "category": "基础IO",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(PWM引脚)"
+      },
+      "inputs": {
+        "NUM": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_tone",
+      "category": "基础IO",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(数字引脚)"
+      },
+      "inputs": {
+        "FREQ": "value(Number)",
+        "DURATION": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "io_shiftout",
+      "category": "基础IO",
+      "connection": "statement",
+      "fields": {
+        "DPIN": "(数字引脚)",
+        "CPIN": "(数字引脚)",
+        "ORDER": [
+          "MSBFIRST",
+          "LSBFIRST"
+        ]
+      },
+      "inputs": {
+        "DATA": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "io_shiftin",
+      "category": "基础IO",
+      "connection": "output",
+      "fields": {
+        "DPIN": "(数字引脚)",
+        "CPIN": "(数字引脚)",
+        "ORDER": [
+          "MSBFIRST",
+          "LSBFIRST"
+        ]
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_analog_read",
+      "category": "基础IO",
+      "connection": "output",
+      "fields": {
+        "PIN": "(模拟引脚)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "arduino_map",
+      "category": "基础IO",
+      "connection": "output",
+      "inputs": {
+        "VAL": "value(Number)",
+        "F_LOW": "value(Number)",
+        "F_HIGH": "value(Number)",
+        "T_LOW": "value(Number)",
+        "T_HIGH": "value(Number)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "pcf8574_init",
+      "category": "基础IO",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)",
+        "ADDR": "(文本)",
+        "SDA": "(文本)",
+        "SCL": "(文本)"
+      },
+      "description": "初始化 PCF8574 IO 扩展器 (I2C 接口)"
+    },
+    {
+      "type": "pcf8574_pin_mode",
+      "category": "基础IO",
+      "connection": "statement",
+      "fields": {
+        "MODE": [
+          "OUTPUT",
+          "INPUT"
+        ],
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "PIN": "value(Number)"
+      },
+      "description": "设置 PCF8574 扩展引脚的模式（输入或输出）"
+    },
+    {
+      "type": "pcf8574_write",
+      "category": "基础IO",
+      "connection": "statement",
+      "fields": {
+        "VAL": [
+          "HIGH",
+          "LOW"
+        ],
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "PIN": "value(Number)"
+      },
+      "description": "向 PCF8574 扩展引脚写入数字信号（高/低电平）"
+    },
+    {
+      "type": "pcf8574_read",
+      "category": "基础IO",
+      "connection": "output",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "PIN": "value(Number)"
+      },
+      "description": "从 PCF8574 扩展引脚读取数字信号状态"
+    },
+    {
+      "type": "motor_dc_run",
+      "category": "电机",
+      "connection": "statement",
+      "fields": {
+        "DIR": "(动态选项)",
+        "PINA": "(文本)",
+        "PINB": "(文本)"
+      },
+      "inputs": {
+        "SPEED": "value(Number)"
+      },
+      "description": "运行直流电机 (支持前进、后退、停止)"
+    },
+    {
+      "type": "motor_stepper_config",
+      "category": "电机",
+      "connection": "statement",
+      "fields": {
+        "STEPS": "(数值)",
+        "PIN1": "(文本)",
+        "PIN2": "(文本)",
+        "PIN3": "(文本)",
+        "PIN4": "(文本)"
+      },
+      "description": "配置标准步进电机 (基于 Arduino 官方 Stepper 库)"
+    },
+    {
+      "type": "motor_stepper_step",
+      "category": "电机",
+      "connection": "statement",
+      "inputs": {
+        "STEPS": "value(Number)",
+        "SPEED": "value(Number)"
+      },
+      "description": "驱动步进电机移动"
+    },
+    {
+      "type": "motor_stepper_driver_init",
+      "category": "电机",
+      "connection": "statement",
+      "fields": {
+        "STEP": "(文本)",
+        "DIR": "(文本)"
+      },
+      "description": "初始化步进电机驱动器 (A4988 / DRV8825 等)"
+    },
+    {
+      "type": "motor_stepper_driver_step",
+      "category": "电机",
+      "connection": "statement",
+      "fields": {
+        "D": [
+          "HIGH",
+          "LOW"
+        ],
+        "STEP": "(文本)",
+        "DIR": "(文本)"
+      },
+      "inputs": {
+        "STEPS": "value(Number)",
+        "DELAY": "value(Number)"
+      },
+      "description": "驱动步进电机移动指定的步数"
+    },
+    {
+      "type": "motor_stepper_enable",
+      "category": "电机",
+      "connection": "statement",
+      "fields": {
+        "STATE": [
+          "LOW",
+          "HIGH"
+        ],
+        "PIN": "(文本)"
+      },
+      "description": "控制步进电机的使能引脚 (Enable Pin)"
+    },
+    {
+      "type": "motor_stepper_move_relative",
+      "category": "电机",
+      "connection": "statement",
+      "fields": {
+        "STEP": "(文本)",
+        "DIR": "(文本)"
+      },
+      "inputs": {
+        "STEPS": "value(Number)",
+        "DELAY": "value(Number)"
+      },
+      "description": "基于当前位置的相对移动 (支持正负步数)"
+    },
+    {
+      "type": "mp3_init",
+      "category": "MP3",
+      "connection": "statement",
+      "fields": {
+        "RX": "(文本)",
+        "TX": "(文本)"
+      },
+      "description": "初始化 MP3 播放器 (DFPlayer Mini)"
+    },
+    {
+      "type": "mp3_play",
+      "category": "MP3",
+      "connection": "statement",
+      "inputs": {
+        "TRACK": "value(Number)"
+      },
+      "description": "播放指定编号的曲目 (曲目存储在 TF 卡根目录下)"
+    },
+    {
+      "type": "mp3_control",
+      "category": "MP3",
+      "connection": "statement",
+      "fields": {
+        "ACTION": [
+          "next",
+          "previous",
+          "pause",
+          "start",
+          "stop"
+        ]
+      },
+      "description": "控制播放状态 (上一曲、下一曲、暂停、继续、停止)"
+    },
+    {
+      "type": "mp3_volume",
+      "category": "MP3",
+      "connection": "statement",
+      "inputs": {
+        "VOL": "value(Number)"
+      },
+      "description": "设置播放音量 (音量等级 0-30)"
+    },
+    {
+      "type": "neopixel_init",
+      "category": "LED灯带",
+      "connection": "statement",
+      "fields": {
+        "COUNT": "(数值)",
+        "PIN": "(文本)"
+      },
+      "description": "初始化 NeoPixel 灯带 (WS2812)"
+    },
+    {
+      "type": "neopixel_set_color",
+      "category": "LED灯带",
+      "connection": "statement",
+      "inputs": {
+        "INDEX": "value(Number)",
+        "R": "value(Number)",
+        "G": "value(Number)",
+        "B": "value(Number)"
+      },
+      "description": "设置单个像素颜色"
+    },
+    {
+      "type": "neopixel_show",
+      "category": "LED灯带",
+      "connection": "statement",
+      "description": "刷新灯带显示"
+    },
+    {
+      "type": "neopixel_clear",
+      "category": "LED灯带",
+      "connection": "statement",
+      "description": "清除所有像素 (设为黑色)"
+    },
+    {
+      "type": "neopixel_brightness",
+      "category": "LED灯带",
+      "connection": "statement",
+      "inputs": {
+        "BRT": "value(Number)"
+      },
+      "description": "设置全局亮度"
+    },
+    {
+      "type": "nextion_init",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "BAUD": [
+          "9600",
+          "115200"
+        ],
+        "RX": "(文本)",
+        "TX": "(文本)"
+      },
+      "description": "初始化 Nextion 显示屏 (串口 2)"
+    },
+    {
+      "type": "nextion_set_text",
+      "category": "其他",
+      "connection": "statement",
+      "inputs": {
+        "OBJ": "value(String)",
+        "TEXT": "value(String)"
+      },
+      "description": "设置 Nextion 屏幕上特定组件的文本内容"
+    },
+    {
+      "type": "nextion_set_val",
+      "category": "其他",
+      "connection": "statement",
+      "inputs": {
+        "OBJ": "value(String)",
+        "VAL": "value(Number)"
+      },
+      "description": "设置 Nextion 屏幕上特定组件的数值"
+    },
+    {
+      "type": "nextion_page",
+      "category": "其他",
+      "connection": "statement",
+      "inputs": {
+        "PAGE": "value"
+      },
+      "description": "切换 Nextion 屏幕显示的页面"
+    },
+    {
+      "type": "ota_setup",
+      "category": "OTA升级",
+      "connection": "statement",
+      "inputs": {
+        "NAME": "value(String)"
+      },
+      "description": "初始化 OTA (空中升级) 配置"
+    },
+    {
+      "type": "ota_handle",
+      "category": "OTA升级",
+      "connection": "statement",
+      "description": "处理 OTA 待命任务（必须放在主循环 loop 中执行）"
+    },
+    {
+      "type": "nvs_begin",
+      "category": "参数存储",
+      "connection": "statement",
+      "inputs": {
+        "NAME": "value(String)"
+      },
+      "description": "初始化 NVS 存储命名空间"
+    },
+    {
+      "type": "nvs_put_int",
+      "category": "参数存储",
+      "connection": "statement",
+      "inputs": {
+        "KEY": "value(String)",
+        "VAL": "value(Number)"
+      },
+      "description": "将整数值存入指定的 NVS 键名下"
+    },
+    {
+      "type": "nvs_get_int",
+      "category": "参数存储",
+      "connection": "output",
+      "inputs": {
+        "KEY": "value(String)",
+        "DEFAULT": "value(Number)"
+      },
+      "description": "从 NVS 中根据键名获取整数值"
+    },
+    {
+      "type": "nvs_put_string",
+      "category": "参数存储",
+      "connection": "statement",
+      "inputs": {
+        "KEY": "value(String)",
+        "VAL": "value(String)"
+      },
+      "description": "将字符串存入指定的 NVS 键名下"
+    },
+    {
+      "type": "nvs_get_string",
+      "category": "参数存储",
+      "connection": "output",
+      "inputs": {
+        "KEY": "value(String)",
+        "DEFAULT": "value(String)"
+      },
+      "description": "从 NVS 中根据键名获取字符串"
+    },
+    {
+      "type": "qr_create",
+      "category": "其他",
+      "connection": "statement",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "创建二维码数据"
+    },
+    {
+      "type": "qr_draw_oled",
+      "category": "其他",
+      "connection": "statement",
+      "inputs": {
+        "X": "value(Number)",
+        "Y": "value(Number)"
+      },
+      "description": "在 OLED 屏幕上绘制二维码"
+    },
+    {
+      "type": "rfid_init",
+      "category": "RFID",
+      "connection": "statement",
+      "fields": {
+        "SDA": "(文本)",
+        "RST": "(文本)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "rfid_is_new_card",
+      "category": "RFID",
+      "connection": "output",
+      "description": "检测是否有新卡片放置在读卡器上，并尝试读取其序列号"
+    },
+    {
+      "type": "rfid_read_uid",
+      "category": "RFID",
+      "connection": "output",
+      "description": "读取当前卡片的唯一标识符 (UID) 并以十六进制字符串形式返回"
+    },
+    {
+      "type": "rfid_halt",
+      "category": "RFID",
+      "connection": "statement",
+      "description": "停止读取并释放卡片通信，允许系统进入低功耗或与其他设备通信"
+    },
+    {
+      "type": "rfid_auth",
+      "category": "RFID",
+      "connection": "statement",
+      "fields": {
+        "KEY_TYPE": [
+          "A",
+          "B"
+        ]
+      },
+      "inputs": {
+        "BLOCK": "value(Number)"
+      },
+      "description": "MIFARE 卡片扇区验证（读写扇区前必须先通过密钥验证）"
+    },
+    {
+      "type": "rfid_write",
+      "category": "RFID",
+      "connection": "statement",
+      "inputs": {
+        "BLOCK": "value(Number)",
+        "DATA": "value(String)"
+      },
+      "description": "写入原始数据块 (16 字节)"
+    },
+    {
+      "type": "rfid_read_block",
+      "category": "RFID",
+      "connection": "output",
+      "inputs": {
+        "BLOCK": "value(Number)"
+      },
+      "description": "读取指定数据块的内容并转换为字符串"
+    },
+    {
+      "type": "rfid_write_block",
+      "category": "RFID",
+      "connection": "statement",
+      "inputs": {
+        "BLOCK": "value(Number)",
+        "DATA": "value(String)"
+      },
+      "description": "格式化写入字符串到指定数据块"
+    },
+    {
+      "type": "rtc_init",
+      "category": "实时时钟",
+      "connection": "statement",
+      "description": "Init Block"
+    },
+    {
+      "type": "rtc_set_time",
+      "category": "实时时钟",
+      "connection": "statement",
+      "inputs": {
+        "YEAR": "value(Number)",
+        "MONTH": "value(Number)",
+        "DAY": "value(Number)",
+        "HOUR": "value(Number)",
+        "MIN": "value(Number)",
+        "SEC": "value(Number)"
+      },
+      "description": "手动设置 RTC 时间"
+    },
+    {
+      "type": "rtc_get_element",
+      "category": "实时时钟",
+      "connection": "output",
+      "fields": {
+        "ELEMENT": [
+          "year()",
+          "month()",
+          "day()",
+          "hour()",
+          "minute()",
+          "second()"
+        ]
+      },
+      "description": "获取特定的时间分量 (年/月/日/时/分/秒)"
+    },
+    {
+      "type": "rtc_get_date_string",
+      "category": "实时时钟",
+      "connection": "output",
+      "description": "以 \"DD/MM/YYYY\" 格式获取日期字符串"
+    },
+    {
+      "type": "rtc_get_time_string",
+      "category": "实时时钟",
+      "connection": "output",
+      "description": "获取当前时间字符串 (格式为 HH:MM:SS)"
+    },
+    {
+      "type": "sensor_ultrasonic",
+      "category": "传感器",
+      "connection": "output",
+      "fields": {
+        "TRIG": "(文本)",
+        "ECHO": "(文本)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "sensor_dht",
+      "category": "传感器",
+      "connection": "output",
+      "fields": {
+        "TYPE": [
+          "DHT11",
+          "DHT22",
+          "DHT21"
+        ],
+        "CMD": "(动态选项)",
+        "PIN": "(文本)"
+      },
+      "description": "========================================================================="
+    },
+    {
+      "type": "sensor_vl53l0x_init",
+      "category": "传感器",
+      "connection": "statement",
+      "description": "初始化 VL53L0X 激距传感器 (ToF)"
+    },
+    {
+      "type": "sensor_vl53l0x_read",
+      "category": "传感器",
+      "connection": "output",
+      "description": "读取 VL53L0X 测量得到的距离 (mm)"
+    },
+    {
+      "type": "sensor_mpu6050_init",
+      "category": "传感器",
+      "connection": "statement",
+      "description": "初始化 MPU6050 六轴传感器 (加速度 + 陀螺仪)"
+    },
+    {
+      "type": "sensor_mpu6050_read",
+      "category": "传感器",
+      "connection": "output",
+      "fields": {
+        "VAL": [
+          "a.acceleration.x",
+          "a.acceleration.y",
+          "a.acceleration.z",
+          "g.gyro.x",
+          "g.gyro.y",
+          "g.gyro.z",
+          "temp.temperature"
+        ]
+      },
+      "description": "读取 MPU6050 的传感器数值"
+    },
+    {
+      "type": "sensor_gps_init",
+      "category": "传感器",
+      "connection": "statement",
+      "fields": {
+        "RX": "(文本)",
+        "TX": "(文本)"
+      },
+      "description": "初始化 GPS 模块 (TinyGPS++)"
+    },
+    {
+      "type": "sensor_gps_read",
+      "category": "传感器",
+      "connection": "output",
+      "fields": {
+        "VAL": [
+          "location.lat()",
+          "location.lng()",
+          "altitude.meters()",
+          "satellites.value()",
+          "speed.kmph()"
+        ]
+      },
+      "description": "读取解析后的 GPS 信息（经纬度、高度、星数、速度等）"
+    },
+    {
+      "type": "arduino_servo_attach",
+      "category": "舵机",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "将舵机对象绑定到指定引脚并进入初始化状态"
+    },
+    {
+      "type": "arduino_servo_write",
+      "category": "舵机",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "ANGLE": "value(Number)"
+      },
+      "description": "控制舵机转动到指定角度"
+    },
+    {
+      "type": "arduino_servo_read",
+      "category": "舵机",
+      "connection": "output",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "读取该引脚舵机当前设定的角度数值"
+    },
+    {
+      "type": "arduino_servo_detach",
+      "category": "舵机",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "断开舵机与引脚的绑定（释放 PWM 资源且舵机不再受控保持力矩）"
+    },
+    {
+      "type": "pca9685_init",
+      "category": "舵机",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)",
+        "FREQ": "(文本)"
+      },
+      "description": "初始化 PCA9685 16 路 PWM 驱动器"
+    },
+    {
+      "type": "pca9685_set_servo",
+      "category": "舵机",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "inputs": {
+        "CH": "value(Number)",
+        "ANGLE": "value(Number)"
+      },
+      "description": "设置 PCA9685 扩展板上指定通道的舵机角度"
+    },
+    {
+      "type": "pca9685_set_pwm",
+      "category": "舵机",
+      "connection": "statement",
+      "fields": {
+        "ADDR": "(文本)"
+      },
+      "inputs": {
+        "CH": "value(Number)",
+        "ON": "value(Number)",
+        "OFF": "value(Number)"
+      },
+      "description": "直接设置 PCA9685 指定通道的 PWM 原始参数"
+    },
+    {
+      "type": "sharp_ir_init",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "MODEL": [
+          "1080",
+          "430",
+          "100500"
+        ],
+        "PIN": "(文本)"
+      },
+      "description": "初始化 Sharp 红外测距传感器"
+    },
+    {
+      "type": "sharp_ir_read",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "读取 Sharp 红外测距传感器的距离"
+    },
+    {
+      "type": "shift_out_74hc595",
+      "category": "移位寄存器",
+      "connection": "statement",
+      "fields": {
+        "ORDER": [
+          "MSBFIRST",
+          "LSBFIRST"
+        ],
+        "DATA_PIN": "(文本)",
+        "CLOCK_PIN": "(文本)",
+        "LATCH_PIN": "(文本)"
+      },
+      "inputs": {
+        "DATA": "value(Number)"
+      },
+      "description": "使用 74HC595 移位寄存器扩展输出 (串转并)"
+    },
+    {
+      "type": "shift_in_74hc165",
+      "category": "移位寄存器",
+      "connection": "output",
+      "fields": {
+        "ORDER": [
+          "MSBFIRST",
+          "LSBFIRST"
+        ],
+        "DATA_PIN": "(文本)",
+        "CLOCK_PIN": "(文本)",
+        "LATCH_PIN": "(文本)",
+        "CE_PIN": "(文本)"
+      },
+      "description": "从 74HC165 移位寄存器读取 8 位并行输入数据"
+    },
+    {
+      "type": "sensor_capacitive_init",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "SEND": "(文本)",
+        "RECV": "(文本)"
+      },
+      "description": "初始化电容触摸传感器 (基于 CapacitiveSensor 库)"
+    },
+    {
+      "type": "sensor_capacitive_read",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "SAMPLES": "(数值)",
+        "SEND": "(文本)",
+        "RECV": "(文本)"
+      },
+      "description": "读取电容式触摸传感器的数值"
+    },
+    {
+      "type": "sensor_pulse_read",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "读取脉搏传感器的模拟原始值 (通常通过 analogRead)"
+    },
+    {
+      "type": "sensor_tsl2561_init",
+      "category": "其他",
+      "connection": "statement",
+      "description": "初始化 TSL2561 高精度光照传感器 (I2C 接口)"
+    },
+    {
+      "type": "sensor_tsl2561_read",
+      "category": "其他",
+      "connection": "output",
+      "description": "读取 TSL2561 转换后的光照强度 (单位: Lux)"
+    },
+    {
+      "type": "speech_init",
+      "category": "语音",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "初始化语音合成模块 (ESP8266SAM)"
+    },
+    {
+      "type": "speech_say",
+      "category": "语音",
+      "connection": "statement",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "调用语音合成库说出指定文本"
+    },
+    {
+      "type": "stepper_accel_init",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "TYPE": [
+          "1",
+          "4",
+          "3",
+          "8"
+        ],
+        "NAME": "(文本)",
+        "PIN1": "(文本)",
+        "PIN2": "(文本)",
+        "PIN3": "(文本)",
+        "PIN4": "(文本)"
+      },
+      "description": "初始化高级步进电机 (AccelStepper)"
+    },
+    {
+      "type": "stepper_accel_setup",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "SPEED": "value(Number)",
+        "ACCEL": "value(Number)"
+      },
+      "description": "配置步进电机的运行速度和加速度"
+    },
+    {
+      "type": "stepper_accel_run",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "description": "驱动步进电机运行一个微步 (需放入循环中高频调用)"
+    },
+    {
+      "type": "stepper_accel_move",
+      "category": "其他",
+      "connection": "statement",
+      "fields": {
+        "NAME": "(文本)"
+      },
+      "inputs": {
+        "POS": "value(Number)"
+      },
+      "description": "控制步进电机移动到绝对目标位置"
+    },
+    {
+      "type": "storage_sd_init",
+      "category": "存储",
+      "connection": "statement",
+      "fields": {
+        "CSPIN": "(文本)"
+      },
+      "description": "初始化 SD 卡模块 (SPI 接口)"
+    },
+    {
+      "type": "storage_sd_write",
+      "category": "存储",
+      "connection": "statement",
+      "inputs": {
+        "FILENAME": "value(String)",
+        "DATA": "value(String)"
+      },
+      "description": "在 SD 卡上写入数据（追加模式，并换行）"
+    },
+    {
+      "type": "storage_sd_read",
+      "category": "存储",
+      "connection": "output",
+      "inputs": {
+        "FILENAME": "value(String)"
+      },
+      "description": "从 SD 卡中读取文件内容并返回字符串"
+    },
+    {
+      "type": "storage_sd_exists",
+      "category": "存储",
+      "connection": "output",
+      "inputs": {
+        "FILENAME": "value(String)"
+      },
+      "description": "检查 SD 卡中是否存在指定文件"
+    },
+    {
+      "type": "storage_eeprom_write",
+      "category": "存储",
+      "connection": "statement",
+      "inputs": {
+        "ADDR": "value(Number)",
+        "VAL": "value(Number)"
+      },
+      "description": "向 EEPROM 指定地址写入一个字节的数据"
+    },
+    {
+      "type": "storage_eeprom_read",
+      "category": "存储",
+      "connection": "output",
+      "inputs": {
+        "ADDR": "value(Number)"
+      },
+      "description": "从 EEPROM 指定地址读取一个字节的数据"
+    },
+    {
+      "type": "storage_eeprom_commit",
+      "category": "存储",
+      "connection": "statement",
+      "description": "提交 EEPROM 更改（仅对 ESP32/ESP8266 必须，将缓存写入 Flash）"
+    },
+    {
+      "type": "storage_spiffs_begin",
+      "category": "存储",
+      "connection": "statement",
+      "description": "初始化 SPIFFS 存储"
+    },
+    {
+      "type": "storage_spiffs_write",
+      "category": "存储",
+      "connection": "statement",
+      "inputs": {
+        "PATH": "value(String)",
+        "DATA": "value(String)"
+      },
+      "description": "在 SPIFFS 文件系统中写入数据"
+    },
+    {
+      "type": "touch_read",
+      "category": "触摸",
+      "connection": "output",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "直接读取触摸引脚的电容原始值"
+    },
+    {
+      "type": "touch_is_touched",
+      "category": "触摸",
+      "connection": "output",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "THRESH": "value(Number)"
+      },
+      "description": "判断指定引脚是否被触摸（基于设定的阈值）"
+    },
+    {
+      "type": "wii_init",
+      "category": "其他",
+      "connection": "statement",
+      "description": "初始化 Wii Nunchuck 控制器"
+    },
+    {
+      "type": "wii_update",
+      "category": "其他",
+      "connection": "statement",
+      "description": "更新 Wii Nunchuck 控制器的数据（从 I2C 读取当前状态）"
+    },
+    {
+      "type": "wii_read_axis",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "AXIS": [
+          "readJoyX()",
+          "readJoyY()",
+          "readAccelX()",
+          "readAccelY()",
+          "readAccelZ()",
+          "readRoll()",
+          "readPitch()"
+        ]
+      },
+      "description": "读取指定的摇杆或加速度计轴向数值"
+    },
+    {
+      "type": "wii_button",
+      "category": "其他",
+      "connection": "output",
+      "fields": {
+        "BTN": [
+          "cPressed",
+          "zPressed"
+        ]
+      },
+      "description": "检测 C 或 Z 按键是否按下"
+    },
+    {
+      "type": "modbus_init",
+      "category": "自动化",
+      "connection": "statement",
+      "fields": {
+        "BAUD": [
+          "9600",
+          "19200",
+          "115200"
+        ]
+      },
+      "description": "Modbus 主机初始化"
+    },
+    {
+      "type": "modbus_read_regs",
+      "category": "自动化",
+      "connection": "statement",
+      "inputs": {
+        "ADDR": "value(Number)",
+        "COUNT": "value(Number)"
+      },
+      "description": "读取保持寄存器"
+    },
+    {
+      "type": "modbus_get_buffer",
+      "category": "自动化",
+      "connection": "output",
+      "inputs": {
+        "INDEX": "value(Number)"
+      },
+      "description": "从响应缓冲区中获取指定索引的数据"
+    },
+    {
+      "type": "can_init",
+      "category": "自动化",
+      "connection": "statement",
+      "fields": {
+        "TX": "(文本)",
+        "RX": "(文本)"
+      },
+      "description": "CAN 总线 (ESP32 TWAI) 初始化"
+    },
+    {
+      "type": "can_send",
+      "category": "自动化",
+      "connection": "statement",
+      "inputs": {
+        "ID": "value(Number)",
+        "DATA": "value(Number)"
+      },
+      "description": "发送 CAN 消息"
+    },
+    {
+      "type": "ble_keyboard_init",
+      "category": "BLE",
+      "connection": "statement",
+      "inputs": {
+        "NAME": "value(String)"
+      },
+      "description": "初始化 BLE 键盘，设置设备名称"
+    },
+    {
+      "type": "ble_keyboard_print",
+      "category": "BLE",
+      "connection": "statement",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "通过蓝牙键盘发送字符串"
+    },
+    {
+      "type": "ble_keyboard_press",
+      "category": "BLE",
+      "connection": "statement",
+      "fields": {
+        "KEY": "(动态选项)"
+      },
+      "description": "通过蓝牙键盘模拟按键按下"
+    },
+    {
+      "type": "ble_mouse_init",
+      "category": "BLE",
+      "connection": "statement",
+      "inputs": {
+        "NAME": "value(String)"
+      },
+      "description": "初始化 BLE 鼠标，设置设备名称"
+    },
+    {
+      "type": "ble_mouse_move",
+      "category": "BLE",
+      "connection": "statement",
+      "inputs": {
+        "X": "value(Number)",
+        "Y": "value(Number)"
+      },
+      "description": "通过蓝牙模拟鼠标移动"
+    },
+    {
+      "type": "ble_mouse_click",
+      "category": "BLE",
+      "connection": "statement",
+      "fields": {
+        "BTN": "(动态选项)"
+      },
+      "description": "通过蓝牙模拟鼠标点击"
+    },
+    {
+      "type": "bt_serial_init",
+      "category": "蓝牙",
+      "connection": "statement",
+      "inputs": {
+        "NAME": "value(String)"
+      },
+      "description": "初始化蓝牙串口并设置设备名称"
+    },
+    {
+      "type": "bt_serial_available",
+      "category": "蓝牙",
+      "connection": "output",
+      "description": "检查蓝牙串口是否有可用数据"
+    },
+    {
+      "type": "bt_serial_read",
+      "category": "蓝牙",
+      "connection": "output",
+      "description": "从蓝牙串口读取字符串"
+    },
+    {
+      "type": "bt_serial_print",
+      "category": "蓝牙",
+      "connection": "statement",
+      "inputs": {
+        "TEXT": "value"
+      },
+      "description": "通过蓝牙串口发送数据（带换行符）"
+    },
+    {
+      "type": "blynk_setup_wifi",
+      "category": "Blynk",
+      "connection": "statement",
+      "inputs": {
+        "AUTH": "value(String)",
+        "SSID": "value(String)",
+        "PASS": "value(String)"
+      },
+      "description": "Blynk WiFi 连接初始化"
+    },
+    {
+      "type": "blynk_write",
+      "category": "Blynk",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "inputs": {
+        "VAL": "value(Number)"
+      },
+      "description": "向虚拟引脚写入数据"
+    },
+    {
+      "type": "blynk_notify",
+      "category": "Blynk",
+      "connection": "statement",
+      "inputs": {
+        "MSG": "value(String)"
+      },
+      "description": "发送推送通知"
+    },
+    {
+      "type": "blynk_email",
+      "category": "Blynk",
+      "connection": "statement",
+      "inputs": {
+        "ADDR": "value(String)",
+        "SUBJ": "value(String)",
+        "BODY": "value(String)"
+      },
+      "description": "发送邮件通知"
+    },
+    {
+      "type": "blynk_connected",
+      "category": "Blynk",
+      "connection": "output",
+      "description": "检查与 Blynk 云端的连接状态"
+    },
+    {
+      "type": "esp_now_init",
+      "category": "ESP-NOW",
+      "connection": "statement",
+      "description": "初始化 ESP-NOW"
+    },
+    {
+      "type": "esp_now_add_peer",
+      "category": "ESP-NOW",
+      "connection": "statement",
+      "inputs": {
+        "MAC": "value(String)"
+      },
+      "description": "添加对等节点 (MAC 地址)"
+    },
+    {
+      "type": "esp_now_send",
+      "category": "ESP-NOW",
+      "connection": "statement",
+      "inputs": {
+        "DATA": "value(String)"
+      },
+      "description": "发送 ESP-NOW 数据"
+    },
+    {
+      "type": "esp_now_on_recv",
+      "category": "ESP-NOW",
+      "connection": "statement",
+      "inputs": {
+        "DO": "statement"
+      },
+      "description": "接收 ESP-NOW 数据回调"
+    },
+    {
+      "type": "firebase_config",
+      "category": "Firebase",
+      "connection": "statement",
+      "inputs": {
+        "URL": "value(String)",
+        "SECRET": "value(String)"
+      },
+      "description": "Firebase 数据库配置"
+    },
+    {
+      "type": "firebase_set_int",
+      "category": "Firebase",
+      "connection": "statement",
+      "inputs": {
+        "PATH": "value(String)",
+        "VAL": "value(Number)"
+      },
+      "description": "向 Firebase 写入整数值"
+    },
+    {
+      "type": "firebase_get_int",
+      "category": "Firebase",
+      "connection": "output",
+      "inputs": {
+        "PATH": "value(String)"
+      },
+      "description": "从 Firebase 读取整数值"
+    },
+    {
+      "type": "firebase_set_string",
+      "category": "Firebase",
+      "connection": "statement",
+      "inputs": {
+        "PATH": "value(String)",
+        "VAL": "value(String)"
+      },
+      "description": "向 Firebase 写入字符串值"
+    },
+    {
+      "type": "http_get",
+      "category": "HTTP",
+      "connection": "output",
+      "inputs": {
+        "URL": "value(String)"
+      },
+      "description": "发起 HTTP GET 请求"
+    },
+    {
+      "type": "http_post",
+      "category": "HTTP",
+      "connection": "output",
+      "fields": {
+        "TYPE": [
+          "application/json",
+          "application/x-www-form-urlencoded",
+          "text/plain"
+        ]
+      },
+      "inputs": {
+        "URL": "value(String)",
+        "DATA": "value(String)"
+      },
+      "description": "发起 HTTP POST 请求"
+    },
+    {
+      "type": "arduino_i2c_init",
+      "category": "I2C",
+      "connection": "statement",
+      "description": "初始化 I2C 总线"
+    },
+    {
+      "type": "arduino_i2c_config",
+      "category": "I2C",
+      "connection": "statement",
+      "fields": {
+        "CLOCK": [
+          "100000",
+          "400000"
+        ]
+      },
+      "description": "配置 I2C 时钟频率"
+    },
+    {
+      "type": "arduino_i2c_write",
+      "category": "I2C",
+      "connection": "statement",
+      "inputs": {
+        "ADDR": "value(Number)",
+        "DATA": "value(Number)"
+      },
+      "description": "向 I2C 设备写入单字节数据"
+    },
+    {
+      "type": "arduino_i2c_read",
+      "category": "I2C",
+      "connection": "output",
+      "inputs": {
+        "ADDR": "value(Number)"
+      },
+      "description": "从 I2C 设备读取单字节数据"
+    },
+    {
+      "type": "arduino_i2c_scan",
+      "category": "I2C",
+      "connection": "statement",
+      "description": "I2C 总线扫描"
+    },
+    {
+      "type": "ir_recv_setup",
+      "category": "红外",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "初始化红外接收器"
+    },
+    {
+      "type": "ir_recv_available",
+      "category": "红外",
+      "connection": "output",
+      "description": "检测是否接收到红外信号并尝试解码"
+    },
+    {
+      "type": "ir_recv_resume",
+      "category": "红外",
+      "connection": "statement",
+      "description": "继续接收下一个信号"
+    },
+    {
+      "type": "ir_recv_get_hex",
+      "category": "红外",
+      "connection": "output"
+    },
+    {
+      "type": "ir_send_nec",
+      "category": "红外",
+      "connection": "statement",
+      "inputs": {
+        "VAL": "value(Number)",
+        "BITS": "value(Number)"
+      },
+      "description": "发送 NEC 协议的红外编码"
+    },
+    {
+      "type": "lora_init",
+      "category": "LoRa",
+      "connection": "statement",
+      "fields": {
+        "FREQ": "(数值)",
+        "CS": "(文本)",
+        "RST": "(文本)",
+        "IRQ": "(文本)"
+      },
+      "description": "初始化 LoRa 模块"
+    },
+    {
+      "type": "lora_config",
+      "category": "LoRa",
+      "connection": "statement",
+      "fields": {
+        "PWR": "(数值)",
+        "SF": "(数值)",
+        "SYNC": "(数值)"
+      },
+      "description": "配置 LoRa 参数 (功率, 扩频因子, 同步字)"
+    },
+    {
+      "type": "lora_packet_begin",
+      "category": "LoRa",
+      "connection": "statement",
+      "description": "开始封包"
+    },
+    {
+      "type": "lora_print",
+      "category": "LoRa",
+      "connection": "statement",
+      "inputs": {
+        "DATA": "value(String)"
+      },
+      "description": "在数据包中写入数据"
+    },
+    {
+      "type": "lora_packet_end",
+      "category": "LoRa",
+      "connection": "statement",
+      "description": "结束封包并发送"
+    },
+    {
+      "type": "lora_parse_packet",
+      "category": "LoRa",
+      "connection": "output"
+    },
+    {
+      "type": "lora_read",
+      "category": "LoRa",
+      "connection": "output"
+    },
+    {
+      "type": "lora_available",
+      "category": "LoRa",
+      "connection": "output"
+    },
+    {
+      "type": "lora_packet_rssi",
+      "category": "LoRa",
+      "connection": "output"
+    },
+    {
+      "type": "lora_packet_snr",
+      "category": "LoRa",
+      "connection": "output"
+    },
+    {
+      "type": "lora_read_string",
+      "category": "LoRa",
+      "connection": "output",
+      "description": "读取 LoRa 接收到的完整字符串"
+    },
+    {
+      "type": "mqtt_setup",
+      "category": "MQTT",
+      "connection": "statement",
+      "inputs": {
+        "SERVER": "value(String)",
+        "PORT": "value(Number)"
+      },
+      "description": "MQTT 设置（配置服务器地址和端口）"
+    },
+    {
+      "type": "mqtt_connect",
+      "category": "MQTT",
+      "connection": "statement",
+      "inputs": {
+        "ID": "value(String)"
+      },
+      "description": "连接到 MQTT Broker"
+    },
+    {
+      "type": "mqtt_publish",
+      "category": "MQTT",
+      "connection": "statement",
+      "inputs": {
+        "TOPIC": "value(String)",
+        "PAYLOAD": "value(String)"
+      },
+      "description": "发布 MQTT 消息"
+    },
+    {
+      "type": "mqtt_subscribe",
+      "category": "MQTT",
+      "connection": "statement",
+      "inputs": {
+        "TOPIC": "value(String)"
+      },
+      "description": "订阅 MQTT 主题"
+    },
+    {
+      "type": "mqtt_loop",
+      "category": "MQTT",
+      "connection": "statement"
+    },
+    {
+      "type": "mqtt_callback_define",
+      "category": "MQTT",
+      "connection": "standalone",
+      "inputs": {
+        "DO": "statement"
+      },
+      "description": "定义 MQTT 消息接收回调"
+    },
+    {
+      "type": "mqtt_get_topic",
+      "category": "MQTT",
+      "connection": "output"
+    },
+    {
+      "type": "mqtt_get_message",
+      "category": "MQTT",
+      "connection": "output"
+    },
+    {
+      "type": "net_ethernet_begin",
+      "category": "WiFi网络",
+      "connection": "statement",
+      "inputs": {
+        "MAC": "value(String)"
+      },
+      "description": "以太网 (Ethernet) DHCP 初始化"
+    },
+    {
+      "type": "net_ethernet_local_ip",
+      "category": "WiFi网络",
+      "connection": "output",
+      "description": "获取本地 IP 地址"
+    },
+    {
+      "type": "net_ntp_init",
+      "category": "WiFi网络",
+      "connection": "statement",
+      "inputs": {
+        "OFFSET": "value(Number)"
+      },
+      "description": "NTP 网络对时初始化"
+    },
+    {
+      "type": "net_ntp_get_time",
+      "category": "WiFi网络",
+      "connection": "output"
+    },
+    {
+      "type": "net_wifi_connect_generic",
+      "category": "WiFi网络",
+      "connection": "statement",
+      "inputs": {
+        "SSID": "value(String)",
+        "PASS": "value(String)"
+      },
+      "description": "WiFi 连接 (通用方式)"
+    },
+    {
+      "type": "net_wifi_status",
+      "category": "WiFi网络",
+      "connection": "output"
+    },
+    {
+      "type": "nrf24_init",
+      "category": "NRF24",
+      "connection": "statement",
+      "fields": {
+        "CE": "(文本)",
+        "CSN": "(文本)"
+      },
+      "description": "初始化 NRF24L01 模块"
+    },
+    {
+      "type": "nrf24_send",
+      "category": "NRF24",
+      "connection": "statement",
+      "inputs": {
+        "MSG": "value(String)"
+      },
+      "description": "发送 NRF24 消息"
+    },
+    {
+      "type": "nrf24_available",
+      "category": "NRF24",
+      "connection": "output"
+    },
+    {
+      "type": "nrf24_read",
+      "category": "NRF24",
+      "connection": "output",
+      "description": "读取 NRF24 接收到的字符串"
+    },
+    {
+      "type": "nrf24_config",
+      "category": "NRF24",
+      "connection": "statement",
+      "fields": {
+        "LEVEL": [
+          "RF24_PA_MIN",
+          "RF24_PA_LOW",
+          "RF24_PA_HIGH",
+          "RF24_PA_MAX"
+        ],
+        "CHAN": "(数值)"
+      },
+      "description": "配置 NRF24 信道和功率等级"
+    },
+    {
+      "type": "nrf24_open_pipe",
+      "category": "NRF24",
+      "connection": "statement",
+      "fields": {
+        "TYPE": [
+          "Reading",
+          "Writing"
+        ],
+        "ADDR": "(文本)"
+      }
+    },
+    {
+      "type": "openai_init",
+      "category": "OpenAI",
+      "connection": "statement",
+      "inputs": {
+        "KEY": "value(String)"
+      },
+      "description": "OpenAI (ChatGPT) 初始化"
+    },
+    {
+      "type": "openai_ask",
+      "category": "OpenAI",
+      "connection": "output",
+      "inputs": {
+        "PROMPT": "value(String)"
+      },
+      "description": "向 OpenAI 发提问"
+    },
+    {
+      "type": "radio_tx_init",
+      "category": "无线电",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "初始化红外/射频发射端"
+    },
+    {
+      "type": "radio_tx_send",
+      "category": "无线电",
+      "connection": "statement",
+      "inputs": {
+        "VAL": "value(Number)",
+        "LEN": "value(Number)"
+      },
+      "description": "发送 433MHz 无线信号"
+    },
+    {
+      "type": "radio_rx_init",
+      "category": "无线电",
+      "connection": "statement",
+      "fields": {
+        "PIN": "(文本)"
+      },
+      "description": "初始化接收端（使用中断引脚）"
+    },
+    {
+      "type": "radio_rx_available",
+      "category": "无线电",
+      "connection": "output",
+      "description": "检查是否有可用的无线信号"
+    },
+    {
+      "type": "radio_rx_get",
+      "category": "无线电",
+      "connection": "output"
+    },
+    {
+      "type": "radio_rx_reset",
+      "category": "无线电",
+      "connection": "statement",
+      "description": "重置接收状态"
+    },
+    {
+      "type": "radio_rx_info",
+      "category": "无线电",
+      "connection": "output",
+      "fields": {
+        "INFO": "(动态选项)"
+      }
+    },
+    {
+      "type": "arduino_serial_print",
+      "category": "串口通信",
+      "connection": "statement",
+      "fields": {
+        "SERIAL_ID": "(动态选项)"
+      },
+      "inputs": {
+        "CONTENT": "value"
+      },
+      "description": "模块初始化函数"
+    },
+    {
+      "type": "arduino_serial_available",
+      "category": "串口通信",
+      "connection": "output",
+      "fields": {
+        "SERIAL_ID": "(动态选项)"
+      },
+      "description": "检查是否有数据可读"
+    },
+    {
+      "type": "arduino_serial_read_string",
+      "category": "串口通信",
+      "connection": "output",
+      "fields": {
+        "SERIAL_ID": "(动态选项)"
+      },
+      "description": "读取全文字符串"
+    },
+    {
+      "type": "arduino_serial_read_char",
+      "category": "串口通信",
+      "connection": "output",
+      "fields": {
+        "SERIAL_ID": "(动态选项)"
+      },
+      "description": "读取单个字节 (ASCII 码)"
+    },
+    {
+      "type": "arduino_serial_setup",
+      "category": "串口通信",
+      "connection": "statement",
+      "fields": {
+        "SERIAL_ID": "(动态选项)",
+        "BAUD": [
+          "9600",
+          "115200",
+          "57600",
+          "38400"
+        ]
+      },
+      "description": "增强版串口初始化（可选手波特率）"
+    },
+    {
+      "type": "arduino_serial_print",
+      "category": "串口通信",
+      "connection": "statement",
+      "fields": {
+        "SERIAL_ID": "(动态选项)"
+      },
+      "inputs": {
+        "CONTENT": "value"
+      },
+      "description": "串口打印内容"
+    },
+    {
+      "type": "arduino_serial_available_check",
+      "category": "串口通信",
+      "connection": "output",
+      "fields": {
+        "SERIAL_ID": "(动态选项)"
+      },
+      "description": "检查串口缓冲区是否有数据"
+    },
+    {
+      "type": "arduino_serial_read_string",
+      "category": "串口通信",
+      "connection": "output",
+      "fields": {
+        "SERIAL_ID": "(动态选项)"
+      }
+    },
+    {
+      "type": "arduino_serial_read_char",
+      "category": "串口通信",
+      "connection": "output",
+      "fields": {
+        "SERIAL_ID": "(动态选项)"
+      }
+    },
+    {
+      "type": "arduino_serial_write",
+      "category": "串口通信",
+      "connection": "statement",
+      "fields": {
+        "SERIAL_ID": "(动态选项)"
+      },
+      "inputs": {
+        "VAL": "value(Number)"
+      },
+      "description": "向串口写入原始字节 (Byte)"
+    },
+    {
+      "type": "arduino_spi_init",
+      "category": "SPI",
+      "connection": "statement",
+      "description": "初始化 SPI 总线"
+    },
+    {
+      "type": "arduino_spi_transfer",
+      "category": "SPI",
+      "connection": "output",
+      "inputs": {
+        "DATA": "value(Number)"
+      },
+      "description": "SPI 数据交换 (全双工发送与接收)"
+    },
+    {
+      "type": "arduino_spi_write",
+      "category": "SPI",
+      "connection": "statement",
+      "inputs": {
+        "DATA": "value(Number)"
+      },
+      "description": "SPI 仅发送 (不等待读取)"
+    },
+    {
+      "type": "arduino_spi_config",
+      "category": "SPI",
+      "connection": "statement",
+      "fields": {
+        "ORDER": [
+          "MSBFIRST",
+          "LSBFIRST"
+        ],
+        "MODE": [
+          "SPI_MODE0",
+          "SPI_MODE1",
+          "SPI_MODE2",
+          "SPI_MODE3"
+        ],
+        "DIV": [
+          "SPI_CLOCK_DIV2",
+          "SPI_CLOCK_DIV4",
+          "SPI_CLOCK_DIV8",
+          "SPI_CLOCK_DIV16",
+          "SPI_CLOCK_DIV32",
+          "SPI_CLOCK_DIV64",
+          "SPI_CLOCK_DIV128"
+        ]
+      },
+      "description": "配置 SPI 全局参数 (位序、模式、分频)"
+    },
+    {
+      "type": "telegram_config",
+      "category": "Telegram",
+      "connection": "statement",
+      "inputs": {
+        "TOKEN": "value(String)"
+      },
+      "description": "Telegram 机器人配置"
+    },
+    {
+      "type": "telegram_check",
+      "category": "Telegram",
+      "connection": "statement",
+      "inputs": {
+        "DO": "statement"
+      },
+      "description": "检查是否有新的 Telegram 消息"
+    },
+    {
+      "type": "telegram_msg_text",
+      "category": "Telegram",
+      "connection": "output",
+      "description": "获取最后一条消息的文本"
+    },
+    {
+      "type": "telegram_send",
+      "category": "Telegram",
+      "connection": "statement",
+      "inputs": {
+        "CHAT_ID": "value(String)",
+        "TEXT": "value(String)"
+      },
+      "description": "发送 Telegram 消息"
+    },
+    {
+      "type": "usb_keyboard_init",
+      "category": "USB HID",
+      "connection": "statement",
+      "description": "初始化 USB 键盘"
+    },
+    {
+      "type": "usb_keyboard_print",
+      "category": "USB HID",
+      "connection": "statement",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "USB 键盘打印文本"
+    },
+    {
+      "type": "usb_keyboard_press",
+      "category": "USB HID",
+      "connection": "statement",
+      "fields": {
+        "KEY": "(动态选项)"
+      }
+    },
+    {
+      "type": "usb_mouse_init",
+      "category": "USB HID",
+      "connection": "statement",
+      "description": "初始化 USB 鼠标"
+    },
+    {
+      "type": "usb_mouse_move",
+      "category": "USB HID",
+      "connection": "statement",
+      "inputs": {
+        "X": "value(Number)",
+        "Y": "value(Number)"
+      }
+    },
+    {
+      "type": "usb_mouse_click",
+      "category": "USB HID",
+      "connection": "statement",
+      "fields": {
+        "BTN": "(动态选项)"
+      },
+      "description": "模拟 USB 鼠标点击"
+    },
+    {
+      "type": "ws_server_init",
+      "category": "Web服务",
+      "connection": "statement",
+      "inputs": {
+        "PORT": "value(Number)"
+      },
+      "description": "初始化 WebSocket 服务器 (默认 81 端口)"
+    },
+    {
+      "type": "ws_on_event",
+      "category": "Web服务",
+      "connection": "statement",
+      "inputs": {
+        "DO": "statement"
+      },
+      "description": "WebSocket 事件监听积木"
+    },
+    {
+      "type": "ws_check_type",
+      "category": "Web服务",
+      "connection": "statement",
+      "fields": {
+        "TYPE": "(动态选项)"
+      },
+      "inputs": {
+        "DO": "statement"
+      }
+    },
+    {
+      "type": "ws_send_all",
+      "category": "Web服务",
+      "connection": "statement",
+      "inputs": {
+        "TEXT": "value(String)"
+      },
+      "description": "向所有连接的 WebSocket 客户端广播文本消息"
+    },
+    {
+      "type": "web_server_init",
+      "category": "Web服务",
+      "connection": "statement",
+      "description": "初始化 Web 服务器 (默认 80 端口)"
+    },
+    {
+      "type": "web_server_on",
+      "category": "Web服务",
+      "connection": "statement",
+      "inputs": {
+        "PATH": "value(String)",
+        "DO": "statement"
+      },
+      "description": "注册 Web 路由处理"
+    },
+    {
+      "type": "web_server_send",
+      "category": "Web服务",
+      "connection": "statement",
+      "inputs": {
+        "CODE": "value(Number)",
+        "TYPE": "value(String)",
+        "CONTENT": "value(String)"
+      },
+      "description": "发送 Web 响应"
+    },
+    {
+      "type": "web_server_start",
+      "category": "Web服务",
+      "connection": "statement"
+    },
+    {
+      "type": "web_server_handle_client",
+      "category": "Web服务",
+      "connection": "statement",
+      "description": "处理客户端请求 (需放在 loop 中)"
+    },
+    {
+      "type": "mbot_motor_move",
+      "category": "机器人",
+      "connection": "statement",
+      "fields": {
+        "DIR": "(动态选项)"
+      },
+      "inputs": {
+        "SPEED": "value(Number)"
+      },
+      "description": "控制 mBot 整体运动（前进、后退、左转、右转）"
+    },
+    {
+      "type": "mbot_motor_stop",
+      "category": "机器人",
+      "connection": "statement",
+      "description": "停止电机运动"
+    },
+    {
+      "type": "mbot_ultrasonic",
+      "category": "机器人",
+      "connection": "output",
+      "fields": {
+        "PORT": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "description": "读取超声波传感器距离（厘米）"
+    },
+    {
+      "type": "mbot_line_follower",
+      "category": "机器人",
+      "connection": "output",
+      "fields": {
+        "PORT": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "description": "读取巡线传感器状态"
+    },
+    {
+      "type": "mbot_rgb",
+      "category": "机器人",
+      "connection": "statement",
+      "fields": {
+        "IDX": "(动态选项)"
+      },
+      "inputs": {
+        "R": "value(Number)",
+        "G": "value(Number)",
+        "B": "value(Number)"
+      },
+      "description": "控制板载 RGB LED 颜色"
+    },
+    {
+      "type": "mbot_motor",
+      "category": "机器人",
+      "connection": "statement",
+      "fields": {
+        "PORT": [
+          "9",
+          "10"
+        ]
+      },
+      "inputs": {
+        "SPEED": "value(Number)"
+      },
+      "description": "直接控制单个电机转速"
+    },
+    {
+      "type": "otto_init",
+      "category": "机器人",
+      "connection": "statement",
+      "fields": {
+        "PIN_YL": "(文本)",
+        "PIN_YR": "(文本)",
+        "PIN_RL": "(文本)",
+        "PIN_RR": "(文本)",
+        "PIN_B": "(文本)"
+      },
+      "description": "初始化 Otto 机器人"
+    },
+    {
+      "type": "otto_home",
+      "category": "机器人",
+      "connection": "statement",
+      "description": "机器人舵机归位"
+    },
+    {
+      "type": "otto_move",
+      "category": "机器人",
+      "connection": "statement",
+      "fields": {
+        "ACTION": "(动态选项)"
+      },
+      "inputs": {
+        "STEPS": "value(Number)",
+        "T": "value(Number)"
+      },
+      "description": "控制机器人移动逻辑（行进、转向、跳跃等）"
+    },
+    {
+      "type": "otto_dance",
+      "category": "机器人",
+      "connection": "statement",
+      "fields": {
+        "DANCE": "(动态选项)"
+      },
+      "inputs": {
+        "STEPS": "value(Number)",
+        "T": "value(Number)"
+      }
+    },
+    {
+      "type": "otto_sound",
+      "category": "机器人",
+      "connection": "statement",
+      "fields": {
+        "SOUND": [
+          "S_connection",
+          "S_disconnection",
+          "S_buttonPushed",
+          "S_mode1",
+          "S_mode2",
+          "S_mode3",
+          "..."
+        ]
+      },
+      "description": "让机器人发出特定的声音/唱歌"
+    },
+    {
+      "type": "otto_gesture",
+      "category": "机器人",
+      "connection": "statement",
+      "fields": {
+        "GESTURE": [
+          "OttoHappy",
+          "OttoSuperHappy",
+          "OttoSad",
+          "OttoSleeping",
+          "OttoFart",
+          "OttoConfused",
+          "..."
+        ]
+      },
+      "description": "执行预设的手势动作"
+    },
+    {
+      "type": "otto_mouth",
+      "category": "机器人",
+      "connection": "statement",
+      "fields": {
+        "MOUTH": [
+          "happy",
+          "superHappy",
+          "sad",
+          "sleeping",
+          "fart",
+          "confused",
+          "..."
+        ]
+      },
+      "description": "Assuming generic Otto library supports putMouth if matrix enabled."
+    },
+    {
+      "type": "stm32_can_init",
+      "category": "STM32专用",
+      "connection": "statement",
+      "fields": {
+        "SPEED": [
+          "CAN_SPEED_125KBPS",
+          "CAN_SPEED_250KBPS",
+          "CAN_SPEED_500KBPS",
+          "CAN_SPEED_1000KBPS"
+        ]
+      },
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "stm32_can_send",
+      "category": "STM32专用",
+      "connection": "statement",
+      "inputs": {
+        "ID": "value(Number)",
+        "DATA": "value(Number)"
+      },
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "stm32_can_available",
+      "category": "STM32专用",
+      "connection": "output",
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "stm32_can_read",
+      "category": "STM32专用",
+      "connection": "output",
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "stm32_ethernet_init",
+      "category": "STM32专用",
+      "connection": "statement",
+      "fields": {
+        "CS": [
+          "PA4",
+          "PB12",
+          "10"
+        ],
+        "MAC": "(文本)"
+      },
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "stm32_ethernet_ip",
+      "category": "STM32专用",
+      "connection": "output",
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "stm32_usb_kb_init",
+      "category": "STM32专用",
+      "connection": "statement",
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "stm32_usb_kb_print",
+      "category": "STM32专用",
+      "connection": "statement",
+      "inputs": {
+        "TEXT": "value"
+      },
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "stm32_usb_mouse_init",
+      "category": "STM32专用",
+      "connection": "statement",
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "stm32_usb_mouse_move",
+      "category": "STM32专用",
+      "connection": "statement",
+      "inputs": {
+        "X": "value(Number)",
+        "Y": "value(Number)"
+      },
+      "description": "------------------------------------------------------------------"
+    },
+    {
+      "type": "dfrobot_player_init",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "fields": {
+        "RX": "(文本)",
+        "TX": "(文本)"
+      },
+      "description": "初始化 DFPlayer Mini"
+    },
+    {
+      "type": "dfrobot_player_play",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "inputs": {
+        "TRACK": "value(Number)"
+      },
+      "description": "播放指定编号的曲目"
+    },
+    {
+      "type": "dfrobot_player_volume",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "inputs": {
+        "VOL": "value(Number)"
+      },
+      "description": "设置播放音量"
+    },
+    {
+      "type": "dfrobot_player_control",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "fields": {
+        "ACTION": [
+          "next",
+          "previous",
+          "pause",
+          "start",
+          "stop",
+          "enableLoopAll",
+          "disableLoopAll",
+          "randomAll"
+        ]
+      },
+      "description": "播放控制（下一首、上一首、暂停等）"
+    },
+    {
+      "type": "dfrobot_player_loop",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "inputs": {
+        "TRACK": "value(Number)"
+      },
+      "description": "循环播放指定编号的曲目"
+    },
+    {
+      "type": "dfrobot_player_eq",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "fields": {
+        "EQ": [
+          "DFPLAYER_EQ_NORMAL",
+          "DFPLAYER_EQ_POP",
+          "DFPLAYER_EQ_ROCK",
+          "DFPLAYER_EQ_JAZZ",
+          "DFPLAYER_EQ_CLASSIC",
+          "DFPLAYER_EQ_BASS"
+        ]
+      },
+      "description": "设置均衡器模式"
+    },
+    {
+      "type": "ps2_init",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "fields": {
+        "CLK": "(文本)",
+        "CMD": "(文本)",
+        "ATT": "(文本)",
+        "DAT": "(文本)"
+      },
+      "description": "初始化 PS2 手柄"
+    },
+    {
+      "type": "ps2_button",
+      "category": "第三方硬件",
+      "connection": "output",
+      "fields": {
+        "BTN": [
+          "PSB_START",
+          "PSB_SELECT",
+          "PSB_PAD_UP",
+          "PSB_PAD_DOWN",
+          "PSB_PAD_LEFT",
+          "PSB_PAD_RIGHT",
+          "..."
+        ]
+      },
+      "description": "检测按钮是否按下"
+    },
+    {
+      "type": "ps2_analog",
+      "category": "第三方硬件",
+      "connection": "output",
+      "fields": {
+        "AXIS": [
+          "PSS_LX",
+          "PSS_LY",
+          "PSS_RX",
+          "PSS_RY"
+        ]
+      },
+      "description": "读取摇杆模拟值"
+    },
+    {
+      "type": "grove_led_init",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "fields": {
+        "COUNT": "(数值)",
+        "CLK": "(文本)",
+        "DATA": "(文本)"
+      },
+      "description": "初始化 Grove 链接 LED (Chainable LED)"
+    },
+    {
+      "type": "grove_led_set",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "inputs": {
+        "INDEX": "value(Number)",
+        "R": "value(Number)",
+        "G": "value(Number)",
+        "B": "value(Number)"
+      },
+      "description": "设置 LED 颜色 (RGB 模式)"
+    },
+    {
+      "type": "grove_led_set_hsl",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "inputs": {
+        "INDEX": "value(Number)",
+        "H": "value(Number)",
+        "S": "value(Number)",
+        "L": "value(Number)"
+      },
+      "description": "设置 LED 颜色 (HSL 模式)"
+    },
+    {
+      "type": "grove_display_4digit_init",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "fields": {
+        "CLK": "(文本)",
+        "DIO": "(文本)"
+      },
+      "description": "初始化 Grove 4 位数码管 (TM1637)"
+    },
+    {
+      "type": "grove_display_4digit_print",
+      "category": "第三方硬件",
+      "connection": "statement",
+      "inputs": {
+        "NUM": "value(Number)"
+      },
+      "description": "在数码管上显示数字"
+    }
+  ]
+}

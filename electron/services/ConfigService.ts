@@ -247,50 +247,64 @@ export class ConfigService {
      * 保存配置到硬盘 (config.json)
      * 在写入之前，会执行两项关键操作：1. 瘦身常用数据缓存；2. 对敏感信息进行加密。
      */
-    private saveConfig(config: AppConfig = this.config) {
+    private isSaving = false;
+    private pendingSave = false;
+
+    /**
+     * 保存配置到硬盘 (config.json)
+     * 使用异步写入，防止阻塞主线程
+     */
+    private async saveConfig(config: AppConfig = this.config) {
+        // 如果正在写入，标记有新的待写入内容并退出
+        if (this.isSaving) {
+            this.pendingSave = true;
+            return;
+        }
+
+        this.isSaving = true;
         try {
-            // 制作一份副本用于保存，避免加密或瘦身操作污染内存中正在使用的原始对象
+            // 制作一份副本用于保存
             const saveObj = JSON.parse(JSON.stringify(config));
 
-            // 1. 结构优化：调整 serialSettings 顺序，让历史记录排在最后，方便人工阅读文件
+            // 1. 结构优化
             if (saveObj.serialSettings && saveObj.serialSettings.serialHistory) {
                 const { serialHistory, ...rest } = saveObj.serialSettings;
                 saveObj.serialSettings = { ...rest, serialHistory } as any;
             }
 
-            /**
-             * 2. 性能与体积优化：瘦身板卡缓存 (Pruning favoriteBoardsCache)
-             * 由于 config.json 的读写频率较高，原本存储的大量板卡详细数据会拖慢启动速度。
-             * 策略：只保留唯一的 ID 和显示名称，具体的详细配置数据在使用时从静态库中实时查询加载。
-             * 效果：将 config.json 从约 230KB 缩减至 3KB 左右。
-             */
+            // 2. 性能与体积优化
             if (saveObj.general && saveObj.general.favoriteBoardsCache) {
                 saveObj.general.favoriteBoardsCache = saveObj.general.favoriteBoardsCache.map((board: any) => ({
                     id: board.id,
                     name: board.name,
-                    _isPruned: true // 标记该项已执行瘦身逻辑
+                    _isPruned: true
                 }));
             }
 
-            /**
-             * 3. 安全加固：加密 API Key 
-             * 在写入硬盘前，调用 Electron 的 safeStorage 将明文 Key 转化为不可读的二进制数据。
-             * 这样即使用户的电脑丢失或文件被盗，API Key 也无法在其他机器上通过简单的文本编辑器查看。
-             */
+            // 3. 安全加固
             if (saveObj.ai && saveObj.ai.apiKey && safeStorage.isEncryptionAvailable()) {
                 try {
-                    const encrypted = safeStorage.encryptString(saveObj.ai.apiKey);
-                    // 存储为十六进制字符串，并添加前缀以便下次加载时识别
-                    saveObj.ai.apiKey = `encrypted:${encrypted.toString('hex')}`;
+                    if (!saveObj.ai.apiKey.startsWith('encrypted:')) {
+                        const encrypted = safeStorage.encryptString(saveObj.ai.apiKey);
+                        saveObj.ai.apiKey = `encrypted:${encrypted.toString('hex')}`;
+                    }
                 } catch (e) {
                     console.error('[ConfigService] 加密 API Key 失败:', e);
                 }
             }
 
-            // 执行物理写入
-            fs.writeFileSync(this.configPath, JSON.stringify(saveObj, null, 2));
+            // 执行异步物理写入
+            await fs.promises.writeFile(this.configPath, JSON.stringify(saveObj, null, 2));
+            // console.log('[ConfigService] Config saved asynchronously.');
         } catch (e) {
             console.error("配置文件保存失败:", e);
+        } finally {
+            this.isSaving = false;
+            // 如果在写入期间有新的请求，立即再次触发写入
+            if (this.pendingSave) {
+                this.pendingSave = false;
+                this.saveConfig();
+            }
         }
     }
 

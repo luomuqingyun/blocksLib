@@ -81,7 +81,6 @@ function AppInner() {
   const { setIsNewProjectOpen, setIsSettingsOpen, setIsExtensionsOpen, setSettingsTab } = useUI();
   const [recentProjects, setRecentProjects] = useState<string[]>([]);
   const [isInitializing, setIsInitializing] = useState(true);
-
   console.log('[AppInner] Rendering - filePath:', currentFilePath);
 
   const refreshRecent = async () => {

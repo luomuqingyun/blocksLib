@@ -196,6 +196,7 @@ const init = () => {
                 .appendField(new Blockly.FieldDropdown(generatePWMOptions), "PIN")
                 .appendField(Blockly.Msg.ARD_IO_VAL); // 值
             this.appendValueInput("NUM").setCheck("Number");
+            this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(230);

@@ -102,6 +102,9 @@ interface ElectronAPI {
   // --- AI ---
   askOpenClaw: (data: { prompt: string, context?: any }) => Promise<{ content: string; blocks?: any }>;
 
+  // --- 焦点修复 ---
+  focusFix: () => Promise<void>;
+
   // --- 市场 ---
   marketplaceListUrls: () => Promise<string[]>;
   marketplaceAddUrl: (url: string) => Promise<boolean>;

@@ -6,8 +6,9 @@
   "description": "Visual Embedded Programming Studio",
   "author": "EmbedBlocks",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/extract_block_schema.js && vite",
     "predev": "node scripts/utils/cleanup.js && node scripts/utils/sync_blockly_media.js",
+    "prebuild": "node scripts/extract_block_schema.js",
     "build": "node scripts/utils/sync_blockly_media.js && npm run clean:build && tsc && vite build && vite build -c vite.sandbox.config.js",
     "start": "npm run build && electron .",
     "release": "npm run build && electron-builder",
@@ -20,7 +21,6 @@
     "gen:stm32": "npx tsx scripts/core/7_parse_stm32duino_variants.ts && npx tsx scripts/core/1c_discover_from_open_data.ts && npx tsx scripts/core/2_scan_stm32_pins.ts && npx tsx scripts/core/5_fetch_official_layouts.ts && npx tsx scripts/core/4_generate_stm32_data.ts",
     "sync:stm32": "npx tsx scripts/ops/global_sync_data.ts",
     "bundle:core": "npx tsx scripts/ops/bundle_resources.ts",
-    "bundle:openclaw": "node scripts/ops/bundle_openclaw.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:build": "vite build -c vite.config.js -m production",
@@ -103,13 +103,6 @@
       {
         "from": "bundled_pio",
         "to": "bundled_pio",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "bundled_openclaw",
-        "to": "bundled_openclaw",
         "filter": [
           "**/*"
         ]

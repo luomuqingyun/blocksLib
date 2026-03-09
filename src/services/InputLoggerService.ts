@@ -24,7 +24,7 @@ class InputLoggerService {
     private initialized = false;
     private maxLogs = 5000; // 限制日志数量防止内存溢出
     private eventCount = 0;
-    private saveThreshold = 5; // 每 5 次交互自动保存一次以保证实时性
+    private saveThreshold = 500; // 每 500 次交互自动保存一次 (降频防止 IPC 阻塞)
 
     /**
      * 初始化全局监听器
@@ -61,8 +61,7 @@ class InputLoggerService {
         }, true);
         window.addEventListener('click', (e) => {
             this.recordMouseEvent('CLICK', e);
-            // 点击通常是关键决策点，触发即时存盘
-            this.savePersistentLog();
+            this.incrementEvent();
         }, true);
 
         // --------------------------------------------------------
@@ -71,8 +70,6 @@ class InputLoggerService {
         // --------------------------------------------------------
         window.addEventListener('focus', (e) => {
             this.recordFocusEvent('FOCUS', e);
-            // 焦点切换极其重要，必须立存防止意外崩溃导致丢失
-            this.savePersistentLog();
         }, true);
         window.addEventListener('blur', (e) => this.recordFocusEvent('BLUR', e), true);
 
@@ -151,17 +148,24 @@ class InputLoggerService {
     }
 
     private recordKeyboardEvent(e: KeyboardEvent) {
-        const detail = `Key: ${e.key} | Code: ${e.code} | Ctrl: ${e.ctrlKey} | Shift: ${e.shiftKey} | Alt: ${e.altKey} | Active: ${this.getElementIdentifier(document.activeElement)}`;
+        const detail = `Key: ${e.key} | Code: ${e.code} | Ctrl: ${e.ctrlKey} | Shift: ${e.shiftKey} | Alt: ${e.altKey} | Trusted: ${e.isTrusted} | Composing: ${e.isComposing} | Active: ${this.getElementIdentifier(document.activeElement)}`;
         this.log('KBD', e.key, this.getElementIdentifier(e.target), detail, e.defaultPrevented);
     }
 
     private recordMouseEvent(action: string, e: MouseEvent) {
-        const detail = `Coord: (${e.clientX}, ${e.clientY}) | Button: ${e.button} | Active: ${this.getElementIdentifier(document.activeElement)}`;
+        const target = e.target as HTMLElement;
+        const isVisible = !!(target.offsetWidth || target.offsetHeight || target.getClientRects().length);
+
+        // [DIAGNOSTIC] Detect Coord(0,0) anomaly - often indicates "Glass Barrier" or simulated events
+        const isAnomaly = e.clientX === 0 && e.clientY === 0;
+        const anomalyStatus = isAnomaly ? ' [COORD_ANOMALY (0,0)]' : '';
+
+        const detail = `Coord: (${e.clientX}, ${e.clientY})${anomalyStatus} | Button: ${e.button} | Trusted: ${e.isTrusted} | Visible: ${isVisible} | Active: ${this.getElementIdentifier(document.activeElement)}`;
         this.log('MOUSE', action, this.getElementIdentifier(e.target), detail, e.defaultPrevented);
     }
 
     private recordFocusEvent(action: string, e: FocusEvent) {
-        const detail = `Focus transition | From: ${this.getElementIdentifier(e.relatedTarget)} | To: ${this.getElementIdentifier(e.target)} | Current Active: ${this.getElementIdentifier(document.activeElement)}`;
+        const detail = `Focus transition | From: ${this.getElementIdentifier(e.relatedTarget)} | To: ${this.getElementIdentifier(e.target)} | Trusted: ${e.isTrusted} | Current Active: ${this.getElementIdentifier(document.activeElement)}`;
         this.log('SYS', action, this.getElementIdentifier(e.target), detail);
     }
 

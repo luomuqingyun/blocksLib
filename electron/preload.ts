@@ -164,5 +164,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   // --- AI 助手交互接口 (OpenClaw) ---
-  askOpenClaw: (data: { prompt: string, context?: any }) => ipcRenderer.invoke('ai:ask', data)
+  askOpenClaw: (data: { prompt: string, context?: any }) => ipcRenderer.invoke('ai:ask', data),
+
+  // --- 焦点修复 (Focus Fix) ---
+  // 强制执行 OS 级窗口 blur→focus 循环，修复 Chromium Compositor/IME 焦点丢失
+  focusFix: () => ipcRenderer.invoke('app:focus-fix'),
 });

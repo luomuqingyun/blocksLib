@@ -122,7 +122,8 @@ export function registerProjectHandlers(ipcMain: IpcMain, callbacks: {
     ipcMain.handle('open-file-dialog', async (event, options?: Electron.OpenDialogOptions) => {
         const { canceled, filePaths } = await dialog.showOpenDialog(options || { properties: ['openFile'] });
         if (canceled || filePaths.length === 0) return null;
-        return { path: filePaths[0], content: fs.readFileSync(filePaths[0], 'utf-8') };
+        const content = await fs.promises.readFile(filePaths[0], 'utf-8');
+        return { path: filePaths[0], content };
     });
 
     ipcMain.handle('save-file-content', async (event, content, filePath) => {

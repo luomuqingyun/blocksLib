@@ -9,10 +9,12 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Lock, Unlock, Trash2, Sparkles } from 'lucide-react';
 import { CodeEditor } from '../CodeEditor';
 import { SerialMonitorPanel } from '../SerialMonitor/SerialMonitorPanel';
 import { AiAssistantPanel } from '../AiAssistant/AiAssistantPanel';
+// @ts-ignore
+import * as Blockly from 'blockly';
+import { Lock, Unlock, Trash2, Sparkles } from 'lucide-react';
 import { useSerial } from '../../contexts/SerialContext';
 import { useFileSystem } from '../../contexts/FileSystemContext';
 import { useUI } from '../../contexts/UIContext';
@@ -38,7 +40,10 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
     const { isManualEditMode, setIsManualEditMode, activeTab, setActiveTab } = useUI();
 
     // 构建上下文: 编译日志及清理函数
-    const { logs, clearLogs, isBuilding } = useBuild();
+    const { logs, clearLogs, isBuilding, config } = useBuild();
+
+    // 读取 AI 助手启用状态
+    const isAiEnabled = config?.ai?.enabled !== false;
 
     /** 根据日志内容返回语法高亮颜色 */
     const getLogColor = (log: string) => {
@@ -66,6 +71,37 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
             scrollToBottom();
         }
     }, [logs, activeTab]);
+
+    /**
+     * [Phase 5] 标签页切换时关闭 Blockly 浮动组件
+     * 恢复 .blocklyWidgetDiv 的 pointerEvents 拦截，防止其挡住 AI 助手输入框
+     */
+    useEffect(() => {
+        try {
+            if (typeof Blockly !== 'undefined') {
+                Blockly.hideChaff();
+            }
+
+            // 必须处理 blocklyWidgetDiv 的穿透问题
+            const blocklyDiv = document.querySelector('.blocklyWidgetDiv') as HTMLElement;
+            if (blocklyDiv) {
+                if (activeTab === 'ai') {
+                    blocklyDiv.style.pointerEvents = 'none';
+                } else {
+                    blocklyDiv.style.pointerEvents = '';
+                }
+            }
+        } catch (e) {
+            // ignore
+        }
+    }, [activeTab]);
+
+    // 当 AI 被禁用时，若当前在 AI 标签则自动切回编译标签
+    useEffect(() => {
+        if (!isAiEnabled && activeTab === 'ai') {
+            setActiveTab('build');
+        }
+    }, [isAiEnabled, activeTab, setActiveTab]);
 
     // ========== 渲染右侧面板 ==========
     return (
@@ -126,22 +162,18 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
                             {t('serial.tab')}
                             {isConnected && <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>}
                         </button>
-                        {/* AI 助手标签 (集成 OpenClaw，支持积木建议) */}
-                        <button
-                            onClick={() => {
-                                setActiveTab('ai');
-                                // 当切换到 AI 助手时，强制夺取所在窗口和 DOM 的焦点
-                                setTimeout(() => {
-                                    window.focus();
-                                    const input = document.querySelector('input[data-input-protect="true"]') as HTMLInputElement;
-                                    if (input) input.focus();
-                                }, 50);
-                            }}
-                            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'ai' ? 'border-purple-500 text-slate-200 bg-[#1e1e1e]' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
-                        >
-                            <Sparkles size={14} className={activeTab === 'ai' ? 'text-purple-400' : ''} />
-                            {t('app.aiAssistant')}
-                        </button>
+                        {/* AI 助手标签 (集成 OpenClaw，支持积木建议) - 仅在启用时显示 */}
+                        {isAiEnabled && (
+                            <button
+                                onClick={() => {
+                                    setActiveTab('ai');
+                                }}
+                                className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'ai' ? 'border-purple-500 text-slate-200 bg-[#1e1e1e]' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+                            >
+                                <Sparkles size={14} className={activeTab === 'ai' ? 'text-purple-400' : ''} />
+                                {t('app.aiAssistant')}
+                            </button>
+                        )}
                     </div>
 
                     {/* 日志清空工具按钮 */}
@@ -175,12 +207,14 @@ export const RightPanel: React.FC<RightPanelProps> = ({ width }) => {
                     />
                 </div>
 
-                {/* 标签页内容: AI 助手 */}
-                <div className={`flex-1 flex overflow-hidden ${activeTab === 'ai' ? '' : 'hidden pointer-events-none'}`}>
-                    <AiAssistantPanel
-                        isVisible={activeTab === 'ai'}
-                    />
-                </div>
+                {/* 标签页内容: AI 助手 - 仅在启用时渲染 */}
+                {isAiEnabled && (
+                    <div className={`flex-1 flex overflow-hidden ${activeTab === 'ai' ? '' : 'hidden pointer-events-none'}`}>
+                        <AiAssistantPanel
+                            isVisible={activeTab === 'ai'}
+                        />
+                    </div>
+                )}
 
             </div>
         </div>

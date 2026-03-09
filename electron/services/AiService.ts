@@ -1,13 +1,127 @@
 import { app, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { exec, execFile } from 'child_process';
+import { exec, execFile, execSync } from 'child_process';
 import { promisify } from 'util';
+import { configService } from './ConfigService';
 
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
 
 const OPENCLAW_CONFIG_PATH = path.join(app.getPath('home'), '.openclaw', 'openclaw.json');
+
+/**
+ * 积木 Schema 数据（构建时由 extract_block_schema.js 生成）
+ * 包含所有 474+ 积木的类型、字段、输入和分类信息
+ */
+let BLOCK_SCHEMA: any = null;
+try {
+    const schemaPath = path.join(app.getAppPath(), 'src', 'data', 'ai_block_schema.json');
+    if (fs.existsSync(schemaPath)) {
+        BLOCK_SCHEMA = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+        console.log(`[AiService] 积木 Schema 已加载: ${BLOCK_SCHEMA._meta.total} 个积木`);
+    }
+} catch (e) {
+    console.warn('[AiService] 积木 Schema 加载失败，将使用静态提示词:', e);
+}
+
+/**
+ * 核心积木分类（始终注入到提示词中的基础积木）
+ */
+const CORE_CATEGORIES = new Set([
+    '基础IO', '基础逻辑', 'Arduino核心', '变量', '串口通信', '时间'
+]);
+
+/**
+ * 关键词 → 积木分类映射表
+ * 根据用户指令中的关键词动态加载对应分类的积木
+ */
+const KEYWORD_CATEGORY_MAP: Record<string, string[]> = {
+    // 硬件外设
+    '舵机|servo|角度': ['舵机'],
+    'LED灯带|彩灯|neopixel|ws2812|灯珠': ['LED灯带'],
+    '电机|马达|motor|步进': ['电机'],
+    '显示|屏幕|oled|lcd|tft|matrix|点阵': ['显示屏'],
+    '传感器|温度|湿度|dht|超声波|距离|bmp|bme': ['传感器'],
+    '存储|sd卡|eeprom|flash|文件': ['存储', '参数存储'],
+    'rfid|射频|nfc': ['RFID'],
+    '摄像头|camera|拍照': ['摄像头'],
+    '音频|蜂鸣器|音乐|mp3|播放': ['音频', 'MP3'],
+    '语音|tts|say': ['语音'],
+    '触摸|touch': ['触摸'],
+    '红外|ir|遥控': ['红外'],
+    'rtc|时钟|日期': ['实时时钟'],
+    'dac|模拟输出': ['DAC'],
+    '输入|按钮|按键|旋钮|编码器': ['输入设备'],
+    // 通信协议
+    '串口|serial|uart': ['串口通信'],
+    'i2c|iic': ['I2C'],
+    'spi': ['SPI'],
+    'mqtt|消息队列': ['MQTT'],
+    'wifi|网络|连接|ip|http': ['WiFi网络', 'HTTP', 'Web服务'],
+    '蓝牙|bluetooth|ble': ['蓝牙', 'BLE'],
+    'lora|lorawan': ['LoRa'],
+    '无线电|radio|nrf': ['无线电', 'NRF24'],
+    'websocket|ws': ['WebSocket'],
+    'esp.now': ['ESP-NOW'],
+    'usb|hid|键盘|鼠标': ['USB HID'],
+    'telegram|机器人': ['Telegram', '机器人'],
+    // 平台
+    'esp32|esp8266': ['ESP32专用'],
+    'stm32': ['STM32专用'],
+    // 高级功能
+    '加密|hash|aes': ['加密'],
+    'rtos|多任务|线程': ['RTOS'],
+    'ota|升级|固件': ['OTA升级'],
+    '游戏': ['游戏'],
+    '自动化|定时': ['自动化', '定时器'],
+};
+
+/**
+ * [AI 核心强化] EmbedBlocks Studio 专用系统提示词 (System Prompt)
+ * 该提示词强制要求 AI 以特定的 JSON 结构返回响应，并提供了常用的积木定义 Schema。
+ */
+const BLOCKLY_SYSTEM_PROMPT = `
+你是 EmbedBlocks Studio 的硬件积木编排执行器。你的唯一任务是根据用户指令生成 Blockly 积木 JSON。
+
+## 绝对规则
+1. 你的回复必须是且仅是一个合法的 JSON 对象，不要在 JSON 前后添加任何文字、Markdown 标记或代码围栏。
+2. JSON 结构:
+   { "content": "一句话硬件提示（可选）", "blocks": { Blockly JSON } }
+3. 如果用户问的是纯知识性问题（如"什么是 I2C"），则只返回 { "content": "回答内容" }，不含 blocks。
+4. 禁止任何社交辞令、自我介绍、欢迎语。直接输出 JSON。
+
+## Blockly JSON 协议
+根节点必须是 "arduino_entry_root"，它有两个 Statement 输入槽：
+- "SETUP_STACK": 放置初始化积木（如 pinMode）
+- "LOOP_STACK": 放置循环执行的积木（如 digitalWrite + delay）
+
+积木之间通过 "next" 字段链接（形成垂直堆叠）。
+
+## 可用积木速查表
+| 积木 type | 用途 | fields | inputs |
+|-----------|------|--------|--------|
+| arduino_pin_mode | 设置引脚模式 | PIN, MODE("INPUT"/"OUTPUT") | - |
+| arduino_digital_write | 数字写 | PIN, STATE("HIGH"/"LOW") | - |
+| arduino_digital_read | 数字读 | PIN | - |
+| arduino_digital_toggle | 翻转引脚 | PIN | - |
+| arduino_analog_write | PWM 输出 | PIN | VALUE(math_number) |
+| arduino_analog_read | 模拟读 | PIN | - |
+| base_delay | 延时(ms) | - | DELAY_TIME(math_number) |
+| arduino_serial_print | 串口打印 | NEWLINE("TRUE"/"FALSE") | CONTENT(text/math_number) |
+| arduino_serial_begin | 串口初始化 | BAUD("9600") | - |
+| controls_repeat_ext | 重复 N 次 | - | TIMES(math_number), DO(statement) |
+| controls_if | 条件判断 | - | IF0(logic), DO0(statement) |
+| math_number | 数字常量 | NUM | - |
+| text | 字符串常量 | TEXT | - |
+| arduino_var_declare | 声明变量 | QUALIFIER, TYPE, VAR | VALUE |
+
+## 完整输出示例（LED 闪烁 PA3 每 500ms）
+{"content":"PA3引脚需配置为输出模式，LED串联限流电阻","blocks":{"blocks":{"languageVersion":0,"blocks":[{"type":"arduino_entry_root","id":"root_1","x":50,"y":50,"inputs":{"SETUP_STACK":{"block":{"type":"arduino_pin_mode","id":"pm_1","fields":{"PIN":"PA3","MODE":"OUTPUT"}}},"LOOP_STACK":{"block":{"type":"arduino_digital_write","id":"dw_1","fields":{"PIN":"PA3","STATE":"HIGH"},"next":{"block":{"type":"base_delay","id":"d_1","inputs":{"DELAY_TIME":{"shadow":{"type":"math_number","id":"n_1","fields":{"NUM":500}}}},"next":{"block":{"type":"arduino_digital_write","id":"dw_2","fields":{"PIN":"PA3","STATE":"LOW"},"next":{"block":{"type":"base_delay","id":"d_2","inputs":{"DELAY_TIME":{"shadow":{"type":"math_number","id":"n_2","fields":{"NUM":500}}}}}}}}}}}}}}]}}}
+
+## 上下文感知
+优先使用用户当前所选的板卡和代码作为参考。如果用户没有指定引脚，根据板卡常见习惯给出（STM32 用 PA 引脚，Arduino 用数字引脚号）。
+`;
 
 /**
  * AI 服务 (AiService): 核心逻辑类，负责管理与 OpenClaw AI 引擎的集成。
@@ -43,7 +157,7 @@ export class AiService {
             let config: any = {};
             // 如果文件已存在，先读取现有配置以进行合并，防止覆盖用户手动修改的其他项
             if (fs.existsSync(OPENCLAW_CONFIG_PATH)) {
-                config = JSON.parse(fs.readFileSync(OPENCLAW_CONFIG_PATH, 'utf8'));
+                config = JSON.parse(await fs.promises.readFile(OPENCLAW_CONFIG_PATH, 'utf8'));
             }
 
             /**
@@ -83,20 +197,20 @@ export class AiService {
 
             // 确保本地配置目录 (.openclaw) 存在
             const dir = path.dirname(OPENCLAW_CONFIG_PATH);
-            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            if (!fs.existsSync(dir)) await fs.promises.mkdir(dir, { recursive: true });
 
             // 写入配置文件
-            fs.writeFileSync(OPENCLAW_CONFIG_PATH, JSON.stringify(config, null, 2));
+            await fs.promises.writeFile(OPENCLAW_CONFIG_PATH, JSON.stringify(config, null, 2));
 
             /**
              * 关键补丁：
              * OpenClaw 2026.3.2 运行 `agent --agent main` 时需要物理存在相应的 agent 目录。
              * 如果缺失，会导致路由失败。此处强制创建一个默认的 main agent 目录。
+             * 我们不再写入 agent.md，而是选择直接在 ask() 方法中注入系统强化提示词。
              */
             const agentDir = path.join(dir, 'agents', 'main', 'agent');
             if (!fs.existsSync(agentDir)) {
-                fs.mkdirSync(agentDir, { recursive: true });
-                fs.writeFileSync(path.join(agentDir, 'agent.md'), '# Main Agent\nDefault agent for EmbedBlocks Studio.');
+                await fs.promises.mkdir(agentDir, { recursive: true });
             }
 
             console.log(`[AiService] OpenClaw 2026.3.2 配置已同步: ${OPENCLAW_CONFIG_PATH}`);
@@ -116,26 +230,77 @@ export class AiService {
     /**
      * 获取 OpenClaw 可执行文件的绝对路径。
      * 检测顺序:
-     * 1. 软件打包后的 resources 内部目录 (生产环境)。
-     * 2. 软件根目录下的 bundled_openclaw 目录 (开发环境)。
-     * 3. 系统环境变量中的 'openclaw' 全局命令 (兜底方案)。
+     * 1. 用户在设定面板里显式填入的自定义绝对路径 (最高优先级)。
+     * 2. 系统环境变量中的 'openclaw' 全局命令 (兜底方案)。
      */
     private getOpenClawPath(): string {
-        const isDev = !app.isPackaged;
-        const binName = process.platform === 'win32' ? 'openclaw.bat' : 'openclaw';
-
-        // 1. 检查生产环境路径
-        if (!isDev) {
-            const prodPath = path.join(process.resourcesPath, 'bundled_openclaw', 'bin', binName);
-            if (fs.existsSync(prodPath)) return prodPath;
+        // 1. 读取用户界面设置里的自定义路径
+        const customPath = configService.get('ai.customPath');
+        if (customPath && typeof customPath === 'string' && customPath.trim() !== '') {
+            if (fs.existsSync(customPath)) {
+                console.log(`[AiService] 检测到用户指定的自定义 OpenClaw 路径: ${customPath}`);
+                return customPath;
+            } else {
+                console.warn(`[AiService] 警告: 用户配置的自定义路径不存在 (${customPath}), 自动降级至系统环境`);
+            }
         }
 
-        // 2. 检查开发环境路径
-        const devPath = path.join(app.getAppPath(), 'bundled_openclaw', 'bin', binName);
-        if (fs.existsSync(devPath)) return devPath;
-
-        // 3. 回退至全局命令
+        // 2. 回退至系统全局命令
         return 'openclaw';
+    }
+
+    private async resolveExecutable(command: string): Promise<string> {
+        if (path.isAbsolute(command)) {
+            return command;
+        }
+        try {
+            if (process.platform === 'win32') {
+                const { stdout } = await execAsync(`where ${command}`);
+                const paths = stdout.trim().split('\n').map(p => p.trim());
+                // 在 Windows 上优先使用 .cmd 后缀的文件，以便后续解析底层 JS
+                const cmdPath = paths.find(p => p.toLowerCase().endsWith('.cmd'));
+                return cmdPath || paths[0];
+            } else {
+                const { stdout } = await execAsync(`which ${command}`);
+                return stdout.split('\n')[0].trim();
+            }
+        } catch (e) {
+            console.error(`[AiService] Error resolving ${command}:`, e);
+            return command;
+        }
+    }
+
+    /**
+     * 针对 Windows 环境下 cmd.exe 本身拒绝处理含有换行符的多语言参数的致命缺陷：
+     * 分析 npm 生成的 .cmd 文件底层，抽离出对应的 JS 脚本并直接交由 Node 原生进程执行，
+     * 以达成完全绕过 cmd.exe 和底层环境变量缺陷的目的。
+     */
+    private async getTrueExecutableAndArgs(cliPath: string, args: string[]): Promise<{ cmd: string, args: string[] }> {
+        let resolvedPath = await this.resolveExecutable(cliPath);
+
+        if (process.platform === 'win32' && resolvedPath.toLowerCase().endsWith('.cmd')) {
+            try {
+                if (fs.existsSync(resolvedPath)) {
+                    const content = await fs.promises.readFile(resolvedPath, 'utf8');
+                    const lines = content.split('\n');
+                    for (let i = lines.length - 1; i >= 0; i--) {
+                        const line = lines[i];
+                        // 匹配 "%dp0%\node_modules\openclaw\bin\openclaw.mjs" 此类内容
+                        const match = line.match(/"[^"]*?\\node_modules\\[^"]+\.(?:js|mjs|cjs)"/i);
+                        if (match) {
+                            let p = match[0].replace(/"/g, '');
+                            p = p.replace(/%~dp0|%dp0%/gi, path.dirname(resolvedPath) + path.sep);
+
+                            // 必须使用 'node' 而不是 process.execPath，因为由于这是 Electron 主进程，process.execPath 指向 electron.exe !
+                            return { cmd: 'node', args: [p, ...args] };
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('[AiService] 底层 .cmd 重定向解析失败，降级执行:', e);
+            }
+        }
+        return { cmd: resolvedPath, args };
     }
 
     /**
@@ -147,7 +312,8 @@ export class AiService {
         this.openClawPath = resolvedPath;
 
         try {
-            await execFileAsync(resolvedPath, ['--version']);
+            const exeSpecs = await this.getTrueExecutableAndArgs(resolvedPath, ['--version']);
+            await execFileAsync(exeSpecs.cmd, exeSpecs.args);
             this.isOpenClawAvailable = true;
             console.log(`[AiService] 环境检查通过，使用路径: ${resolvedPath}`);
             return true;
@@ -187,26 +353,33 @@ export class AiService {
                     console.log('[AiService] 已拼接项目上下文强化提示词。');
                 }
 
+                // 注入系统级指令 (Hidden System Instruction)带上动态计算的积木 Schema
+                const dynamicSchemaStr = this.buildDynamicBlocksPrompt(prompt, context);
+                enhancedPrompt = `${BLOCKLY_SYSTEM_PROMPT}\n\n${dynamicSchemaStr}\n\n【用户当前真实指令】\n${enhancedPrompt}`;
+
                 /**
                  * 执行 OpenClaw 代理任务:
                  * --agent main: 指定使用主代理，确保其加载正确的配置和技能。
                  * --message: 传递强化后的用户的指令。
                  * 使用 execFileAsync 可以安全传递含特殊字符/换行的大型 Payload，防止命令行注入漏洞。
                  */
-                const { stdout } = await execFileAsync(this.openClawPath, ['agent', '--agent', 'main', '--message', enhancedPrompt]);
+                const exeSpecs = await this.getTrueExecutableAndArgs(this.openClawPath, ['agent', '--agent', 'main', '--message', enhancedPrompt]);
+                const { stdout } = await execFileAsync(exeSpecs.cmd, exeSpecs.args, { maxBuffer: 10 * 1024 * 1024 });
 
-                try {
-                    // 尝试将输出解析为 JSON (如果 OpenClaw 启用了结构化输出模式)
-                    const result = JSON.parse(stdout);
+                // 解析回复 (Robust JSON Extraction)
+                const result = this.extractJsonObject(stdout);
+                if (result) {
+                    console.log('[AiService] 已成功解析结构化 AI 响应');
+                    const normalizedBlocks = this.normalizeBlocksResponse(result.blocks);
                     return {
-                        content: result.message || result.content || result.response || "AI 响应处理完成。",
-                        blocks: result.blocks || null // 如果返回了 Blockly 积木数据，则可以进行注入
+                        content: result.content || result.message || result.response || "AI 响应处理完成。",
+                        blocks: normalizedBlocks
                     };
-                } catch (parseErr) {
-                    // 如果不是 JSON，则作为纯文本处理 (2026.3.2 默认的流式或标准输出)
-                    console.log('[AiService] 解析为纯文本响应');
-                    return { content: stdout };
                 }
+
+                // 兜底：如果无法提取 JSON，则作为纯文本处理
+                console.warn('[AiService] 无法从 AI 响应中提取结构化 JSON，退回纯文本模式');
+                return { content: this.cleanRawText(stdout) };
             } catch (e: any) {
                 const errorStr = (e.stdout || '') + (e.stderr || '') + (e.message || '');
                 console.error('[AiService] OpenClaw 运行异常:', errorStr);
@@ -234,6 +407,174 @@ export class AiService {
     }
 
     /**
+     * 根据用户指令和当前板卡，动态挑选相关联的积木 Schema 子集。
+     * 解决将 474+ 个积木全量注入导致 Token 超限的问题。
+     */
+    private buildDynamicBlocksPrompt(prompt: string, context?: any): string {
+        if (!BLOCK_SCHEMA || !BLOCK_SCHEMA.blocks) return '';
+
+        const activeCategories = new Set<string>(CORE_CATEGORIES);
+        const lowerPrompt = prompt.toLowerCase();
+
+        // 1. 根据关键词匹配附加分类
+        for (const [pattern, categories] of Object.entries(KEYWORD_CATEGORY_MAP)) {
+            const regex = new RegExp(pattern, 'i');
+            if (regex.test(lowerPrompt)) {
+                categories.forEach(c => activeCategories.add(c));
+            }
+        }
+
+        // 2. 根据上下文（板卡）匹配特殊分类
+        if (context && context.board) {
+            const boardName = context.board.toLowerCase();
+            if (boardName.includes('esp32') || boardName.includes('esp8266')) {
+                activeCategories.add('ESP32专用');
+            } else if (boardName.includes('stm32')) {
+                activeCategories.add('STM32专用');
+            }
+        }
+
+        // 3. 过滤出命中的积木
+        const selectedBlocks = BLOCK_SCHEMA.blocks.filter((b: any) => activeCategories.has(b.category));
+        const categoriesArray = Array.from(activeCategories).join(', ');
+
+        console.log(`[AiService] 动态提示词: 命中了 ${activeCategories.size} 个分类 (${categoriesArray}), 共 ${selectedBlocks.length} 个积木`);
+
+        // 4. 构建精简的 Markdown 表格
+        let md = `## 可用积木动态速查表(共 ${selectedBlocks.length} 个)\n`;
+        md += `本表仅包含与你当前任务相关的积木（动态提取）。你可以按需组合。\n\n`;
+        md += `| 积木 type (重要) | 积木说明 | fields (表单字段) | inputs (连接槽) |\n`;
+        md += `|------------------|----------|-------------------|-----------------|\n`;
+
+        for (const b of selectedBlocks) {
+            // 压缩 fields 和 inputs 显示
+            const fieldsVal = b.fields ? Object.keys(b.fields).join(', ') : '-';
+            const inputsVal = b.inputs ? Object.keys(b.inputs).map(k => `${k}(${b.inputs[k]})`).join(', ') : '-';
+            const desc = b.description ? b.description.split('\n')[0].replace(/\|/g, '/') : (b.category || '-');
+
+            md += `| \`${b.type}\` | ${desc} | ${fieldsVal} | ${inputsVal} |\n`;
+        }
+
+        return md;
+    }
+
+    /**
+     * 从复杂的 AI 输出文本中强行提取出第一个合法的 JSON 对象。
+     * 使用括号计数法精准匹配嵌套的 {} 结构，解决正则无法处理深层 Blockly JSON 的问题。
+     */
+    private extractJsonObject(text: string): any {
+        if (!text) return null;
+        const trimmed = text.trim();
+
+        // 路径 1: 尝试完整解析
+        try {
+            return JSON.parse(trimmed);
+        } catch (e) { /* 继续尝试 */ }
+
+        // 路径 2: 尝试匹配被 ```json ... ``` 包裹的内容
+        const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/s);
+        if (codeBlockMatch) {
+            try { return JSON.parse(codeBlockMatch[1].trim()); } catch (e2) { }
+        }
+
+        // 路径 3: 使用括号计数法提取第一个完整的 JSON 对象
+        const extracted = this.extractBalancedJson(text);
+        if (extracted) {
+            try { return JSON.parse(extracted); } catch (e3) { }
+        }
+
+        return null;
+    }
+
+    /**
+     * 括号计数法：从文本中提取第一个完整匹配的 {} JSON 对象。
+     * 正确处理字符串内的转义括号和深度嵌套结构。
+     */
+    private extractBalancedJson(text: string): string | null {
+        let start = text.indexOf('{');
+        if (start === -1) return null;
+
+        let depth = 0;
+        let inString = false;
+        let escape = false;
+
+        for (let i = start; i < text.length; i++) {
+            const ch = text[i];
+
+            if (escape) {
+                escape = false;
+                continue;
+            }
+
+            if (ch === '\\') {
+                escape = true;
+                continue;
+            }
+
+            if (ch === '"') {
+                inString = !inString;
+                continue;
+            }
+
+            if (inString) continue;
+
+            if (ch === '{') depth++;
+            if (ch === '}') {
+                depth--;
+                if (depth === 0) {
+                    return text.substring(start, i + 1);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 规范化 AI 返回的 blocks 数据，确保符合 Blockly 序列化格式。
+     * 处理常见的 AI 输出偏差：缺少外层包裹、数组格式、缺少 languageVersion 等。
+     */
+    private normalizeBlocksResponse(blocks: any): any {
+        if (!blocks) return null;
+
+        try {
+            // 情况 1: blocks 已经是完整的 { blocks: { languageVersion, blocks: [...] } } 格式
+            if (blocks.blocks && blocks.blocks.blocks && Array.isArray(blocks.blocks.blocks)) {
+                return blocks;
+            }
+
+            // 情况 2: blocks 是 { languageVersion, blocks: [...] } 格式（缺少外层 blocks 包裹）
+            if (blocks.languageVersion !== undefined && Array.isArray(blocks.blocks)) {
+                return { blocks };
+            }
+
+            // 情况 3: blocks 是积木数组 [...]
+            if (Array.isArray(blocks)) {
+                return { blocks: { languageVersion: 0, blocks } };
+            }
+
+            // 情况 4: blocks 是单个积木对象 { type: "...", ... }
+            if (blocks.type) {
+                return { blocks: { languageVersion: 0, blocks: [blocks] } };
+            }
+
+            // 其他情况原样返回
+            return blocks;
+        } catch (e) {
+            console.warn('[AiService] blocks 规范化失败:', e);
+            return blocks;
+        }
+    }
+
+    /**
+     * 清理纯文本 AI 回复，移除 OpenClaw CLI 的元信息干扰。
+     */
+    private cleanRawText(text: string): string {
+        if (!text) return 'AI 响应为空。';
+        // 移除 ANSI 转义码和 OpenClaw 进度指示器
+        return text.replace(/\x1b\[[0-9;]*m/g, '').replace(/[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]/g, '').trim();
+    }
+
+    /**
      * 模拟响应与错误引导逻辑
      * 仅在 OpenClaw 环境缺失或作为演示时调用。
      */
@@ -243,7 +584,7 @@ export class AiService {
         // 核心引导：告诉用户如何安装 OpenClaw
         if (!this.isOpenClawAvailable) {
             return {
-                content: `### 🚀 尚未检测到 OpenClaw 环境\n\n要在软件中调用强大的 AI 辅助功能，您需要先完成以下步骤：\n\n1. **安装 OpenClaw CLI**: \n   \`\`\`bash\n   npm install -g openclaw\n   \`\`\`\n2. **验证环境**: \n   在终端输入 \`openclaw --version\` 确认可用后重启本软件。\n\n**提示**: OpenClaw 是一个高功率的 AI 代理框架，EmbedBlocks 通过它来执行代码生成和积木编排任务。`,
+                content: `### 🚀 尚未检测到 OpenClaw 环境\n\n要在软件中调用强大的 AI 辅助功能，您需要先完成以下环境配置工作：\n\n1. 请确保您的电脑已经安装了 [Node.js](https://nodejs.org/)。\n2. **安装 OpenClaw CLI**: \n   \`\`\`bash\n   npm install -g openclaw\n   \`\`\`\n3. **验证环境**: \n   在系统终端输入 \`openclaw --version\` 确认可用后，**重启本软件**即可开箱即用。\n\n**提示**: OpenClaw 是一个高功率的 AI 代理框架，EmbedBlocks 需要依赖它在本地为您执行代码生成和积木编排任务。`,
                 isInstruction: true
             };
         }

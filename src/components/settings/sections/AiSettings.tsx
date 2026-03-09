@@ -26,11 +26,6 @@ interface AiSettingsProps {
 export const AiSettings: React.FC<AiSettingsProps> = ({ config, handleSave }) => {
     const { t } = useTranslation();
 
-    const handleRunSetup = () => {
-        // 在正式场景中，可以通过 IPC 触发一个终端窗口运行 openclaw setup
-        alert('请在您的系统终端中运行 "openclaw setup" 来配置 API Key。');
-    };
-
     return (
         <div className="space-y-8">
             {/* 核心开关 */}
@@ -102,7 +97,7 @@ export const AiSettings: React.FC<AiSettingsProps> = ({ config, handleSave }) =>
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-slate-400 block">{t('settings.aiApiBaseUrl')}</label>
+                    <label className="text-xs font-medium text-slate-400 block">{t('settings.aiApiBaseUrl', 'API Base URL')}</label>
                     <input
                         type="text"
                         placeholder="https://api.deepseek.com"
@@ -110,6 +105,20 @@ export const AiSettings: React.FC<AiSettingsProps> = ({ config, handleSave }) =>
                         onChange={(e) => handleSave('ai.baseUrl', e.target.value)}
                         className="w-full bg-[#333] border border-slate-600 rounded px-3 py-2 text-slate-200 text-sm focus:border-purple-500 outline-none"
                     />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-slate-400 block">{t('settings.aiCustomPath', 'Custom Engine Path (Optional)')}</label>
+                    <input
+                        type="text"
+                        placeholder={t('settings.aiPathPlaceholder', 'Default: System Auto-detect (openclaw)')}
+                        value={config.ai?.customPath || ''}
+                        onChange={(e) => handleSave('ai.customPath', e.target.value)}
+                        className="w-full bg-[#333] border border-slate-600 rounded px-3 py-2 text-slate-200 text-sm focus:border-purple-500 outline-none placeholder:text-slate-600"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1 leading-tight">
+                        {t('settings.aiCustomPathDesc', 'Leave empty to auto-detect global openclaw. Set only for manual override.')}
+                    </p>
                 </div>
             </div>
 
@@ -137,13 +146,6 @@ export const AiSettings: React.FC<AiSettingsProps> = ({ config, handleSave }) =>
                             {t('settings.aiSecurityWarning')}
                         </p>
                     </div>
-                    <button
-                        onClick={handleRunSetup}
-                        className="flex items-center gap-2 px-3 py-2 bg-[#252526] hover:bg-[#2d2d30] text-slate-300 border border-slate-600 rounded text-xs transition-colors"
-                    >
-                        <Terminal size={14} />
-                        {t('settings.aiRunSetup')}
-                    </button>
                 </div>
             </div>
             {/* 提示：API Key 仅本地存储，确保安全 */}

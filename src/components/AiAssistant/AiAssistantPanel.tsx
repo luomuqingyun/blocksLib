@@ -51,23 +51,18 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
      */
     useEffect(() => {
         if (isVisible) {
-            scrollToBottom();
-            // 第一步：请求下一帧，确保 React 已经完成了虚拟 DOM 挂载
-            requestAnimationFrame(() => {
-                // 第二步：使用 150ms 延迟，确保 CSS 动画 (RightPanel 展开) 结束
-                // 这样可以防止在容器宽度为 0 或动画过程中对焦失败。
-                const timer = setTimeout(() => {
-                    if (inputRef.current) {
-                        // [Phase 4] 双重对焦补丁 (Double-Focus Trick)
-                        // 先失焦再获焦，强制 Chromium 重新绑定渲染层与物理输入流水线
-                        inputRef.current.blur();
-                        inputRef.current.focus();
-                    }
-                }, 150);
-                return () => clearTimeout(timer);
-            });
+            // 标准对焦：仅在面板切换为可见时，尝试对焦一次
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
         }
-    }, [messages, isVisible]);
+    }, [isVisible]);
+
+    // 独立的消息列表滚动逻辑
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     /**
      * 发送消息处理函数
@@ -109,6 +104,8 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                     timestamp: Date.now()
                 };
                 setMessages(prev => [...prev, assistantMsg]);
+                // [NEW] 消息收到后恢复焦点，让用户可以连续追问
+                setTimeout(() => inputRef.current?.focus(), 100);
 
                 /**
                  * 核心逻辑：积木实时注入 (Hot Reload)
@@ -125,8 +122,23 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                         blocklyRef.current.loadXml(blocksJson);
                         markWorkspaceDirty(); // 标记为已修改，触发撤销栈记录
                         console.log('[AI] 已自动同步积木至工作区');
+
+                        // ✅ 积木注入成功反馈
+                        setMessages(prev => [...prev, {
+                            id: 'blocks-ok-' + Date.now(),
+                            role: 'assistant',
+                            content: '✅ 积木已同步至工作区',
+                            timestamp: Date.now()
+                        }]);
                     } catch (e) {
                         console.error('[AI] 积木注入失败:', e);
+                        // ⚠️ 积木注入失败反馈
+                        setMessages(prev => [...prev, {
+                            id: 'blocks-err-' + Date.now(),
+                            role: 'assistant',
+                            content: '⚠️ 积木生成格式异常，请重试或手动搭建',
+                            timestamp: Date.now()
+                        }]);
                     }
                 }
             } else {
@@ -154,6 +166,8 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
             setMessages(prev => [...prev, errorMsg]);
         } finally {
             setIsLoading(false);
+            // [NEW] 无论成功失败，恢复对焦
+            setTimeout(() => inputRef.current?.focus(), 50);
         }
     };
 
@@ -163,27 +177,14 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
         <div className="flex flex-col h-full bg-[#1e1e1e] text-slate-300">
             {/* 消息列表 */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar relative">
-                {/* [Phase 3] 悬浮调试按钮组：用于在极少数输入失效情况下手动复位 */}
-                <div className="absolute top-2 right-4 flex gap-2 z-20">
-                    <button
-                        onClick={() => {
-                            setTimeout(() => inputRef.current?.focus(), 0);
-                        }}
-                        className="p-1.5 bg-slate-800/80 hover:bg-slate-700 text-[10px] text-slate-400 rounded border border-slate-700 transition-colors flex items-center gap-1"
-                        title="强制重置焦点"
-                    >
-                        <Bot size={12} />
-                        Reset Focus
-                    </button>
-                </div>
                 {messages.map(msg => (
                     <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`max-w-[85%] min-w-0 flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-purple-600'}`}>
                                 {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                             </div>
-                            <div className={`p-3 rounded-lg text-sm leading-relaxed ${msg.role === 'user' ? 'bg-blue-600/20 border border-blue-500/30' : 'bg-slate-800 border border-slate-700'}`}>
-                                <div className="markdown-body">
+                            <div className={`p-3 rounded-lg text-sm leading-relaxed break-words ${msg.role === 'user' ? 'bg-blue-600/20 border border-blue-500/30' : 'bg-slate-800 border border-slate-700'}`}>
+                                <div className="markdown-body ai-markdown">
                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                         {msg.content}
                                     </ReactMarkdown>
@@ -204,7 +205,7 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                         </div>
                     </div>
                 )}
-                <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} className="h-12 shrink-0" />
             </div>
 
             {/* 输入区 - 修正布局遮挡问题 */}
@@ -226,48 +227,48 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => {
-                                // [Phase 4] 阻止事件冒泡 (Cut interception)
-                                // 禁止事件向上传递至 window，防止被全局监听器（如 Blockly）意外拦截
+                                // [关键] 阻止 ALL 键盘事件冒泡到 Blockly workspace
+                                // 之前只拦截了 Enter，导致普通字符键被 Blockly 吞掉
                                 e.stopPropagation();
-                                if (e.key === 'Enter') handleSend();
+                                if (e.key === 'Enter') {
+                                    handleSend();
+                                }
                             }}
                             onFocus={() => {
-                                // [诊断日志] 记录焦点状态，便于 embedblocks-diag-*.md 链路追踪
-                                console.log('[AiAssistant] Input Focused');
                                 inputRef.current?.classList.add('border-blue-500');
                                 inputRef.current?.classList.remove('border-slate-700');
                             }}
                             onBlur={() => {
-                                console.log('[AiAssistant] Input Blurred');
                                 inputRef.current?.classList.remove('border-blue-500');
                                 inputRef.current?.classList.add('border-slate-700');
                             }}
-                            onMouseDown={(e) => {
-                                // [CRITICAL FIX] 阻止 mousedown 事件冒泡到 window/document。
-                                // 因为 Blockly 全局绑定了 pointerdown/mousedown 并会调用 preventDefault()，
-                                // 导致浏览器原生的“点击输入框出现光标”行为被强行拦截。
+                            /**
+                             * [Event Firewall + Compositor Reset]
+                             * 1. stopPropagation: 阻止事件到达 Blockly
+                             * 2. IPC focusFix: 通过主进程执行 OS 级窗口 blur→focus 循环，
+                             *    强制 Windows 重新发送 WM_KILLFOCUS → WM_ACTIVATE，
+                             *    等同于 Alt+Tab 切换应用的效果（彻底重置 Chromium Compositor）
+                             */
+                            onPointerDown={(e) => {
                                 e.stopPropagation();
-
-                                console.log('[AiAssistant] MouseDown to regain focus');
-                                // [Phase 4 Ultimate Fix] 强制夺回系统级窗口焦点
-                                // 解决 Electron 在 Windows 下的“幽灵焦点”Bug (DOM 获焦但 OS 不按键)
-                                window.focus();
-
-                                // 强制在点击瞬间夺回焦点，解决“点击输入框但不聚焦”的问题
-                                setTimeout(() => {
-                                    if (inputRef.current) {
-                                        inputRef.current.blur();
-                                        inputRef.current.focus();
-                                    }
-                                }, 0);
+                                e.nativeEvent.stopImmediatePropagation();
                             }}
-                            onMouseUp={(e) => {
+                            onMouseDown={(e) => {
                                 e.stopPropagation();
-                                // 确保鼠标释放时窗口依然有强制焦点
-                                window.focus();
+                                e.nativeEvent.stopImmediatePropagation();
+                                // [关键] 通过 IPC 执行 OS 级窗口焦点重置
+                                // 这等同于 Alt+Tab 或 Ctrl+Shift+L 导出日志时打开文件管理器的效果
+                                if (window.electronAPI?.focusFix) {
+                                    window.electronAPI.focusFix().then(() => {
+                                        // 窗口焦点重置后，重新聚焦到输入框
+                                        setTimeout(() => inputRef.current?.focus(), 60);
+                                    });
+                                }
                             }}
                             onClick={(e) => {
                                 e.stopPropagation();
+                                // 兜底对焦：确保点击后一定获焦
+                                inputRef.current?.focus();
                             }}
                             placeholder={t('ai.placeholder')}
                             className="w-full h-full bg-[#1e1e1e] border border-slate-700 rounded-lg pl-3 pr-10 py-2.5 text-sm focus:border-blue-500 focus:outline-[2px] focus:outline-blue-500/50 focus:ring-1 focus:ring-blue-500 transition-all select-text cursor-text !pointer-events-auto"
@@ -276,6 +277,8 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                     </div>
                     <button
                         onClick={handleSend}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                         disabled={!input.trim() || isLoading}
                         className={`absolute right-2.5 p-1.5 rounded-md transition-colors z-[60] ${!input.trim() || isLoading ? 'text-slate-600' : 'text-blue-500 hover:bg-blue-500/10 cursor-pointer'}`}
                     >
@@ -287,14 +290,6 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                         <Sparkles size={10} />
                         <span>{t('ai.poweredBy')}</span>
                     </div>
-                    {/* [NEW] 快捷触发诊断 */}
-                    <button
-                        onClick={() => (window as any).InputLogger?.exportDiagnosticDirectly()}
-                        className="text-slate-600 hover:text-blue-500 transition-colors px-1"
-                        title="导出交互诊断报告 (Ctrl+Shift+L)"
-                    >
-                        Diag Log
-                    </button>
                 </div>
             </div>
         </div>

@@ -73,8 +73,8 @@ class VariantGenerator {
     const specificVariantDir = path.join(variantsDir, variantName);
 
     // 1. 创建必要的目录结构
-    if (!fs.existsSync(boardsDir)) fs.mkdirSync(boardsDir, { recursive: true });
-    if (!fs.existsSync(specificVariantDir)) fs.mkdirSync(specificVariantDir, { recursive: true });
+    if (!fs.existsSync(boardsDir)) await fs.promises.mkdir(boardsDir, { recursive: true });
+    if (!fs.existsSync(specificVariantDir)) await fs.promises.mkdir(specificVariantDir, { recursive: true });
 
     // 2. 智能继承: 加载父级板卡的编译配置 (如提供)
     let parentConfig: any = null;
@@ -82,7 +82,7 @@ class VariantGenerator {
       const boardJsonPath = path.join(pioPlatformPath, 'boards', `${boardData.parentBoardId}.json`);
       if (fs.existsSync(boardJsonPath)) {
         try {
-          const raw = fs.readFileSync(boardJsonPath, 'utf-8');
+          const raw = await fs.promises.readFile(boardJsonPath, 'utf-8');
           parentConfig = JSON.parse(raw);
           console.log(`[VariantGenerator] Inheriting from official board: ${boardData.parentBoardId}`);
         } catch (e) {
@@ -179,7 +179,7 @@ class VariantGenerator {
       }
 
       // 执行拷贝
-      const files = fs.readdirSync(variantPath);
+      const files = await fs.promises.readdir(variantPath);
       for (const file of files) {
         // 避开一些可能冲突的构建控制文件
         if (file === 'CMakeLists.txt' || file === 'boards_entry.txt') continue;
@@ -187,7 +187,7 @@ class VariantGenerator {
         const srcFile = path.join(variantPath, file);
         const destFile = path.join(destDir, file);
 
-        const stats = fs.statSync(srcFile);
+        const stats = await fs.promises.stat(srcFile);
         if (stats.isFile()) {
           // [PATCH] For generic boards, we want to avoid including multiple variant files
           // that could cause symbol redefinition errors (e.g., STM32WL series).
@@ -206,11 +206,11 @@ class VariantGenerator {
 
           // 对 C/C++/H 文件放宽 ARDUINO_GENERIC_ 宏检查
           if (file.endsWith('.c') || file.endsWith('.cpp') || file.endsWith('.h')) {
-            let content = fs.readFileSync(srcFile, 'utf8');
+            let content = await fs.promises.readFile(srcFile, 'utf8');
             content = content.replace(/#if\s+defined\s*\(\s*ARDUINO_GENERIC_.*?\s*\)/g, '#if 1 // $&');
-            fs.writeFileSync(destFile, content);
+            await fs.promises.writeFile(destFile, content);
           } else {
-            fs.copyFileSync(srcFile, destFile);
+            await fs.promises.copyFile(srcFile, destFile);
           }
         }
       }
@@ -389,7 +389,7 @@ class VariantGenerator {
     if (!boardJson.frameworks) boardJson.frameworks = ["arduino", "cmsis", "stm32cube"];
     if (!boardJson.upload.protocol) boardJson.upload.protocol = "stlink";
 
-    fs.writeFileSync(path.join(boardsDir, 'eb_custom_board.json'), JSON.stringify(boardJson, null, 2));
+    await fs.promises.writeFile(path.join(boardsDir, 'eb_custom_board.json'), JSON.stringify(boardJson, null, 2));
   }
 
   private formatPinName(pin: string): string {
@@ -467,7 +467,7 @@ WEAK const PinMap PinMap_DAC[] = { {NC, NP, 0} };
 #endif
 `;
 
-    fs.writeFileSync(path.join(variantDir, 'PeripheralPins.c'), content);
+    await fs.promises.writeFile(path.join(variantDir, 'PeripheralPins.c'), content);
   }
 
   private async generateVariantH(variantDir: string, data: VariantData) {
@@ -495,7 +495,7 @@ WEAK const PinMap PinMap_DAC[] = { {NC, NP, 0} };
 
 #endif
 `;
-    fs.writeFileSync(path.join(variantDir, 'variant_generic.h'), content);
+    await fs.promises.writeFile(path.join(variantDir, 'variant_generic.h'), content);
   }
 
   private async generateVariantCpp(variantDir: string, data: VariantData) {
@@ -513,7 +513,7 @@ WEAK const PinMap PinMap_DAC[] = { {NC, NP, 0} };
     content += `// Analog Pin Array\n`;
     content += `// TODO: Implement analogPin array mapping if needed for full compatibility\n`;
 
-    fs.writeFileSync(path.join(variantDir, 'variant_generic.cpp'), content);
+    await fs.promises.writeFile(path.join(variantDir, 'variant_generic.cpp'), content);
   }
 
   private async generateGenericClockC(variantDir: string) {
@@ -535,7 +535,7 @@ WEAK void SystemClock_Config(void)
 }
 #endif
 `;
-    fs.writeFileSync(path.join(variantDir, 'generic_clock.c'), content);
+    await fs.promises.writeFile(path.join(variantDir, 'generic_clock.c'), content);
   }
 
   private async generateLdScript(variantDir: string, data: VariantData) {
@@ -685,7 +685,7 @@ SECTIONS
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
 `;
-    fs.writeFileSync(path.join(variantDir, 'ldscript.ld'), content);
+    await fs.promises.writeFile(path.join(variantDir, 'ldscript.ld'), content);
   }
 
   /**
@@ -705,7 +705,7 @@ SECTIONS
 // Using variant_generic.h as default for generic STM32 boards
 #include "variant_generic.h"
 `;
-    fs.writeFileSync(path.join(variantDir, 'variant_EB_CUSTOM_BOARD.h'), content);
+    await fs.promises.writeFile(path.join(variantDir, 'variant_EB_CUSTOM_BOARD.h'), content);
     console.log(`[VariantGenerator] Created variant_EB_CUSTOM_BOARD.h wrapper`);
   }
 

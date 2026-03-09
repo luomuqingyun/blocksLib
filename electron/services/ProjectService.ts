@@ -90,7 +90,8 @@ class ProjectService {
             const unsupportedListPath = path.join(app.getAppPath(), 'electron', 'config', 'unsupported_8kb_chips.json');
             if (fs.existsSync(unsupportedListPath)) {
                 try {
-                    const unsupportedChips = JSON.parse(fs.readFileSync(unsupportedListPath, 'utf-8'));
+                    const content = await fs.promises.readFile(unsupportedListPath, 'utf-8');
+                    const unsupportedChips = JSON.parse(content);
                     if (Array.isArray(unsupportedChips) && unsupportedChips.includes(boardId)) {
                         return {
                             success: false,
@@ -118,7 +119,8 @@ class ProjectService {
                 const enhancedMapPath = path.join(app.getAppPath(), 'electron', 'config', 'stm32_compatibility_enhanced.json');
                 if (fs.existsSync(enhancedMapPath)) {
                     try {
-                        const enhancedMap = JSON.parse(fs.readFileSync(enhancedMapPath, 'utf-8'));
+                        const content = await fs.promises.readFile(enhancedMapPath, 'utf-8');
+                        const enhancedMap = JSON.parse(content);
                         const enhancedInfo = enhancedMap[boardId];
                         if (enhancedInfo) {
                             needsLocalPatch = enhancedInfo.requiresLocalPatch || !enhancedInfo.pioBoardId;
@@ -749,10 +751,11 @@ if os.path.exists(variant_cpp):
                 timestamp: Date.now(),
                 ...data
             };
-            // 使用同步写入，确保备份完成
-            fs.writeFileSync(backupPath, JSON.stringify(content));
+            // 异步写入备份文件
+            await fs.promises.writeFile(backupPath, JSON.stringify(content));
             return { success: true };
         } catch (e: any) {
+            console.error('[ProjectService] Failed to create backup:', e);
             return { success: false, error: e.message };
         }
     }
@@ -768,12 +771,7 @@ if os.path.exists(variant_cpp):
         try {
             const backupPath = this.getBackupPath(ebprojPath);
             if (fs.existsSync(backupPath)) {
-                /**
-                 * 备份存在逻辑:
-                 * .swp 文件存在 = 上次会话未正常关闭 (Save 会删除 swp)
-                 * 因此可能包含未保存的工作
-                 */
-                const stat = fs.statSync(backupPath);
+                const stat = await fs.promises.stat(backupPath);
                 return { hasBackup: true, timestamp: stat.mtimeMs };
             }
             return { hasBackup: false };
@@ -791,7 +789,7 @@ if os.path.exists(variant_cpp):
             const backupPath = this.getBackupPath(ebprojPath);
             if (!fs.existsSync(backupPath)) return { success: false, error: 'Backup not found' };
 
-            const raw = fs.readFileSync(backupPath, 'utf-8');
+            const raw = await fs.promises.readFile(backupPath, 'utf-8');
             const data = JSON.parse(raw);
             return { success: true, data };
         } catch (e: any) {
@@ -807,7 +805,7 @@ if os.path.exists(variant_cpp):
         try {
             const backupPath = this.getBackupPath(ebprojPath);
             if (fs.existsSync(backupPath)) {
-                fs.unlinkSync(backupPath);
+                await fs.promises.unlink(backupPath);
             }
         } catch (e) { /* ignore */ }
     }
@@ -852,7 +850,7 @@ if os.path.exists(variant_cpp):
             if (!fs.existsSync(ebprojPath)) return { cancelled: false, error: 'Project file not found' };
 
             // 1. 读取 .ebproj
-            const contentRaw = fs.readFileSync(ebprojPath, 'utf-8');
+            const contentRaw = await fs.promises.readFile(ebprojPath, 'utf-8');
             const rawJson = JSON.parse(contentRaw);
             console.log('[ProjectService] Opened project:', ebprojPath);
             console.log('[ProjectService] Raw JSON keys:', Object.keys(rawJson));
@@ -877,7 +875,7 @@ if os.path.exists(variant_cpp):
                 const projectDir = path.dirname(ebprojPath);
                 const legacyJsonPath = path.join(projectDir, `${metadata.name}.json`);
                 if (fs.existsSync(legacyJsonPath)) {
-                    const legacyContent = fs.readFileSync(legacyJsonPath, 'utf-8');
+                    const legacyContent = await fs.promises.readFile(legacyJsonPath, 'utf-8');
                     blocks = JSON.parse(legacyContent);
                 } else {
                     // 没有遗留文件，创建空状态
@@ -891,7 +889,7 @@ if os.path.exists(variant_cpp):
             const cppPath = path.join(projectDir, 'src', 'main.cpp');
             let code = '';
             if (fs.existsSync(cppPath)) {
-                code = fs.readFileSync(cppPath, 'utf-8');
+                code = await fs.promises.readFile(cppPath, 'utf-8');
             }
 
             // 3. (取消) 不再强制更新全局工作目录为当前项目父目录
@@ -935,7 +933,7 @@ if os.path.exists(variant_cpp):
 
             // 在系列子目录中搜索对应的芯片 JSON 文件
             // boardId 格式: "generic_stm32f103c8" -> 文件名: "STM32F103C8.json"
-            const seriesDirs = fs.readdirSync(stm32DataDir);
+            const seriesDirs = await fs.promises.readdir(stm32DataDir);
             let targetPath = '';
             for (const series of seriesDirs) {
                 const potentialPath = path.join(stm32DataDir, series, `${boardId.replace('generic_', '').toUpperCase()}.json`);
@@ -951,7 +949,7 @@ if os.path.exists(variant_cpp):
             }
 
             // 读取芯片元数据
-            const rawData = fs.readFileSync(targetPath, 'utf-8');
+            const rawData = await fs.promises.readFile(targetPath, 'utf-8');
             const boardMetadata = JSON.parse(rawData) as VariantData;
 
             /**
@@ -969,7 +967,7 @@ if os.path.exists(variant_cpp):
 
             if (fs.existsSync(enhancedPath)) {
                 try {
-                    const enhancedMap = JSON.parse(fs.readFileSync(enhancedPath, 'utf-8'));
+                    const enhancedMap = JSON.parse(await fs.promises.readFile(enhancedPath, 'utf-8'));
                     const enhancedInfo = enhancedMap[boardId];
                     if (enhancedInfo) {
                         // 注入增强信息到元数据
