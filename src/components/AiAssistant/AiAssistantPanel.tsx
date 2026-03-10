@@ -88,20 +88,30 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
             }
 
             if (data.blocks && blocklyRef.current) {
+                console.log('[AI] 收到积木数据，尝试注入...', data.blocks);
                 try {
                     const blocksJson = typeof data.blocks === 'string' ? data.blocks : JSON.stringify(data.blocks);
                     const success = blocklyRef.current.loadXml(blocksJson);
                     if (success) {
+                        console.log('[AI] 积木注入完成');
                         markWorkspaceDirty();
                         setMessages(prev => [...prev, {
                             id: 'blocks-ok-' + Date.now(),
                             role: 'assistant',
-                            content: '✅ 积木已同步至工作区',
+                            content: '✅ ' + (t('ai.blocks_synced') || '积木已同步至工作区'),
+                            timestamp: Date.now()
+                        }]);
+                    } else {
+                        console.error('[AI] 积木自动注入失败：Blockly 加载验证不通过');
+                        setMessages(prev => [...prev, {
+                            id: 'blocks-err-' + Date.now(),
+                            role: 'assistant',
+                            content: '❌ ' + (t('ai.blocks_fail') || '积木注入失败：生成的结构可能包含未注册的组件，已忽略'),
                             timestamp: Date.now()
                         }]);
                     }
                 } catch (e) {
-                    console.error('[AI] 积木自动注入失败:', e);
+                    console.error('[AI] 积木自动注入异常:', e);
                 }
             }
 
@@ -234,26 +244,18 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                             </div>
                             <div className={`p-3 rounded-lg text-sm leading-relaxed break-words ${msg.role === 'user' ? 'bg-blue-600/20 border border-blue-500/30' : 'bg-slate-800 border border-slate-700'}`}>
                                 <div className="markdown-body ai-markdown">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                        {msg.content}
-                                    </ReactMarkdown>
+                                    {msg.content ? (
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {msg.content}
+                                        </ReactMarkdown>
+                                    ) : (
+                                        <Loader2 size={16} className="animate-spin text-purple-400" />
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 ))}
-                {isLoading && (
-                    <div className="flex justify-start">
-                        <div className="flex gap-3 flex-row">
-                            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
-                                <Bot size={16} />
-                            </div>
-                            <div className="p-3 bg-slate-800 border border-slate-700 rounded-lg">
-                                <Loader2 size={16} className="animate-spin text-purple-400" />
-                            </div>
-                        </div>
-                    </div>
-                )}
                 <div ref={messagesEndRef} className="h-12 shrink-0" />
             </div>
 

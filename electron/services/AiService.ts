@@ -83,11 +83,34 @@ const KEYWORD_CATEGORY_MAP: Record<string, string[]> = {
  */
 const BLOCKLY_SYSTEM_PROMPT = `你是一个硬件积木助手。
 规则:
-1. 先输出自然语言提示，然后将积木 JSON 包裹在 <BLOCKS> ... </BLOCKS> 标签中。
-2. 仅输出 JSON 对象，不要带 Markdown 围栏。
-3. 根节点必为 "arduino_entry_root"，它有 "SETUP_STACK" 和 "LOOP_STACK" 两个槽。
-4. 积木间用 "next" 链接。
-5. 示例: 已为您生成代码。 <BLOCKS>{"blocks":{"languageVersion":0,"blocks":[{"type":"arduino_entry_root","inputs":{"LOOP_STACK":{"block":{"type":"arduino_digital_toggle","fields":{"PIN":"PA3"},"next":{"block":{"type":"arduino_delay_ms","inputs":{"DELAY":{"shadow":{"type":"math_number","fields":{"NUM":1000}}}}}}}}}}}]}</BLOCKS>`;
+1. 先输出自然语言提示，回复的最后再将积木 JSON 包裹在 <BLOCKS> ... </BLOCKS> 标签中。
+2. 仅输出一个 JSON 对象，不要分段，不要带 Markdown 围栏 (如 \`\`\`json)。
+3. 根节点必为 "arduino_entry_root"，它有 "SETUP_STACK" 和 "LOOP_STACK" 两个语句块槽。
+4. 禁止生成 "arduino_pin_mode" 或 "pinMode" 积木。
+5. 禁止为积木生成 "id" 字段。
+6. 示例:
+已为您生成跑马灯。
+<BLOCKS>
+{
+  "blocks": {
+    "languageVersion": 0,
+    "blocks": [
+      {
+        "type": "arduino_entry_root",
+        "inputs": {
+          "LOOP_STACK": {
+            "block": {
+              "type": "arduino_digital_write",
+              "fields": { "PIN": "PA3", "STATE": "HIGH" }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+</BLOCKS>
+注意：<BLOCKS> 标签内必须是纯净合法的 JSON。`;
 
 /**
  * AI 服务 (AiService): 核心逻辑类，负责管理与 OpenClaw AI 引擎的集成。
@@ -358,14 +381,15 @@ export class AiService {
 
             child.stdout.on('data', (data: Buffer) => {
                 const chunk = data.toString();
-                fullOutput += chunk;
+
+                // 过滤掉 ANSI 转义字符和进度条，防止污染 fullOutput 导致 JSON 解析失败
+                const cleanChunk = chunk.replace(/\x1b\[[0-9;]*m/g, '').replace(/[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]/g, '');
+                fullOutput += cleanChunk;
 
                 // [Debug] 将原始输出流打印到后台终端，方便开发调试
                 process.stdout.write(chunk);
 
                 // 实时发送推送到前端渲染
-                // 过滤掉 ANSI 转义字符和进度条
-                const cleanChunk = chunk.replace(/\x1b\[[0-9;]*m/g, '').replace(/[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]/g, '');
                 if (cleanChunk.trim()) {
                     onChunk({ chunk: cleanChunk });
                 }
@@ -539,43 +563,87 @@ export class AiService {
 
     /**
      * 从复杂的 AI 输出文本中强行提取出第一个合法的 JSON 对象。
-     * 使用括号计数法精准匹配嵌套的 {} 结构，解决正则无法处理深层 Blockly JSON 的问题。
      */
     private extractJsonObject(text: string): any {
         if (!text) return null;
-        const trimmed = text.trim();
 
         // 路径 0: 尝试匹配 <BLOCKS> ... </BLOCKS> 标签 (优先)
         const blocksMatch = text.match(/<BLOCKS>\s*([\s\S]*?)\s*<\/BLOCKS>/);
         if (blocksMatch) {
+            const rawJson = blocksMatch[1].trim();
+            const repairedJson = this.repairAiJson(rawJson);
             try {
-                const jsonStr = blocksMatch[1].trim();
-                // 如果标签内已经是完整的回复结构
-                const obj = JSON.parse(jsonStr);
-                if (obj.blocks) return obj;
-                // 否则将其视为单纯的 blocks 字段
-                return { blocks: obj, content: text.split('<BLOCKS>')[0].trim() };
-            } catch (e) { /* 继续 */ }
+                const jsonObj = JSON.parse(repairedJson);
+                // 确保结果包含 blocks 字段
+                if (jsonObj.blocks) return jsonObj;
+                return { blocks: jsonObj, content: text.split('<BLOCKS>')[0].trim() };
+            } catch (e) {
+                const errMsg = (e as Error).message;
+                console.error(`[AiService] <BLOCKS> JSON 解析失败: ${errMsg}`);
+
+                // 辅助调试：将完整畸形 JSON 写入临时文件，供开发者排查特殊字符
+                try {
+                    const fs = require('fs');
+                    const path = require('path');
+                    const tmpDir = path.join(process.cwd(), 'temp');
+                    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+                    const debugFile = path.join(tmpDir, 'last_failed_blocks.json');
+                    fs.writeFileSync(debugFile, repairedJson);
+                    console.error(`[AiService] 完整畸形 JSON 已报错至: ${debugFile}`);
+                } catch (fsErr) { /* ignore */ }
+            }
         }
 
-        // 路径 1: 尝试完整解析
-        try {
-            return JSON.parse(trimmed);
-        } catch (e) { /* 继续尝试 */ }
-
-        // 路径 2: 尝试匹配被 ```json ... ``` 包裹的内容
-        const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/s);
-        if (codeBlockMatch) {
-            try { return JSON.parse(codeBlockMatch[1].trim()); } catch (e2) { }
-        }
-
-        // 路径 3: 使用括号计数法提取第一个完整的 JSON 对象
+        // 路径 1: 使用括号计数法提取第一个完整的 JSON 对象
         const extracted = this.extractBalancedJson(text);
         if (extracted) {
-            try { return JSON.parse(extracted); } catch (e3) { }
+            const repaired = this.repairAiJson(extracted);
+            try {
+                return JSON.parse(repaired);
+            } catch (e) {
+                // 仅在明确检测到可能是积木数据时才报错，避免干扰普通聊天
+                if (repaired.includes('"blocks"') || repaired.includes('"type"')) {
+                    console.error('[AiService] 括号匹配解析失败:', (e as Error).message);
+                }
+            }
         }
 
         return null;
+    }
+
+    /**
+     * 自动修复 AI 常见的格式错误和控制字符污染。
+     */
+    private repairAiJson(jsonStr: string): string {
+        if (!jsonStr) return "";
+
+        let fixed = jsonStr;
+
+        // 1. 彻底移除所有 ANSI 转义码 (防止分阶段流产生的残留)
+        fixed = fixed.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
+
+        // 2. 移除所有非打印控制字符 (0-31), 保留 \n 和 \r\n，但移除孤立的 \r 和退格符
+        // \r (0x0D), \b (0x08), \t (0x09)
+        fixed = fixed.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+        // 处理被 \r 覆盖的垃圾内容 (CLI 进度条常见)
+        fixed = fixed.replace(/[^\n]*\r/g, '');
+
+        // 3. 移除旋转进度标等残余字符
+        fixed = fixed.replace(/[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]/g, '');
+
+        // 4. 修复重复键错误 (例如 "id":"id": 或 "type":"type":)
+        fixed = fixed.replace(/"(\w+)":"\1":/g, '"$1":');
+
+        // 5. 移除尾随逗号 (非法 JSON)
+        fixed = fixed.replace(/,\s*([}\]])/g, '$1');
+
+        // 6. 处理常见的引号错误 (AI 有时会混用引号)
+        // 简单修复: 如果内容被单引号包裹且内部有双引号，不处理，否则很难通用
+
+        // 7. 处理 Markdown 围栏
+        fixed = fixed.replace(/```(?:json)?/g, '').replace(/```/g, '');
+
+        return fixed.trim();
     }
 
     /**
