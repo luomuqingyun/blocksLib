@@ -432,6 +432,15 @@ function registerAllIpcs() {
         return await aiService.ask(data.prompt, data.context);
     });
 
+    ipcMain.on('ai:ask-stream', async (event, data: { prompt: string, context?: any }) => {
+        const webContents = event.sender;
+        await aiService.askStream(data.prompt, data.context, (chunkData) => {
+            if (!webContents.isDestroyed()) {
+                webContents.send('ai:chunk', chunkData);
+            }
+        });
+    });
+
     ipcMain.handle('ai:clear-session', async (_event, filePath: string) => {
         return aiService.clearSession(filePath);
     });

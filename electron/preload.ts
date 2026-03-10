@@ -165,6 +165,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // --- AI 助手交互接口 (OpenClaw) ---
   askOpenClaw: (data: { prompt: string, context?: any }) => ipcRenderer.invoke('ai:ask', data),
+  askAiStream: (data: { prompt: string, context?: any }) => ipcRenderer.send('ai:ask-stream', data),
+  onAiChunk: (callback: (data: { chunk?: string, blocks?: any, done?: boolean }) => void) => {
+    const handler = (_event: any, value: any) => callback(value);
+    ipcRenderer.on('ai:chunk', handler);
+    return () => ipcRenderer.removeListener('ai:chunk', handler);
+  },
   clearAiSession: (filePath: string) => ipcRenderer.invoke('ai:clear-session', filePath),
 
   // --- 焦点修复 (Focus Fix) ---

@@ -22,6 +22,7 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { MarkdownRenderer } from '../MarkdownRenderer';
+import { BrandLogo } from '../BrandLogo';
 
 /** 关于页面覆盖层属性 */
 interface AboutOverlayProps {
@@ -68,7 +69,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, con
 
                 {/* 头部区域: Logo 和标题 */}
                 <div className="pt-12 pb-8 flex flex-col items-center border-b border-slate-700/30">
-                    <img src="./EmbedBlocks.png" alt="EmbedBlocks Logo" className="w-20 h-20 object-contain drop-shadow-lg mb-4" />
+                    <BrandLogo size={80} className="drop-shadow-lg mb-4" />
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
                         EmbedBlocks Studio
                     </h1>

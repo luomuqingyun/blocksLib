@@ -64,6 +64,58 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
         scrollToBottom();
     }, [messages]);
 
+    // [NEW] 监听 AI 流式输出
+    useEffect(() => {
+        if (!window.electronAPI) return;
+
+        const unsubscribe = (window.electronAPI as any).onAiChunk((data: { chunk?: string, blocks?: any, done?: boolean }) => {
+            if (data.chunk) {
+                setMessages(prev => {
+                    const lastMsg = prev[prev.length - 1];
+                    if (lastMsg && lastMsg.role === 'assistant') {
+                        // 如果检测到 <BLOCKS> 标签，则截断显示，隐藏后续 JSON 内容
+                        let newContent = lastMsg.content + data.chunk;
+                        if (newContent.includes('<BLOCKS>')) {
+                            newContent = newContent.split('<BLOCKS>')[0];
+                        }
+                        return [
+                            ...prev.slice(0, -1),
+                            { ...lastMsg, content: newContent }
+                        ];
+                    }
+                    return prev;
+                });
+            }
+
+            if (data.blocks && blocklyRef.current) {
+                try {
+                    const blocksJson = typeof data.blocks === 'string' ? data.blocks : JSON.stringify(data.blocks);
+                    const success = blocklyRef.current.loadXml(blocksJson);
+                    if (success) {
+                        markWorkspaceDirty();
+                        setMessages(prev => [...prev, {
+                            id: 'blocks-ok-' + Date.now(),
+                            role: 'assistant',
+                            content: '✅ 积木已同步至工作区',
+                            timestamp: Date.now()
+                        }]);
+                    }
+                } catch (e) {
+                    console.error('[AI] 积木自动注入失败:', e);
+                }
+            }
+
+            if (data.done) {
+                setIsLoading(false);
+                setTimeout(() => inputRef.current?.focus(), 100);
+            }
+        });
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [currentFilePath]);
+
     // 清空历史记录
     const handleClearHistory = async () => {
         if (!currentFilePath || !window.electronAPI) return;
@@ -100,109 +152,52 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
 
         try {
             /** 
-             * 调用 Electron 主进程中的 askOpenClaw IPC 接口
-             * 该接口会透传指令给 AiService 处理。
+             * [优化] 从单次调用切换为流式请求 (askAiStream)
              */
-            if (window.electronAPI && (window.electronAPI as any).askOpenClaw) {
-                const response = await (window.electronAPI as any).askOpenClaw({
+            if (window.electronAPI && (window.electronAPI as any).askAiStream) {
+                // 先预置一条空的助手消息作为占位符
+                const assistantMsgId = (Date.now() + 1).toString();
+                setMessages(prev => [...prev, {
+                    id: assistantMsgId,
+                    role: 'assistant',
+                    content: '', // 初始内容为空，后续通过 onAiChunk 填充
+                    timestamp: Date.now()
+                }]);
+
+                // 获取当前工作区的积木 JSON 结构
+                const workspaceBlocks = blocklyRef.current ? blocklyRef.current.getXml() : null;
+
+                // 发起异步流式请求（不阻塞）
+                (window.electronAPI as any).askAiStream({
                     prompt: input,
                     context: {
                         config: await window.electronAPI.getConfig(),
                         board: selectedBoard,
                         code: code,
-                        filePath: currentFilePath
+                        filePath: currentFilePath,
+                        workspaceBlocks: workspaceBlocks
                     }
                 });
-
-                const assistantMsg: Message = {
-                    id: (Date.now() + 1).toString(),
-                    role: 'assistant',
-                    content: response.content || t('ai.error'),
-                    timestamp: Date.now()
-                };
-                setMessages(prev => [...prev, assistantMsg]);
-                // [NEW] 消息收到后恢复焦点，让用户可以连续追问
-                setTimeout(() => inputRef.current?.focus(), 100);
-
-                /**
-                 * 核心逻辑：积木实时注入 (Hot Reload)
-                 * 如果 AI 在响应中返回了 blocks 字段（标准的 Blockly JSON 格式），
-                 * 软件将自动更新当前的积木工作区，无需用户手动拖拽。
-                 */
-                if (response.blocks && blocklyRef.current) {
-                    try {
-                        const blocksJson = typeof response.blocks === 'string'
-                            ? response.blocks
-                            : JSON.stringify(response.blocks);
-
-                        // 调用封装的 BlocklyWrapper 加载新的积木定义
-                        const success = blocklyRef.current.loadXml(blocksJson);
-
-                        if (success) {
-                            markWorkspaceDirty(); // 标记为已修改，触发撤销栈记录
-                            console.log('[AI] 已自动同步积木至工作区 (包含容错过滤)');
-
-                            // ✅ 积木注入成功反馈
-                            setMessages(prev => [...prev, {
-                                id: 'blocks-ok-' + Date.now(),
-                                role: 'assistant',
-                                content: '✅ 积木已同步至工作区',
-                                timestamp: Date.now()
-                            }]);
-                        } else {
-                            throw new Error("UI 反馈：工作区加载失败或发生严重异常");
-                        }
-                    } catch (e) {
-                        console.error('[AI] 积木注入失败:', e);
-
-                        // [NEW] 检查工作区是否部分存活。如果工作区中仍有积木，说明降级恢复部分成功，不报完全失败的红底错。
-                        const blocksCount = blocklyRef.current?.getAllBlocks()?.length || 0;
-                        if (blocksCount > 0) {
-                            markWorkspaceDirty();
-                            setMessages(prev => [...prev, {
-                                id: 'blocks-partial-' + Date.now(),
-                                role: 'assistant',
-                                content: '⚠️ 积木含有未知类型，已为您尽力过滤并保留有效部分结构。',
-                                timestamp: Date.now()
-                            }]);
-                        } else {
-                            // ⚠️ 积木注入完全失败反馈
-                            setMessages(prev => [...prev, {
-                                id: 'blocks-err-' + Date.now(),
-                                role: 'assistant',
-                                content: '⚠️ 积木生成格式异常，请重试或手动搭建',
-                                timestamp: Date.now()
-                            }]);
-                        }
-                    }
-                }
             } else {
-                // 仅用于开发阶段的模拟逻辑
-                setTimeout(() => {
-                    const assistantMsg: Message = {
-                        id: (Date.now() + 1).toString(),
-                        role: 'assistant',
-                        content: '这是一个模拟回复。由于 OpenClaw 环境尚未完全就绪，我目前处于演示模式。',
-                        timestamp: Date.now()
-                    };
-                    setMessages(prev => [...prev, assistantMsg]);
-                    setIsLoading(false);
-                }, 1000);
-                return;
+                setIsLoading(false);
+                setMessages(prev => [...prev, {
+                    id: 'error-' + Date.now(),
+                    role: 'assistant',
+                    content: 'AI 接口未就续',
+                    timestamp: Date.now()
+                }]);
             }
-        } catch (err) {
-            console.error('AI 通信错误:', err);
-            const errorMsg: Message = {
-                id: 'error-' + Date.now(),
-                role: 'assistant',
-                content: t('ai.error'),
-                timestamp: Date.now()
-            };
-            setMessages(prev => [...prev, errorMsg]);
-        } finally {
+        } catch (e: any) {
             setIsLoading(false);
-            // [NEW] 无论成功失败，恢复对焦
-            setTimeout(() => inputRef.current?.focus(), 50);
+            console.error('[AI] 请求异常:', e);
+            setMessages(prev => [...prev, {
+                id: 'err-' + Date.now(),
+                role: 'assistant',
+                content: t('ai.error') + ': ' + e.message,
+                timestamp: Date.now()
+            }]);
+        } finally {
+            // setIsLoading(false); // 注意：Loading 状态现在由 onAiChunk (data.done) 控制
         }
     };
 

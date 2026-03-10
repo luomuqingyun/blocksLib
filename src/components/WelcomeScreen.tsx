@@ -11,6 +11,7 @@ import React from 'react';
 import { Plus, FolderOpen, Clock, Github, Settings, FileCode, X, HardDrive, Puzzle, Bot } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFileSystem } from '../contexts/FileSystemContext';
+import { BrandLogo } from './BrandLogo';
 
 // --- 组件属性类型 ---
 interface WelcomeScreenProps {
@@ -83,7 +84,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewProject, onOp
                 {/* 标题区域 - Logo 和应用名称 */}
                 <div className="text-center space-y-4">
                     <div className="inline-block p-4 mb-4">
-                        <img src="./EmbedBlocks.png" alt="EmbedBlocks Logo" className="w-24 h-24 object-contain drop-shadow-2xl" />
+                        <BrandLogo size={96} className="drop-shadow-2xl" />
                     </div>
                     <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
                         EmbedBlocks Studio

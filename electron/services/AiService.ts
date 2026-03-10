@@ -81,35 +81,13 @@ const KEYWORD_CATEGORY_MAP: Record<string, string[]> = {
  * [AI 核心强化] EmbedBlocks Studio 专用系统提示词 (System Prompt)
  * 该提示词强制要求 AI 以特定的 JSON 结构返回响应，并提供了常用的积木定义 Schema。
  */
-const BLOCKLY_SYSTEM_PROMPT = `
-你是 EmbedBlocks Studio 的硬件积木编排执行器。你的唯一任务是根据用户指令生成 Blockly 积木 JSON。
-
-## 绝对规则
-1. 你的回复必须是且仅是一个合法的 JSON 对象，不要在 JSON 前后添加任何文字、Markdown 标记或代码围栏。
-2. JSON 结构:
-   { "content": "一句话硬件提示（可选）", "blocks": { Blockly JSON } }
-3. 如果用户问的是纯知识性问题（如"什么是 I2C"），则只返回 { "content": "回答内容" }，不含 blocks。
-4. 禁止任何社交辞令、自我介绍、欢迎语。直接输出 JSON。
-
-## Blockly JSON 协议
-根节点必须是 "arduino_entry_root"，它有两个 Statement 输入槽：
-- "SETUP_STACK": 放置初始化积木（大部分外设在需要时系统底层会自动初始化 pinMode，除非特殊情况一般为空）
-- "LOOP_STACK": 放置循环执行的积木（如 digitalWrite + delay）
-
-积木之间通过 "next" 字段链接（形成垂直堆叠）。
-
-## 完整输出示例（LED 闪烁 PA3 每 1000ms）
-{"content":"已为您生成 LED 翻转逻辑。","blocks":{"blocks":{"languageVersion":0,"blocks":[{"type":"arduino_entry_root","id":"root_1","x":50,"y":50,"inputs":{"LOOP_STACK":{"block":{"type":"arduino_digital_toggle","id":"t_1","fields":{"PIN":"PA3"},"next":{"block":{"type":"arduino_delay_ms","id":"d_1","inputs":{"DELAY":{"shadow":{"type":"math_number","id":"n_1","fields":{"NUM":1000}}}}}}}}}}}]}}}
-
-## 关键积木参考
-- 延时: type="arduino_delay_ms", input="DELAY"
-- 数字写: type="arduino_digital_write", fields={"PIN": "...", "STATE": "HIGH/LOW"}
-- 数字翻转: type="arduino_digital_toggle", fields={"PIN": "..."}
-- 主入口: type="arduino_entry_root", inputs={"SETUP_STACK": ..., "LOOP_STACK": ...}
-
-## 上下文感知
-优先使用用户当前所选的板卡和代码作为参考。如果用户没有指定引脚，根据板卡常见习惯给出（STM32 用 PA 引脚，Arduino 用数字引脚号）。
-`;
+const BLOCKLY_SYSTEM_PROMPT = `你是一个硬件积木助手。
+规则:
+1. 先输出自然语言提示，然后将积木 JSON 包裹在 <BLOCKS> ... </BLOCKS> 标签中。
+2. 仅输出 JSON 对象，不要带 Markdown 围栏。
+3. 根节点必为 "arduino_entry_root"，它有 "SETUP_STACK" 和 "LOOP_STACK" 两个槽。
+4. 积木间用 "next" 链接。
+5. 示例: 已为您生成代码。 <BLOCKS>{"blocks":{"languageVersion":0,"blocks":[{"type":"arduino_entry_root","inputs":{"LOOP_STACK":{"block":{"type":"arduino_digital_toggle","fields":{"PIN":"PA3"},"next":{"block":{"type":"arduino_delay_ms","inputs":{"DELAY":{"shadow":{"type":"math_number","fields":{"NUM":1000}}}}}}}}}}}]}</BLOCKS>`;
 
 /**
  * AI 服务 (AiService): 核心逻辑类，负责管理与 OpenClaw AI 引擎的集成。
@@ -321,6 +299,103 @@ export class AiService {
     }
 
     /**
+     * [NEW] AI 对话流式输出方法
+     * 采用 spawn 启动进程，实时捕获 stdout 并通过回调函数推送增量数据。
+     */
+    public async askStream(prompt: string, context: any, onChunk: (data: { chunk?: string, blocks?: any, done?: boolean }) => void): Promise<void> {
+        console.log('[AiService] 开启流式 AI 请求:', prompt);
+
+        const isReady = await this.checkEnvironment();
+        if (!isReady) {
+            onChunk({ chunk: "OpenClaw 环境未就绪，请检查设置。" });
+            onChunk({ done: true });
+            return;
+        }
+
+        try {
+            let enhancedPrompt = prompt;
+            if (context && (context.board || context.code || context.workspaceBlocks)) {
+                let contextStr = "【环境】\n";
+                if (context.board) contextStr += `- 板卡: ${context.board}\n`;
+
+                const needsCode = /修复|报错|修改|优化|解释|代码/.test(prompt);
+                if (context.code && context.code.trim() && needsCode) {
+                    contextStr += `- 当前生成的代码:\n\`\`\`cpp\n${context.code}\n\`\`\`\n`;
+                }
+
+                if (context.workspaceBlocks) {
+                    // 如果提示词涉及修改、这段、逻辑、这些，则注入积木结构
+                    const needsBlocks = /修改|这段|逻辑|这些|那|那段|原来|之前|已有的/.test(prompt);
+                    if (needsBlocks) {
+                        const blocksStr = typeof context.workspaceBlocks === 'string'
+                            ? context.workspaceBlocks
+                            : JSON.stringify(context.workspaceBlocks, null, 2);
+                        contextStr += `- 当前工作区积木结构 (Source of Truth):\n\`\`\`json\n${blocksStr}\n\`\`\`\n`;
+                    }
+                }
+
+                enhancedPrompt = `${contextStr}${prompt}`;
+            }
+
+            const dynamicSchemaStr = this.buildDynamicBlocksPrompt(prompt, context);
+            enhancedPrompt = `${BLOCKLY_SYSTEM_PROMPT}\n\n${dynamicSchemaStr}\n\n【用户指令】\n${enhancedPrompt}`;
+
+            let sessionId = `eb_temp_${Date.now()}`;
+            if (context && context.filePath) {
+                const fp = context.filePath;
+                if (!this.sessionMap.has(fp)) {
+                    this.sessionMap.set(fp, `eb_proj_${Date.now()}_${Math.floor(Math.random() * 1000)}`);
+                }
+                sessionId = this.sessionMap.get(fp)!;
+            }
+
+            const exeSpecs = await this.getTrueExecutableAndArgs(this.openClawPath, ['agent', '--agent', 'main', '--session-id', sessionId, '--message', enhancedPrompt]);
+
+            const { spawn } = require('child_process');
+            const child = spawn(exeSpecs.cmd, exeSpecs.args, { stdio: ['ignore', 'pipe', 'pipe'] });
+
+            let fullOutput = '';
+
+            child.stdout.on('data', (data: Buffer) => {
+                const chunk = data.toString();
+                fullOutput += chunk;
+
+                // [Debug] 将原始输出流打印到后台终端，方便开发调试
+                process.stdout.write(chunk);
+
+                // 实时发送推送到前端渲染
+                // 过滤掉 ANSI 转义字符和进度条
+                const cleanChunk = chunk.replace(/\x1b\[[0-9;]*m/g, '').replace(/[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]/g, '');
+                if (cleanChunk.trim()) {
+                    onChunk({ chunk: cleanChunk });
+                }
+            });
+
+            child.stderr.on('data', (data: Buffer) => {
+                console.error('[AiService] OpenClaw stderr:', data.toString());
+            });
+
+            child.on('close', (code: number) => {
+                console.log(`[AiService] OpenClaw 进程退出，退出码: ${code}`);
+
+                // 进程结束后，尝试提取一次完整的 JSON 以解析积木
+                const result = this.extractJsonObject(fullOutput);
+                if (result && result.blocks) {
+                    const normalizedBlocks = this.normalizeBlocksResponse(result.blocks);
+                    onChunk({ blocks: normalizedBlocks });
+                }
+
+                onChunk({ done: true });
+            });
+
+        } catch (e: any) {
+            console.error('[AiService] 流式请求发生异常:', e);
+            onChunk({ chunk: `\n\n❌ 运行异常: ${e.message}` });
+            onChunk({ done: true });
+        }
+    }
+
+    /**
      * AI 对话核心方法（主入口）
      * 
      * @param prompt 用户通过侧边栏输入的原始文本
@@ -338,16 +413,17 @@ export class AiService {
 
                 // 如果附加了项目上下文信息，则组合为强化提示词
                 if (context && (context.board || context.code)) {
-                    let contextStr = "【当前项目运行环境】\n";
+                    let contextStr = "【环境】\n";
                     if (context.board) {
-                        contextStr += `- 目标开发板架构/型号: ${context.board}\n`;
+                        contextStr += `- 板卡: ${context.board}\n`;
                     }
-                    if (context.code && context.code.trim()) {
-                        contextStr += `- 现有的（由 Blockly 积木生成的）C++ 代码:\n\`\`\`cpp\n${context.code}\n\`\`\`\n\n`;
+
+                    // [优化] 仅在必要时注入代码上下文，减少约 15% - 40% 的 Token 消耗
+                    const needsCode = /修复|报错|修改|优化|解释|代码/.test(prompt);
+                    if (context.code && context.code.trim() && needsCode) {
+                        contextStr += `- 代码:\n\`\`\`cpp\n${context.code}\n\`\`\`\n`;
                     }
-                    contextStr += "【用户的请求指令】\n";
                     enhancedPrompt = `${contextStr}${prompt}`;
-                    console.log('[AiService] 已拼接项目上下文强化提示词。');
                 }
 
                 // 注入系统级指令 (Hidden System Instruction)带上动态计算的积木 Schema
@@ -450,19 +526,12 @@ export class AiService {
 
         console.log(`[AiService] 动态提示词: 命中了 ${activeCategories.size} 个分类 (${categoriesArray}), 共 ${selectedBlocks.length} 个积木`);
 
-        // 4. 构建精简的 Markdown 表格
-        let md = `## 可用积木动态速查表(共 ${selectedBlocks.length} 个)\n`;
-        md += `本表仅包含与你当前任务相关的积木（动态提取）。你可以按需组合。\n\n`;
-        md += `| 积木 type (重要) | 积木说明 | fields (表单字段) | inputs (连接槽) |\n`;
-        md += `|------------------|----------|-------------------|-----------------|\n`;
-
+        // 4. 构建紧凑型 Markdown 列表 (比 Table 可节省约 30% Token)
+        let md = `## 可用积木:\n`;
         for (const b of selectedBlocks) {
-            // 压缩 fields 和 inputs 显示
-            const fieldsVal = b.fields ? Object.keys(b.fields).join(', ') : '-';
-            const inputsVal = b.inputs ? Object.keys(b.inputs).map(k => `${k}(${b.inputs[k]})`).join(', ') : '-';
-            const desc = b.description ? b.description.split('\n')[0].replace(/\|/g, '/') : (b.category || '-');
-
-            md += `| \`${b.type}\` | ${desc} | ${fieldsVal} | ${inputsVal} |\n`;
+            const fields = b.fields ? `(fields: ${Object.keys(b.fields).join(',')})` : '';
+            const inputs = b.inputs ? `(inputs: ${Object.keys(b.inputs).join(',')})` : '';
+            md += `- \`${b.type}\`: ${b.description ? b.description.split('\n')[0].replace(/\|/g, '/') : b.category} ${fields} ${inputs}\n`;
         }
 
         return md;
@@ -475,6 +544,19 @@ export class AiService {
     private extractJsonObject(text: string): any {
         if (!text) return null;
         const trimmed = text.trim();
+
+        // 路径 0: 尝试匹配 <BLOCKS> ... </BLOCKS> 标签 (优先)
+        const blocksMatch = text.match(/<BLOCKS>\s*([\s\S]*?)\s*<\/BLOCKS>/);
+        if (blocksMatch) {
+            try {
+                const jsonStr = blocksMatch[1].trim();
+                // 如果标签内已经是完整的回复结构
+                const obj = JSON.parse(jsonStr);
+                if (obj.blocks) return obj;
+                // 否则将其视为单纯的 blocks 字段
+                return { blocks: obj, content: text.split('<BLOCKS>')[0].trim() };
+            } catch (e) { /* 继续 */ }
+        }
 
         // 路径 1: 尝试完整解析
         try {
