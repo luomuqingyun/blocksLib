@@ -309,28 +309,31 @@ export const AiAssistantPanel: React.FC<{ isVisible: boolean }> = ({ isVisible }
                             onMouseDown={(e) => {
                                 e.stopPropagation();
                                 const el = inputRef.current;
-                                if (el) {
+                                // [优化] 仅在输入框尚未获得焦点时执行激进的重置逻辑
+                                // 如果已经获焦，则不执行 el.blur() -> el.focus()，从而允许浏览器处理原生的点击定位
+                                if (el && document.activeElement !== el) {
                                     // 步骤 1: 先 blur 再 focus，强制产生真正的焦点转移事件
                                     el.blur();
                                     requestAnimationFrame(() => {
                                         el.focus();
-                                        // 步骤 2: setSelectionRange 强制 Chromium 渲染光标
+                                        // 步骤 2: setSelectionRange 强制 Chromium 渲染光标（在强制奪取焦点时设为末尾是合理的默认行为）
                                         const len = el.value.length;
                                         el.setSelectionRange(len, len);
                                     });
                                 }
-                                // 步骤 3: IPC 同步 Compositor（非破坏性）
+
+                                // 步骤 3: 始终执行 IPC 同步 Compositor（非破坏性），确保即使已获焦也能刷新渲染状态
                                 if (window.electronAPI?.focusFix) {
                                     window.electronAPI.focusFix();
                                 }
                             }}
                             onClick={(e) => {
                                 e.stopPropagation();
+                                // onClick 中的逻辑保持防御性即可，不再强制 setSelectionRange(end, end)
+                                // 因为原生定位通常发生在 MouseDown 后、Click 前
                                 const el = inputRef.current;
                                 if (el && document.activeElement !== el) {
                                     el.focus();
-                                    const len = el.value.length;
-                                    el.setSelectionRange(len, len);
                                 }
                             }}
                             placeholder={t('ai.placeholder')}
