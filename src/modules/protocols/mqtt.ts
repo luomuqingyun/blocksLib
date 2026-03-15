@@ -19,7 +19,11 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
-    // MQTT 设置（配置服务器地址和端口）
+    /**
+     * MQTT 设置 (配置服务器地址和端口)
+     * @param {String} SERVER MQTT 服务器地址
+     * @param {Number} PORT 服务器端口 (默认 1883)
+     */
     registerBlock('mqtt_setup', {
         init: function () {
             this.appendDummyInput()
@@ -51,7 +55,10 @@ const init = () => {
         return '';
     });
 
-    // 连接到 MQTT Broker
+    /**
+     * 连接到 MQTT Broker
+     * @param {String} ID 客户端唯一标识符 (ID)
+     */
     registerBlock('mqtt_connect', {
         init: function () {
             this.appendDummyInput()
@@ -82,7 +89,11 @@ if (!mqttClient.connected()) {
 `;
     });
 
-    // 发布 MQTT 消息
+    /**
+     * 发布 MQTT 消息
+     * @param {String} TOPIC 发布的主题
+     * @param {String} PAYLOAD 发布的消息内容 (负载)
+     */
     registerBlock('mqtt_publish', {
         init: function () {
             this.appendDummyInput()
@@ -105,7 +116,10 @@ if (!mqttClient.connected()) {
         return `mqttClient.publish(${topic}, ${payload});\n`;
     });
 
-    // 订阅 MQTT 主题
+    /**
+     * 订阅 MQTT 主题
+     * @param {String} TOPIC 要订阅的主题名称
+     */
     registerBlock('mqtt_subscribe', {
         init: function () {
             this.appendDummyInput()
@@ -123,6 +137,9 @@ if (!mqttClient.connected()) {
         return `mqttClient.subscribe(${topic});\n`;
     });
 
+    /**
+     * MQTT 客户端心跳保持与消息处理循环
+     */
     registerBlock('mqtt_loop', {
         init: function () {
             this.appendDummyInput()
@@ -136,7 +153,10 @@ if (!mqttClient.connected()) {
         return `mqttClient.loop();\n`;
     });
 
-    // 定义 MQTT 消息接收回调
+    /**
+     * 定义 MQTT 消息接收回调逻辑
+     * @param {Block[]} DO 收到消息时执行的积木
+     */
     registerBlock('mqtt_callback_define', {
         init: function () {
             this.appendDummyInput()
@@ -164,6 +184,10 @@ void ${funcName}(char* topic, byte* payload, unsigned int length) {
         return '';
     });
 
+    /**
+     * 获取当前接收到的 MQTT 消息主题
+     * @return {String} 主题名称
+     */
     registerBlock('mqtt_get_topic', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_MQTT_RECEIVED_TOPIC);
@@ -174,6 +198,10 @@ void ${funcName}(char* topic, byte* payload, unsigned int length) {
         return ['String(topic)', Order.ATOMIC];
     });
 
+    /**
+     * 获取当前接收到的 MQTT 消息内容
+     * @return {String} 消息载荷
+     */
     registerBlock('mqtt_get_message', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_MQTT_RECEIVED_MSG);

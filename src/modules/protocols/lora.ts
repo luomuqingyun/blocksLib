@@ -25,7 +25,13 @@ const init = () => {
     // LoRa (LoRa.h)
     // =========================================================================
 
-    // 初始化 LoRa 模块
+    /**
+     * 初始化 LoRa 模块
+     * @param {Number} FREQ 工作频率 (如 433E6, 868E6, 915E6)
+     * @param {Number} CS 片选引脚 (NSS/CS)
+     * @param {Number} RST 复位引脚 (Reset)
+     * @param {Number} IRQ 中断引脚 (DIO0)
+     */
     registerBlock('lora_init', {
         init: function () {
             this.appendDummyInput()
@@ -68,7 +74,12 @@ const init = () => {
         return '';
     });
 
-    // 配置 LoRa 参数 (功率, 扩频因子, 同步字)
+    /**
+     * 配置 LoRa 参数
+     * @param {Number} PWR 发射功率 (dBm)
+     * @param {Number} SF 扩频因子 (6-12)
+     * @param {Number} SYNC 同步字 (默认 0x12)
+     */
     registerBlock('lora_config', {
         init: function () {
             this.appendDummyInput()
@@ -96,7 +107,9 @@ const init = () => {
         return `LoRa.setTxPower(${pwr});\nLoRa.setSpreadingFactor(${sf});\nLoRa.setSyncWord(${sync});\n`;
     });
 
-    // 开始封包
+    /**
+     * 开始构建 LoRa 数据包
+     */
     registerBlock('lora_packet_begin', {
         init: function () {
             this.appendDummyInput()
@@ -110,7 +123,10 @@ const init = () => {
         return `LoRa.beginPacket();\n`;
     });
 
-    // 在数据包中写入数据
+    /**
+     * 向 LoRa 数据包中写入数据内容
+     * @param {String} DATA 要发送的文本或数据
+     */
     registerBlock('lora_print', {
         init: function () {
             this.appendDummyInput()
@@ -128,7 +144,9 @@ const init = () => {
         return `LoRa.print(${data});\n`;
     });
 
-    // 结束封包并发送
+    /**
+     * 结束并发送 LoRa 数据包
+     */
     registerBlock('lora_packet_end', {
         init: function () {
             this.appendDummyInput()
@@ -142,6 +160,10 @@ const init = () => {
         return `LoRa.endPacket();\n`;
     });
 
+    /**
+     * 检查并解析收到的 LoRa 数据包
+     * @return {Number} 数据包大小 (0 表示没有收到数据包)
+     */
     registerBlock('lora_parse_packet', {
         init: function () {
             this.appendDummyInput()
@@ -154,6 +176,10 @@ const init = () => {
         return [`LoRa.parsePacket()`, Order.ATOMIC];
     });
 
+    /**
+     * 从接收队列读取一个字节
+     * @return {Number} 读取到的字符 ASCII 码
+     */
     registerBlock('lora_read', {
         init: function () {
             this.appendDummyInput()
@@ -166,6 +192,10 @@ const init = () => {
         return [`LoRa.read()`, Order.ATOMIC];
     });
 
+    /**
+     * 检查接收队列中可读取的字节数
+     * @return {Number} 可读取字节数
+     */
     registerBlock('lora_available', {
         init: function () {
             this.appendDummyInput()
@@ -178,6 +208,10 @@ const init = () => {
         return [`LoRa.available()`, Order.ATOMIC];
     });
 
+    /**
+     * 获取最后接收到数据包的信号强度 (RSSI)
+     * @return {Number} RSSI 值 (dBm)
+     */
     registerBlock('lora_packet_rssi', {
         init: function () {
             this.appendDummyInput()
@@ -190,6 +224,10 @@ const init = () => {
         return [`LoRa.packetRssi()`, Order.ATOMIC];
     });
 
+    /**
+     * 获取最后接收到数据包的信噪比 (SNR)
+     * @return {Number} SNR 值
+     */
     registerBlock('lora_packet_snr', {
         init: function () {
             this.appendDummyInput()
@@ -202,7 +240,10 @@ const init = () => {
         return [`LoRa.packetSnr()`, Order.ATOMIC];
     });
 
-    // 读取 LoRa 接收到的完整字符串
+    /**
+     * 读取 LoRa 接收到的完整字符串数据包
+     * @return {String} 接收到的文本内容
+     */
     registerBlock('lora_read_string', {
         init: function () {
             this.appendDummyInput()

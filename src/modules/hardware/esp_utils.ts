@@ -24,6 +24,10 @@ const init = () => {
     // ESP Specifics
     // =========================================================================
 
+    /**
+     * 进入深度睡眠 (Deep Sleep)
+     * @param {Number} TIME 睡眠时长 (微秒 us)
+     */
     registerBlock('esp_deep_sleep', {
         init: function () {
             this.appendDummyInput()
@@ -41,6 +45,9 @@ const init = () => {
         return `ESP.deepSleep(${time});\n`;
     });
 
+    /**
+     * 重启 ESP 芯片
+     */
     registerBlock('esp_restart', {
         init: function () {
             this.appendDummyInput()
@@ -54,6 +61,9 @@ const init = () => {
         return `ESP.restart();\n`;
     });
 
+    /**
+     * 让出 CPU 时间 (Yield) 给系统后台任务 (如 WiFi/TCP 栈)
+     */
     registerBlock('esp_yield', {
         init: function () {
             this.appendDummyInput()
@@ -73,6 +83,11 @@ const init = () => {
     // =========================================================================
 
     // 绑定 Ticker 定时器中断
+    /**
+     * 配置并启动 Ticker 定时器中断
+     * @param {String} NAME 定时器实例名称
+     * @param {Number} INTERVAL 时间间隔 (秒)
+     */
     registerBlock('esp_ticker_attach', {
         init: function () {
             this.appendDummyInput()
@@ -115,6 +130,10 @@ ${branch}
     });
 
     // 停止并分离指定的定时器任务
+    /**
+     * 停止并分离指定的 Ticker 定时器
+     * @param {String} NAME 要分离的定时器实例名称
+     */
     registerBlock('esp_ticker_detach', {
         init: function () {
             this.appendDummyInput()

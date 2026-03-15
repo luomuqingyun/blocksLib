@@ -24,6 +24,7 @@ const generateSerialOptions = (): [string, string][] => {
     const options: [string, string][] = [["主串口 (Serial Default)", "Serial"]];
 
     if (uartData) {
+        // 排序逻辑：将板卡定义的 UART 外设按降序或升序排列（如 Serial1 在 Serial2 之前）
         const sortedKeys = Object.keys(uartData).sort((a, b) => {
             const numA = parseInt(a.match(/\d+/)![0] || "0");
             const numB = parseInt(b.match(/\d+/)![0] || "0");
@@ -34,6 +35,7 @@ const generateSerialOptions = (): [string, string][] => {
             const match = key.match(/U(?:S)?ART(\d+)/);
             if (match) {
                 const num = match[1];
+                // 构造下拉菜单项：["显示名称", "生成代码中的变量名"]
                 options.push([`硬件串口 ${num} (${key})`, `Serial${num}`]);
             }
         });
@@ -42,7 +44,11 @@ const generateSerialOptions = (): [string, string][] => {
 };
 
 const init = () => {
-    // 增强版串口初始化（可选手波特率）
+    /**
+     * 增强版串口初始化 (可选择波特率)
+     * @param {String} SERIAL_ID 串口标识符
+     * @param {Number} BAUD 波特率 (如 9600, 115200)
+     */
     registerBlock('arduino_serial_setup', {
         init: function () {
             this.appendDummyInput()
@@ -68,7 +74,12 @@ const init = () => {
         return '';
     });
 
-    // 串口打印内容
+    /**
+     * 增强版串口打印 (包含初始化检查)
+     * @param {Any} CONTENT 要打印的内容
+     * @param {String} SERIAL_ID 串口标识符
+     * @param {Boolean} NEW_LINE 是否换行
+     */
     registerBlock('arduino_serial_print', {
         init: function () {
             this.appendValueInput("CONTENT")
@@ -97,7 +108,11 @@ const init = () => {
         return newLine ? `${serialId}.println(${content});\n` : `${serialId}.print(${content});\n`;
     });
 
-    // 检查串口缓冲区是否有数据
+    /**
+     * 检查串口是否有数据可读
+     * @param {String} SERIAL_ID 串口标识符
+     * @return {Boolean} 是否有数据
+     */
     registerBlock('arduino_serial_available_check', {
         init: function () {
             this.appendDummyInput()
@@ -116,6 +131,11 @@ const init = () => {
         return [`${serialId}.available() > 0`, Order.ATOMIC];
     });
 
+    /**
+     * 增强版从串口读取整段字符串
+     * @param {String} SERIAL_ID 串口标识符
+     * @return {String} 读取到的文本
+     */
     registerBlock('arduino_serial_read_string', {
         init: function () {
             this.appendDummyInput()
@@ -133,6 +153,11 @@ const init = () => {
         return [`${serialId}.readString()`, Order.ATOMIC];
     });
 
+    /**
+     * 增强版从串口读取单个字符
+     * @param {String} SERIAL_ID 串口标识符
+     * @return {Number} 字符的 ASCII 码
+     */
     registerBlock('arduino_serial_read_char', {
         init: function () {
             this.appendDummyInput()
@@ -150,7 +175,11 @@ const init = () => {
         return [`${serialId}.read()`, Order.ATOMIC];
     });
 
-    // 向串口写入原始字节 (Byte)
+    /**
+     * 向指定串口写入原始字节 (Byte)
+     * @param {Number} VAL 要写入的 8 位数据
+     * @param {String} SERIAL_ID 串口标识符
+     */
     registerBlock('arduino_serial_write', {
         init: function () {
             this.appendValueInput("VAL")

@@ -23,11 +23,25 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
-    // 初始化 Nextion 显示屏 (串口 2)
+    /**
+     * 初始化 Nextion 显示屏
+     * @param {String} SERIAL 串口端口 (Serial, Serial1, Serial2, SoftwareSerial)
+     * @param {Number} RX RX引脚
+     * @param {Number} TX TX引脚
+     * @param {Number} BAUD 波特率
+     */
     registerBlock('nextion_init', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_NEXTION_INIT);
+            this.appendDummyInput()
+                .appendField("Serial Port")
+                .appendField(new Blockly.FieldDropdown([
+                    ["Serial", "Serial"],
+                    ["Serial1", "Serial1"],
+                    ["Serial2", "Serial2"],
+                    ["SoftwareSerial", "SW_SERIAL"]
+                ]), "SERIAL");
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MP3_RX)
                 .appendField(new Blockly.FieldTextInput("16"), "RX");
@@ -43,6 +57,7 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_NEXTION_INIT_TOOLTIP);
         }
     }, (block: any) => {
+        const serialPort = block.getFieldValue('SERIAL');
         const rx = block.getFieldValue('RX');
         const tx = block.getFieldValue('TX');
         const baud = block.getFieldValue('BAUD');
@@ -50,12 +65,27 @@ const init = () => {
         reservePin(block, rx, 'INPUT');
         reservePin(block, tx, 'OUTPUT');
 
-        // 在 ESP32 上通常使用 HardwareSerial 2 (引脚 16, 17) 与 Nextion 通信
-        arduinoGenerator.addSetup('nextion_setup', `Serial2.begin(${baud}, SERIAL_8N1, ${rx}, ${tx});`);
+        if (serialPort === 'SW_SERIAL') {
+            arduinoGenerator.addInclude('soft_serial', '#include <SoftwareSerial.h>');
+            arduinoGenerator.addVariable('nextion_ss', `SoftwareSerial nextionSerial(${rx}, ${tx});`);
+            arduinoGenerator.addSetup('nextion_setup', `nextionSerial.begin(${baud});`);
+        } else {
+            arduinoGenerator.addSetup('nextion_setup', `
+#if defined(ESP32) || defined(ARDUINO_ARCH_STM32)
+  ${serialPort}.begin(${baud}, SERIAL_8N1, ${rx}, ${tx});
+#else
+  ${serialPort}.begin(${baud});
+#endif
+`);
+        }
         return '';
     });
 
-    // 设置 Nextion 屏幕上特定组件的文本内容
+    /**
+     * 设置 Nextion 屏幕上特定组件的文本内容
+     * @param {String} OBJ 组件名称 (如 "t0")
+     * @param {String} TEXT 要显示的文本内容
+     */
     registerBlock('nextion_set_text', {
         init: function () {
             this.appendDummyInput()
@@ -73,17 +103,27 @@ const init = () => {
     }, (block: any) => {
         const obj = arduinoGenerator.valueToCode(block, 'OBJ', Order.ATOMIC) || '"t0"';
         const text = arduinoGenerator.valueToCode(block, 'TEXT', Order.ATOMIC) || '""';
+
+        const root = block.getRootBlock();
+        const initBlock = root ? root.getDescendants(false).find((b: any) => b.type === 'nextion_init') : null;
+        const serialPort = initBlock ? initBlock.getFieldValue('SERIAL') : 'Serial2';
+        const portName = serialPort === 'SW_SERIAL' ? 'nextionSerial' : serialPort;
+
         // Nextion 指令格式: obj.txt="text" 加三个结尾字节 0xFF
         return `
-  Serial2.print(${obj});
-  Serial2.print(".txt=\\"");
-  Serial2.print(${text});
-  Serial2.print("\\"");
-  Serial2.write(0xFF); Serial2.write(0xFF); Serial2.write(0xFF);
+  ${portName}.print(${obj});
+  ${portName}.print(".txt=\\"");
+  ${portName}.print(${text});
+  ${portName}.print("\\"");
+  ${portName}.write(0xFF); ${portName}.write(0xFF); ${portName}.write(0xFF);
 \n`;
     });
 
-    // 设置 Nextion 屏幕上特定组件的数值
+    /**
+     * 设置 Nextion 屏幕上特定组件的数值
+     * @param {String} OBJ 组件名称 (如 "n0")
+     * @param {Number} VAL 要设置的数值
+     */
     registerBlock('nextion_set_val', {
         init: function () {
             this.appendDummyInput()
@@ -101,16 +141,25 @@ const init = () => {
     }, (block: any) => {
         const obj = arduinoGenerator.valueToCode(block, 'OBJ', Order.ATOMIC) || '"n0"';
         const val = arduinoGenerator.valueToCode(block, 'VAL', Order.ATOMIC) || '0';
+
+        const root = block.getRootBlock();
+        const initBlock = root ? root.getDescendants(false).find((b: any) => b.type === 'nextion_init') : null;
+        const serialPort = initBlock ? initBlock.getFieldValue('SERIAL') : 'Serial2';
+        const portName = serialPort === 'SW_SERIAL' ? 'nextionSerial' : serialPort;
+
         // Nextion 指令格式: obj.val=value 加三个结尾字节 0xFF
         return `
-  Serial2.print(${obj});
-  Serial2.print(".val=");
-  Serial2.print(${val});
-  Serial2.write(0xFF); Serial2.write(0xFF); Serial2.write(0xFF);
+  ${portName}.print(${obj});
+  ${portName}.print(".val=");
+  ${portName}.print(${val});
+  ${portName}.write(0xFF); ${portName}.write(0xFF); ${portName}.write(0xFF);
 \n`;
     });
 
-    // 切换 Nextion 屏幕显示的页面
+    /**
+     * 切换 Nextion 屏幕显示的页面
+     * @param {Any} PAGE 页面 ID 或名称
+     */
     registerBlock('nextion_page', {
         init: function () {
             this.appendDummyInput()
@@ -124,11 +173,17 @@ const init = () => {
         }
     }, (block: any) => {
         const page = arduinoGenerator.valueToCode(block, 'PAGE', Order.ATOMIC) || '0';
+
+        const root = block.getRootBlock();
+        const initBlock = root ? root.getDescendants(false).find((b: any) => b.type === 'nextion_init') : null;
+        const serialPort = initBlock ? initBlock.getFieldValue('SERIAL') : 'Serial2';
+        const portName = serialPort === 'SW_SERIAL' ? 'nextionSerial' : serialPort;
+
         // Nextion 指令格式: page ID 加三个结尾字节 0xFF
         return `
-  Serial2.print("page ");
-  Serial2.print(${page});
-  Serial2.write(0xFF); Serial2.write(0xFF); Serial2.write(0xFF);
+  ${portName}.print("page ");
+  ${portName}.print(${page});
+  ${portName}.write(0xFF); ${portName}.write(0xFF); ${portName}.write(0xFF);
 \n`;
     });
 

@@ -109,7 +109,9 @@
         "poweredBy": "Powered by OpenClaw AI",
         "clear_history": "Clear History",
         "clear_history_title": "Reset AI Memory",
-        "clear_history_confirm": "Are you sure you want to clear the AI conversation history for this project? This will start a new session, and the AI will no longer remember previous chat contents."
+        "clear_history_confirm": "Are you sure you want to clear the AI conversation history for this project? This will start a new session, and the AI will no longer remember previous chat contents.",
+        "blocks_synced": "Blocks synced to workspace",
+        "blocks_fail": "Block injection failed: The generated structure may contain unregistered or malformed blocks, and has been ignored"
     },
     "editor": {
         "sourcePreview": "Source Preview",

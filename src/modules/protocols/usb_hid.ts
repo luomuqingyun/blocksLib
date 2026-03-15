@@ -61,6 +61,10 @@ const init = () => {
         return `Keyboard.print(${text});\n`;
     });
 
+    /**
+     * 模拟键盘按键动作 (Write)
+     * @param {String} KEY 要按下的特殊按键 (如 Enter, Tab)
+     */
     registerBlock('usb_keyboard_press', {
         init: function () {
             this.appendDummyInput()
@@ -76,7 +80,7 @@ const init = () => {
             this.setNextStatement(true, null);
             this.setColour(200);
         }
-    }, (block: any) => {
+    }, function (block: any) {
         const key = block.getFieldValue('KEY');
         return `Keyboard.write(${key});\n`;
     });
@@ -101,6 +105,11 @@ const init = () => {
         return '';
     });
 
+    /**
+     * 模拟鼠标移动
+     * @param {Number} X X 轴移动像素 (相对)
+     * @param {Number} Y Y 轴移动像素 (相对)
+     */
     registerBlock('usb_mouse_move', {
         init: function () {
             this.appendDummyInput()
@@ -116,7 +125,7 @@ const init = () => {
             this.setColour(200);
             this.setInputsInline(true);
         }
-    }, (block: any) => {
+    }, function (block: any) {
         const x = arduinoGenerator.valueToCode(block, 'X', Order.ATOMIC) || '0';
         const y = arduinoGenerator.valueToCode(block, 'Y', Order.ATOMIC) || '0';
         return `Mouse.move(${x}, ${y});\n`;

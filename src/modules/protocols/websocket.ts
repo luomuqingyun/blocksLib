@@ -79,6 +79,10 @@ ${branch}
         return '';
     });
 
+    /**
+     * 判断 WebSocket 当前事件的类型 (Mutator 回调内使用)
+     * @param {String} TYPE 事件类型 (CONNECTED/DISCONNECTED/TEXT)
+     */
     registerBlock('ws_check_type', {
         init: function () {
             this.appendDummyInput()

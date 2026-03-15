@@ -459,7 +459,7 @@ app.on('open-file', (event, path) => {
 });
 
 // ========== 自动化测试 & AI 注入拦截器 (Automated Test & AI Interceptor) ==========
-const TEST_FLAGS = ['run-board-tests', 'generate-test-projects', 'compile-test-projects', 'clean-test-projects', 'ai-create-project'];
+const TEST_FLAGS = ['run-board-tests', 'generate-test-projects', 'compile-test-projects', 'clean-test-projects', 'verify-block-manifest', 'dump-block-manifest', 'ai-create-project'];
 
 app.whenReady().then(() => {
     const isTestMode = TEST_FLAGS.some(flag => app.commandLine.hasSwitch(flag) || process.argv.some(arg => typeof arg === 'string' && arg.includes(flag)));

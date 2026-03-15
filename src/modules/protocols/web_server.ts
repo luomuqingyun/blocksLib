@@ -101,6 +101,9 @@ ${branch}
         return `server.send(${code}, ${type}, ${content});\n`;
     });
 
+    /**
+     * 启动 Web 服务器开启监听请求
+     */
     registerBlock('web_server_start', {
         init: function () {
             this.appendDummyInput()

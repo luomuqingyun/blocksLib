@@ -22,7 +22,11 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
-    // ESP32 WiFi 连接
+    /**
+     * 连接到指定的 WiFi 网络 (ESP32)
+     * @param {String} SSID 网络名称
+     * @param {String} PASSWORD 网络密码
+     */
     registerBlock('esp32_wifi_connect', {
         init: function () {
             this.appendDummyInput()
@@ -55,7 +59,10 @@ while (WiFi.status() != WL_CONNECTED) {
 `;
     });
 
-    // ESP32 进入深度睡眠
+    /**
+     * ESP32 进入深度睡眠 (Deep Sleep)
+     * @param {Number} TIME 睡眠时长 (微秒 us)
+     */
     registerBlock('esp32_deep_sleep', {
         init: function () {
             this.appendDummyInput()
@@ -74,6 +81,10 @@ while (WiFi.status() != WL_CONNECTED) {
         return `esp_deep_sleep(${time}); \n`;
     });
 
+    /**
+     * 读取 ESP32 内置霍尔传感器 (Hall Sensor)
+     * @return {Number} 霍尔传感强度值
+     */
     registerBlock('esp32_hall_read', {
         init: function () {
             this.appendDummyInput()
@@ -86,7 +97,11 @@ while (WiFi.status() != WL_CONNECTED) {
         return [`hallRead()`, Order.ATOMIC];
     });
 
-    // 读取 ESP32 特有的电容式触摸引脚
+    /**
+     * 读取 ESP32 电容式触摸引脚 (Touch Pin)
+     * @param {String} PIN 触摸通道 (T0-T9)
+     * @return {Number} 触摸检测值
+     */
     registerBlock('esp32_touch_read', {
         init: function () {
             this.appendDummyInput()

@@ -28,7 +28,7 @@ module.exports = defineConfig({
                     build: {
                         rollupOptions: {
                             // 排除不需要打包进 bundle 的原生模块
-                            external: ['serialport', 'electron'],
+                            external: ['serialport', 'electron', 'jsdom'],
                         },
                     },
                     plugins: [] // 主进程构建时禁用渲染进程专用的昂贵插件

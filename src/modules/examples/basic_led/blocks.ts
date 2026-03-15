@@ -3,6 +3,11 @@ import { registerBlock, arduinoGenerator } from '../../../generators/arduino-bas
 import * as Blockly from 'blockly';
 
 export const initBasicLedBlocks = () => {
+    /**
+     * 示例积木：控制基础 LED 灯的开关。
+     * @param {String} PIN 绑定的引脚号
+     * @param {String} STATE 高低电平状态 (HIGH/LOW)
+     */
     registerBlock('example_led_control', {
         init: function () {
             this.appendDummyInput()

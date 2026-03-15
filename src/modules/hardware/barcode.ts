@@ -22,11 +22,24 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
-    // 初始化条形码扫描器 (串口通信)
+    /**
+     * 初始化条形码扫描器 (串口通信)
+     * @param {String} SERIAL 串口端口 (Serial, Serial1, Serial2, SoftwareSerial)
+     * @param {Number} RX RX引脚
+     * @param {Number} TX TX引脚
+     */
     registerBlock('barcode_init', {
         init: function () {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_BARCODE_INIT);
+            this.appendDummyInput()
+                .appendField("Serial Port")
+                .appendField(new Blockly.FieldDropdown([
+                    ["Serial", "Serial"],
+                    ["Serial1", "Serial1"],
+                    ["Serial2", "Serial2"],
+                    ["SoftwareSerial", "SW_SERIAL"]
+                ]), "SERIAL");
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MP3_RX)
                 .appendField(new Blockly.FieldTextInput("16"), "RX");
@@ -39,14 +52,30 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_BARCODE_INIT_TOOLTIP);
         }
     }, (block: any) => {
+        const serialPort = block.getFieldValue('SERIAL');
         const rx = block.getFieldValue('RX');
         const tx = block.getFieldValue('TX');
 
-        // 在 setup 中初始化 Serial2 用于条形码扫描器通信，波特率通常为 9600
-        arduinoGenerator.addSetup('barcode_serial', `Serial2.begin(9600, SERIAL_8N1, ${rx}, ${tx});`);
+        if (serialPort === 'SW_SERIAL') {
+            arduinoGenerator.addInclude('soft_serial', '#include <SoftwareSerial.h>');
+            arduinoGenerator.addVariable('barcode_ss', `SoftwareSerial barcodeSerial(${rx}, ${tx});`);
+            arduinoGenerator.addSetup('barcode_serial', `barcodeSerial.begin(9600);`);
+        } else {
+            arduinoGenerator.addSetup('barcode_serial', `
+#if defined(ESP32) || defined(ARDUINO_ARCH_STM32)
+  ${serialPort}.begin(9600, SERIAL_8N1, ${rx}, ${tx});
+#else
+  ${serialPort}.begin(9600);
+#endif
+`);
+        }
         return '';
     });
 
+    /**
+     * 检查条形码扫描器是否有数据可用
+     * @return {Boolean} 是否有数据
+     */
     registerBlock('barcode_available', {
         init: function () {
             this.appendDummyInput()
@@ -55,9 +84,17 @@ const init = () => {
             this.setColour(0);
         }
     }, (block: any) => {
-        return ['Serial2.available() > 0', Order.ATOMIC];
+        const root = block.getRootBlock();
+        const initBlock = root ? root.getDescendants(false).find((b: any) => b.type === 'barcode_init') : null;
+        const serialPort = initBlock ? initBlock.getFieldValue('SERIAL') : 'Serial2';
+        const portName = serialPort === 'SW_SERIAL' ? 'barcodeSerial' : serialPort;
+        return [`${portName}.available() > 0`, Order.ATOMIC];
     });
 
+    /**
+     * 读取条形码扫描器中的字符串数据
+     * @return {String} 扫描到的条形码内容
+     */
     registerBlock('barcode_read', {
         init: function () {
             this.appendDummyInput()
@@ -66,7 +103,11 @@ const init = () => {
             this.setColour(0);
         }
     }, (block: any) => {
-        return ['Serial2.readStringUntil(\'\\n\')', Order.ATOMIC];
+        const root = block.getRootBlock();
+        const initBlock = root ? root.getDescendants(false).find((b: any) => b.type === 'barcode_init') : null;
+        const serialPort = initBlock ? initBlock.getFieldValue('SERIAL') : 'Serial2';
+        const portName = serialPort === 'SW_SERIAL' ? 'barcodeSerial' : serialPort;
+        return [`${portName}.readStringUntil('\\n')`, Order.ATOMIC];
     });
 
 };

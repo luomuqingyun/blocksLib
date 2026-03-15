@@ -44,6 +44,10 @@ const init = () => {
     });
 
     // 获取本地 IP 地址
+    /**
+     * 获取当前设备的本地 IP 地址。
+     * @return {String} 本地 IP 地址字符串
+     */
     registerBlock('net_ethernet_local_ip', {
         init: function () {
             this.appendDummyInput()
@@ -60,6 +64,10 @@ const init = () => {
     });
 
     // NTP 网络对时初始化
+    /**
+     * 初始化 NTP 客户端，用于网络对时。
+     * @param {Number} OFFSET 时区偏移量 (秒，例如北京时间为 28800)
+     */
     registerBlock('net_ntp_init', {
         init: function () {
             this.appendDummyInput()
@@ -89,6 +97,10 @@ const init = () => {
         return '';
     });
 
+    /**
+     * 获取 NTP 服务器返回的当前格式化时间
+     * @return {String} 只有时间的字符串 (如 "12:34:56")
+     */
     registerBlock('net_ntp_get_time', {
         init: function () {
             this.appendDummyInput()
@@ -101,6 +113,11 @@ const init = () => {
     });
 
     // WiFi 连接 (通用方式)
+    /**
+     * 连接到指定的 WiFi 接入点 (AP)。
+     * @param {String} SSID WiFi 网络的名称
+     * @param {String} PASS WiFi 网络的密码
+     */
     registerBlock('net_wifi_connect_generic', {
         init: function () {
             this.appendDummyInput()
@@ -132,6 +149,10 @@ const init = () => {
         return '';
     });
 
+    /**
+     * 检查 WiFi 是否已连接
+     * @return {Boolean} 是否连接成功
+     */
     registerBlock('net_wifi_status', {
         init: function () {
             this.appendDummyInput()

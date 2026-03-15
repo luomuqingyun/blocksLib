@@ -99,6 +99,13 @@ arduinoGenerator.getFamily = function () {
   return this.family_;
 };
 
+/**
+ * 获取当前代码构建器的完整快照 (用于测试和审计)
+ */
+arduinoGenerator.getSnapshot = function () {
+  return builder.getSnapshot();
+};
+
 // ---------------------------------------------------------------------------
 // 代理方法到 CodeBuilder (Proxy Methods)
 // ---------------------------------------------------------------------------

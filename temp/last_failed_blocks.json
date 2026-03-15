@@ -1,0 +1,229 @@
+{
+  "blocks": {
+    "languageVersion": "blocks": [
+      {
+        "type": "arduino_entry_root",
+        "inputs": {
+          "SETUP_STACK": null,
+          "LOOP_STACK": {
+            "block": {
+              "type": "arduino_digital_write",
+              "fields": {
+                "PIN": "PA0",
+                "STATE": "HIGH"
+              },
+              "next": {
+                "block": {
+                  "type": "arduino_delay_ms",
+                  "inputs": {
+                    "DELAY": {
+                      "shadow": {
+                        "type": "math_number",
+                        "fields": {
+                          "NUM": 200
+                        }
+                      }
+                    }
+                  },
+                  "next": {
+                    "block": {
+                      "type": "arduino_digital_write",
+                      "fields": {
+                        "PIN": "PA0",
+                        "STATE": "LOW"
+                      },
+                      "next": {
+                        "block": {
+                          "type": "arduino_digital_write",
+                          "fields": {
+                            "PIN": "PA1",
+                            "STATE": "HIGH"
+                          },
+                          "next": {
+                            "block": {
+                              "type": "arduino_delay_ms",
+                              "inputs": {
+                                "DELAY": {
+                                  "shadow": {
+                                    "type": "math_number",
+                                    "fields": {
+                                      "NUM": 200
+                                    }
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "arduino_digital_write",
+                                  "fields": {
+                                    "PIN": "PA1",
+                                    "STATE": "LOW"
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "arduino_digital_write",
+                                      "fields": {
+                                        "PIN": "PA2",
+                                        "STATE": "HIGH"
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "arduino_delay_ms",
+                                          "inputs": {
+                                            "DELAY": {
+                                              "shadow": {
+                                                "type": "math_number",
+                                                "fields": {
+                                                  "NUM": 200
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "arduino_digital_write",
+                                              "fields": {
+                                                "PIN": "PA2",
+                                                "STATE": "LOW"
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "arduino_digital_write",
+                                                  "fields": {
+                                                    "PIN": "PA3",
+                                                    "STATE": "HIGH"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "arduino_delay_ms",
+                                                      "inputs": {
+                                                        "DELAY": {
+                                                          "shadow": {
+                                                            "type": "math_number",
+                                                            "fields": {
+                                                              "NUM": 200
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "arduino_digital_write",
+                                                          "fields": {
+                                                            "PIN": "PA3",
+                                                            "STATE": "LOW"
+                                                          },
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "arduino_digital_write",
+                                                              "fields": {
+                                                                "PIN": "PA4",
+                                                                "STATE": "HIGH"
+                                                              },
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "arduino_delay_ms",
+                                                                  "inputs": {
+                                                                    "DELAY": {
+                                                                      "shadow": {
+                                                                        "type": "math_number",
+                                                                        "fields": {
+                                                                          "NUM": 200
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "next": {
+                                                                    "block": {
+                                                                      "type": "arduino_digital_write",
+                                                                      "fields": {
+                                                                        "PIN": "PA4",
+                                                                        "STATE": "LOW"
+                                                                      },
+                                                                      "next": {
+                                                                        "block": {
+                                                                          "type": "arduino_digital_write",
+                                                                          "fields": {
+                                                                            "PIN": "PA5",
+                                                                            "STATE": "HIGH"
+                                                                          },
+                                                                          "next": {
+                                                                            "block": {
+                                                                              "type": "arduino_delay_ms",
+                                                                              "inputs": {
+                                                                                "DELAY": {
+                                                                                  "shadow": {
+                                                                                    "type": "math_number",
+                                                                                    "fields": {
+                                                                                      "NUM": 200
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              },
+                                                                              "next": {
+                                                                                "block": {
+                                                                                  "type": "arduino_digital_write",
+                                                                                  "fields": {
+                                                                                    "PIN": "PA5",
+                                                                                    "STATE": "LOW"
+                                                                                  },
+                                                                                  "next": {
+                                                                                    "block": {
+                                                                                      "type": "arduino_serial_print",
+                                                                                      "fields": {
+                                                                                        "SERIAL_ID": "Serial",
+                                                                                        "NEW_LINE": "TRUE"
+                                                                                      },
+                                                                                      "inputs": {
+                                                                                        "CONTENT": {
+                                                                                          "block": {
+                                                                                            "type": "arduino_analog_read",
+                                                                                            "fields": {
+                                                                                              "PIN": "PB0"
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -29,6 +29,14 @@ const init = () => {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MP3_INIT);
             this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_MP3_SERIAL || "Serial Port")
+                .appendField(new Blockly.FieldDropdown([
+                    ["Serial", "Serial"],
+                    ["Serial1", "Serial1"],
+                    ["Serial2", "Serial2"],
+                    ["SoftwareSerial", "SW_SERIAL"]
+                ]), "SERIAL");
+            this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_MP3_RX)
                 .appendField(new Blockly.FieldTextInput("16"), "RX"); // 接 DFPlayer 的 TX 引脚
             this.appendDummyInput()
@@ -40,6 +48,7 @@ const init = () => {
             this.setTooltip(Blockly.Msg.ARD_MP3_INIT_TOOLTIP);
         }
     }, (block: any) => {
+        const serialPort = block.getFieldValue('SERIAL');
         const rx = block.getFieldValue('RX');
         const tx = block.getFieldValue('TX');
 
@@ -51,18 +60,33 @@ const init = () => {
 
         // 定义全局播放器对象
         arduinoGenerator.addVariable('mp3_obj', `DFRobotDFPlayerMini myDFPlayer;`);
-        // 使用 ESP32 的硬件串口 2 (Serial2) 进行通信
-        arduinoGenerator.addVariable('mp3_serial', `HardwareSerial myMP3Serial(2);`);
 
-        // 在 setup 中初始化串口并尝试与播放器建立通信
-        arduinoGenerator.addSetup('mp3_init', `
-  myMP3Serial.begin(9600, SERIAL_8N1, ${rx}, ${tx});
-  
+        if (serialPort === 'SW_SERIAL') {
+            // 模式 A: 使用 软件串口 (SoftwareSerial) 驱动 MP3
+            arduinoGenerator.addInclude('soft_serial', '#include <SoftwareSerial.h>');
+            arduinoGenerator.addVariable('mp3_ss', `SoftwareSerial myMP3Serial(${rx}, ${tx});`);
+            arduinoGenerator.addSetup('mp3_init', `
+  myMP3Serial.begin(9600); // DFPlayer 默认波特率为 9600
   if (!myDFPlayer.begin(myMP3Serial)) {
-    // 若初始化失败，可以在此处添加 LED 或 串口日志提示
+    // 若初始化失败，可以在此处增加错误提示逻辑
   }
-  myDFPlayer.volume(20);  // 初始化默认音量 (范围 0-30)
+  myDFPlayer.volume(20); // 默认初始化音量为 20
 `);
+        } else {
+            // 模式 B: 使用 硬件串口 (Hardware Serial) 驱动 MP3
+            // 针对具有引脚映射能力的板卡（如 ESP32）指定具体的 RX/TX 引脚
+            arduinoGenerator.addSetup('mp3_init', `
+#if defined(ESP32) || defined(ARDUINO_ARCH_STM32)
+  ${serialPort}.begin(9600, SERIAL_8N1, ${rx}, ${tx});
+#else
+  ${serialPort}.begin(9600);
+#endif
+  if (!myDFPlayer.begin(${serialPort})) {
+    // 初始化失败处理
+  }
+  myDFPlayer.volume(20);
+`);
+        }
         return '';
     });
 

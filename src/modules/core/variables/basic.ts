@@ -16,7 +16,13 @@ import {
  * 初始化基础变量积木
  */
 export function initBasicBlocks() {
-    // --- arduino_var_declare: 变量声明 ---
+    /**
+     * 变量声明
+     * @param {String} QUALIFIER 修饰符 (None, const, static, volatile)
+     * @param {String} TYPE 变量类型
+     * @param {String} VAR 变量名
+     * @param {Any} VALUE 初始值
+     */
     registerBlock('arduino_var_declare', {
         init: function () {
             this.appendValueInput("VALUE")
@@ -60,7 +66,11 @@ export function initBasicBlocks() {
         return code + '\n';
     });
 
-    // --- arduino_var_set_dynamic: 动态变量赋值 ---
+    /**
+     * 变量赋值
+     * @param {String} VAR 目标变量名
+     * @param {Any} VALUE 要设置的值
+     */
     registerBlock('arduino_var_set_dynamic', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_VAR_SET);
@@ -78,7 +88,11 @@ export function initBasicBlocks() {
         return `${cleanName(block.getFieldValue('VAR'))} = ${val}; \n`;
     });
 
-    // --- arduino_var_get_dynamic: 动态变量获取 ---
+    /**
+     * 获取变量值
+     * @param {String} VAR 变量名
+     * @return {Any} 变量存储的值
+     */
     registerBlock('arduino_var_get_dynamic', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_VAR_GET);

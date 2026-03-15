@@ -118,7 +118,9 @@
         "poweredBy": "由 OpenClaw AI 驱动",
         "clear_history": "清除对话记忆",
         "clear_history_title": "重置 AI 记忆",
-        "clear_history_confirm": "确定要清除当前项目的 AI 对话记忆吗？这将开启一个新的会话，AI 将不再记得之前的聊天内容。"
+        "clear_history_confirm": "确定要清除当前项目的 AI 对话记忆吗？这将开启一个新的会话，AI 将不再记得之前的聊天内容。",
+        "blocks_synced": "积木已同步至工作区",
+        "blocks_fail": "积木注入失败：生成的结构可能包含未注册或语法错误的积木，已忽略"
     },
     "editor": {
         "sourcePreview": "代码预览",

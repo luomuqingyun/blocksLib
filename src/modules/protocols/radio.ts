@@ -113,6 +113,10 @@ const init = () => {
         return ['mySwitch.available()', Order.ATOMIC];
     });
 
+    /**
+     * 获取最近一次接收到的 433MHz 无线信号数值
+     * @return {Number} 接收到的解码值
+     */
     registerBlock('radio_rx_get', {
         init: function () {
             this.appendDummyInput()
@@ -140,6 +144,11 @@ const init = () => {
         return `mySwitch.resetAvailable();\n`;
     });
 
+    /**
+     * 获取当前接收到的无线信号详细信息
+     * @param {String} INFO 信息类型 (Bitlength/Protocol/Delay)
+     * @return {Number} 对应的信息数值
+     */
     registerBlock('radio_rx_info', {
         init: function () {
             this.appendDummyInput()

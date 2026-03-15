@@ -46,6 +46,13 @@ import {
 
 
 const init = () => {
+    /**
+     * 变量声明
+     * @param {String} QUALIFIER 修饰符 (None, const, static, volatile)
+     * @param {String} TYPE 变量类型
+     * @param {String} VAR 变量名
+     * @param {Any} VALUE 初始值
+     */
     registerBlock('arduino_var_declare', {
         init: function () {
             this.appendValueInput("VALUE")
@@ -89,6 +96,11 @@ const init = () => {
         return code + '\n';
     });
 
+    /**
+     * 变量赋值
+     * @param {String} VAR 目标变量名
+     * @param {Any} VALUE 要设置的值
+     */
     registerBlock('arduino_var_set_dynamic', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_VAR_SET);
@@ -106,6 +118,11 @@ const init = () => {
         return `${cleanName(block.getFieldValue('VAR'))} = ${val}; \n`;
     });
 
+    /**
+     * 获取变量值
+     * @param {String} VAR 变量名
+     * @return {Any} 变量存储的值
+     */
     registerBlock('arduino_var_get_dynamic', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_VAR_GET);
@@ -117,6 +134,11 @@ const init = () => {
     }, function (block: any) {
         return [cleanName(block.getFieldValue('VAR')), Order.ATOMIC];
     });
+    /**
+     * 宏定义 (#define)
+     * @param {String} NAME 宏名称
+     * @param {String} VALUE 宏的值
+     */
     registerBlock('c_macro_define', {
         init: function () {
             this.appendDummyInput()
@@ -133,6 +155,11 @@ const init = () => {
         return '';
     });
 
+    /**
+     * 获取宏定义的值
+     * @param {String} VAR 宏名称
+     * @return {Any} 宏对应的值
+     */
     registerBlock('c_macro_get', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_MACRO_GET);
@@ -144,6 +171,10 @@ const init = () => {
         return [cleanName(block.getFieldValue('VAR')), Order.ATOMIC];
     });
 
+    /**
+     * 包含头文件 (#include)
+     * @param {String} HEADER 头文件名称 (如 <Servo.h> 或 "config.h")
+     */
     registerBlock('c_include', {
         init: function () {
             this.appendDummyInput()
@@ -161,6 +192,13 @@ const init = () => {
         return '';
     });
 
+    /**
+     * 数组定义
+     * @param {String} TYPE 数组元素类型
+     * @param {String} VAR 数组变量名
+     * @param {Number} SIZE 数组长度
+     * @param {Any[]} [items] 初始元素列表 (由子项 Mutator 提供)
+     */
     registerBlock('c_array_define', {
         init: function () {
             this.appendDummyInput()
@@ -354,6 +392,9 @@ const init = () => {
         }
         return code + '\n';
     });
+    /**
+     * 数组初始化容器
+     */
     registerBlock('c_array_init_container', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ARRAY_INIT);
@@ -363,6 +404,10 @@ const init = () => {
         }
     }, () => '');
 
+    /**
+     * 数组初始化项
+     * @param {String} VAL 默认值
+     */
     registerBlock('c_array_init_item', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ARRAY_ITEM).appendField(new Blockly.FieldTextInput("0"), "VAL");
@@ -460,6 +505,9 @@ const init = () => {
     };
 
     // Register Mutator Blocks
+    /**
+     * 数组维度容器
+     */
     registerBlock('c_array_dims_container', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ARRAY_DIMS || "Dimensions");
@@ -468,6 +516,10 @@ const init = () => {
             this.contextMenu = false;
         }
     }, () => '');
+
+    /**
+     * 数组维度项
+     */
     registerBlock('c_array_dim_item', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ARRAY_DIM || "Dimension");
@@ -478,6 +530,12 @@ const init = () => {
         }
     }, () => '');
 
+    /**
+     * 获取数组元素
+     * @param {String} VAR 数组名
+     * @param {Number[]} INDEX 维度索引列表
+     * @return {Any} 存储在指定位置的元素
+     */
     registerBlock('c_array_get_element', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_ARRAY_GET);
@@ -512,6 +570,12 @@ const init = () => {
         return [`${cleanName(block.getFieldValue('VAR'))}${access}`, Order.ATOMIC];
     });
 
+    /**
+     * 设置数组元素值
+     * @param {String} VAR 数组名
+     * @param {Number[]} INDEX 维度索引列表
+     * @param {Any} VALUE 要设置的目标值
+     */
     registerBlock('c_array_set_element', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_ARRAY_SET);
@@ -549,6 +613,11 @@ const init = () => {
         return `${cleanName(block.getFieldValue('VAR'))}${access} = ${val}; \n`;
     });
 
+    /**
+     * 获取整个数组引用
+     * @param {String} VAR 数组名
+     * @return {Any[]} 数组首地址/引用
+     */
     registerBlock('c_array_get_whole', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_STRUCT_GET_WHOLE); // Using similar concept
@@ -560,6 +629,11 @@ const init = () => {
         return [cleanName(block.getFieldValue('VAR')), Order.ATOMIC];
     });
 
+    /**
+     * 定义结构体
+     * @param {String} NAME 结构体类型名称
+     * @param {Object[]} [members] 结构体成员列表 (由子项 Mutator 提供)
+     */
     registerBlock('c_struct_define', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_STRUCT_DEFINE).appendField(new Blockly.FieldTextInput("MyStruct"), "NAME");
@@ -647,7 +721,17 @@ const init = () => {
         }
         return null;
     });
+    /**
+     * 结构体成员容器 (Mutator)
+     */
     registerBlock('c_struct_container', { init: function () { this.appendDummyInput().appendField(Blockly.Msg.ARD_STRUCT_MEMBERS); this.appendStatementInput("STACK"); this.setColour(COLOUR_STRUCT); this.contextMenu = false; } }, () => '');
+
+    /**
+     * 结构体成员项 (Mutator)
+     * @param {String} TYPE 成员类型
+     * @param {String} NAME 成员变量名
+     * @param {String} [ARR] 数组维度 (为空表示非数组)
+     */
     registerBlock('c_struct_member_item', {
         init: function () {
             // Smart Dropdown: Includes Basic Types + User Structs + Struct Pointers
@@ -687,6 +771,11 @@ const init = () => {
 
     }, () => '');
 
+    /**
+     * 定义枚举类型
+     * @param {String} NAME 枚举类型名称
+     * @param {Object[]} [items] 枚举项列表 (由子项 Mutator 提供)
+     */
     registerBlock('c_enum_define', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ENUM_DEFINE).appendField(new Blockly.FieldTextInput("MyState"), "NAME");
@@ -930,6 +1019,9 @@ const init = () => {
         }
         return null;
     });
+    /**
+     * 枚举配置容器 (Mutator 顶层块)
+     */
     registerBlock('c_enum_container', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ENUM_ITEMS);
@@ -938,6 +1030,11 @@ const init = () => {
             this.contextMenu = false;
         }
     }, () => '');
+    /**
+     * 枚举项 (Mutator)
+     * @param {String} NAME 枚举项名称
+     * @param {String} [VAL] 可选的值 (seed)
+     */
     registerBlock('c_enum_item', {
         init: function () {
             this.appendDummyInput()
@@ -951,6 +1048,11 @@ const init = () => {
         }
     }, () => '');
 
+    /**
+     * 实例化结构体变量
+     * @param {String} STRUCT_NAME 结构体类型名称
+     * @param {String} VAR 变量名称
+     */
     registerBlock('c_struct_var_declare', {
         init: function () {
             const dd = createDropdown(this, (ws: any, current: string) => {
@@ -982,6 +1084,11 @@ const init = () => {
         return code + '\n';
     });
 
+    /**
+     * 实例化枚举变量
+     * @param {String} ENUM_NAME 枚举类型名称
+     * @param {String} VAR 变量名称
+     */
     registerBlock('c_enum_var_declare', {
         init: function () {
             const dd = createDropdown(this, (ws: any, current: string) => {
@@ -1019,7 +1126,11 @@ const init = () => {
         return code + '\n';
     });
 
-    // Enum Value
+    /**
+     * 获取单个枚举项的值
+     * @param {String} VAR 枚举项名称
+     * @return {Number} 该项对应的常数值
+     */
     registerBlock('c_enum_value', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_ENUM_ITEM);
@@ -1038,7 +1149,11 @@ const init = () => {
         }
     }, function (block: any) { return [cleanName(block.getFieldValue('VAR')), Order.ATOMIC]; });
 
-    // Enum Set/Get
+    /**
+     * 设置枚举变量的值
+     * @param {String} VAR 枚举变量名
+     * @param {Number} VALUE 要设置的枚举项值
+     */
     registerBlock('c_enum_set', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_ENUM_SET);
@@ -1056,6 +1171,11 @@ const init = () => {
         return `${cleanName(block.getFieldValue('VAR'))} = ${val}; \n`;
     });
 
+    /**
+     * 获取枚举变量的当前值
+     * @param {String} VAR 枚举变量名
+     * @return {Number} 当前存储的枚举项值
+     */
     registerBlock('c_enum_get', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_ENUM_GET);
@@ -1068,6 +1188,12 @@ const init = () => {
         return [cleanName(block.getFieldValue('VAR')), Order.ATOMIC];
     });
 
+    /**
+     * 获取结构体实例的成员值
+     * @param {String} VAR 结构体变量名
+     * @param {String} MEMBER 成员名
+     * @return {Any} 成员的值
+     */
     registerBlock('c_struct_get_member', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_STRUCT_GET);
@@ -1083,10 +1209,16 @@ const init = () => {
         return [`${cleanName(b.getFieldValue('VAR'))}.${mem} `, Order.ATOMIC];
     });
 
+    /**
+     * 设置结构体实例的成员值
+     * @param {String} VAR 结构体变量名
+     * @param {String} MEMBER 成员名
+     * @param {Any} VALUE 要设置的目标值
+     */
     registerBlock('c_struct_set_member', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_STRUCT_SET);
-            appendStructDropdown(this);
+            this.appendStructDropdown_ = appendStructDropdown(this); // Store for later if needed, but not used here
             appendMemberDropdown(this);
             this.appendValueInput("VALUE").appendField("=");
             this.setPreviousStatement(true, null);
@@ -1101,6 +1233,11 @@ const init = () => {
         return `${cleanName(b.getFieldValue('VAR'))}.${mem} = ${val}; \n`;
     });
 
+    /**
+     * 获取整个结构体实例的引用
+     * @param {String} VAR 变量名
+     * @return {Object} 结构体实例/引用
+     */
     registerBlock('c_struct_get_whole', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_STRUCT_GET_WHOLE);
@@ -1112,6 +1249,13 @@ const init = () => {
         return [cleanName(b.getFieldValue('VAR')), Order.ATOMIC];
     });
 
+    /**
+     * 获取数据类型或表达式的大小 (sizeof)
+     * @param {String} MODE 模式 (EXPR: 表达式, TYPE: 类型)
+     * @param {Any} [VAL] 目标表达式 (在 EXPR 模式下)
+     * @param {String} [TYPE_VAL] 目标类型 (在 TYPE 模式下)
+     * @return {Number} 字节数
+     */
     registerBlock('c_sizeof', {
         init: function () {
             this.appendDummyInput().appendField("sizeof");
@@ -1143,6 +1287,12 @@ const init = () => {
             return [`sizeof(${val})`, Order.ATOMIC];
         } else return [`sizeof(${b.getFieldValue('TYPE_VAL')})`, Order.ATOMIC];
     });
+    /**
+     * 强制类型转换 (Type Casting)
+     * @param {String} TYPE 目标类型
+     * @param {Any} VAL 要转换的原始值
+     * @return {Any} 转换后的值
+     */
     registerBlock('c_type_cast', {
         init: function () {
             this.appendValueInput("VAL").appendField(Blockly.Msg.ARD_CAST).appendField(new Blockly.FieldDropdown(VAR_TYPES), "TYPE");
@@ -1154,6 +1304,12 @@ const init = () => {
         if (!val) return ['', Order.ATOMIC];
         return [`(${b.getFieldValue('TYPE')})(${val})`, Order.UNARY_PREFIX];
     });
+
+    /**
+     * 获取变量或对象的内存地址 (&)
+     * @param {Any} VAL 目标变量或对象
+     * @return {Pointer} 该对象的地址指针
+     */
     registerBlock('c_address_of', {
         init: function () {
             this.appendValueInput("VAL").appendField(Blockly.Msg.ARD_ADDRESS_OF);
@@ -1165,6 +1321,11 @@ const init = () => {
         if (!val) return ['', Order.ATOMIC];
         return ['&' + val, Order.UNARY_PREFIX];
     });
+
+    /**
+     * 从函数中返回
+     * @param {Any} [VALUE] 要返回的值
+     */
     registerBlock('arduino_functions_return', {
         init: function () {
             this.appendValueInput("VALUE").appendField(Blockly.Msg.ARD_SYS_RETURN);
@@ -1174,6 +1335,12 @@ const init = () => {
     }, (b: any) => {
         return `return ${arduinoGenerator.valueToCode(b, 'VALUE', Order.NONE) || ''};\n`
     });
+
+    /**
+     * 指针解引用 (*)
+     * @param {Pointer} VAL 指针变量
+     * @return {Any} 该地址处存储的值
+     */
     registerBlock('c_dereference', {
         init: function () {
             this.appendValueInput("VAL").appendField(Blockly.Msg.ARD_DEREFERENCE);

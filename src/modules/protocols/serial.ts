@@ -55,9 +55,11 @@ const generateSerialOptions = (): [string, string][] => {
         });
 
         sortedKeys.forEach(key => {
+            // 匹配 USART/UART 后的数字标识
             const match = key.match(/U(?:S)?ART(\d+)/);
             if (match) {
                 const num = match[1];
+                // 如果是物理硬件串口，显示其具体的 UART 编号
                 options.push([`硬件串口 ${num} (${key})`, `Serial${num}`]);
             }
         });
@@ -71,7 +73,12 @@ const generateSerialOptions = (): [string, string][] => {
  */
 const init = () => {
 
-    /** 串口打印 */
+    /**
+     * 串口打印数据 (Serial Print)
+     * @param {Any} CONTENT 要打印的内容
+     * @param {String} SERIAL_ID 串口标识符 (如 Serial, Serial1)
+     * @param {Boolean} NEW_LINE 是否换行
+     */
     registerBlock('arduino_serial_print', {
         init: function () {
             this.appendValueInput("CONTENT")
@@ -95,7 +102,11 @@ const init = () => {
         return newLine ? `${serialId}.println(${content});\n` : `${serialId}.print(${content});\n`;
     });
 
-    /** 检查是否有数据可读 */
+    /**
+     * 检查串口是否有数据可读 (Serial Available)
+     * @param {String} SERIAL_ID 串口标识符
+     * @return {Boolean} 是否有可用数据
+     */
     registerBlock('arduino_serial_available', {
         init: function () {
             this.appendDummyInput()
@@ -110,7 +121,11 @@ const init = () => {
         return [`${serialId}.available()`, Order.ATOMIC];
     });
 
-    /** 读取全文字符串 */
+    /**
+     * 从串口读取整段字符串
+     * @param {String} SERIAL_ID 串口标识符
+     * @return {String} 读取到的文本
+     */
     registerBlock('arduino_serial_read_string', {
         init: function () {
             this.appendDummyInput()
@@ -127,7 +142,11 @@ const init = () => {
         return [`${serialId}.readString()`, Order.ATOMIC];
     });
 
-    /** 读取单个字节 (ASCII 码) */
+    /**
+     * 从串口读取单个字符
+     * @param {String} SERIAL_ID 串口标识符
+     * @return {Number} 字符的 ASCII 码 (若无数据返回 -1)
+     */
     registerBlock('arduino_serial_read_char', {
         init: function () {
             this.appendDummyInput()

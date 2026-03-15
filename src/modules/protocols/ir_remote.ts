@@ -79,6 +79,10 @@ const init = () => {
         return `irrecv.resume();\n`;
     });
 
+    /**
+     * 获取解码后的红外信号 (十六进制字符串)
+     * @return {String} 十六进制代码 (如 "FF02FD")
+     */
     registerBlock('ir_recv_get_hex', {
         init: function () {
             this.appendDummyInput()

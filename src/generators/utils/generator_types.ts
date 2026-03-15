@@ -67,6 +67,20 @@ export interface ArduinoGeneratorExtensions {
     getFamily(): string;
 
     /**
+     * 获取当前代码构建器的完整快照 (用于测试和审计)
+     */
+    getSnapshot(): {
+        includes: string[];
+        macros: string[];
+        types: string[];
+        globals: string[];
+        prototypes: string[];
+        setups: string[];
+        loops: string[];
+        functions: string[];
+    };
+
+    /**
      * 添加 #include 语句
      * @param key - 唯一标识符
      * @param code - include 代码 (支持平台智能映射)

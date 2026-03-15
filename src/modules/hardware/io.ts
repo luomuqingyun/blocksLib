@@ -187,7 +187,14 @@ const init = () => {
     });
 
     // =========================================================================
-    // 模拟写/PWM (Analog Write)
+    /**
+     * 模拟写/PWM (Analog Write)
+     * 在指定的支持 PWM 的引脚上输出模拟信号 (PWM 波形)。
+     * 取值范围通常为 0 (完全关闭) 到 255 (完全开启)，部分开发板如 ESP32 支持更高的分辨率。
+     * 可用于 LED 亮度调节或电机速度控制。
+     * @category 核心 I/O
+     * @param {Number} NUM 占空比数值 (默认 0-255)
+     */
     // =========================================================================
     registerBlock('arduino_analog_write', {
         init: function () {
@@ -195,12 +202,25 @@ const init = () => {
                 .appendField(Blockly.Msg.ARD_IO_ANA_WRITE) // 模拟写
                 .appendField(new Blockly.FieldDropdown(generatePWMOptions), "PIN")
                 .appendField(Blockly.Msg.ARD_IO_VAL); // 值
-            this.appendValueInput("NUM").setCheck("Number");
+            const valueInput = this.appendValueInput("NUM").setCheck("Number");
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(230);
-            this.setTooltip(Blockly.Msg.ARD_IO_ANA_WRITE_TOOLTIP);
+            this.setTooltip("在选定的引脚生成 PWM 波形。常用于调光。支持的引脚列表已经根据当前开发板过滤过了。");
+            
+            if (!this.workspace.isFlyout) {
+                 setTimeout(() => {
+                     if (valueInput.connection && !valueInput.connection.isConnected()) {
+                         const numBlock = this.workspace.newBlock('math_number');
+                         numBlock.setFieldValue('128', 'NUM');
+                         numBlock.setShadow(true);
+                         numBlock.initSvg();
+                         numBlock.render();
+                         valueInput.connection.connect(numBlock.outputConnection);
+                     }
+                 }, 50);
+            }
         }
     }, function (block: any) {
         const pin = block.getFieldValue('PIN');
@@ -213,22 +233,52 @@ const init = () => {
     });
 
     // =========================================================================
-    // 发声/频率输出 (Tone)
+    /**
+     * 发声/频率输出 (Tone)
+     * 在指定引脚上生成特定频率（由占空比 50% 的方波构成）的音频信号，驱动无源蜂鸣器发声。
+     * 可以指定发声的时长，若时长为 0 则持续发声。
+     * @category 核心 I/O
+     * @param {Number} FREQ 声音频率 (Hz)，例如 440 是标准音高 A。
+     * @param {Number} DURATION 持续时间 (毫秒)，若填 0 则持续输出波形直到被停止。
+     */
     // =========================================================================
     registerBlock('arduino_tone', {
         init: function () {
-            this.appendValueInput("FREQ")
+            const freqInput = this.appendValueInput("FREQ")
                 .setCheck("Number")
                 .appendField(Blockly.Msg.ARD_IO_TONE) // 播放声音
                 .appendField(new Blockly.FieldDropdown(generateDigitalOptions), "PIN")
                 .appendField(Blockly.Msg.ARD_IO_FREQ); // 频率
-            this.appendValueInput("DURATION")
+            const durInput = this.appendValueInput("DURATION")
                 .setCheck("Number")
                 .appendField(Blockly.Msg.ARD_IO_DUR); // 持续时间
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(230);
-            this.setTooltip(Blockly.Msg.ARD_IO_TONE_TOOLTIP);
+            this.setTooltip("生成具有指定频率的方波信号给针脚，驱动扬声器或蜂鸣器。如果时长填0，必须配合使用“停止播放”。");
+            
+            if (!this.workspace.isFlyout) {
+                 setTimeout(() => {
+                     // 频率默认值
+                     if (freqInput.connection && !freqInput.connection.isConnected()) {
+                         const freqBlock = this.workspace.newBlock('math_number');
+                         freqBlock.setFieldValue('1000', 'NUM');
+                         freqBlock.setShadow(true);
+                         freqBlock.initSvg();
+                         freqBlock.render();
+                         freqInput.connection.connect(freqBlock.outputConnection);
+                     }
+                     // 持续时间默认值
+                     if (durInput.connection && !durInput.connection.isConnected()) {
+                         const durBlock = this.workspace.newBlock('math_number');
+                         durBlock.setFieldValue('500', 'NUM');
+                         durBlock.setShadow(true);
+                         durBlock.initSvg();
+                         durBlock.render();
+                         durInput.connection.connect(durBlock.outputConnection);
+                     }
+                 }, 50);
+            }
         }
     }, function (block: any) {
         const pin = block.getFieldValue('PIN');
@@ -339,7 +389,17 @@ const init = () => {
     });
 
     // =========================================================================
-    // 核心映射函数 (Map)
+    /**
+     * 等比数值映射 (Map)
+     * 将一个数值从原有的数值范围等比缩放到另一个目标数值范围。
+     * 例如将光敏电阻读取的数值框定在 0-1024 ，映射转换为 0-255 亮度值给 LED 调光。
+     * @category 核心 I/O
+     * @param {Number} VAL 要被转换映射的数值
+     * @param {Number} F_LOW 原始数据范围的最小下限值
+     * @param {Number} F_HIGH 原始数据范围的最大上限值
+     * @param {Number} T_LOW 目标数据范围的最小下限值
+     * @param {Number} T_HIGH 目标数据范围的最大上限值
+     */
     // =========================================================================
     registerBlock('arduino_map', {
         init: function () {
@@ -351,7 +411,7 @@ const init = () => {
             this.setInputsInline(true);
             this.setOutput(true, "Number");
             this.setColour(230);
-            this.setTooltip(Blockly.Msg.ARD_IO_MAP_TOOLTIP);
+            this.setTooltip("从一个数值范围等比例映射缩放到另一个范围。例如: 将读取的 0-1024 的传感器变动映射转化为 0-255 用于控制 LED 亮度。");
         }
     }, function (block: any) {
         const val = arduinoGenerator.valueToCode(block, 'VAL', Order.NONE) || '0';

@@ -22,7 +22,12 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 
 const init = () => {
 
-    // 播放音调
+    /**
+     * 在指定引脚上播放音调 (Tone)
+     * @param {Number} PIN 扬声器/蜂鸣器连接的引脚
+     * @param {Number} FREQ 频率 (Hz)
+     * @param {Number} DURATION 持续时间 (ms)
+     */
     registerBlock('audio_tone', {
         init: function () {
             this.appendDummyInput()
@@ -51,6 +56,10 @@ const init = () => {
         return `tone(${pin}, ${freq}, ${dur});\n`;
     });
 
+    /**
+     * 停止指定引脚上的音调播放 (noTone)
+     * @param {Number} PIN 扬声器/蜂鸣器连接的引脚
+     */
     registerBlock('audio_notone', {
         init: function () {
             this.appendDummyInput()
@@ -69,6 +78,11 @@ const init = () => {
         return `noTone(${pin});\n`;
     });
 
+    /**
+     * 预设音符频率 (Note Frequencies)
+     * @param {String} FREQ 音符标识
+     * @return {Number} 该音符对应的频率 (Hz)
+     */
     registerBlock('audio_note_freq', {
         init: function () {
             this.appendDummyInput()

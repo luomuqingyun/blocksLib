@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "name": "verify_c_macro_define_esp8266",
+    "boardId": "nodemcuv2",
+    "createdAt": 1773590483340,
+    "lastModified": 1773590483340,
+    "buildConfig": {
+      "platform": "espressif8266",
+      "board": "nodemcuv2",
+      "framework": "arduino"
+    }
+  },
+  "blocks": {
+    "languageVersion": 0,
+    "blocks": []
+  }
+}

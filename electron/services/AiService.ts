@@ -84,33 +84,41 @@ const KEYWORD_CATEGORY_MAP: Record<string, string[]> = {
 const BLOCKLY_SYSTEM_PROMPT = `你是一个硬件积木助手。
 规则:
 1. 先输出自然语言提示，回复的最后再将积木 JSON 包裹在 <BLOCKS> ... </BLOCKS> 标签中。
-2. 仅输出一个 JSON 对象，不要分段，不要带 Markdown 围栏 (如 \`\`\`json)。
-3. 根节点必为 "arduino_entry_root"，它有 "SETUP_STACK" 和 "LOOP_STACK" 两个语句块槽。
-4. 禁止生成 "arduino_pin_mode" 或 "pinMode" 积木。
-5. 禁止为积木生成 "id" 字段。
-6. 示例:
-已为您生成跑马灯。
+2. 根节点必为 "arduino_entry_root"，它具有 "SETUP_STACK" 和 "LOOP_STACK" 两个语句块槽。
+3. **重要：积木类型与字段校准**:
+   - **串口打印**: 积木类型名为 "arduino_serial_print"。**没有** "arduino_serial_println"。
+   - **串口字段**: 必须包含 "SERIAL_ID" (如 "Serial") 和 "NEW_LINE" ("TRUE" 表示换行, "FALSE" 不换行)。
+   - **数值积木**: 数值积木 (如 arduino_analog_read) 必须作为 inputs 连接。
+   - **引脚命名**: 模拟引脚优先使用 "A0", "A1"... 等标准名。
+4. 禁止生成 "arduino_pin_mode"。禁止生成 "id" 字段。
+5. **结构严谨性**: 积木 JSON 必须遵守 {"languageVersion": 0, "blocks": [...]} 的格式。
+6. 示例 (读取 A0 并串口换行打印):
 <BLOCKS>
 {
-  "blocks": {
-    "languageVersion": 0,
-    "blocks": [
-      {
-        "type": "arduino_entry_root",
-        "inputs": {
-          "LOOP_STACK": {
-            "block": {
-              "type": "arduino_digital_write",
-              "fields": { "PIN": "PA3", "STATE": "HIGH" }
+  "languageVersion": 0,
+  "blocks": [
+    {
+      "type": "arduino_entry_root",
+      "inputs": {
+        "LOOP_STACK": {
+          "block": {
+            "type": "arduino_serial_print",
+            "fields": { "SERIAL_ID": "Serial", "NEW_LINE": "TRUE" },
+            "inputs": {
+              "CONTENT": {
+                "block": {
+                  "type": "arduino_analog_read",
+                  "fields": { "PIN": "A0" }
+                }
+              }
             }
           }
         }
       }
-    ]
-  }
+    }
+  ]
 }
-</BLOCKS>
-注意：<BLOCKS> 标签内必须是纯净合法的 JSON。`;
+</BLOCKS>`;
 
 /**
  * AI 服务 (AiService): 核心逻辑类，负责管理与 OpenClaw AI 引擎的集成。
@@ -375,7 +383,11 @@ export class AiService {
             const exeSpecs = await this.getTrueExecutableAndArgs(this.openClawPath, ['agent', '--agent', 'main', '--session-id', sessionId, '--message', enhancedPrompt]);
 
             const { spawn } = require('child_process');
-            const child = spawn(exeSpecs.cmd, exeSpecs.args, { stdio: ['ignore', 'pipe', 'pipe'] });
+            // 注入 NODE_NO_WARNINGS 彻底消除 Node.js 弃用警告
+            const child = spawn(exeSpecs.cmd, exeSpecs.args, {
+                stdio: ['ignore', 'pipe', 'pipe'],
+                env: { ...process.env, NODE_NO_WARNINGS: '1' }
+            });
 
             let fullOutput = '';
 
@@ -401,6 +413,13 @@ export class AiService {
 
             child.on('close', (code: number) => {
                 console.log(`[AiService] OpenClaw 进程退出，退出码: ${code}`);
+
+                // [Round 8 Diagnostic] 记录原始完整流
+                try {
+                    const tmpDir = path.join(process.cwd(), 'temp');
+                    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+                    fs.writeFileSync(path.join(tmpDir, 'ai_raw_stream.log'), fullOutput);
+                } catch (e) { }
 
                 // 进程结束后，尝试提取一次完整的 JSON 以解析积木
                 const result = this.extractJsonObject(fullOutput);
@@ -570,8 +589,38 @@ export class AiService {
         // 路径 0: 尝试匹配 <BLOCKS> ... </BLOCKS> 标签 (优先)
         const blocksMatch = text.match(/<BLOCKS>\s*([\s\S]*?)\s*<\/BLOCKS>/);
         if (blocksMatch) {
-            const rawJson = blocksMatch[1].trim();
+            let rawJson = blocksMatch[1].trim();
+            // [Round 6 增强] 裁剪第一个 '{' 之前的任何非 JSON 噪音 (如 12, 7,)
+            const firstBrace = rawJson.indexOf('{');
+            if (firstBrace > 0) {
+                rawJson = rawJson.substring(firstBrace);
+            }
+
+            // [Diagnostic] 记录提取状态
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const tmpDir = path.join(process.cwd(), 'temp');
+                if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+                fs.writeFileSync(path.join(tmpDir, 'ai_extracted_raw.json'), rawJson);
+            } catch (e) { }
+
+            // [Round 8] 强力修复结构性损坏
+            // 修复 "languageVersion": "blocks": 这种重合
+            rawJson = rawJson.replace(/"languageVersion":\s*"blocks":/g, '"languageVersion": 0, "blocks":');
+            // 修复 "languageVersion": [ 这种缺失
+            rawJson = rawJson.replace(/"languageVersion":\s*(?=\[)/g, '"languageVersion": 0, "blocks": ');
+
             const repairedJson = this.repairAiJson(rawJson);
+
+            // [Diagnostic] 记录最终修复结果
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const debugFile = path.join(process.cwd(), 'temp', 'ai_repaired_json.log');
+                fs.writeFileSync(debugFile, repairedJson);
+            } catch (e) { }
+
             try {
                 const jsonObj = JSON.parse(repairedJson);
                 // 确保结果包含 blocks 字段
@@ -619,26 +668,43 @@ export class AiService {
 
         let fixed = jsonStr;
 
-        // 1. 彻底移除所有 ANSI 转义码 (防止分阶段流产生的残留)
+        // 1. 彻底移除所有 ANSI 转义码
         fixed = fixed.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
 
-        // 2. 移除所有非打印控制字符 (0-31), 保留 \n 和 \r\n，但移除孤立的 \r 和退格符
-        // \r (0x0D), \b (0x08), \t (0x09)
+        // 2. 移除常见的噪音干扰项 (Node.js 警告、Token 索引、调试标签)
+        // 移除 Node.js 警告文本
+        fixed = fixed.replace(/\(node:\d+\)\s+\[\w+\]\s+DeprecationWarning:.*?\n/g, '');
+        fixed = fixed.replace(/.*?will be removed\. Use.*?instead.*?\n/g, '');
+        fixed = fixed.replace(/.*?warning was created.*?/g, '');
+
+        // [重要修复] 移除数字索引 (如 "12," 或 "7,")
+        // 必须确保不匹配冒号后的数字 (冒号后是合法的 JSON 值)
+        // 使用正则的 Lookbehind (如果环境支持) 或更通用的捕获组替换
+        // 规则：匹配行首、或前接 { [ , 且后面跟着 数字+逗号 的模式
+        fixed = fixed.replace(/(^|[\{\[\,])\s*\d+,\s*/g, '$1 ');
+
+        // 移除类似于 "信号": 3, "文本": 7, 这种被注入的伪字段内容
+        fixed = fixed.replace(/"(信号|文本|token|index)":\s*\d+,\s*/gi, '');
+
+        // 3. 移除其它非打印控制字符 (0-31)，保留换行
         fixed = fixed.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-        // 处理被 \r 覆盖的垃圾内容 (CLI 进度条常见)
+        // 处理被 \r 覆盖的垃圾内容
         fixed = fixed.replace(/[^\n]*\r/g, '');
 
-        // 3. 移除旋转进度标等残余字符
+        // 4. 移除旋转进度标
         fixed = fixed.replace(/[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]/g, '');
 
-        // 4. 修复重复键错误 (例如 "id":"id": 或 "type":"type":)
+        // 5. 修复由于噪音被剔除后留下的畸形冒号或结构
+        fixed = fixed.replace(/"\s*:\s*"/g, '": "'); // 修复可能出现的 " : "
+        fixed = fixed.replace(/"\s*:\s*[:]+/g, '":'); // 修复多重冒号堆叠
+        fixed = fixed.replace(/"languageVersion":\s*"blocks":/g, '"languageVersion": 0, "blocks":');
+        fixed = fixed.replace(/"languageVersion":\s*(?=\[)/g, '"languageVersion": 0, "blocks": ');
+
+        // 6. 修复重复键错误
         fixed = fixed.replace(/"(\w+)":"\1":/g, '"$1":');
 
-        // 5. 移除尾随逗号 (非法 JSON)
+        // 6. 移除尾随逗号
         fixed = fixed.replace(/,\s*([}\]])/g, '$1');
-
-        // 6. 处理常见的引号错误 (AI 有时会混用引号)
-        // 简单修复: 如果内容被单引号包裹且内部有双引号，不处理，否则很难通用
 
         // 7. 处理 Markdown 围栏
         fixed = fixed.replace(/```(?:json)?/g, '').replace(/```/g, '');
@@ -754,29 +820,34 @@ export class AiService {
             return {
                 content: '好的，我已经为您生成了 LED 闪烁逻辑（Pin 13）。相应的积木组件已准备就绪。',
                 blocks: {
-                    "languageVersion": 0,
-                    "blocks": [
-                        {
-                            "type": "arduino_entry_root",
-                            "id": "root",
-                            "x": 50,
-                            "y": 50,
-                            "inputs": {
-                                "LOOP_STACK": {
-                                    "block": {
-                                        "type": "arduino_digital_toggle",
-                                        "id": "toggle",
-                                        "fields": { "PIN": "13" },
-                                        "next": {
-                                            "block": {
-                                                "type": "arduino_delay_ms",
-                                                "id": "delay_1s",
-                                                "inputs": {
-                                                    "DELAY": {
-                                                        "shadow": {
-                                                            "type": "math_number",
-                                                            "id": "val_1s",
-                                                            "fields": { "NUM": 1000 }
+                    blocks: {
+                        languageVersion: 0,
+                        blocks: [
+                            {
+                                type: "arduino_entry_root",
+                                inputs: {
+                                    LOOP_STACK: {
+                                        block: {
+                                            type: "arduino_digital_write",
+                                            fields: { PIN: "13", STATE: "HIGH" },
+                                            next: {
+                                                block: {
+                                                    type: "arduino_delay_ms",
+                                                    inputs: {
+                                                        DELAY: { shadow: { type: "math_number", fields: { NUM: 1000 } } }
+                                                    },
+                                                    next: {
+                                                        block: {
+                                                            type: "arduino_digital_write",
+                                                            fields: { PIN: "13", STATE: "LOW" },
+                                                            next: {
+                                                                block: {
+                                                                    type: "arduino_delay_ms",
+                                                                    inputs: {
+                                                                        DELAY: { shadow: { type: "math_number", fields: { NUM: 1000 } } }
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -785,15 +856,13 @@ export class AiService {
                                     }
                                 }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
             };
         }
 
-        return {
-            content: `收到您的指令: "${prompt}"。由于 OpenClaw 当前处于离线状态，我只能进行简单的文本记录。请检查设置以恢复 AI 的完整编排能力。`
-        };
+        return { content: '我明白了。您可以尝试说“帮我写一个让 13 号引脚灯闪烁的程序”来体验积木自动生成功能。' };
     }
 }
 

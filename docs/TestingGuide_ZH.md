@@ -7,14 +7,17 @@
 
 我们的测试框架 (`electron/testRunner.ts`) 旨在进行 **“编译器连通性压力测试”** (Compiler Connectivity Stress Test) 与 **“代码生成验证”**。
 
-在自动化测试流程中：
-- **目标 Blockly JSON 与 目标 C++ 代码均是预先生成/注入的。**
-- **软件并没有在后台模拟渲染器去拖拽积木。**（因为 Blockly 引擎深度绑定浏览器 DOM 环境，无头运行会极其消耗性能甚至导致进程崩溃）。
+在自动化测试流程中，我们提供两种测试维度：
 
-因此，测试程序采用**底层侵入注入法**：
-1. **真实外壳创建**：调用真实的底座服务 (`ProjectService.createProject`)，根据不同芯片的底层 `JSON` 特性文件创建具有对应环境元数据的项目。确保 `platformio.ini` 等配置合乎该单片机要求。
-2. **模拟 Blockly 注入**：将一份经过预先严密设计好的、能在所有支持环境均能工作的真实 Blockly 业务代码 JSON (例如：控制 `LED_BUILTIN` 的数字写及翻转) 直接写入项目的 `.ebproj` 文件。从而做到只要被打开，就是合法项目。
-3. **真实等效 C++ 注入**：为了验证编译器（PlatformIO）与开发板变体定义（Variant）是否匹配（即能否通过底层链接阶段），我们将上述积木逻辑生成的等效 C++ 源码注入到 `src/main.cpp`。
+### 1.1 基础连通性测试 (Base Connectivity)
+- **目标 Blockly JSON 与 目标 C++ 代码均是预先生成/注入的。**
+- **软件并没有在后台模拟渲染器去拖拽积木。**
+- **逻辑**：验证特定芯片的底层 `JSON` 特性文件创建的项目是否能在真实编译器下运行。
+
+### 1.2 全量积木真编译审计 (Full Scale Block Verification) [New]
+- **目标**：验证 474+ 个积木在不同硬件平下的代码生成合法性。
+- **技术栈**：利用 `BlockHarness` 注入快照代码，在真实 C++ 项目中进行真编译校验。
+- **无头执行**：利用 Electron 主进程 + JSDOM 直接执行 `blockToCode`。
 
 ---
 
@@ -26,49 +29,44 @@
 
 ### 🏃 执行步骤
 
-如果您要验证整个软件架构修改后是否破坏了某些厂家的板卡编译链：
+#### 维度 A：板卡编译链验证 (Board-Level)
+1. **批量生成**：`npm run test:generate` (可用 `--board=xxx` 过滤)
+2. **批量编译**：`npm run test:compile`
+3. **销毁现场**：`npm run test:clean`
 
-#### 批量生成测试工程
-```bash
-npm run test:generate
-# 同样支持并发以加速 (默认为 CPU 核心数的一半)
-npm run test:generate -- --jobs 4
-```
-**功能**：遍历所有支持的板卡 JSON 数据，在 `eb_compilation_tests` 目录下为每款芯片生成独立的 `.ebproj` 工程及合法的测试 C++ 源码。支持并发执行。
+#### 维度 B：全量积木真编译审计 (Block-Level) [New]
+如果您要针对所有的积木进行跨平台语法审计：
 
-#### 批量执行编译测试
-```bash
-npm run test:compile
-# 或者指定并发任务数 (默认 CPU 核心数的一半)
-npm run test:compile -- --jobs 4
-```
-**功能**：对上述生成的所有测试项目执行并行编译。程序会自动利用多核心提高效率。**程序静默通过所有成功的测试，并在实时进度条中显示状态，只在失败时抛出错误看板详情。**
-
-#### 一键销毁现场
-```bash
-npm run test:clean
-```
-**功能**：彻底删除 `eb_compilation_tests` 文件夹，释放硬盘空间。
+1. **导出积木清单 (Dump Manifest)**
+   ```bash
+   # 在 Electron 无头环境下运行，生成 block_compilation_manifest.json
+   npm run dump:blocks
+   ```
+2. **执行编译验证 (Run Verification)**
+   ```bash
+   # 调用 PlatformIO 对清单中的积木分批次编译
+   npm run verify:blocks
+   ```
+   **注意**：此过程调用 `pio build`，耗时较长。系统已配置 8GB 堆内存提权以支持大规模扫描。结果将保存至 `block_verify_report.json`。
 
 ---
 
-## 3. 对开发者的建议 (Best Practices)
+## 3. 故障排查与日志 (Diagnostics)
 
-1. **增量测试**：如果您只修改了 `stm32` 系列，不需要重跑 1400 款芯片。可以使用 `--board` 参数过滤：
-   ```bash
-   # 只生成并测试与 stm32f4 相关的板卡
-   npm run test:generate -- --board=stm32f4
-   npm run test:compile -- --board=stm32f4
-   ```
+如果积木验证失败，请按以下顺序排查：
+
+1. **`block_verify_report.json`**: 查看失败的积木 ID 及平台退出码。
+2. **`block_verify_debug.log`**: **核心日志文件**。系统会自动捕获编译器（PlatformIO）的最后 60 行报错，您可以直接看到具体的 C++ 语法错误或头文件缺失提示。
+3. **`eb_block_verify_tests/`**: 验证过程生成的临时项目目录。如果需要手动复现某个积木的编译错误，可以进入该目录下对应的文件夹直接运行 `pio run`。
+
+1. **增量测试**：如果您只修改了 `stm32` 系列，可以使用 `--board` 参数过滤。对于积木测试，可以使用 `BLOCK_FILTER` 环境变量。
 2. **观察日志**：编译失败的项目会在其项目路径下留下 `test_build.log`。
-3. **性能注意**：全量并行编译会占用极高的 CPU 和网络（PIOCore 可能会下载工具链）。建议在测试机器上保留足够的磁盘空间（~20GB+）。
+3. **性能注意**：全量并行编译会占用极高的 CPU 和网络。建议在测试机器上保留足够的磁盘空间（~20GB+）。
 
 ---
 
 ## 4. UI 与界面行为调试 (UI & Interface Debugging)
 
-如果您在执行 UI 自动化测试或手动测试过程中发现布局错乱、点击无响应或积木崩溃：
-
-- **F12 控制台**: 软件已绑定 **F12** 快捷键。在开发模式或打包后的生产模式下均可按下 **F12** 呼出 Chrome 风格的开发者工具。这对于排查渲染竞态或 IPC 通信逻辑问题至关重要。
-- **Toast 通知**: 观察右上角的通知气泡。很多底层错误（如插件 JSON 加载失败）现在会通过全局通知（Toast）系统可视化弹出，确保错误不再被静默。
-- **交互诊断日志**: 若遇到难以复现的焦点丢失或键盘响应异常，请按下 **`Ctrl + Shift + L`** 导出交互诊断日志。
+- **F12 控制台**: 软件已绑定 **F12** 快捷键。
+- **Toast 通知**: 观察右上角的通知气泡。
+- **交互诊断日志**: 若遇到难以复现的焦点丢失，请按下 **`Ctrl + Shift + L`**。

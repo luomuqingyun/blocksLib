@@ -89,7 +89,13 @@ const arrayDimMutator = {
 // ============================================================
 
 export function initArrayBlocks() {
-    // --- c_array_define: 数组定义 (带初始化 Mutator) ---
+    /**
+     * 数组定义
+     * @param {String} TYPE 数组元素类型
+     * @param {String} VAR 数组变量名
+     * @param {Number} SIZE 数组长度 (方括号内的数值)
+     * @param {Any[]} [items] 初始元素列表 (由子项 Mutator 提供)
+     */
     registerBlock('c_array_define', {
         init: function () {
             this.appendDummyInput()
@@ -281,7 +287,9 @@ export function initArrayBlocks() {
         return code + '\n';
     });
 
-    // --- Mutator 辅助积木 ---
+    /**
+     * 数组初始化容器
+     */
     registerBlock('c_array_init_container', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ARRAY_INIT);
@@ -291,6 +299,10 @@ export function initArrayBlocks() {
         }
     }, () => '');
 
+    /**
+     * 数组初始化项
+     * @param {String} VAL 默认值
+     */
     registerBlock('c_array_init_item', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ARRAY_ITEM).appendField(new Blockly.FieldTextInput("0"), "VAL");
@@ -301,6 +313,9 @@ export function initArrayBlocks() {
         }
     }, () => '');
 
+    /**
+     * 数组维度容器
+     */
     registerBlock('c_array_dims_container', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ARRAY_DIMS || "Dimensions");
@@ -310,6 +325,9 @@ export function initArrayBlocks() {
         }
     }, () => '');
 
+    /**
+     * 数组维度项
+     */
     registerBlock('c_array_dim_item', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_ARRAY_DIM || "Dimension");
@@ -320,7 +338,12 @@ export function initArrayBlocks() {
         }
     }, () => '');
 
-    // --- c_array_get_element: 获取数组元素 (多维) ---
+    /**
+     * 获取数组元素
+     * @param {String} VAR 数组名
+     * @param {Number[]} INDEX 维度索引列表
+     * @return {Any} 存储在指定位置的元素
+     */
     registerBlock('c_array_get_element', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_ARRAY_GET);
@@ -353,7 +376,12 @@ export function initArrayBlocks() {
         return [`${cleanName(block.getFieldValue('VAR'))}${access}`, Order.ATOMIC];
     });
 
-    // --- c_array_set_element: 设置数组元素 (多维) ---
+    /**
+     * 设置数组元素值
+     * @param {String} VAR 数组名
+     * @param {Number[]} INDEX 维度索引列表
+     * @param {Any} VALUE 要设置的目标值
+     */
     registerBlock('c_array_set_element', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_ARRAY_SET);
@@ -390,7 +418,11 @@ export function initArrayBlocks() {
         return `${cleanName(block.getFieldValue('VAR'))}${access} = ${val}; \n`;
     });
 
-    // --- c_array_get_whole: 获取整个数组引用 ---
+    /**
+     * 获取整个数组引用
+     * @param {String} VAR 数组名
+     * @return {Any[]} 数组首地址/引用
+     */
     registerBlock('c_array_get_whole', {
         init: function () {
             this.appendDummyInput("DUMMY").appendField(Blockly.Msg.ARD_STRUCT_GET_WHOLE);

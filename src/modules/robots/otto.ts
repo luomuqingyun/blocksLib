@@ -137,6 +137,12 @@ const init = () => {
         return `${routine}\n`;
     });
 
+    /**
+     * 控制机器人执行预设的舞蹈动作
+     * @param {String} DANCE 舞蹈类型
+     * @param {Number} STEPS 循环次数
+     * @param {Number} T 动作速度 (ms)
+     */
     registerBlock('otto_dance', {
         init: function () {
             this.appendDummyInput()

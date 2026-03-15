@@ -6,12 +6,12 @@
   "description": "Visual Embedded Programming Studio",
   "author": "EmbedBlocks",
   "scripts": {
-    "dev": "node scripts/extract_block_schema.js && vite",
+    "dev": "set NODE_OPTIONS=--max-old-space-size=8192 && node scripts/extract_block_schema.js && vite",
     "predev": "node scripts/utils/cleanup.js && node scripts/utils/sync_blockly_media.js",
     "prebuild": "node scripts/extract_block_schema.js",
-    "build": "node scripts/utils/sync_blockly_media.js && npm run clean:build && tsc && vite build && vite build -c vite.sandbox.config.js",
+    "build": "set NODE_OPTIONS=--max-old-space-size=8192 && node scripts/utils/sync_blockly_media.js && npm run clean:build && tsc && vite build && vite build -c vite.sandbox.config.js",
     "start": "npm run build && electron .",
-    "release": "npm run build && electron-builder",
+    "release": "set NODE_OPTIONS=--max-old-space-size=8192 && npm run build && electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "rebuild": "electron-builder install-app-deps",
     "preview": "vite preview",
@@ -27,7 +27,10 @@
     "test:generate": "electron . --generate-test-projects",
     "test:compile": "electron . --compile-test-projects",
     "test:clean": "electron . --clean-test-projects",
-    "test:board": "npx electron . --run-board-tests --board="
+    "test:board": "npx electron . --run-board-tests --board=",
+    "test:blocks": "vitest run src/generators/blocks_functional.test.ts",
+    "dump:blocks": "electron . --dump-block-manifest",
+    "verify:blocks": "electron . --verify-block-manifest"
   },
   "dependencies": {
     "@blockly/block-plus-minus": "^9.0.5",
@@ -52,7 +55,8 @@
     "react-jss": "^10.10.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "serialport": "^12.0.0"
+    "serialport": "^12.0.0",
+    "jsdom": "^22.1.0"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.0.2",
@@ -67,7 +71,6 @@
     "electron": "^29.0.0",
     "electron-builder": "^24.9.1",
     "jimp": "^1.6.0",
-    "jsdom": "^28.0.0",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.4.35",
     "rimraf": "^5.0.10",

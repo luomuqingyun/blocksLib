@@ -97,7 +97,8 @@ const CATEGORY_MAP = {
  * 从文件路径推断积木所属的语义分类
  */
 function inferCategory(filePath) {
-    const rel = filePath.replace(/\\/g, '/');
+    const rel = filePath.replace(/\\/g, '/'); // 统一路径分隔符为正斜杠
+    // 遍历匹配规则，按路径前缀识别分类
     for (const [prefix, label] of Object.entries(CATEGORY_MAP)) {
         if (rel.includes(prefix)) return label;
     }
@@ -198,37 +199,69 @@ function extractConnectionType(initBody) {
 }
 
 /**
- * 提取积木注释/描述
+ * 提取积木注释/描述及参数元数据
+ * 能够解析多行 JSDoc 样式的注释，并将 @param 说明作为属性附加。
  */
 function extractDescription(beforeBlock) {
-    // 查找紧挨着 registerBlock 前的注释
-    const commentMatch = beforeBlock.match(/\/\*\*?\s*([\s\S]*?)\*\/\s*$/);
-    if (commentMatch) {
-        const lines = commentMatch[1].split('\n')
+    // 查找紧挨着 registerBlock 前的最后一个注释 (Find the last comment immediately before registerBlock)
+    const allComments = Array.from(beforeBlock.matchAll(/\/\*\*?([\s\S]*?)\*\//g));
+    if (allComments.length > 0) {
+        const lastComment = allComments[allComments.length - 1];
+        const lines = lastComment[1].split('\n')
             .map(l => l.replace(/^\s*\*\s?/, '').trim())
-            .filter(l => l && !l.startsWith('@'));
-        return lines[0] || undefined;
+            .filter(l => l.length > 0);
+            
+        let description = [];
+        let params = {};
+        
+        for (const line of lines) {
+            if (line.startsWith('@param')) {
+                // 解析参数 @param {Type} NAME description
+                const paramMatch = line.match(/@param\s*(?:\{[^}]+\})?\s*([A-Za-z0-9_]+)\s*(.*)/);
+                if (paramMatch) {
+                    params[paramMatch[1]] = paramMatch[2].trim();
+                }
+            } else if (!line.startsWith('@')) {
+                // 如果不是以 @ 开头的特殊标签（如 @category），则视为正文描述
+                if (!line.match(/^[=\-]+$/)) { // 过滤掉全是等号或减号的分割线
+                    description.push(line);
+                }
+            }
+        }
+        
+        return {
+            text: description.join(' ') || undefined,
+            params: Object.keys(params).length > 0 ? params : undefined
+        };
     }
-    // 行注释
+    
+    // 退化到行注释
     const lineComment = beforeBlock.match(/\/\/\s*(.+)\s*$/);
-    if (lineComment) return lineComment[1].trim();
-    return undefined;
+    if (lineComment) {
+        return { text: lineComment[1].trim(), params: undefined };
+    }
+    
+    return { text: undefined, params: undefined };
 }
 
 /**
- * 主提取逻辑
+ * 主提取逻辑：解析单个 TS 文件中的所有 registerBlock 调用
  */
 function extractFromFile(filePath) {
     const content = fs.readFileSync(filePath, 'utf8');
     const blocks = [];
 
     // 模式 1: registerBlock('type', { init ... }, generator)
+    // 全局正则匹配 registerBlock('ID', { init: ... }, (block) => { code: ... })
+    // 注意：我们将 init 函数体和生成器代码体分别捕获
     const rbRegex = /registerBlock\s*\(\s*['"]([^'"]+)['"]\s*,\s*\{([\s\S]*?)^\s*\}\s*,/gm;
     let match;
     while ((match = rbRegex.exec(content)) !== null) {
         const type = match[1];
         const initBody = match[2];
-        const beforeBlock = content.substring(Math.max(0, match.index - 200), match.index);
+        const beforeBlock = content.substring(Math.max(0, match.index - 800), match.index);
+        
+        const descData = extractDescription(beforeBlock);
 
         blocks.push({
             type,
@@ -236,7 +269,8 @@ function extractFromFile(filePath) {
             connection: extractConnectionType(initBody),
             fields: extractFields(initBody),
             inputs: extractInputs(initBody),
-            description: extractDescription(beforeBlock),
+            description: descData.text,
+            params: descData.params,
         });
     }
 
@@ -269,7 +303,7 @@ function extractFromFile(filePath) {
             connection: genBody.includes('return [') || genBody.includes('return [`') ? 'output' : 'statement',
             fields: Object.keys(fields).length > 0 ? fields : undefined,
             inputs: Object.keys(inputs).length > 0 ? inputs : undefined,
-            description: extractDescription(beforeBlock),
+            description: extractDescription(beforeBlock).text,
         });
     }
 

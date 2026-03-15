@@ -92,6 +92,10 @@ radio.startListening();
 `;
     });
 
+    /**
+     * 检查 NRF24L01 缓冲区是否有可用数据
+     * @return {Boolean} 是否收到数据
+     */
     registerBlock('nrf24_available', {
         init: function () {
             this.appendDummyInput()
@@ -155,6 +159,11 @@ String ${funcName}() {
         return `radio.setChannel(${chan});\nradio.setPALevel(${level});\n`;
     });
 
+    /**
+     * 打开 NRF24L01 通信管道 (Pipe)
+     * @param {String} TYPE 管道类型 (Reading/Writing)
+     * @param {String} ADDR 通信地址 (5位字符)
+     */
     registerBlock('nrf24_open_pipe', {
         init: function () {
             this.appendDummyInput()

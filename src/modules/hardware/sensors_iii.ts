@@ -163,6 +163,14 @@ float getMPUValue(int type) {
             this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_GPS_INIT);
             this.appendDummyInput()
+                .appendField(Blockly.Msg.ARD_GPS_SERIAL || "Serial Port")
+                .appendField(new Blockly.FieldDropdown([
+                    ["Serial", "Serial"],
+                    ["Serial1", "Serial1"],
+                    ["Serial2", "Serial2"],
+                    ["SoftwareSerial", "SW_SERIAL"]
+                ]), "SERIAL");
+            this.appendDummyInput()
                 .appendField(Blockly.Msg.ARD_GPS_RX)
                 .appendField(new Blockly.FieldTextInput("16"), "RX");
             this.appendDummyInput()
@@ -174,6 +182,7 @@ float getMPUValue(int type) {
             this.setTooltip(Blockly.Msg.ARD_GPS_TOOLTIP);
         }
     }, (block: any) => {
+        const serialPort = block.getFieldValue('SERIAL');
         const rx = block.getFieldValue('RX');
         const tx = block.getFieldValue('TX');
 
@@ -182,11 +191,30 @@ float getMPUValue(int type) {
         // 定义全局 GPS 解析对象
         arduinoGenerator.addVariable('gps_obj', `TinyGPSPlus gps;`);
 
-        // 使用 ESP32 的串口 2 与 GPS 通信
-        arduinoGenerator.addSetup('gps_serial', `Serial2.begin(9600, SERIAL_8N1, ${rx}, ${tx});`);
-
-        // 在主循环循环中不断喂入串口原始数据进行解析 (GPS 数据解析是流式的)
-        arduinoGenerator.addLoop('gps_feed', `while (Serial2.available() > 0) gps.encode(Serial2.read());`);
+        if (serialPort === 'SW_SERIAL') {
+            // 模式 A: 使用 软件串口 (SoftwareSerial)
+            // 适用于引脚资源紧张或没有多余硬件串口的板卡（如 Arduino Uno）
+            arduinoGenerator.addInclude('soft_serial', '#include <SoftwareSerial.h>');
+            arduinoGenerator.addVariable('gps_ss', `SoftwareSerial gpsSerial(${rx}, ${tx});`);
+            arduinoGenerator.addSetup('gps_serial', `gpsSerial.begin(9600);`);
+            // 在主循环中不断喂给解析器数据
+            arduinoGenerator.addLoop('gps_feed', `while (gpsSerial.available() > 0) gps.encode(gpsSerial.read());`);
+        } else {
+            // 模式 B: 使用 硬件串口 (Hardware Serial)
+            // 优于软件串口，性能更稳定
+            // 针对 ESP32 或 STM32 等支持引脚映射的板卡，调用其特有的 begin 方法以匹配用户自定义引脚
+            arduinoGenerator.addSetup('gps_serial', `
+#if defined(ESP32) || defined(ARDUINO_ARCH_STM32)
+  // ESP32/STM32 允许在初始化硬件串口时指定引脚
+  ${serialPort}.begin(9600, SERIAL_8N1, ${rx}, ${tx});
+#else
+  // 普通 Arduino 板卡硬件串口引脚固定，仅初始化波特率
+  ${serialPort}.begin(9600);
+#endif
+`);
+            // 在主循环循环读取并喂给 GPS 解析对象
+            arduinoGenerator.addLoop('gps_feed', `while (${serialPort}.available() > 0) gps.encode(${serialPort}.read());`);
+        }
 
         return '';
     });

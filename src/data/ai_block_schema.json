@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-03-10T10:17:22.127Z",
+    "generated": "2026-03-15T15:58:35.890Z",
     "total": 474,
     "byCategory": {
       "Arduino核心": 4,
@@ -80,7 +80,7 @@
       "inputs": {
         "DELAY_TIME": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册 Arduino 基础相关的积木定义及其代码生成器。"
     },
     {
       "type": "base_map",
@@ -124,7 +124,7 @@
         "KI": "value(Number)",
         "KD": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册自动控制系统相关的积木定义及其代码生成器。"
     },
     {
       "type": "pid_compute",
@@ -156,7 +156,7 @@
       "inputs": {
         "TEXT": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册加解密与编码相关的积木定义及其代码生成器。"
     },
     {
       "type": "crypto_sha256",
@@ -192,7 +192,7 @@
       "inputs": {
         "JSON": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册 JSON 数据处理相关的积木定义及其代码生成器。"
     },
     {
       "type": "json_get_key",
@@ -234,7 +234,7 @@
         "ITEM2": "value",
         "ITEM3": "value"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册与数据交换格式（如 CSV）相关的积木块。"
     },
     {
       "type": "data_csv_parse",
@@ -250,7 +250,7 @@
       "type": "temp_read",
       "category": "诊断",
       "connection": "output",
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册与系统运行状态监测相关的积木块。 注意：部分功能（如 getFreeHeap）主要针对 ESP32/ESP8266 平台实现。"
     },
     {
       "type": "diag_free_heap",
@@ -280,7 +280,7 @@
       "type": "dict_create",
       "category": "字典",
       "connection": "statement",
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册字典（键值对）相关的积木块。 实现方案：利用 C++ 标准库的 std::map 容器。"
     },
     {
       "type": "dict_set",
@@ -317,7 +317,7 @@
       "inputs": {
         "MAX_SPRITES": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册与简易 2D 游戏引擎相关的积木块。 设计思路：在 Arduino 端注入一套轻量级的精灵管理系统。"
     },
     {
       "type": "game_create_sprite",
@@ -376,7 +376,7 @@
       "inputs": {
         "ID": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "检测两个精灵是否重叠"
     },
     {
       "type": "lists_sort_num",
@@ -391,7 +391,7 @@
       "inputs": {
         "LIST": "value(Array)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册与高级列表操作（基于 C++ std::vector）相关的积木块。"
     },
     {
       "type": "lists_reverse",
@@ -422,7 +422,7 @@
         "VAL3": "value",
         "VAL4": "value"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册与数据记录、实时监控相关的积木定义及其代码生成器。"
     },
     {
       "type": "log_plotter_print",
@@ -462,7 +462,7 @@
       "inputs": {
         "SWITCH_VAL": "value"
       },
-      "description": "========================================================================="
+      "description": "Mutator 内部的根容器"
     },
     {
       "type": "c_do_while",
@@ -472,7 +472,7 @@
         "CONDITION": "value(Boolean)",
         "DO": "statement"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册 C++ 风格的高级循环控制积木，补充基础循环模块的不足。"
     },
     {
       "type": "c_for_custom",
@@ -505,7 +505,7 @@
       "inputs": {
         "LIST": "value(Array)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册与数学统计（列表运算）相关的积木块。 实现方案：基于 C++ 标准库 (STL) 的 vector、numeric 和 algorithm 实现。"
     },
     {
       "type": "stats_min_max",
@@ -520,13 +520,13 @@
       "inputs": {
         "LIST": "value(Array)"
       },
-      "description": "========================================================================="
+      "description": "计算双精度浮点数向量的平均值"
     },
     {
       "type": "menu_create",
       "category": "菜单",
       "connection": "statement",
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册与简易菜单系统相关的积木块。 旨在为具有屏幕和按钮的设备（如带有 OLED 的 Arduino）提供基础交互框架。"
     },
     {
       "type": "menu_add_item",
@@ -541,7 +541,7 @@
       "type": "menu_manage_input",
       "category": "菜单",
       "connection": "statement",
-      "description": "废弃逻辑：基于复选框的输入管理"
+      "description": "废弃逻辑：基于复选框的输入管理 原因：复选框是编译时决定的静态值，无法反映实时的物理按键按下状态。"
     },
     {
       "type": "menu_nav",
@@ -551,7 +551,7 @@
         "NEXT": "value(Boolean)",
         "PREV": "value(Boolean)"
       },
-      "description": "========================================================================="
+      "description": "废弃逻辑：基于复选框的输入管理 原因：复选框是编译时决定的静态值，无法反映实时的物理按键按下状态。"
     },
     {
       "type": "menu_get_current",
@@ -571,7 +571,7 @@
         "PRIORITY": "value(Number)",
         "DO": "statement"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册与实时操作系统 (RTOS) 多任务相关的积木块。 主要针对 ESP32 (基于 FreeRTOS) 平台。"
     },
     {
       "type": "rtos_delay",
@@ -580,7 +580,7 @@
       "inputs": {
         "MS": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "任务主函数: ${name}"
     },
     {
       "type": "filter_kalman_init",
@@ -594,7 +594,7 @@
         "EST_E": "value(Number)",
         "Q": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册与信号处理、数据平滑相关的积木块。 包含一阶低通滤波和轻量级卡尔曼滤波实现。"
     },
     {
       "type": "filter_kalman_update",
@@ -817,7 +817,7 @@
       "fields": {
         "NAME": "(文本)"
       },
-      "description": "========================================================================="
+      "description": "系统模块初始化 注册 Arduino 程序的生命周期积木以及底层 C++ 函数封装积木。"
     },
     {
       "type": "arduino_functions_def_flexible",
@@ -903,7 +903,7 @@
         "TIMEOUT": "(数值)",
         "PIN": "(文本)"
       },
-      "description": "========================================================================="
+      "description": "全局禁用中断"
     },
     {
       "type": "system_millis",
@@ -921,7 +921,7 @@
       "type": "system_software_reset",
       "category": "系统",
       "connection": "statement",
-      "description": "========================================================================="
+      "description": "获取自开机以来的微秒数"
     },
     {
       "type": "text_char",
@@ -930,7 +930,7 @@
       "fields": {
         "VAL": "(文本)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册增强型的文本与字符串处理积木块。 设计思路：主要基于 Arduino 的 String 类对象进行封装，简化 C 语言中复杂的字符数组操作。"
     },
     {
       "type": "c_to_string",
@@ -999,7 +999,7 @@
       "inputs": {
         "STR": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "字符串大小写转换辅助函数 (返回新 String)"
     },
     {
       "type": "arduino_delay_ms",
@@ -1008,7 +1008,10 @@
       "inputs": {
         "DELAY": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "程序延时 (Delay) 阻塞式等待指定的毫秒数，期间微控制器除了中断服务程序外不执行任何指令。 常用于简单的控制时序，但在严苛或多任务的场景下应尽量使用非阻塞的 millis()。",
+      "params": {
+        "DELAY": "延时的毫秒数 (1000 毫秒 = 1 秒)"
+      }
     },
     {
       "type": "arduino_millis",
@@ -1030,7 +1033,7 @@
         "MS": "value(Number)",
         "DO": "statement"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册基于 millis() 的非阻塞软件定时器积木。"
     },
     {
       "type": "timer_once",
@@ -1053,7 +1056,12 @@
       "inputs": {
         "SIZE": "value(Number)"
       },
-      "description": "--- c_array_define: 数组定义 (带初始化 Mutator) ---"
+      "description": "数组定义",
+      "params": {
+        "TYPE": "数组元素类型",
+        "VAR": "数组变量名",
+        "SIZE": "数组长度 (方括号内的数值)"
+      }
     },
     {
       "type": "c_array_init_container",
@@ -1062,7 +1070,7 @@
       "inputs": {
         "STACK": "statement"
       },
-      "description": "--- Mutator 辅助积木 ---"
+      "description": "数组初始化容器"
     },
     {
       "type": "c_array_init_item",
@@ -1070,6 +1078,10 @@
       "connection": "statement",
       "fields": {
         "VAL": "(文本)"
+      },
+      "description": "数组初始化项",
+      "params": {
+        "VAL": "默认值"
       }
     },
     {
@@ -1078,30 +1090,44 @@
       "connection": "standalone",
       "inputs": {
         "STACK": "statement"
-      }
+      },
+      "description": "数组维度容器"
     },
     {
       "type": "c_array_dim_item",
       "category": "变量",
-      "connection": "statement"
+      "connection": "statement",
+      "description": "数组维度项"
     },
     {
       "type": "c_array_get_element",
       "category": "变量",
       "connection": "output",
-      "description": "--- c_array_get_element: 获取数组元素 (多维) ---"
+      "description": "获取数组元素",
+      "params": {
+        "VAR": "数组名",
+        "INDEX": "维度索引列表"
+      }
     },
     {
       "type": "c_array_set_element",
       "category": "变量",
       "connection": "statement",
-      "description": "--- c_array_set_element: 设置数组元素 (多维) ---"
+      "description": "设置数组元素值",
+      "params": {
+        "VAR": "数组名",
+        "INDEX": "维度索引列表",
+        "VALUE": "要设置的目标值"
+      }
     },
     {
       "type": "c_array_get_whole",
       "category": "变量",
       "connection": "output",
-      "description": "--- c_array_get_whole: 获取整个数组引用 ---"
+      "description": "获取整个数组引用",
+      "params": {
+        "VAR": "数组名"
+      }
     },
     {
       "type": "arduino_var_declare",
@@ -1115,7 +1141,13 @@
       "inputs": {
         "VALUE": "value"
       },
-      "description": "--- arduino_var_declare: 变量声明 ---"
+      "description": "变量声明",
+      "params": {
+        "QUALIFIER": "修饰符 (None, const, static, volatile)",
+        "TYPE": "变量类型",
+        "VAR": "变量名",
+        "VALUE": "初始值"
+      }
     },
     {
       "type": "arduino_var_set_dynamic",
@@ -1124,13 +1156,20 @@
       "inputs": {
         "VALUE": "value"
       },
-      "description": "--- arduino_var_set_dynamic: 动态变量赋值 ---"
+      "description": "变量赋值",
+      "params": {
+        "VAR": "目标变量名",
+        "VALUE": "要设置的值"
+      }
     },
     {
       "type": "arduino_var_get_dynamic",
       "category": "变量",
       "connection": "output",
-      "description": "--- arduino_var_get_dynamic: 动态变量获取 ---"
+      "description": "获取变量值",
+      "params": {
+        "VAR": "变量名"
+      }
     },
     {
       "type": "c_macro_define",
@@ -1140,7 +1179,7 @@
         "NAME": "(文本)",
         "VALUE": "(文本)"
       },
-      "description": "--- c_macro_define: 宏定义 ---"
+      "description": "初始化宏定义积木"
     },
     {
       "type": "c_macro_get",
@@ -1168,6 +1207,13 @@
       },
       "inputs": {
         "VALUE": "value"
+      },
+      "description": "变量声明",
+      "params": {
+        "QUALIFIER": "修饰符 (None, const, static, volatile)",
+        "TYPE": "变量类型",
+        "VAR": "变量名",
+        "VALUE": "初始值"
       }
     },
     {
@@ -1176,12 +1222,21 @@
       "connection": "statement",
       "inputs": {
         "VALUE": "value"
+      },
+      "description": "变量赋值",
+      "params": {
+        "VAR": "目标变量名",
+        "VALUE": "要设置的值"
       }
     },
     {
       "type": "arduino_var_get_dynamic",
       "category": "变量",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取变量值",
+      "params": {
+        "VAR": "变量名"
+      }
     },
     {
       "type": "c_macro_define",
@@ -1190,12 +1245,21 @@
       "fields": {
         "NAME": "(文本)",
         "VALUE": "(文本)"
+      },
+      "description": "宏定义 (#define)",
+      "params": {
+        "NAME": "宏名称",
+        "VALUE": "宏的值"
       }
     },
     {
       "type": "c_macro_get",
       "category": "变量",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取宏定义的值",
+      "params": {
+        "VAR": "宏名称"
+      }
     },
     {
       "type": "c_include",
@@ -1203,6 +1267,10 @@
       "connection": "statement",
       "fields": {
         "HEADER": "(文本)"
+      },
+      "description": "包含头文件 (#include)",
+      "params": {
+        "HEADER": "头文件名称 (如 <Servo.h> 或 \"config.h\")"
       }
     },
     {
@@ -1215,6 +1283,12 @@
       },
       "inputs": {
         "SIZE": "value(Number)"
+      },
+      "description": "数组定义",
+      "params": {
+        "TYPE": "数组元素类型",
+        "VAR": "数组变量名",
+        "SIZE": "数组长度"
       }
     },
     {
@@ -1223,7 +1297,8 @@
       "connection": "standalone",
       "inputs": {
         "STACK": "statement"
-      }
+      },
+      "description": "数组初始化容器"
     },
     {
       "type": "c_array_init_item",
@@ -1231,6 +1306,10 @@
       "connection": "statement",
       "fields": {
         "VAL": "(文本)"
+      },
+      "description": "数组初始化项",
+      "params": {
+        "VAL": "默认值"
       }
     },
     {
@@ -1240,27 +1319,43 @@
       "inputs": {
         "STACK": "statement"
       },
-      "description": "Register Mutator Blocks"
+      "description": "数组维度容器"
     },
     {
       "type": "c_array_dim_item",
       "category": "变量",
-      "connection": "statement"
+      "connection": "statement",
+      "description": "数组维度项"
     },
     {
       "type": "c_array_get_element",
       "category": "变量",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取数组元素",
+      "params": {
+        "VAR": "数组名",
+        "INDEX": "维度索引列表"
+      }
     },
     {
       "type": "c_array_set_element",
       "category": "变量",
-      "connection": "statement"
+      "connection": "statement",
+      "description": "设置数组元素值",
+      "params": {
+        "VAR": "数组名",
+        "INDEX": "维度索引列表",
+        "VALUE": "要设置的目标值"
+      }
     },
     {
       "type": "c_array_get_whole",
       "category": "变量",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取整个数组引用",
+      "params": {
+        "VAR": "数组名"
+      }
     },
     {
       "type": "c_struct_define",
@@ -1268,6 +1363,10 @@
       "connection": "standalone",
       "fields": {
         "NAME": "(文本)"
+      },
+      "description": "定义结构体",
+      "params": {
+        "NAME": "结构体类型名称"
       }
     },
     {
@@ -1280,7 +1379,8 @@
       },
       "inputs": {
         "STACK": "statement"
-      }
+      },
+      "description": "结构体成员容器 (Mutator)"
     },
     {
       "type": "c_enum_define",
@@ -1288,6 +1388,10 @@
       "connection": "standalone",
       "fields": {
         "NAME": "(文本)"
+      },
+      "description": "定义枚举类型",
+      "params": {
+        "NAME": "枚举类型名称"
       }
     },
     {
@@ -1296,7 +1400,8 @@
       "connection": "standalone",
       "inputs": {
         "STACK": "statement"
-      }
+      },
+      "description": "枚举配置容器 (Mutator 顶层块)"
     },
     {
       "type": "c_enum_item",
@@ -1305,6 +1410,10 @@
       "fields": {
         "NAME": "(文本)",
         "VAL": "(文本)"
+      },
+      "description": "枚举项 (Mutator)",
+      "params": {
+        "NAME": "枚举项名称"
       }
     },
     {
@@ -1313,6 +1422,11 @@
       "connection": "statement",
       "fields": {
         "VAR": "(文本)"
+      },
+      "description": "实例化结构体变量",
+      "params": {
+        "STRUCT_NAME": "结构体类型名称",
+        "VAR": "变量名称"
       }
     },
     {
@@ -1321,13 +1435,21 @@
       "connection": "statement",
       "fields": {
         "VAR": "(文本)"
+      },
+      "description": "实例化枚举变量",
+      "params": {
+        "ENUM_NAME": "枚举类型名称",
+        "VAR": "变量名称"
       }
     },
     {
       "type": "c_enum_value",
       "category": "变量",
       "connection": "output",
-      "description": "Enum Value"
+      "description": "获取单个枚举项的值",
+      "params": {
+        "VAR": "枚举项名称"
+      }
     },
     {
       "type": "c_enum_set",
@@ -1336,17 +1458,30 @@
       "inputs": {
         "VALUE": "value"
       },
-      "description": "Enum Set/Get"
+      "description": "设置枚举变量的值",
+      "params": {
+        "VAR": "枚举变量名",
+        "VALUE": "要设置的枚举项值"
+      }
     },
     {
       "type": "c_enum_get",
       "category": "变量",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取枚举变量的当前值",
+      "params": {
+        "VAR": "枚举变量名"
+      }
     },
     {
       "type": "c_struct_get_member",
       "category": "变量",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取结构体实例的成员值",
+      "params": {
+        "VAR": "结构体变量名",
+        "MEMBER": "成员名"
+      }
     },
     {
       "type": "c_struct_set_member",
@@ -1354,17 +1489,31 @@
       "connection": "statement",
       "inputs": {
         "VALUE": "value"
+      },
+      "description": "设置结构体实例的成员值",
+      "params": {
+        "VAR": "结构体变量名",
+        "MEMBER": "成员名",
+        "VALUE": "要设置的目标值"
       }
     },
     {
       "type": "c_struct_get_whole",
       "category": "变量",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取整个结构体实例的引用",
+      "params": {
+        "VAR": "变量名"
+      }
     },
     {
       "type": "c_sizeof",
       "category": "变量",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取数据类型或表达式的大小 (sizeof)",
+      "params": {
+        "MODE": "模式 (EXPR: 表达式, TYPE: 类型)"
+      }
     },
     {
       "type": "c_type_cast",
@@ -1375,6 +1524,11 @@
       },
       "inputs": {
         "VAL": "value"
+      },
+      "description": "强制类型转换 (Type Casting)",
+      "params": {
+        "TYPE": "目标类型",
+        "VAL": "要转换的原始值"
       }
     },
     {
@@ -1383,6 +1537,10 @@
       "connection": "output",
       "inputs": {
         "VAL": "value"
+      },
+      "description": "获取变量或对象的内存地址 (&)",
+      "params": {
+        "VAL": "目标变量或对象"
       }
     },
     {
@@ -1391,7 +1549,8 @@
       "connection": "terminal",
       "inputs": {
         "VALUE": "value"
-      }
+      },
+      "description": "从函数中返回"
     },
     {
       "type": "c_dereference",
@@ -1399,6 +1558,10 @@
       "connection": "output",
       "inputs": {
         "VAL": "value"
+      },
+      "description": "指针解引用 (*)",
+      "params": {
+        "VAL": "指针变量"
       }
     },
     {
@@ -1430,12 +1593,18 @@
           "LOW"
         ],
         "PIN": "(文本)"
+      },
+      "description": "示例积木：控制基础 LED 灯的开关。",
+      "params": {
+        "PIN": "绑定的引脚号",
+        "STATE": "高低电平状态 (HIGH/LOW)"
       }
     },
     {
       "type": "complex_sensor_read",
       "category": "示例",
-      "connection": "output"
+      "connection": "output",
+      "description": "最佳实践示例：将积木定义分离"
     },
     {
       "type": "actuator_relay",
@@ -1507,7 +1676,7 @@
       "fields": {
         "PIN": "(文本)"
       },
-      "description": "检测周围是否有人体移动（输出高/低电平）"
+      "description": "高级传感器模块 (Advanced Sensors Module) 提供多种专业传感器积木: - PIR 人体红外感应 - ADXL362 三轴加速度计 - APDS-9960 手势/颜色传感器 - HX711 称重传感器 (电子秤) - BMP280 气压/温度/海拔"
     },
     {
       "type": "sensor_adxl362_init",
@@ -1615,7 +1784,12 @@
         "FREQ": "value(Number)",
         "DURATION": "value(Number)"
       },
-      "description": "播放音调"
+      "description": "在指定引脚上播放音调 (Tone)",
+      "params": {
+        "PIN": "扬声器/蜂鸣器连接的引脚",
+        "FREQ": "频率 (Hz)",
+        "DURATION": "持续时间 (ms)"
+      }
     },
     {
       "type": "audio_notone",
@@ -1623,6 +1797,10 @@
       "connection": "statement",
       "inputs": {
         "PIN": "value(Number)"
+      },
+      "description": "停止指定引脚上的音调播放 (noTone)",
+      "params": {
+        "PIN": "扬声器/蜂鸣器连接的引脚"
       }
     },
     {
@@ -1639,6 +1817,10 @@
           "440",
           "..."
         ]
+      },
+      "description": "预设音符频率 (Note Frequencies)",
+      "params": {
+        "FREQ": "音符标识"
       }
     },
     {
@@ -1649,7 +1831,7 @@
         "PIN": "(文本)",
         "WINDOW": "(文本)"
       },
-      "description": "读取麦克风音量 (峰值检测)"
+      "description": "音频输入模块 (Microphone Input / Sound Detection) 提供麦克风/声音传感器积木: - audio_read_volume: 读取音量 (峰值检测) - audio_is_loud: 检测是否响亮 (阈值) 使用 analogRead 采样，适用于声音检测模块。"
     },
     {
       "type": "audio_is_loud",
@@ -1668,26 +1850,39 @@
       "category": "条码",
       "connection": "statement",
       "fields": {
+        "SERIAL": [
+          "Serial",
+          "Serial1",
+          "Serial2",
+          "SW_SERIAL"
+        ],
         "RX": "(文本)",
         "TX": "(文本)"
       },
-      "description": "初始化条形码扫描器 (串口通信)"
+      "description": "初始化条形码扫描器 (串口通信)",
+      "params": {
+        "SERIAL": "串口端口 (Serial, Serial1, Serial2, SoftwareSerial)",
+        "RX": "RX引脚",
+        "TX": "TX引脚"
+      }
     },
     {
       "type": "barcode_available",
       "category": "条码",
-      "connection": "output"
+      "connection": "output",
+      "description": "检查条形码扫描器是否有数据可用"
     },
     {
       "type": "barcode_read",
       "category": "条码",
-      "connection": "output"
+      "connection": "output",
+      "description": "读取条形码扫描器中的字符串数据"
     },
     {
       "type": "camera_init",
       "category": "摄像头",
       "connection": "statement",
-      "description": "ESP32 摄像头初始化 (AI-Thinker 引脚配置)"
+      "description": "ESP32 摄像头模块 (ESP32 Camera Module) 提供 ESP32-CAM 摄像头积木 (esp_camera.h): - camera_init: 初始化 (AI-Thinker 引脚配置) - camera_take_photo: 拍照并获取帧缓冲区 适用于 ESP32-CAM 开发板。"
     },
     {
       "type": "camera_take_photo",
@@ -1733,7 +1928,7 @@
       "inputs": {
         "VAL": "value(Number)"
       },
-      "description": "写入 DAC 模拟值"
+      "description": "DAC 模数转换模块 (Digital to Analog Converter) 提供 ESP32 DAC 模拟输出积木: - dac_write: 写入 DAC 值 (0-255) ESP32 有两个 DAC 通道: GPIO25 (DAC1) 和 GPIO26 (DAC2)。"
     },
     {
       "type": "display_lcd_init",
@@ -2064,7 +2259,11 @@
         "SSID": "value(String)",
         "PASSWORD": "value(String)"
       },
-      "description": "ESP32 WiFi 连接"
+      "description": "连接到指定的 WiFi 网络 (ESP32)",
+      "params": {
+        "SSID": "网络名称",
+        "PASSWORD": "网络密码"
+      }
     },
     {
       "type": "esp32_deep_sleep",
@@ -2073,12 +2272,16 @@
       "inputs": {
         "TIME": "value(Number)"
       },
-      "description": "ESP32 进入深度睡眠"
+      "description": "ESP32 进入深度睡眠 (Deep Sleep)",
+      "params": {
+        "TIME": "睡眠时长 (微秒 us)"
+      }
     },
     {
       "type": "esp32_hall_read",
       "category": "ESP32专用",
-      "connection": "output"
+      "connection": "output",
+      "description": "读取 ESP32 内置霍尔传感器 (Hall Sensor)"
     },
     {
       "type": "esp32_touch_read",
@@ -2095,7 +2298,10 @@
           "..."
         ]
       },
-      "description": "读取 ESP32 特有的电容式触摸引脚"
+      "description": "读取 ESP32 电容式触摸引脚 (Touch Pin)",
+      "params": {
+        "PIN": "触摸通道 (T0-T9)"
+      }
     },
     {
       "type": "esp_deep_sleep",
@@ -2104,17 +2310,22 @@
       "inputs": {
         "TIME": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "进入深度睡眠 (Deep Sleep)",
+      "params": {
+        "TIME": "睡眠时长 (微秒 us)"
+      }
     },
     {
       "type": "esp_restart",
       "category": "ESP32专用",
-      "connection": "statement"
+      "connection": "statement",
+      "description": "重启 ESP 芯片"
     },
     {
       "type": "esp_yield",
       "category": "ESP32专用",
-      "connection": "statement"
+      "connection": "statement",
+      "description": "让出 CPU 时间 (Yield) 给系统后台任务 (如 WiFi/TCP 栈)"
     },
     {
       "type": "esp_ticker_attach",
@@ -2127,7 +2338,11 @@
       "inputs": {
         "DO": "statement"
       },
-      "description": "绑定 Ticker 定时器中断"
+      "description": "配置并启动 Ticker 定时器中断",
+      "params": {
+        "NAME": "定时器实例名称",
+        "INTERVAL": "时间间隔 (秒)"
+      }
     },
     {
       "type": "esp_ticker_detach",
@@ -2136,7 +2351,10 @@
       "fields": {
         "NAME": "(文本)"
       },
-      "description": "停止并分离指定的定时器任务"
+      "description": "停止并分离指定的 Ticker 定时器",
+      "params": {
+        "NAME": "要分离的定时器实例名称"
+      }
     },
     {
       "type": "ethernet_w5500_init",
@@ -2148,7 +2366,7 @@
       "inputs": {
         "MAC": "value(String)"
       },
-      "description": "初始化 W5500 以太网"
+      "description": "以太网模块 (W5500 Ethernet Shield) 提供 W5500 有线网络积木: - ethernet_w5500_init: 初始化 (MAC/CS 引脚) - ethernet_w5500_get_ip: 获取本地 IP 地址 使用 Ethernet.h 库。支持 DHCP。"
     },
     {
       "type": "ethernet_w5500_get_ip",
@@ -2256,7 +2474,10 @@
       "inputs": {
         "NUM": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "模拟写/PWM (Analog Write) 在指定的支持 PWM 的引脚上输出模拟信号 (PWM 波形)。 取值范围通常为 0 (完全关闭) 到 255 (完全开启)，部分开发板如 ESP32 支持更高的分辨率。 可用于 LED 亮度调节或电机速度控制。",
+      "params": {
+        "NUM": "占空比数值 (默认 0-255)"
+      }
     },
     {
       "type": "arduino_tone",
@@ -2269,7 +2490,11 @@
         "FREQ": "value(Number)",
         "DURATION": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "发声/频率输出 (Tone) 在指定引脚上生成特定频率（由占空比 50% 的方波构成）的音频信号，驱动无源蜂鸣器发声。 可以指定发声的时长，若时长为 0 则持续发声。",
+      "params": {
+        "FREQ": "声音频率 (Hz)，例如 440 是标准音高 A。",
+        "DURATION": "持续时间 (毫秒)，若填 0 则持续输出波形直到被停止。"
+      }
     },
     {
       "type": "io_shiftout",
@@ -2322,7 +2547,14 @@
         "T_LOW": "value(Number)",
         "T_HIGH": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "等比数值映射 (Map) 将一个数值从原有的数值范围等比缩放到另一个目标数值范围。 例如将光敏电阻读取的数值框定在 0-1024 ，映射转换为 0-255 亮度值给 LED 调光。",
+      "params": {
+        "VAL": "要被转换映射的数值",
+        "F_LOW": "原始数据范围的最小下限值",
+        "F_HIGH": "原始数据范围的最大上限值",
+        "T_LOW": "目标数据范围的最小下限值",
+        "T_HIGH": "目标数据范围的最大上限值"
+      }
     },
     {
       "type": "pcf8574_init",
@@ -2334,7 +2566,7 @@
         "SDA": "(文本)",
         "SCL": "(文本)"
       },
-      "description": "初始化 PCF8574 IO 扩展器 (I2C 接口)"
+      "description": "IO 扩展器模块 (PCF8574 I2C GPIO Expander) 提供 PCF8574 I2C GPIO 扩展积木: - pcf8574_init: 初始化 (地址/SDA/SCL) - pcf8574_pin_mode: 设置引脚模式 - pcf8574_write/read: 读写引脚 使用 PCF8574.h 库。可扩展 8 个 GPIO。"
     },
     {
       "type": "pcf8574_pin_mode",
@@ -2477,10 +2709,16 @@
       "category": "MP3",
       "connection": "statement",
       "fields": {
+        "SERIAL": [
+          "Serial",
+          "Serial1",
+          "Serial2",
+          "SW_SERIAL"
+        ],
         "RX": "(文本)",
         "TX": "(文本)"
       },
-      "description": "初始化 MP3 播放器 (DFPlayer Mini)"
+      "description": "MP3 播放器模块 (DFPlayer Mini) 提供 DFPlayer Mini MP3 模块积木: - mp3_init: 初始化 (RX/TX 引脚) - mp3_play: 播放指定曲目 - mp3_control: 控制 (上一曲/下一曲/暂停/播放/停止) - mp3_volume: 设置音量 (0-30) 使用 DFRobotDFPlayerMini.h 库。"
     },
     {
       "type": "mp3_play",
@@ -2523,7 +2761,7 @@
         "COUNT": "(数值)",
         "PIN": "(文本)"
       },
-      "description": "初始化 NeoPixel 灯带 (WS2812)"
+      "description": "NeoPixel LED 模块 (WS2812 RGB LED Strip) 提供 NeoPixel/WS2812 可寻址 LED 灯带积木: - neopixel_init: 初始化 (引脚, 数量) - neopixel_set_color: 设置单个像素颜色 - neopixel_show: 刷新显示 - neopixel_clear: 清除所有像素 - neopixel_brightness: 设置亮度"
     },
     {
       "type": "neopixel_set_color",
@@ -2563,6 +2801,12 @@
       "category": "其他",
       "connection": "statement",
       "fields": {
+        "SERIAL": [
+          "Serial",
+          "Serial1",
+          "Serial2",
+          "SW_SERIAL"
+        ],
         "BAUD": [
           "9600",
           "115200"
@@ -2570,7 +2814,13 @@
         "RX": "(文本)",
         "TX": "(文本)"
       },
-      "description": "初始化 Nextion 显示屏 (串口 2)"
+      "description": "初始化 Nextion 显示屏",
+      "params": {
+        "SERIAL": "串口端口 (Serial, Serial1, Serial2, SoftwareSerial)",
+        "RX": "RX引脚",
+        "TX": "TX引脚",
+        "BAUD": "波特率"
+      }
     },
     {
       "type": "nextion_set_text",
@@ -2580,7 +2830,11 @@
         "OBJ": "value(String)",
         "TEXT": "value(String)"
       },
-      "description": "设置 Nextion 屏幕上特定组件的文本内容"
+      "description": "设置 Nextion 屏幕上特定组件的文本内容",
+      "params": {
+        "OBJ": "组件名称 (如 \"t0\")",
+        "TEXT": "要显示的文本内容"
+      }
     },
     {
       "type": "nextion_set_val",
@@ -2590,7 +2844,11 @@
         "OBJ": "value(String)",
         "VAL": "value(Number)"
       },
-      "description": "设置 Nextion 屏幕上特定组件的数值"
+      "description": "设置 Nextion 屏幕上特定组件的数值",
+      "params": {
+        "OBJ": "组件名称 (如 \"n0\")",
+        "VAL": "要设置的数值"
+      }
     },
     {
       "type": "nextion_page",
@@ -2599,7 +2857,10 @@
       "inputs": {
         "PAGE": "value"
       },
-      "description": "切换 Nextion 屏幕显示的页面"
+      "description": "切换 Nextion 屏幕显示的页面",
+      "params": {
+        "PAGE": "页面 ID 或名称"
+      }
     },
     {
       "type": "ota_setup",
@@ -2608,7 +2869,7 @@
       "inputs": {
         "NAME": "value(String)"
       },
-      "description": "初始化 OTA (空中升级) 配置"
+      "description": "OTA 无线更新模块 (Over-The-Air Update) 提供 ESP32 无线固件更新积木: - ota_setup: 初始化 OTA (设备名称) - ota_handle: 处理 OTA 请求 (放在 loop 中) 使用 ArduinoOTA.h 库。"
     },
     {
       "type": "ota_handle",
@@ -2623,7 +2884,7 @@
       "inputs": {
         "NAME": "value(String)"
       },
-      "description": "初始化 NVS 存储命名空间"
+      "description": "Preferences 存储模块 (ESP32 NVS Flash Storage) 提供 ESP32 NVS (Non-Volatile Storage) 键值存储积木: - nvs_begin: 打开命名空间 - nvs_put_int/get_int: 存取整数 - nvs_put_string/get_string: 存取字符串 数据断电不丢失，适合保存配置参数。 使用 Preferences.h 库。"
     },
     {
       "type": "nvs_put_int",
@@ -2672,7 +2933,7 @@
       "inputs": {
         "TEXT": "value(String)"
       },
-      "description": "创建二维码数据"
+      "description": "二维码模块 (QR Code Generation) 提供二维码生成积木: - qr_create: 创建二维码数据 - qr_draw_oled: 在 OLED 上绘制二维码 使用 qrcode.h 库。"
     },
     {
       "type": "qr_draw_oled",
@@ -2812,7 +3073,7 @@
         "TRIG": "(文本)",
         "ECHO": "(文本)"
       },
-      "description": "========================================================================="
+      "description": "模块初始化函数 注册常用的基础传感器积木，如超声波测距和 DHT 温湿度传感器。"
     },
     {
       "type": "sensor_dht",
@@ -2869,6 +3130,12 @@
       "category": "传感器",
       "connection": "statement",
       "fields": {
+        "SERIAL": [
+          "Serial",
+          "Serial1",
+          "Serial2",
+          "SW_SERIAL"
+        ],
         "RX": "(文本)",
         "TX": "(文本)"
       },
@@ -2896,7 +3163,7 @@
       "fields": {
         "PIN": "(文本)"
       },
-      "description": "将舵机对象绑定到指定引脚并进入初始化状态"
+      "description": "模块初始化函数 注册与舵机控制相关的积木块。"
     },
     {
       "type": "arduino_servo_write",
@@ -2936,7 +3203,7 @@
         "ADDR": "(文本)",
         "FREQ": "(文本)"
       },
-      "description": "初始化 PCA9685 16 路 PWM 驱动器"
+      "description": "高级舵机模块 (PCA9685 16-Channel PWM Driver) 提供 PCA9685 I2C PWM 扩展积木: - pca9685_init: 初始化 (地址/频率) - pca9685_set_servo: 设置舵机角度 - pca9685_set_pwm: 设置原始 PWM 值 使用 Adafruit_PWMServoDriver.h 库。"
     },
     {
       "type": "pca9685_set_servo",
@@ -3004,7 +3271,7 @@
       "inputs": {
         "DATA": "value(Number)"
       },
-      "description": "使用 74HC595 移位寄存器扩展输出 (串转并)"
+      "description": "移位寄存器模块 (74HC595/74HC165 Shift Register) 提供移位寄存器积木: - shift_out_74hc595: 串行输出 (扩展输出) - shift_in_74hc165: 串行输入 (扩展输入) 使用 shiftOut()/shiftIn() 函数。 可用于扩展 GPIO 或驱动 LED 等。"
     },
     {
       "type": "shift_in_74hc165",
@@ -3071,7 +3338,7 @@
       "fields": {
         "PIN": "(文本)"
       },
-      "description": "初始化语音合成模块 (ESP8266SAM)"
+      "description": "语音合成模块 (Speech Synthesis - ESP8266SAM) 提供文本转语音 (TTS) 积木: - speech_init: 初始化 (输出引脚) - speech_say: 朗读文本 使用 ESP8266SAM 库，输出到 I2S/DAC。"
     },
     {
       "type": "speech_say",
@@ -3099,7 +3366,7 @@
         "PIN3": "(文本)",
         "PIN4": "(文本)"
       },
-      "description": "初始化高级步进电机 (AccelStepper)"
+      "description": "AccelStepper 高级步进电机模块 提供 AccelStepper 库积木: - stepper_accel_init: 初始化 (类型/引脚) - stepper_accel_setup: 设置速度/加速度 - stepper_accel_run: 运行步进 - stepper_accel_move: 移动到位置 使用 AccelStepper.h 库，支持非阻塞运动。"
     },
     {
       "type": "stepper_accel_setup",
@@ -3220,7 +3487,7 @@
       "fields": {
         "PIN": "(文本)"
       },
-      "description": "直接读取触摸引脚的电容原始值"
+      "description": "电容触摸模块 (Capacitive Touch Module) 提供 ESP32 电容触摸积木: - touch_read: 读取触摸引脚值 - touch_is_touched: 判断是否被触摸 (阈值比较) ESP32 内置触摸引脚 (T0-T9)。"
     },
     {
       "type": "touch_is_touched",
@@ -3334,7 +3601,7 @@
       "inputs": {
         "NAME": "value(String)"
       },
-      "description": "初始化 BLE 键盘，设置设备名称"
+      "description": "蓝牙 HID 模块 (Bluetooth HID Module) 提供 ESP32 蓝牙 HID 设备积木: - BLE 键盘: 初始化、打字、按键 - BLE 鼠标: 初始化、移动、点击 使用 BleKeyboard.h / BleMouse.h 库。 设备可模拟为蓝牙键盘或鼠标连接到 PC/手机。"
     },
     {
       "type": "ble_keyboard_print",
@@ -3389,7 +3656,7 @@
       "inputs": {
         "NAME": "value(String)"
       },
-      "description": "初始化蓝牙串口并设置设备名称"
+      "description": "蓝牙串口模块 (Bluetooth Serial Module) 提供 ESP32 蓝牙经典串口 (SPP) 积木: - bt_serial_init: 初始化并设置设备名称 - bt_serial_available: 检查是否有数据 - bt_serial_read: 读取字符串 - bt_serial_print: 发送数据 使用 BluetoothSerial 库 (ESP32 专用)。"
     },
     {
       "type": "bt_serial_available",
@@ -3465,7 +3732,7 @@
       "type": "esp_now_init",
       "category": "ESP-NOW",
       "connection": "statement",
-      "description": "初始化 ESP-NOW"
+      "description": "ESP-NOW 模块 (ESP-NOW P2P Communication) 提供 ESP-NOW 点对点通信积木: - esp_now_init: 初始化 ESP-NOW - esp_now_add_peer: 添加对等节点 (MAC 地址) - esp_now_send: 发送数据 - esp_now_on_recv: 接收数据回调 ESP32 专用，无需 WiFi 路由器的低延迟通信。"
     },
     {
       "type": "esp_now_add_peer",
@@ -3502,7 +3769,7 @@
         "URL": "value(String)",
         "SECRET": "value(String)"
       },
-      "description": "Firebase 数据库配置"
+      "description": "Firebase 数据库模块 (Realtime Database) 提供 Firebase 实时数据库积木: - firebase_config: 配置 URL 和密钥 - firebase_set_int/string: 写入数据 - firebase_get_int: 读取整数数据 使用 IOXhop_FirebaseESP32.h 库。"
     },
     {
       "type": "firebase_set_int",
@@ -3540,7 +3807,7 @@
       "inputs": {
         "URL": "value(String)"
       },
-      "description": "发起 HTTP GET 请求"
+      "description": "HTTP 客户端模块 (HTTP Client) 提供 HTTP 请求积木: - http_get: GET 请求 - http_post: POST 请求 (支持 JSON/Form/Plain) 使用 HTTPClient.h 库，需要 WiFi 连接。"
     },
     {
       "type": "http_post",
@@ -3563,7 +3830,7 @@
       "type": "arduino_i2c_init",
       "category": "I2C",
       "connection": "statement",
-      "description": "初始化 I2C 总线"
+      "description": "I2C 协议模块 (I2C Protocol Module) 封装了 Arduino 标准 Wire 库，支持 I2C 总线通信。"
     },
     {
       "type": "arduino_i2c_config",
@@ -3609,7 +3876,7 @@
       "fields": {
         "PIN": "(文本)"
       },
-      "description": "初始化红外接收器"
+      "description": "红外遥控模块 (Infrared Remote Module) 提供红外线收发积木 (IRremote.h): - ir_recv_setup: 初始化接收器 - ir_recv_available: 检测信号 - ir_recv_get_hex: 获取编码 (十六进制) - ir_recv_resume: 继续接收 - ir_send_nec: 发送 NEC 编码"
     },
     {
       "type": "ir_recv_available",
@@ -3626,7 +3893,8 @@
     {
       "type": "ir_recv_get_hex",
       "category": "红外",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取解码后的红外信号 (十六进制字符串)"
     },
     {
       "type": "ir_send_nec",
@@ -3636,7 +3904,7 @@
         "VAL": "value(Number)",
         "BITS": "value(Number)"
       },
-      "description": "发送 NEC 协议的红外编码"
+      "description": "获取解码后的红外信号 (十六进制字符串)"
     },
     {
       "type": "lora_init",
@@ -3648,7 +3916,13 @@
         "RST": "(文本)",
         "IRQ": "(文本)"
       },
-      "description": "初始化 LoRa 模块"
+      "description": "初始化 LoRa 模块",
+      "params": {
+        "FREQ": "工作频率 (如 433E6, 868E6, 915E6)",
+        "CS": "片选引脚 (NSS/CS)",
+        "RST": "复位引脚 (Reset)",
+        "IRQ": "中断引脚 (DIO0)"
+      }
     },
     {
       "type": "lora_config",
@@ -3659,13 +3933,18 @@
         "SF": "(数值)",
         "SYNC": "(数值)"
       },
-      "description": "配置 LoRa 参数 (功率, 扩频因子, 同步字)"
+      "description": "配置 LoRa 参数",
+      "params": {
+        "PWR": "发射功率 (dBm)",
+        "SF": "扩频因子 (6-12)",
+        "SYNC": "同步字 (默认 0x12)"
+      }
     },
     {
       "type": "lora_packet_begin",
       "category": "LoRa",
       "connection": "statement",
-      "description": "开始封包"
+      "description": "开始构建 LoRa 数据包"
     },
     {
       "type": "lora_print",
@@ -3674,44 +3953,52 @@
       "inputs": {
         "DATA": "value(String)"
       },
-      "description": "在数据包中写入数据"
+      "description": "向 LoRa 数据包中写入数据内容",
+      "params": {
+        "DATA": "要发送的文本或数据"
+      }
     },
     {
       "type": "lora_packet_end",
       "category": "LoRa",
       "connection": "statement",
-      "description": "结束封包并发送"
+      "description": "结束并发送 LoRa 数据包"
     },
     {
       "type": "lora_parse_packet",
       "category": "LoRa",
-      "connection": "output"
+      "connection": "output",
+      "description": "检查并解析收到的 LoRa 数据包"
     },
     {
       "type": "lora_read",
       "category": "LoRa",
-      "connection": "output"
+      "connection": "output",
+      "description": "从接收队列读取一个字节"
     },
     {
       "type": "lora_available",
       "category": "LoRa",
-      "connection": "output"
+      "connection": "output",
+      "description": "检查接收队列中可读取的字节数"
     },
     {
       "type": "lora_packet_rssi",
       "category": "LoRa",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取最后接收到数据包的信号强度 (RSSI)"
     },
     {
       "type": "lora_packet_snr",
       "category": "LoRa",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取最后接收到数据包的信噪比 (SNR)"
     },
     {
       "type": "lora_read_string",
       "category": "LoRa",
       "connection": "output",
-      "description": "读取 LoRa 接收到的完整字符串"
+      "description": "读取 LoRa 接收到的完整字符串数据包"
     },
     {
       "type": "mqtt_setup",
@@ -3721,7 +4008,11 @@
         "SERVER": "value(String)",
         "PORT": "value(Number)"
       },
-      "description": "MQTT 设置（配置服务器地址和端口）"
+      "description": "MQTT 设置 (配置服务器地址和端口)",
+      "params": {
+        "SERVER": "MQTT 服务器地址",
+        "PORT": "服务器端口 (默认 1883)"
+      }
     },
     {
       "type": "mqtt_connect",
@@ -3730,7 +4021,10 @@
       "inputs": {
         "ID": "value(String)"
       },
-      "description": "连接到 MQTT Broker"
+      "description": "连接到 MQTT Broker",
+      "params": {
+        "ID": "客户端唯一标识符 (ID)"
+      }
     },
     {
       "type": "mqtt_publish",
@@ -3740,7 +4034,11 @@
         "TOPIC": "value(String)",
         "PAYLOAD": "value(String)"
       },
-      "description": "发布 MQTT 消息"
+      "description": "发布 MQTT 消息",
+      "params": {
+        "TOPIC": "发布的主题",
+        "PAYLOAD": "发布的消息内容 (负载)"
+      }
     },
     {
       "type": "mqtt_subscribe",
@@ -3749,12 +4047,16 @@
       "inputs": {
         "TOPIC": "value(String)"
       },
-      "description": "订阅 MQTT 主题"
+      "description": "订阅 MQTT 主题",
+      "params": {
+        "TOPIC": "要订阅的主题名称"
+      }
     },
     {
       "type": "mqtt_loop",
       "category": "MQTT",
-      "connection": "statement"
+      "connection": "statement",
+      "description": "MQTT 客户端心跳保持与消息处理循环"
     },
     {
       "type": "mqtt_callback_define",
@@ -3763,17 +4065,22 @@
       "inputs": {
         "DO": "statement"
       },
-      "description": "定义 MQTT 消息接收回调"
+      "description": "定义 MQTT 消息接收回调逻辑",
+      "params": {
+        "DO": "收到消息时执行的积木"
+      }
     },
     {
       "type": "mqtt_get_topic",
       "category": "MQTT",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取当前接收到的 MQTT 消息主题"
     },
     {
       "type": "mqtt_get_message",
       "category": "MQTT",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取当前接收到的 MQTT 消息内容"
     },
     {
       "type": "net_ethernet_begin",
@@ -3782,13 +4089,13 @@
       "inputs": {
         "MAC": "value(String)"
       },
-      "description": "以太网 (Ethernet) DHCP 初始化"
+      "description": "网络模块 (Network Module - Ethernet/WiFi) 提供网络通信相关积木: - Ethernet: DHCP 初始化、获取 IP - WiFi: 连接 AP、开启 SoftAP、状态检测"
     },
     {
       "type": "net_ethernet_local_ip",
       "category": "WiFi网络",
       "connection": "output",
-      "description": "获取本地 IP 地址"
+      "description": "获取当前设备的本地 IP 地址。"
     },
     {
       "type": "net_ntp_init",
@@ -3797,12 +4104,16 @@
       "inputs": {
         "OFFSET": "value(Number)"
       },
-      "description": "NTP 网络对时初始化"
+      "description": "初始化 NTP 客户端，用于网络对时。",
+      "params": {
+        "OFFSET": "时区偏移量 (秒，例如北京时间为 28800)"
+      }
     },
     {
       "type": "net_ntp_get_time",
       "category": "WiFi网络",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取 NTP 服务器返回的当前格式化时间"
     },
     {
       "type": "net_wifi_connect_generic",
@@ -3812,12 +4123,17 @@
         "SSID": "value(String)",
         "PASS": "value(String)"
       },
-      "description": "WiFi 连接 (通用方式)"
+      "description": "连接到指定的 WiFi 接入点 (AP)。",
+      "params": {
+        "SSID": "WiFi 网络的名称",
+        "PASS": "WiFi 网络的密码"
+      }
     },
     {
       "type": "net_wifi_status",
       "category": "WiFi网络",
-      "connection": "output"
+      "connection": "output",
+      "description": "检查 WiFi 是否已连接"
     },
     {
       "type": "nrf24_init",
@@ -3841,13 +4157,14 @@
     {
       "type": "nrf24_available",
       "category": "NRF24",
-      "connection": "output"
+      "connection": "output",
+      "description": "检查 NRF24L01 缓冲区是否有可用数据"
     },
     {
       "type": "nrf24_read",
       "category": "NRF24",
       "connection": "output",
-      "description": "读取 NRF24 接收到的字符串"
+      "description": "检查 NRF24L01 缓冲区是否有可用数据"
     },
     {
       "type": "nrf24_config",
@@ -3874,6 +4191,11 @@
           "Writing"
         ],
         "ADDR": "(文本)"
+      },
+      "description": "打开 NRF24L01 通信管道 (Pipe)",
+      "params": {
+        "TYPE": "管道类型 (Reading/Writing)",
+        "ADDR": "通信地址 (5位字符)"
       }
     },
     {
@@ -3883,7 +4205,7 @@
       "inputs": {
         "KEY": "value(String)"
       },
-      "description": "OpenAI (ChatGPT) 初始化"
+      "description": "OpenAI 模块 (ChatGPT API) 提供 OpenAI ChatGPT API 积木: - openai_init: 初始化 (API Key) - openai_ask: 发送提示词并获取回复 使用 HTTPClient 进行 REST API 调用。 注意: API 调用是阻塞的，可能需要数秒。"
     },
     {
       "type": "openai_ask",
@@ -3931,13 +4253,14 @@
     {
       "type": "radio_rx_get",
       "category": "无线电",
-      "connection": "output"
+      "connection": "output",
+      "description": "获取最近一次接收到的 433MHz 无线信号数值"
     },
     {
       "type": "radio_rx_reset",
       "category": "无线电",
       "connection": "statement",
-      "description": "重置接收状态"
+      "description": "获取最近一次接收到的 433MHz 无线信号数值"
     },
     {
       "type": "radio_rx_info",
@@ -3945,6 +4268,10 @@
       "connection": "output",
       "fields": {
         "INFO": "(动态选项)"
+      },
+      "description": "获取当前接收到的无线信号详细信息",
+      "params": {
+        "INFO": "信息类型 (Bitlength/Protocol/Delay)"
       }
     },
     {
@@ -3957,7 +4284,12 @@
       "inputs": {
         "CONTENT": "value"
       },
-      "description": "模块初始化函数"
+      "description": "串口打印数据 (Serial Print)",
+      "params": {
+        "CONTENT": "要打印的内容",
+        "SERIAL_ID": "串口标识符 (如 Serial, Serial1)",
+        "NEW_LINE": "是否换行"
+      }
     },
     {
       "type": "arduino_serial_available",
@@ -3966,7 +4298,10 @@
       "fields": {
         "SERIAL_ID": "(动态选项)"
       },
-      "description": "检查是否有数据可读"
+      "description": "检查串口是否有数据可读 (Serial Available)",
+      "params": {
+        "SERIAL_ID": "串口标识符"
+      }
     },
     {
       "type": "arduino_serial_read_string",
@@ -3975,7 +4310,10 @@
       "fields": {
         "SERIAL_ID": "(动态选项)"
       },
-      "description": "读取全文字符串"
+      "description": "从串口读取整段字符串",
+      "params": {
+        "SERIAL_ID": "串口标识符"
+      }
     },
     {
       "type": "arduino_serial_read_char",
@@ -3984,7 +4322,10 @@
       "fields": {
         "SERIAL_ID": "(动态选项)"
       },
-      "description": "读取单个字节 (ASCII 码)"
+      "description": "从串口读取单个字符",
+      "params": {
+        "SERIAL_ID": "串口标识符"
+      }
     },
     {
       "type": "arduino_serial_setup",
@@ -3999,7 +4340,11 @@
           "38400"
         ]
       },
-      "description": "增强版串口初始化（可选手波特率）"
+      "description": "增强版串口初始化 (可选择波特率)",
+      "params": {
+        "SERIAL_ID": "串口标识符",
+        "BAUD": "波特率 (如 9600, 115200)"
+      }
     },
     {
       "type": "arduino_serial_print",
@@ -4011,7 +4356,12 @@
       "inputs": {
         "CONTENT": "value"
       },
-      "description": "串口打印内容"
+      "description": "增强版串口打印 (包含初始化检查)",
+      "params": {
+        "CONTENT": "要打印的内容",
+        "SERIAL_ID": "串口标识符",
+        "NEW_LINE": "是否换行"
+      }
     },
     {
       "type": "arduino_serial_available_check",
@@ -4020,7 +4370,10 @@
       "fields": {
         "SERIAL_ID": "(动态选项)"
       },
-      "description": "检查串口缓冲区是否有数据"
+      "description": "检查串口是否有数据可读",
+      "params": {
+        "SERIAL_ID": "串口标识符"
+      }
     },
     {
       "type": "arduino_serial_read_string",
@@ -4028,6 +4381,10 @@
       "connection": "output",
       "fields": {
         "SERIAL_ID": "(动态选项)"
+      },
+      "description": "增强版从串口读取整段字符串",
+      "params": {
+        "SERIAL_ID": "串口标识符"
       }
     },
     {
@@ -4036,6 +4393,10 @@
       "connection": "output",
       "fields": {
         "SERIAL_ID": "(动态选项)"
+      },
+      "description": "增强版从串口读取单个字符",
+      "params": {
+        "SERIAL_ID": "串口标识符"
       }
     },
     {
@@ -4048,13 +4409,17 @@
       "inputs": {
         "VAL": "value(Number)"
       },
-      "description": "向串口写入原始字节 (Byte)"
+      "description": "向指定串口写入原始字节 (Byte)",
+      "params": {
+        "VAL": "要写入的 8 位数据",
+        "SERIAL_ID": "串口标识符"
+      }
     },
     {
       "type": "arduino_spi_init",
       "category": "SPI",
       "connection": "statement",
-      "description": "初始化 SPI 总线"
+      "description": "SPI 协议模块 (SPI Protocol Module) 封装了 Arduino 标准 SPI 库，支持高速同步串行通信。 提供的积木包括：初始化、数据传输 (全双工发送与接收)。"
     },
     {
       "type": "arduino_spi_transfer",
@@ -4108,7 +4473,7 @@
       "inputs": {
         "TOKEN": "value(String)"
       },
-      "description": "Telegram 机器人配置"
+      "description": "Telegram 机器人模块 (Telegram Bot) 提供 Telegram 聊天机器人积木: - telegram_config: 初始化机器人 (Token) - telegram_check: 检查新消息并处理 - telegram_send: 发送消息 - telegram_msg_text: 获取消息文本 使用 UniversalTelegramBot.h 库。"
     },
     {
       "type": "telegram_check",
@@ -4139,7 +4504,7 @@
       "type": "usb_keyboard_init",
       "category": "USB HID",
       "connection": "statement",
-      "description": "初始化 USB 键盘"
+      "description": "USB HID 模块 (USB Human Interface Device) 提供 USB 键盘和鼠标 HID 设备积木: - USB 键盘: 初始化、打字、按键 - USB 鼠标: 初始化、移动、点击 适用于支持原生 USB 的板卡 (如 ESP32-S2/S3)。 使用 Keyboard.h / Mouse.h 库。"
     },
     {
       "type": "usb_keyboard_print",
@@ -4156,6 +4521,10 @@
       "connection": "statement",
       "fields": {
         "KEY": "(动态选项)"
+      },
+      "description": "模拟键盘按键动作 (Write)",
+      "params": {
+        "KEY": "要按下的特殊按键 (如 Enter, Tab)"
       }
     },
     {
@@ -4171,6 +4540,11 @@
       "inputs": {
         "X": "value(Number)",
         "Y": "value(Number)"
+      },
+      "description": "模拟鼠标移动",
+      "params": {
+        "X": "X 轴移动像素 (相对)",
+        "Y": "Y 轴移动像素 (相对)"
       }
     },
     {
@@ -4189,7 +4563,7 @@
       "inputs": {
         "PORT": "value(Number)"
       },
-      "description": "初始化 WebSocket 服务器 (默认 81 端口)"
+      "description": "WebSocket 服务器模块 (WebSocket Server Module) 提供 WebSocket 实时通信服务器积木: - ws_server_init: 初始化服务器 (端口) - ws_on_event: 事件回调处理 - ws_check_type: 检查事件类型 (连接/断开/文本) - ws_send_all: 广播消息给所有客户端 使用 WebSocketsServer.h 库。"
     },
     {
       "type": "ws_on_event",
@@ -4209,6 +4583,10 @@
       },
       "inputs": {
         "DO": "statement"
+      },
+      "description": "判断 WebSocket 当前事件的类型 (Mutator 回调内使用)",
+      "params": {
+        "TYPE": "事件类型 (CONNECTED/DISCONNECTED/TEXT)"
       }
     },
     {
@@ -4224,7 +4602,7 @@
       "type": "web_server_init",
       "category": "Web服务",
       "connection": "statement",
-      "description": "初始化 Web 服务器 (默认 80 端口)"
+      "description": "Web 服务器模块 (ESP32/ESP8266 Web Server) 提供 HTTP Web 服务器积木 (WebServer.h): - web_server_init: 初始化服务器 (80端口) - web_server_on: 注册路由处理 - web_server_send: 发送响应 - web_server_start: 启动服务器 - web_server_handle_client: 处理请求循环"
     },
     {
       "type": "web_server_on",
@@ -4250,13 +4628,14 @@
     {
       "type": "web_server_start",
       "category": "Web服务",
-      "connection": "statement"
+      "connection": "statement",
+      "description": "启动 Web 服务器开启监听请求"
     },
     {
       "type": "web_server_handle_client",
       "category": "Web服务",
       "connection": "statement",
-      "description": "处理客户端请求 (需放在 loop 中)"
+      "description": "启动 Web 服务器开启监听请求"
     },
     {
       "type": "mbot_motor_move",
@@ -4375,6 +4754,12 @@
       "inputs": {
         "STEPS": "value(Number)",
         "T": "value(Number)"
+      },
+      "description": "控制机器人执行预设的舞蹈动作",
+      "params": {
+        "DANCE": "舞蹈类型",
+        "STEPS": "循环次数",
+        "T": "动作速度 (ms)"
       }
     },
     {
@@ -4476,7 +4861,7 @@
         ],
         "MAC": "(文本)"
       },
-      "description": "------------------------------------------------------------------"
+      "description": "STM32 网络模块 (Ethernet - W5500/LAN8720) 提供 STM32 以太网积木: - stm32_ethernet_init: 初始化 (MAC/CS) - stm32_ethernet_ip: 获取本地 IP 使用 Ethernet.h 库。"
     },
     {
       "type": "stm32_ethernet_ip",
@@ -4596,7 +4981,7 @@
         "ATT": "(文本)",
         "DAT": "(文本)"
       },
-      "description": "初始化 PS2 手柄"
+      "description": "PS2 游戏手柄模块 (PS2 Controller) 提供 PS2 无线/有线手柄积木: - ps2_init: 初始化 (CLK/CMD/ATT/DAT) - ps2_button: 读取按钮状态 - ps2_analog: 读取摇杆模拟值 使用 PS2X_lib.h 库。"
     },
     {
       "type": "ps2_button",

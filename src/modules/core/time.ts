@@ -25,20 +25,41 @@ import { BlockModule } from '../../registries/ModuleRegistry';
 const init = () => {
 
     // =========================================================================
-    // 毫秒延时 (Delay MS)
-    // 阻塞式等待指定的毫秒数。
-    // 对应的 Arduino API: `delay(ms)`
+    /**
+     * 程序延时 (Delay)
+     * 阻塞式等待指定的毫秒数，期间微控制器除了中断服务程序外不执行任何指令。
+     * 常用于简单的控制时序，但在严苛或多任务的场景下应尽量使用非阻塞的 millis()。
+     * @category 时间与控制
+     * @param {Number} DELAY 延时的毫秒数 (1000 毫秒 = 1 秒)
+     */
     // =========================================================================
     registerBlock('arduino_delay_ms', {
         init: function () {
             this.appendDummyInput().appendField(Blockly.Msg.ARD_TIME_DELAY); // 延时
-            this.appendValueInput("DELAY").setCheck("Number");
+            
+            // 使用 connection 的 setShadowState 或在后续动态构建里追加默认数值块
+            const valueInput = this.appendValueInput("DELAY").setCheck("Number");
+            
             this.appendDummyInput().appendField(Blockly.Msg.ARD_TIME_MS); // 毫秒
             this.setPreviousStatement(true);
             this.setNextStatement(true);
             this.setColour(120); // 绿色系，代表流控
             this.setInputsInline(true);
-            this.setTooltip(Blockly.Msg.ARD_TIME_DELAY_TOOLTIP);
+            this.setTooltip("暂停程序执行指定的毫秒数。1000 毫秒等于 1 秒。使用时请注意这会阻塞在此期间所有的普通引脚响应。");
+            
+            // 稍后初始化附加一个默认数字 shadow
+            if (!this.workspace.isFlyout) {
+                 setTimeout(() => {
+                     if (valueInput.connection && !valueInput.connection.isConnected()) {
+                         const numBlock = this.workspace.newBlock('math_number');
+                         numBlock.setFieldValue('1000', 'NUM');
+                         numBlock.setShadow(true);
+                         numBlock.initSvg();
+                         numBlock.render();
+                         valueInput.connection.connect(numBlock.outputConnection);
+                     }
+                 }, 50);
+            }
         }
     }, (b: any) => {
         const delay = arduinoGenerator.valueToCode(b, 'DELAY', Order.NONE) || '1000';
