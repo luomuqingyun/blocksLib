@@ -42,8 +42,13 @@ scripts/generated/*.json
 scripts/generated/*.js
 scripts/deprecated/
 
-# 测试项目
+# 测试项目与日志
 test
 eb_compilation_tests
+eb_block_verify_tests/
+block_compilation_manifest.json
+block_verify_report.json
+block_verify_debug.log
+test_build.log
 * - 副本/
 * - 副本 *

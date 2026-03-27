@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-03-15T15:58:35.890Z",
+    "generated": "2026-03-27T11:34:21.911Z",
     "total": 474,
     "byCategory": {
       "Arduino核心": 4,
@@ -90,7 +90,7 @@
         "NUM": "value",
         "DMAX": "value"
       },
-      "description": "========================================================================="
+      "description": "数值映射 (Map) 将一个范围内的数值按比例重构到另一个范围 默认源范围为 Arduino 模拟输入的 0-1023"
     },
     {
       "type": "various_constrain",
@@ -101,13 +101,13 @@
         "a": "value(Number)",
         "b": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "数值约束 (Constrain) 将数值限制在 [min, max] 范围内"
     },
     {
       "type": "arduino_cpp_raw",
       "category": "Arduino核心",
       "connection": "statement",
-      "description": "========================================================================="
+      "description": "原始 C++ 代码 (Raw C++ Code) 允许高级用户直接在图形化界面中编写多行 C++ 代码"
     },
     {
       "type": "pid_create",
@@ -133,7 +133,7 @@
       "fields": {
         "NAME": "(文本)"
       },
-      "description": "========================================================================="
+      "description": "执行 PID 计算 (PID Compute) 在主循环中不断调用，根据当前的输入和目标值更新输出。"
     },
     {
       "type": "pid_tunings",
@@ -147,7 +147,7 @@
         "KI": "value(Number)",
         "KD": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "动态调整参数 (PID Tunings) 允许在运行时（而非仅在 setup 中）动态修改 Kp/Ki/Kd 参数。"
     },
     {
       "type": "crypto_md5",
@@ -165,7 +165,7 @@
       "inputs": {
         "TEXT": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "SHA256 哈希计算 (SHA256 Hashing) 使用工业级的 mbedTLS 库（ESP32 硬件加速支持）执行哈希运算。"
     },
     {
       "type": "crypto_base64_encode",
@@ -174,7 +174,7 @@
       "inputs": {
         "TEXT": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "Base64 编码 (Base64 Encoding) 将二进制或普通文本转换为可打印的 Base64 字符串。"
     },
     {
       "type": "crypto_base64_decode",
@@ -183,7 +183,7 @@
       "inputs": {
         "TEXT": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "Base64 解码 (Base64 Decoding)"
     },
     {
       "type": "json_parse",
@@ -201,13 +201,13 @@
       "inputs": {
         "KEY": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "获取 JSON 键值 (Get JSON Key) 从当前解析后的 jsonDoc 中提取特定键的值。"
     },
     {
       "type": "json_create_doc",
       "category": "数据处理",
       "connection": "statement",
-      "description": "========================================================================="
+      "description": "JSON 创建/清空 (JSON Clear/Create) 重置全局 jsonDoc，为构建新的 JSON 对象做准备。"
     },
     {
       "type": "json_set_key",
@@ -217,13 +217,13 @@
         "KEY": "value(String)",
         "VAL": "value"
       },
-      "description": "========================================================================="
+      "description": "设置 JSON 键值 (Set JSON Key) 向 jsonDoc 中插入或修改一对键值。"
     },
     {
       "type": "json_serialize",
       "category": "数据处理",
       "connection": "output",
-      "description": "========================================================================="
+      "description": "序列化 JSON (Serialize JSON) 将整个内存中的 jsonDoc 转换回 String 格式，以便打印或通过网络发送。"
     },
     {
       "type": "data_csv_create",
@@ -244,7 +244,7 @@
         "CSV": "value(String)",
         "INDEX": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "2. 解析 CSV (Parse CSV Get Item) 根据索引位置，从一个 CSV 字符串中提取指定的字段。"
     },
     {
       "type": "temp_read",
@@ -256,25 +256,25 @@
       "type": "diag_free_heap",
       "category": "诊断",
       "connection": "output",
-      "description": "========================================================================="
+      "description": "2. 获取可用堆内存 (Free Heap) 实时监测 RAM 消耗情况，防止内存泄漏导致程序崩溃。"
     },
     {
       "type": "diag_uptime",
       "category": "诊断",
       "connection": "output",
-      "description": "========================================================================="
+      "description": "3. 运行时间 (Uptime) 获取自开机以来的秒数。"
     },
     {
       "type": "diag_restart_reason",
       "category": "诊断",
       "connection": "output",
-      "description": "========================================================================="
+      "description": "4. 重启原因 (Reset/Restart Reason) 辅助诊断是手动重启、外部复位还是由于看门狗超时导致的重启。"
     },
     {
       "type": "diag_chip_model",
       "category": "诊断",
       "connection": "output",
-      "description": "========================================================================="
+      "description": "5. 芯片型号 (Chip Model)"
     },
     {
       "type": "dict_create",
@@ -290,7 +290,7 @@
         "KEY": "value(String)",
         "VAL": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "2. 设置键值 (Dict Set) 向字典中存入数据。如果键已存在，则覆盖旧值。"
     },
     {
       "type": "dict_get",
@@ -299,7 +299,7 @@
       "inputs": {
         "KEY": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "3. 获取值 (Dict Get) 根据键提取对应的数据。如果键不存在，std::map 会返回空字符串（默认构造值）。"
     },
     {
       "type": "dict_exists",
@@ -308,7 +308,7 @@
       "inputs": {
         "KEY": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "4. 检查键是否存在 (Dict Key Exists?)"
     },
     {
       "type": "game_init",
@@ -330,7 +330,7 @@
         "W": "value(Number)",
         "H": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "2. 创建精灵 (Create Sprite) 激活指定 ID 的精灵并设置其初始位置和大小。"
     },
     {
       "type": "game_set_velocity",
@@ -341,13 +341,13 @@
         "DX": "value(Number)",
         "DY": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "3. 设置速度 (Set Velocity) 改变精灵的运动向量。"
     },
     {
       "type": "game_update_all",
       "category": "游戏",
       "connection": "statement",
-      "description": "========================================================================="
+      "description": "4. 更新物理世界 (Update All) 执行一帧的物理位移计算。"
     },
     {
       "type": "game_check_collision",
@@ -357,7 +357,7 @@
         "ID1": "value(Number)",
         "ID2": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "5. 碰撞检测 (Check Collision) 实现 AABB (轴对齐包围盒) 碰撞检测算法。"
     },
     {
       "type": "game_get_prop",
@@ -400,7 +400,7 @@
       "inputs": {
         "LIST": "value(Array)"
       },
-      "description": "========================================================================="
+      "description": "2. 反转列表 (Reverse List)"
     },
     {
       "type": "lists_find_index",
@@ -410,7 +410,7 @@
         "ITEM": "value(Number)",
         "LIST": "value(Array)"
       },
-      "description": "========================================================================="
+      "description": "3. 查找元素索引 (Find Index)"
     },
     {
       "type": "log_to_serial_csv",
@@ -432,7 +432,7 @@
         "LABEL": "value(String)",
         "VALUE": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "串口绘图器输出 (Plotter Print) 格式化输出为 \"标签:数值\"，使 Arduino IDE 的串口绘图器能识别多条曲线。"
     },
     {
       "type": "controls_switch_case",
@@ -484,19 +484,19 @@
         "STEP": "statement",
         "DO": "statement"
       },
-      "description": "========================================================================="
+      "description": "2. C 风格自定义 For 循环 (C-Style Flexible For Loop) 允许用户自主定义控制三要素：初始化、循环条件、步进操作。 结构：for (init; cond; step)"
     },
     {
       "type": "controls_flow_break",
       "category": "高级循环",
       "connection": "terminal",
-      "description": "========================================================================="
+      "description": "3. Break (跳出循环)"
     },
     {
       "type": "controls_flow_continue",
       "category": "高级循环",
       "connection": "terminal",
-      "description": "========================================================================="
+      "description": "4. Continue (继续下一次循环)"
     },
     {
       "type": "stats_average",
@@ -535,7 +535,7 @@
       "inputs": {
         "TEXT": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "2. 添加菜单项 (Add Menu Item)"
     },
     {
       "type": "menu_manage_input",
@@ -557,7 +557,7 @@
       "type": "menu_get_current",
       "category": "菜单",
       "connection": "output",
-      "description": "========================================================================="
+      "description": "4. 获取当前项内容 (Get Current Selected Label)"
     },
     {
       "type": "rtos_task_create",
@@ -606,7 +606,7 @@
       "inputs": {
         "VAL": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "2. 卡尔曼滤波器更新 (Kalman Filter Update) 输入新的采样值，返回平滑后的数值。"
     },
     {
       "type": "filter_lowpass",
@@ -617,7 +617,7 @@
         "OLD": "value(Number)",
         "ALPHA": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "3. 低通滤波 (Low Pass Filter / Alpha-Beta) 一阶 IIR 滤波器：Output = Alpha * New + (1 - Alpha) * Old"
     },
     {
       "type": "controls_if",
@@ -830,7 +830,7 @@
         "PARAMS": "statement",
         "STACK": "statement"
       },
-      "description": "========================================================================="
+      "description": "函数定义 (Function Definition) 生成对应的 C++ 函数声明、函数首部、函数体以及自动生成函数原型 (Prototype)。"
     },
     {
       "type": "arduino_entry_root",
@@ -840,7 +840,7 @@
         "SETUP_STACK": "statement",
         "LOOP_STACK": "statement"
       },
-      "description": "========================================================================="
+      "description": "程序全周期根节点 (Unified Entry Point) 模拟 Arduino IDE 的 setup() 和 loop() 结构，整合为单个积木，提高可读性。"
     },
     {
       "type": "arduino_call_arg_container",
@@ -939,7 +939,7 @@
       "inputs": {
         "VAL": "value"
       },
-      "description": "========================================================================="
+      "description": "2. 转换为字符串 (To String) 显式将任何类型（数字、布尔等）转换为 Arduino String 对象。"
     },
     {
       "type": "c_text_join",
@@ -949,7 +949,7 @@
         "A": "value",
         "B": "value"
       },
-      "description": "========================================================================="
+      "description": "3. 文本拼接 (Text Join)"
     },
     {
       "type": "text_length",
@@ -958,7 +958,7 @@
       "inputs": {
         "VAL": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "4. 获取长度 (Text Length)"
     },
     {
       "type": "text_substring",
@@ -969,7 +969,7 @@
         "FROM": "value(Number)",
         "TO": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "5. 截取子串 (Substring)"
     },
     {
       "type": "text_to_case",
@@ -984,7 +984,7 @@
       "inputs": {
         "STR": "value(String)"
       },
-      "description": "========================================================================="
+      "description": "6. 大小写转换 (To Case)"
     },
     {
       "type": "text_to_number",
@@ -1017,13 +1017,13 @@
       "type": "arduino_millis",
       "category": "时间",
       "connection": "output",
-      "description": "========================================================================="
+      "description": "获取运行毫秒数 (Millis) 返回自程序启动以来的毫秒数 (unsigned long)。常用于非阻塞定时。 对应的 Arduino API: `millis()`"
     },
     {
       "type": "arduino_micros",
       "category": "时间",
       "connection": "output",
-      "description": "========================================================================="
+      "description": "获取运行微秒数 (Micros) 返回自程序启动以来的微秒数。 对应的 Arduino API: `micros()`"
     },
     {
       "type": "timer_every",
@@ -1043,7 +1043,7 @@
         "MS": "value(Number)",
         "DO": "statement"
       },
-      "description": "========================================================================="
+      "description": "延时单次执行 (Timer Once) 实现原理：使用 static bool 标记位追踪是否已经完成触发。"
     },
     {
       "type": "c_array_define",
@@ -1617,7 +1617,7 @@
         ],
         "PIN": "(文本)"
       },
-      "description": "继电器 (Relay)"
+      "description": "通用执行器 (Generic Actuators) 继电器 (Relay)"
     },
     {
       "type": "actuator_solenoid",
@@ -1685,7 +1685,7 @@
       "fields": {
         "CS": "(文本)"
       },
-      "description": "初始化 SPI 接口的 ADXL362 低功耗三轴加速度计"
+      "description": "ADXL362 三轴加速度计 (ADXL362.h) 初始化 SPI 接口的 ADXL362 低功耗三轴加速度计"
     },
     {
       "type": "sensor_adxl362_read",
@@ -1704,7 +1704,7 @@
       "type": "sensor_apds9960_init",
       "category": "其他",
       "connection": "statement",
-      "description": "初始化 APDS-9960 功能 (支持手势、颜色、接近检测)"
+      "description": "APDS-9960 手势/颜色传感器 (Arduino_APDS9960.h) 初始化 APDS-9960 功能 (支持手势、颜色、接近检测)"
     },
     {
       "type": "sensor_apds9960_gesture",
@@ -1739,7 +1739,7 @@
         "DOUT": "(文本)",
         "CLK": "(文本)"
       },
-      "description": "初始化 HX711 称重模块 (电子秤专用 ADC 芯片)"
+      "description": "HX711 称重传感器 (HX711.h) 初始化 HX711 称重模块 (电子秤专用 ADC 芯片)"
     },
     {
       "type": "sensor_hx711_read",
@@ -1760,7 +1760,7 @@
       "fields": {
         "ADDR": "(文本)"
       },
-      "description": "初始化 BMP280 气压传感器 (通常用于海拔和温度测量)"
+      "description": "BMP280 气压/高度传感器 (Adafruit_BMP280.h) 初始化 BMP280 气压传感器 (通常用于海拔和温度测量)"
     },
     {
       "type": "sensor_bmp280_read",
@@ -1939,7 +1939,7 @@
         "ROWS": "(数值)",
         "ADDR": "(文本)"
       },
-      "description": "初始化 LCD I2C 屏幕"
+      "description": "LCD I2C (LiquidCrystal_I2C) 初始化 LCD I2C 屏幕"
     },
     {
       "type": "display_lcd_print",
@@ -1972,7 +1972,7 @@
         "COUNT": "(数值)",
         "PIN": "(文本)"
       },
-      "description": "初始化 NeoPixel 发光二极管 (WS2812B)"
+      "description": "NeoPixel (Adafruit_NeoPixel) 初始化 NeoPixel 发光二极管 (WS2812B)"
     },
     {
       "type": "display_neopixel_set",
@@ -2046,7 +2046,7 @@
         "CLK": "(文本)",
         "CS": "(文本)"
       },
-      "description": "初始化 LED 点阵 (DIN/CLK/CS 引脚)"
+      "description": "MAX7219 LED Matrix (LedControl.h) 初始化 LED 点阵 (DIN/CLK/CS 引脚)"
     },
     {
       "type": "display_matrix_set_led",
@@ -2206,7 +2206,7 @@
       "fields": {
         "PIN": "(文本)"
       },
-      "description": "初始化 DS18B20 传感器"
+      "description": "DS18B20 (OneWire + DallasTemperature) 初始化 DS18B20 传感器"
     },
     {
       "type": "ds18b20_request",
@@ -2382,7 +2382,7 @@
         "R_PINS": "(文本)",
         "C_PINS": "(文本)"
       },
-      "description": "初始化矩阵键盘 (Keypad.h)"
+      "description": "矩阵键盘 (Keypad.h) 初始化矩阵键盘 (Keypad.h)"
     },
     {
       "type": "input_keypad_get_key",
@@ -2401,7 +2401,7 @@
         ],
         "PIN": "(文本)"
       },
-      "description": "读取摇杆指定轴的模拟值"
+      "description": "摇杆 (Analog Joystick) 读取摇杆指定轴的模拟值"
     },
     {
       "type": "input_rotary_init",
@@ -2411,7 +2411,7 @@
         "CLK": "(文本)",
         "DT": "(文本)"
       },
-      "description": "初始化旋转编码器 (Encoder.h)"
+      "description": "旋转编码器 (Encoder.h) 初始化旋转编码器 (Encoder.h)"
     },
     {
       "type": "input_rotary_read",
@@ -2444,7 +2444,7 @@
           "LOW"
         ]
       },
-      "description": "========================================================================="
+      "description": "数字写 (Digital Write)"
     },
     {
       "type": "arduino_digital_toggle",
@@ -2453,7 +2453,7 @@
       "fields": {
         "PIN": "(数字引脚)"
       },
-      "description": "========================================================================="
+      "description": "引脚电平翻转 (Digital Toggle)"
     },
     {
       "type": "arduino_digital_read",
@@ -2462,7 +2462,7 @@
       "fields": {
         "PIN": "(数字引脚)"
       },
-      "description": "========================================================================="
+      "description": "数字读 (Digital Read)"
     },
     {
       "type": "arduino_analog_write",
@@ -2511,7 +2511,7 @@
       "inputs": {
         "DATA": "value(Number)"
       },
-      "description": "========================================================================="
+      "description": "移位输出 (ShiftOut) 用于扩展 IO，如控制 74HC595 移位寄存器。"
     },
     {
       "type": "io_shiftin",
@@ -2525,7 +2525,7 @@
           "LSBFIRST"
         ]
       },
-      "description": "========================================================================="
+      "description": "移位输入 (ShiftIn)"
     },
     {
       "type": "arduino_analog_read",
@@ -2534,7 +2534,7 @@
       "fields": {
         "PIN": "(模拟引脚)"
       },
-      "description": "========================================================================="
+      "description": "模拟读 (Analog Read)"
     },
     {
       "type": "arduino_map",
@@ -2624,7 +2624,7 @@
       "inputs": {
         "SPEED": "value(Number)"
       },
-      "description": "运行直流电机 (支持前进、后退、停止)"
+      "description": "DC Motor (Generic L298N style or 2-pin control) 运行直流电机 (支持前进、后退、停止)"
     },
     {
       "type": "motor_stepper_config",
@@ -2637,7 +2637,7 @@
         "PIN3": "(文本)",
         "PIN4": "(文本)"
       },
-      "description": "配置标准步进电机 (基于 Arduino 官方 Stepper 库)"
+      "description": "Stepper Motor (Stepper.h) 配置标准步进电机 (基于 Arduino 官方 Stepper 库)"
     },
     {
       "type": "motor_stepper_step",
@@ -2657,7 +2657,7 @@
         "STEP": "(文本)",
         "DIR": "(文本)"
       },
-      "description": "初始化步进电机驱动器 (A4988 / DRV8825 等)"
+      "description": "步进电机驱动器 (A4988, DRV8825 等 STEP/DIR 协议) 初始化步进电机驱动器 (A4988 / DRV8825 等)"
     },
     {
       "type": "motor_stepper_driver_step",
@@ -2953,7 +2953,7 @@
         "SDA": "(文本)",
         "RST": "(文本)"
       },
-      "description": "========================================================================="
+      "description": "RFID MFRC522 (MFRC522.h)"
     },
     {
       "type": "rfid_is_new_card",
@@ -3021,7 +3021,7 @@
       "type": "rtc_init",
       "category": "实时时钟",
       "connection": "statement",
-      "description": "Init Block"
+      "description": "RTC DS3231/DS1307 (RTClib) Init Block"
     },
     {
       "type": "rtc_set_time",
@@ -3088,13 +3088,13 @@
         "CMD": "(动态选项)",
         "PIN": "(文本)"
       },
-      "description": "========================================================================="
+      "description": "2. 温湿度传感器 (DHT 系列)"
     },
     {
       "type": "sensor_vl53l0x_init",
       "category": "传感器",
       "connection": "statement",
-      "description": "初始化 VL53L0X 激距传感器 (ToF)"
+      "description": "VL53L0X Time of Flight (Adafruit_VL53L0X.h) 初始化 VL53L0X 激距传感器 (ToF)"
     },
     {
       "type": "sensor_vl53l0x_read",
@@ -3106,7 +3106,7 @@
       "type": "sensor_mpu6050_init",
       "category": "传感器",
       "connection": "statement",
-      "description": "初始化 MPU6050 六轴传感器 (加速度 + 陀螺仪)"
+      "description": "MPU6050 (Adafruit_MPU6050.h) 初始化 MPU6050 六轴传感器 (加速度 + 陀螺仪)"
     },
     {
       "type": "sensor_mpu6050_read",
@@ -3139,7 +3139,7 @@
         "RX": "(文本)",
         "TX": "(文本)"
       },
-      "description": "初始化 GPS 模块 (TinyGPS++)"
+      "description": "GPS (TinyGPS++) 初始化 GPS 模块 (TinyGPS++)"
     },
     {
       "type": "sensor_gps_read",
@@ -3244,7 +3244,7 @@
         ],
         "PIN": "(文本)"
       },
-      "description": "初始化 Sharp 红外测距传感器"
+      "description": "Sharp IR (Analog Read + Formula or Library) Clean room strategy: Generic analog read wrapper or SharpIR library. SharpIR library is standard for accurate cm conversion. 初始化 Sharp 红外测距传感器"
     },
     {
       "type": "sharp_ir_read",
@@ -3297,7 +3297,7 @@
         "SEND": "(文本)",
         "RECV": "(文本)"
       },
-      "description": "初始化电容触摸传感器 (基于 CapacitiveSensor 库)"
+      "description": "Capacitive Touch (CapacitiveSensor.h) 初始化电容触摸传感器 (基于 CapacitiveSensor 库)"
     },
     {
       "type": "sensor_capacitive_read",
@@ -3317,13 +3317,13 @@
       "fields": {
         "PIN": "(文本)"
       },
-      "description": "读取脉搏传感器的模拟原始值 (通常通过 analogRead)"
+      "description": "脉搏传感器 (Pulse Sensor - 模拟输出型) 读取脉搏传感器的模拟原始值 (通常通过 analogRead)"
     },
     {
       "type": "sensor_tsl2561_init",
       "category": "其他",
       "connection": "statement",
-      "description": "初始化 TSL2561 高精度光照传感器 (I2C 接口)"
+      "description": "TSL2561 光照传感器 (Adafruit_TSL2561) 初始化 TSL2561 高精度光照传感器 (I2C 接口)"
     },
     {
       "type": "sensor_tsl2561_read",
@@ -3409,7 +3409,7 @@
       "fields": {
         "CSPIN": "(文本)"
       },
-      "description": "初始化 SD 卡模块 (SPI 接口)"
+      "description": "SD Card (SD.h) Init Block 初始化 SD 卡模块 (SPI 接口)"
     },
     {
       "type": "storage_sd_write",
@@ -3419,7 +3419,7 @@
         "FILENAME": "value(String)",
         "DATA": "value(String)"
       },
-      "description": "在 SD 卡上写入数据（追加模式，并换行）"
+      "description": "Write File Block 在 SD 卡上写入数据（追加模式，并换行）"
     },
     {
       "type": "storage_sd_read",
@@ -3447,7 +3447,7 @@
         "ADDR": "value(Number)",
         "VAL": "value(Number)"
       },
-      "description": "向 EEPROM 指定地址写入一个字节的数据"
+      "description": "EEPROM (电可擦除可编程只读存储器) 向 EEPROM 指定地址写入一个字节的数据"
     },
     {
       "type": "storage_eeprom_read",
@@ -3468,7 +3468,7 @@
       "type": "storage_spiffs_begin",
       "category": "存储",
       "connection": "statement",
-      "description": "初始化 SPIFFS 存储"
+      "description": "SPIFFS 文件系统 (仅限 ESP32) 初始化 SPIFFS 存储"
     },
     {
       "type": "storage_spiffs_write",
@@ -3505,7 +3505,7 @@
       "type": "wii_init",
       "category": "其他",
       "connection": "statement",
-      "description": "初始化 Wii Nunchuck 控制器"
+      "description": "Wii Nunchuck (WiiChuck.h) 初始化 Wii Nunchuck 控制器"
     },
     {
       "type": "wii_update",
@@ -3553,7 +3553,7 @@
           "115200"
         ]
       },
-      "description": "Modbus 主机初始化"
+      "description": "Modbus Master (ModbusMaster Lib) Modbus 主机初始化"
     },
     {
       "type": "modbus_read_regs",
@@ -3582,7 +3582,7 @@
         "TX": "(文本)",
         "RX": "(文本)"
       },
-      "description": "CAN 总线 (ESP32 TWAI) 初始化"
+      "description": "CAN Bus (ESP32 TWAI) CAN 总线 (ESP32 TWAI) 初始化"
     },
     {
       "type": "can_send",
@@ -3628,7 +3628,7 @@
       "inputs": {
         "NAME": "value(String)"
       },
-      "description": "初始化 BLE 鼠标，设置设备名称"
+      "description": "BLE 蓝牙鼠标 初始化 BLE 鼠标，设置设备名称"
     },
     {
       "type": "ble_mouse_move",
@@ -3688,7 +3688,7 @@
         "SSID": "value(String)",
         "PASS": "value(String)"
       },
-      "description": "Blynk WiFi 连接初始化"
+      "description": "Blynk IoT (BlynkSimpleEsp8266.h / Generic) Clean room strategy: Generic Blynk setup assuming WiFi usage (most common). Blynk WiFi 连接初始化"
     },
     {
       "type": "blynk_write",
@@ -3798,7 +3798,7 @@
         "PATH": "value(String)",
         "VAL": "value(String)"
       },
-      "description": "向 Firebase 写入字符串值"
+      "description": "String variants 向 Firebase 写入字符串值"
     },
     {
       "type": "http_get",
@@ -4143,7 +4143,7 @@
         "CE": "(文本)",
         "CSN": "(文本)"
       },
-      "description": "初始化 NRF24L01 模块"
+      "description": "NRF24L01 (RF24.h) 初始化 NRF24L01 模块"
     },
     {
       "type": "nrf24_send",
@@ -4223,7 +4223,7 @@
       "fields": {
         "PIN": "(文本)"
       },
-      "description": "初始化红外/射频发射端"
+      "description": "RCSwitch (RCSwitch.h) - 433MHz 初始化红外/射频发射端"
     },
     {
       "type": "radio_tx_send",
@@ -4428,7 +4428,7 @@
       "inputs": {
         "DATA": "value(Number)"
       },
-      "description": "SPI 数据交换 (全双工发送与接收)"
+      "description": "SPI Transfer (Send & Receive) SPI 数据交换 (全双工发送与接收)"
     },
     {
       "type": "arduino_spi_write",
@@ -4437,7 +4437,7 @@
       "inputs": {
         "DATA": "value(Number)"
       },
-      "description": "SPI 仅发送 (不等待读取)"
+      "description": "SPI Write Only (Send without waiting for read) SPI 仅发送 (不等待读取)"
     },
     {
       "type": "arduino_spi_config",
@@ -4464,7 +4464,7 @@
           "SPI_CLOCK_DIV128"
         ]
       },
-      "description": "配置 SPI 全局参数 (位序、模式、分频)"
+      "description": "SPI Config (Global) 配置 SPI 全局参数 (位序、模式、分频)"
     },
     {
       "type": "telegram_config",
@@ -4488,7 +4488,7 @@
       "type": "telegram_msg_text",
       "category": "Telegram",
       "connection": "output",
-      "description": "获取最后一条消息的文本"
+      "description": "Quick getters for loop vars (optional, or just document variables) 获取最后一条消息的文本"
     },
     {
       "type": "telegram_send",
@@ -4647,7 +4647,7 @@
       "inputs": {
         "SPEED": "value(Number)"
       },
-      "description": "控制 mBot 整体运动（前进、后退、左转、右转）"
+      "description": "mBot Setup & Forward/Backward (MeMCore.h) We assume standard mCore board usage. Includes: MeMCore.h usually covers all standard mBot specific classes. 控制 mBot 整体运动（前进、后退、左转、右转）"
     },
     {
       "type": "mbot_motor_stop",
@@ -4667,7 +4667,7 @@
           "4"
         ]
       },
-      "description": "读取超声波传感器距离（厘米）"
+      "description": "mBot Sensors (Ultrasonic, Line Follower) 读取超声波传感器距离（厘米）"
     },
     {
       "type": "mbot_line_follower",
@@ -4695,7 +4695,7 @@
         "G": "value(Number)",
         "B": "value(Number)"
       },
-      "description": "控制板载 RGB LED 颜色"
+      "description": "mBot RGB LED & Extras 控制板载 RGB LED 颜色"
     },
     {
       "type": "mbot_motor",
@@ -4723,7 +4723,7 @@
         "PIN_RR": "(文本)",
         "PIN_B": "(文本)"
       },
-      "description": "初始化 Otto 机器人"
+      "description": "Otto DIY (Otto.h) 初始化 Otto 机器人"
     },
     {
       "type": "otto_home",
@@ -4811,7 +4811,7 @@
           "..."
         ]
       },
-      "description": "Assuming generic Otto library supports putMouth if matrix enabled."
+      "description": "Mouth requires LED Matrix support which might need specific library inclusion depending on Otto variant. Assuming generic Otto library supports putMouth if matrix enabled."
     },
     {
       "type": "stm32_can_init",
@@ -4825,7 +4825,7 @@
           "CAN_SPEED_1000KBPS"
         ]
       },
-      "description": "------------------------------------------------------------------"
+      "description": "CAN 初始化"
     },
     {
       "type": "stm32_can_send",
@@ -4835,19 +4835,19 @@
         "ID": "value(Number)",
         "DATA": "value(Number)"
       },
-      "description": "------------------------------------------------------------------"
+      "description": "CAN 发送数据"
     },
     {
       "type": "stm32_can_available",
       "category": "STM32专用",
       "connection": "output",
-      "description": "------------------------------------------------------------------"
+      "description": "CAN 检查数据可用性"
     },
     {
       "type": "stm32_can_read",
       "category": "STM32专用",
       "connection": "output",
-      "description": "------------------------------------------------------------------"
+      "description": "CAN 读取数据"
     },
     {
       "type": "stm32_ethernet_init",
@@ -4867,13 +4867,13 @@
       "type": "stm32_ethernet_ip",
       "category": "STM32专用",
       "connection": "output",
-      "description": "------------------------------------------------------------------"
+      "description": "获取以太网 IP 地址"
     },
     {
       "type": "stm32_usb_kb_init",
       "category": "STM32专用",
       "connection": "statement",
-      "description": "------------------------------------------------------------------"
+      "description": "USB 键盘初始化"
     },
     {
       "type": "stm32_usb_kb_print",
@@ -4882,13 +4882,13 @@
       "inputs": {
         "TEXT": "value"
       },
-      "description": "------------------------------------------------------------------"
+      "description": "USB 键盘输入文本"
     },
     {
       "type": "stm32_usb_mouse_init",
       "category": "STM32专用",
       "connection": "statement",
-      "description": "------------------------------------------------------------------"
+      "description": "USB 鼠标初始化"
     },
     {
       "type": "stm32_usb_mouse_move",
@@ -4898,7 +4898,7 @@
         "X": "value(Number)",
         "Y": "value(Number)"
       },
-      "description": "------------------------------------------------------------------"
+      "description": "USB 鼠标移动"
     },
     {
       "type": "dfrobot_player_init",
@@ -4908,7 +4908,7 @@
         "RX": "(文本)",
         "TX": "(文本)"
       },
-      "description": "初始化 DFPlayer Mini"
+      "description": "DFPlayer Mini (DFRobotDFPlayerMini.h) 初始化 DFPlayer Mini"
     },
     {
       "type": "dfrobot_player_play",
@@ -5023,7 +5023,7 @@
         "CLK": "(文本)",
         "DATA": "(文本)"
       },
-      "description": "初始化 Grove 链接 LED (Chainable LED)"
+      "description": "Grove Chainable LED (ChainableLED.h) 初始化 Grove 链接 LED (Chainable LED)"
     },
     {
       "type": "grove_led_set",
@@ -5057,7 +5057,7 @@
         "CLK": "(文本)",
         "DIO": "(文本)"
       },
-      "description": "初始化 Grove 4 位数码管 (TM1637)"
+      "description": "Grove 4-Digit Display (TM1637.h) 初始化 Grove 4 位数码管 (TM1637)"
     },
     {
       "type": "grove_display_4digit_print",

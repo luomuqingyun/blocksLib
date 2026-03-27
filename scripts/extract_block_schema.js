@@ -235,10 +235,29 @@ function extractDescription(beforeBlock) {
         };
     }
     
-    // 退化到行注释
-    const lineComment = beforeBlock.match(/\/\/\s*(.+)\s*$/);
-    if (lineComment) {
-        return { text: lineComment[1].trim(), params: undefined };
+    // 退化到行注释组 (Consecutive line comments)
+    // 逆向遍历行，捕捉 registerBlock 上方的所有连续 `//` 注释，过滤掉类似 ==== 的分隔符
+    const linesStr = beforeBlock.split('\n');
+    let descriptionText = [];
+    for (let i = linesStr.length - 1; i >= 0; i--) {
+        const line = linesStr[i].trim();
+        if (line === '') continue; // Skip empty lines between comments
+        
+        const match = line.match(/^\/\/\s*(.+?)\s*$/);
+        if (match) {
+            const text = match[1].trim();
+            // 过滤掉全是等号或减号的分隔线
+            if (!text.match(/^[=\-]+$/)) {
+                descriptionText.unshift(text); // Add to beginning
+            }
+        } else {
+            // 遇到非注释、非空行，代表注释块已经结束
+            break;
+        }
+    }
+    
+    if (descriptionText.length > 0) {
+        return { text: descriptionText.join(' '), params: undefined };
     }
     
     return { text: undefined, params: undefined };
