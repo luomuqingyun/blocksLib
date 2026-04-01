@@ -1,8 +1,0 @@
-[
-  {
-    "blockId": "esp32_wifi_connect",
-    "family": "esp32",
-    "success": true,
-    "exitCode": 0
-  }
-]

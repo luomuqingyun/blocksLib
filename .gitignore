@@ -38,9 +38,12 @@ out
 ide/
 
 # Scripts intermediate files (regenerated on demand)
-scripts/generated/*.json
-scripts/generated/*.js
+scripts/generated/
 scripts/deprecated/
+scripts/test-ini.*
+
+# 分析报告与临时产物
+chip_specific_blocks.md
 
 # 测试项目与日志
 test
@@ -50,5 +53,12 @@ block_compilation_manifest.json
 block_verify_report.json
 block_verify_debug.log
 test_build.log
+test_report.json
+*_report.json
+*_manifest.json
+audit_log*.txt
+*.log
+temp/
+test space space/
 * - 副本/
 * - 副本 *
