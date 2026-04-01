@@ -218,6 +218,7 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
   const codeGenTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isDraggingRef = useRef(false);
   const wasEditingRef = useRef(false);
+  const isConfirmingDeletionRef = useRef(false); // [NEW] 用于防止撤销/重做期间引发循环触发
 
   /**
    * 执行代码生成的函数 (Helper)
@@ -514,45 +515,46 @@ export const BlocklyWrapper = memo(forwardRef<BlocklyWrapperHandle, BlocklyWrapp
 
     // [NEW] 入口积木删除保护：拦截删除事件并弹出确认
     const deletionGuarantor = (event: any) => {
-      // 如果正在被 Backpack 执行安全替换，则绕过拦截保护
-      if (!workspaceRef.current || isDraggingRef.current || (workspaceRef.current as any).__isReplacingEntry) return;
+      // 如果正在被 Backpack 执行安全替换，或者正处于撤销确认状态中，绕过拦截保护
+      if (!workspaceRef.current || isDraggingRef.current || (workspaceRef.current as any).__isReplacingEntry || isConfirmingDeletionRef.current) return;
 
-      // 我们在拦截删除时需要非常小心，Blockly 的删除事件是不可撤销的拦截
-      // 更好的方式是利用 Blockly 的 Delete 事件并结合撤销
       if (event.type === Blockly.Events.BLOCK_DELETE) {
         const isEntryBlock = event.ids?.some((id: string) => {
-          // 注意：BLOCK_DELETE 发生时积木已经从 workspace 移除，我们需要通过 event.oldXml (如果有) 
-          // 或者在事件触发前记录。但更简单的是，如果是 Entry Root，它在 group 中被删除
-          // 我们检测被删除的积木列表中是否有 entry_root
           return event.oldXml && event.oldXml.getAttribute('type') === 'arduino_entry_root';
         }) || (event.oldJson && event.oldJson.type === 'arduino_entry_root');
 
         if (isEntryBlock) {
-          // 立即触发撤销以找回积木
-          Blockly.Events.setGroup(false);
-          workspaceRef.current.undo(false);
+          isConfirmingDeletionRef.current = true; // 锁定拦截器，防止无限循环
+          
+          // 【核心修复】：必须使用 setTimeout 延后执行！
+          // 由于 Blockly 的事件入栈底层的 EventQueue 机制同样包含异步过程，
+          // 这里如果设为 0 会导致我们的 undo() 跑在系统记录删除动作之前，从而什么也恢复不了！
+          // 给它留出 100ms 的时间让删除事件正式列入历史记录栈中，再拔回来。
+          setTimeout(() => {
+            // 此时清理动作刚刚执行完且已入栈，我们执行 undo 把被清空的积木完璧归赵拿回来
+            workspaceRef.current.undo(false);
 
-          // 弹出确认框
-          setConfirmState({
-            isOpen: true,
-            title: i18n.t('dialog.confirmDeleteTitle') || "确认删除",
-            message: i18n.t('dialog.confirmDeleteEntry') || "确定要删除入口积木吗？这将清除所有程序逻辑。",
-            type: 'danger',
-            onConfirm: () => {
-              // 用户确认删除：临时移除监听器执行删除
-              workspaceRef.current.removeChangeListener(deletionGuarantor);
-              const block = workspaceRef.current.getBlocksByType('arduino_entry_root', false)[0];
-              if (block) block.dispose(false);
-              setConfirmState(prev => ({ ...prev, isOpen: false }));
-              // 稍后重新绑定 (防止递归)
-              setTimeout(() => {
-                if (workspaceRef.current) workspaceRef.current.addChangeListener(deletionGuarantor);
-              }, 100);
-            },
-            onCancel: () => {
-              setConfirmState(prev => ({ ...prev, isOpen: false }));
-            }
-          });
+            // 弹出确认框询问用户
+            setConfirmState({
+              isOpen: true,
+              title: i18n.t('dialog.confirmDeleteTitle') || "确认删除",
+              message: i18n.t('dialog.confirmDeleteEntry') || "确定要删除入口积木吗？这将清除所有程序逻辑。",
+              type: 'danger',
+              onConfirm: () => {
+                // 用户确定：我们直接触发 redo (由于刚才 undo 回退了那一组删除操作，现在 redo 会精确执行最初想执行的整套删除动作)
+                workspaceRef.current.undo(true); 
+                setConfirmState(prev => ({ ...prev, isOpen: false }));
+                // 解除锁定
+                setTimeout(() => { isConfirmingDeletionRef.current = false; }, 100);
+              },
+              onCancel: () => {
+                // 用户取消：什么都不用做，因为我们刚才已经 undo 把积木恢复到原样了
+                setConfirmState(prev => ({ ...prev, isOpen: false }));
+                // 解除锁定
+                setTimeout(() => { isConfirmingDeletionRef.current = false; }, 100);
+              }
+            });
+          }, 120); // 120ms 的延迟，确保 Blockly 完成底层的 undoStack_ 写入
         }
       }
     };

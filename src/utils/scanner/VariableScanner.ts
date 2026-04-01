@@ -75,6 +75,9 @@ export const scanVariablesCategorized = (workspace: Blockly.Workspace): VarCateg
     for (const block of blocks) {
         if (['arduino_functions_def_flexible', 'arduino_functions_setup', 'arduino_functions_loop'].includes(block.type)) {
             vars.functionScopes.set(block.id, { params: new Set(), locals: new Set() });
+        } else if (block.type === 'arduino_entry_root') {
+            vars.functionScopes.set(`${block.id}_setup`, { params: new Set(), locals: new Set() });
+            vars.functionScopes.set(`${block.id}_loop`, { params: new Set(), locals: new Set() });
         }
     }
 
@@ -162,9 +165,9 @@ export const scanVariablesCategorized = (workspace: Blockly.Workspace): VarCateg
             if (name) {
                 vars.variableTypes.set(name, varType);
                 // 判断变量属于全局还是局部作用域
-                const parentFunc = findParentFunctionBlock(block);
-                if (parentFunc) {
-                    const scope = vars.functionScopes.get(parentFunc.id);
+                const scopeId = findParentScopeId(block);
+                if (scopeId) {
+                    const scope = vars.functionScopes.get(scopeId);
                     if (scope) scope.locals.add(name); // 局部变量
                 } else {
                     vars.globals.add(name); // 全局变量
@@ -205,20 +208,31 @@ export const scanVariablesCategorized = (workspace: Blockly.Workspace): VarCateg
 };
 
 /**
- * 递归查找当前积木所属的父级函数积木 (Function Block Finder)
+ * 递归查找当前积木所属的作用域ID (Scope ID Finder)
  * 用于确定代码生成或变量访问时的上下文作用域。
  */
-export const findParentFunctionBlock = (block: Blockly.Block): Blockly.Block | null => {
-    let parent = block.getSurroundParent();
-    while (parent) {
+export const findParentScopeId = (block: Blockly.Block): string | null => {
+    let node: Blockly.Block | null = block;
+    while (node && node.getParent()) {
+        const parent = node.getParent()!;
         const type = parent.type;
-        // 支持标准函数定义、Setup 和 Loop
+        
         if (type === 'arduino_functions_def_flexible' ||
             type === 'arduino_functions_setup' ||
             type === 'arduino_functions_loop') {
-            return parent;
+            return parent.id;
         }
-        parent = parent.getSurroundParent();
+        
+        if (type === 'arduino_entry_root') {
+            for (const input of parent.inputList) {
+                if (input.connection && input.connection.targetBlock() === node) {
+                    if (input.name === 'SETUP_STACK') return `${parent.id}_setup`;
+                    if (input.name === 'LOOP_STACK') return `${parent.id}_loop`;
+                }
+            }
+            return `${parent.id}_setup`;
+        }
+        node = parent;
     }
     return null;
 };
@@ -285,9 +299,9 @@ export const getContextAwareVariables = (workspace: Blockly.Workspace, currentBl
 
     // 2. 上下文判断：如果积木被嵌套在某个函数内
     if (currentBlock) {
-        const parentFunc = findParentFunctionBlock(currentBlock);
-        if (parentFunc) {
-            const scope = allVars.functionScopes.get(parentFunc.id);
+        const scopeId = findParentScopeId(currentBlock);
+        if (scopeId) {
+            const scope = allVars.functionScopes.get(scopeId);
             if (scope) {
                 visibleParams = scope.params;
                 visibleLocals = scope.locals;
@@ -324,11 +338,11 @@ export const getVariableGetDropdownOptions = (workspace: Blockly.Workspace, curr
         }
     };
 
-    // 按优先级添加：参数 > 局部变量 > 全局变量 > 宏常量
+    // 按优先级添加：参数 > 局部变量 > 全局变量
+    // 注：不再将宏定义(常量)包含在普通变量中，因为系统已有专门的“获取常量”积木
     Array.from(visibleParams).sort().forEach(n => add("[参数]", n));
     Array.from(visibleLocals).sort().forEach(n => add("[局部]", n));
     Array.from(visibleGlobals).sort().forEach(n => add("[全局]", n));
-    Array.from(visibleMacros).sort().forEach(n => add("[常量]", n));
 
     return ensureCurrentValue(options, currentValue, '暂无变量', 'no_var');
 };

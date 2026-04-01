@@ -4,6 +4,10 @@ const electron = require('vite-plugin-electron').default;
 const renderer = require('vite-plugin-electron-renderer').default;
 const monacoEditorPlugin = require('vite-plugin-monaco-editor').default;
 
+// [网络优化]: 强制 Node.js 在解析 localhost 时优先使用 IPv4 (127.0.0.1)
+// 这比硬编码 host 更好，它能够一劳永逸地解决 Electron 请求 dev server 的 ERR_CONNECTION_REFUSED 问题
+require('node:dns').setDefaultResultOrder('ipv4first');
+
 /**
  * ============================================================
  * EmbedBlocks Studio 主应用构建配置 (Vite)
