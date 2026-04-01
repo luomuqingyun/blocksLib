@@ -1,0 +1,72 @@
+diff.astextplain.textconv=astextplain
+filter.lfs.clean=git-lfs clean -- %f
+filter.lfs.smudge=git-lfs smudge -- %f
+filter.lfs.process=git-lfs filter-process
+filter.lfs.required=true
+http.sslbackend=openssl
+http.sslcainfo=D:/Program Files/Git/mingw64/etc/ssl/certs/ca-bundle.crt
+core.autocrlf=true
+core.fscache=true
+core.symlinks=false
+pull.rebase=false
+credential.https://dev.azure.com.usehttppath=true
+init.defaultbranch=master
+user.name=luomuqingyun
+user.email=luomuqingyun@gmail.com
+http.version=HTTP/1.1
+http.postbuffer=1048576000
+http.sslverify=false
+http.lowspeedlimit=0
+http.lowspeedtime=999999
+http.schannelcheckrevoke=false
+http.sslbackend=openssl
+https.postbuffer=1048576000
+pull.rebase=true
+rebase.autostash=true
+push.autosetupremote=true
+init.defaultbranch=main
+safe.directory=*
+safe.directory=D:\Mixly3"
+core.quotepath=false
+core.autocrlf=true
+core.safecrlf=false
+gui.encoding=utf-8
+i18n.commit.encoding=utf-8
+i18n.logoutputencoding=utf-8
+alias.pushall=!git submodule foreach "git add . && git commit -m \"Update submodule\" && git push || echo \"No changes in submodule\"" && git add . && git commit -m "Update submodule references" && git push
+alias.pushallarg=!f() { COMMIT_MSG="${1:-Update submodule}"; MAIN_MSG="${2:-Update submodule references}"; git submodule foreach "git add . && git commit -m \"$COMMIT_MSG\" && git push || echo \"No changes in submodule\"" && git add . && git commit -m "$MAIN_MSG" && git push; }; f
+alias.pushallans=!f() { 
+    read -p "提交说明: " MSG; 
+    
+    # 遍历所有子模块，获取当前分支名并推送
+    git submodule foreach "\
+        CURRENT_BRANCH=\$(git rev-parse --abbrev-ref HEAD); \
+        echo \"子模块: \$(pwd) 分支: \$CURRENT_BRANCH\"; \
+        git add . && \
+        (git commit -m \"$MSG\" || echo \"没有变更需要提交\") && \
+        (git push origin \$CURRENT_BRANCH || echo \"推送失败，可能需要手动推送\")"
+    
+    # 主仓库，获取当前分支名并推送
+    MAIN_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    echo "主仓库分支: $MAIN_BRANCH"
+    git add . && \
+    (git commit -m "Update submodule references: $MSG" || echo "主仓库没有变更需要提交") && \
+    git push origin $MAIN_BRANCH --recurse-submodules=on-demand
+}; f
+alias.pushlocal=!f() { read -p "提交说明: " MSG; BRANCH=$(git rev-parse --abbrev-ref HEAD); echo "分支: $BRANCH"; CHANGES=$(git status --porcelain); if [ -n "$CHANGES" ]; then echo "发现变更"; git add .; git commit -m "$MSG" && echo "已提交"; git push origin $BRANCH && echo "已推送"; else echo "无变更"; fi; }; f
+alias.sync-submodules=!bash I:/Code_Tools/Script_Shell/git/git-sync-submodules.sh
+color.ui=auto
+core.repositoryformatversion=0
+core.filemode=false
+core.bare=false
+core.logallrefupdates=true
+core.symlinks=false
+core.ignorecase=true
+remote.origin.url=https://github.com/luomuqingyun/blocksLib.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+branch.main.remote=origin
+branch.main.merge=refs/heads/main
+submodule.blocksLib.url=git@github.com:luomuqingyun/blocksLib.git
+submodule.blocksLib.active=true
+submodule.third_party/Arduino_Core_STM32.url=https://github.com/stm32duino/Arduino_Core_STM32.git
+submodule.third_party/Arduino_Core_STM32.active=true
