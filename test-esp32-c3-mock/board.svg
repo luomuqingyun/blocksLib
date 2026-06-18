@@ -1,0 +1,31 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Board Background -->
+  <rect x="50" y="50" width="300" height="300" rx="15" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+  <text x="200" y="200" font-family="Arial" font-size="24" fill="white" text-anchor="middle">ESP32-C3 MOCK</text>
+  
+  <!-- Left Side Pins -->
+  <!-- 3V3 -->
+  <circle id="pin_3V3" cx="40" cy="80" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="65" y="85" font-family="Arial" font-size="10" fill="#bdc3c7">3V3</text>
+  
+  <!-- IO4 -->
+  <circle id="pin_IO4" cx="40" cy="110" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="65" y="115" font-family="Arial" font-size="10" fill="#bdc3c7">IO4</text>
+
+  <!-- Right Side Pins (example for D0/D1) -->
+  <!-- IO0 (D0) -->
+  <circle id="pin_IO0" cx="360" cy="80" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="310" y="85" font-family="Arial" font-size="10" fill="#bdc3c7" text-anchor="end">IO0 (D0)</text>
+
+  <!-- IO1 (D1) -->
+  <circle id="pin_IO1" cx="360" cy="110" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="310" y="115" font-family="Arial" font-size="10" fill="#bdc3c7" text-anchor="end">IO1 (D1)</text>
+  
+  <!-- IO2 (A0) -->
+  <circle id="pin_IO2" cx="360" cy="140" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="310" y="145" font-family="Arial" font-size="10" fill="#bdc3c7" text-anchor="end">IO2 (A0)</text>
+
+  <!-- GND -->
+  <circle id="pin_GND" cx="40" cy="320" r="8" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
+  <text x="65" y="325" font-family="Arial" font-size="10" fill="#bdc3c7">GND</text>
+</svg>

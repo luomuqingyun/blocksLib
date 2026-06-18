@@ -1,0 +1,160 @@
+{
+    "id": "esp32c3_mock",
+    "name": "ESP32-C3 Mock",
+    "mcu": "ESP32-C3",
+    "freq": "160MHz",
+    "flash": "4MB",
+    "ram": "400KB",
+    "fqbn": "esp32:esp32:esp32c3",
+    "family": "esp32",
+    "package": "CUSTOM_SVG",
+    "visuals": {
+        "svgPath": "board.svg"
+    },
+    "pinCount": 30,
+    "pinMap": [
+        {
+            "name": "3V3",
+            "position": "1"
+        },
+        {
+            "name": "EN",
+            "position": "2"
+        },
+        {
+            "name": "IO4",
+            "position": "3"
+        },
+        {
+            "name": "IO5",
+            "position": "4"
+        },
+        {
+            "name": "IO6",
+            "position": "5"
+        },
+        {
+            "name": "IO7",
+            "position": "6"
+        },
+        {
+            "name": "IO8",
+            "position": "7"
+        },
+        {
+            "name": "IO9",
+            "position": "8"
+        },
+        {
+            "name": "IO10",
+            "position": "9"
+        },
+        {
+            "name": "IO20",
+            "position": "10"
+        },
+        {
+            "name": "RX",
+            "position": "11"
+        },
+        {
+            "name": "TX",
+            "position": "12"
+        },
+        {
+            "name": "IO21",
+            "position": "13"
+        },
+        {
+            "name": "GND",
+            "position": "14"
+        },
+        {
+            "name": "5V",
+            "position": "15"
+        },
+        {
+            "name": "GND",
+            "position": "16"
+        },
+        {
+            "name": "IO0",
+            "position": "17"
+        },
+        {
+            "name": "IO1",
+            "position": "18"
+        },
+        {
+            "name": "IO2",
+            "position": "19"
+        },
+        {
+            "name": "IO3",
+            "position": "20"
+        },
+        {
+            "name": "NC",
+            "position": "21"
+        },
+        {
+            "name": "NC",
+            "position": "22"
+        },
+        {
+            "name": "NC",
+            "position": "23"
+        },
+        {
+            "name": "NC",
+            "position": "24"
+        },
+        {
+            "name": "NC",
+            "position": "25"
+        },
+        {
+            "name": "NC",
+            "position": "26"
+        },
+        {
+            "name": "NC",
+            "position": "27"
+        },
+        {
+            "name": "NC",
+            "position": "28"
+        },
+        {
+            "name": "NC",
+            "position": "29"
+        },
+        {
+            "name": "3V3",
+            "position": "30"
+        }
+    ],
+    "pins": {
+        "digital": [
+            {
+                "label": "D0 (IO0)",
+                "value": "0"
+            },
+            {
+                "label": "D1 (IO1)",
+                "value": "1"
+            }
+        ],
+        "analog": [
+            {
+                "label": "A0 (IO2)",
+                "value": "2"
+            }
+        ],
+        "pwm": [],
+        "i2c": [],
+        "spi": [],
+        "serial": []
+    },
+    "upload_speed": 460800
+}
